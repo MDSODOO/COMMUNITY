@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <template id="s_md_two_col" name="MD · Two Col">
+        <section class="s_md_two_col o_colored_level"
+                 data-snippet="s_md_two_col" data-name="MD Two Col">
+            <article class="md-tile md-tile--dark">
+                <h3>Acompañamiento sanitario para operar con claridad.</h3>
+                <p>Apertura de farmacia, aviso de funcionamiento, capacitación y PNOs organizados en una ruta de trabajo entendible.</p>
+                <div class="md-btn-row">
+                    <a class="md-btn md-btn--primary btn btn-primary" href="/afiliacion">Quiero afiliarme</a>
+                    <a class="md-btn md-btn--secondary btn btn-secondary" href="/contactus">Pedir información</a>
+                </div>
+            </article>
+            <article class="md-tile md-tile--surface">
+                <div class="md-step-grid">
+                    <div class="md-step-card"><strong>1</strong><p>Apertura de farmacia</p></div>
+                    <div class="md-step-card"><strong>2</strong><p>Aviso de funcionamiento</p></div>
+                    <div class="md-step-card"><strong>3</strong><p>Capacitación sanitaria</p></div>
+                    <div class="md-step-card"><strong>24</strong><p>PNOs básicos</p></div>
+                </div>
+            </article>
+        </section>
+    </template>
+
+    <record id="s_md_two_col_snippet" model="ir.ui.view">
+        <field name="name">MD · Two Col (registro snippet)</field>
+        <field name="type">qweb</field>
+        <field name="mode">extension</field>
+        <field name="inherit_id" ref="website.snippets"/>
+        <field name="arch" type="xml">
+            <xpath expr="//snippets[@id='snippet_structure']" position="inside">
+                <t t-snippet="medicine_depot_portal.s_md_two_col"
+                   t-thumbnail="/medicine_depot_portal/static/img/snippets/s_md_two_col.svg"/>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

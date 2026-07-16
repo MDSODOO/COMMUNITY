@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <t t-name="bi_pos_restrict_stock.BiWarningPopup">
+        <div class="self_order_product_info_popup o_dialog" t-att-id="id">
+            <div role="dialog" class="modal d-block" tabindex="-1">
+                <div class="modal-dialog" role="document" t-on-click.stop="">
+                    <div class="modal-content rounded">
+                        <div class="modal-header">
+                            Pedido detenido
+                        </div>
+                        <span class="modal-body o_self_order_main_desc fs-3 ps-5 overflow-auto">
+                            <t t-out="props.name"/> no tiene A la mano para esta sucursal.
+                        </span>
+                        <div class="modal-footer d-flex flex-row-reverse justify-content-between align-items-center">
+                            <button type="button" class="btn btn-primary" t-on-click.stop="() => this.props.close()">Ok</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </t>
+</templates>

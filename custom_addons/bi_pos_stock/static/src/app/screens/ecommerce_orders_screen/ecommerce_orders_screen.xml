@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <!--
+        EcommerceOrdersScreen — pending website sale orders for this branch.
+
+        Columns: Pedido | Cliente | Total | Fecha | Productos
+    -->
+    <t t-name="bi_pos_stock.EcommerceOrdersScreen">
+        <div class="screen ecommerce-orders-screen" style="display:flex; flex-direction:column; height:100%; background:var(--md-screen-bg);">
+
+            <!-- ── Header ── -->
+            <div class="screen-header d-flex align-items-center justify-content-between px-4 py-3"
+                 style="background:linear-gradient(135deg,var(--md-dark) 0%,var(--md-ink) 58%,var(--md-blue-800) 100%); color:#fff; flex-shrink:0;">
+                <button class="btn btn-light btn-sm" t-on-click="back">
+                    <i class="fa fa-arrow-left me-1"/> Volver
+                </button>
+                <h4 class="mb-0 fw-bold">
+                    <i class="fa fa-shopping-cart me-2"/>
+                    Pedidos en Línea
+                </h4>
+                <button class="btn btn-light btn-sm" t-on-click="_loadOrders"
+                        t-att-disabled="state.loading ? true : undefined">
+                    <i t-att-class="state.loading ? 'fa fa-spinner fa-spin' : 'fa fa-refresh'"/>
+                    Actualizar
+                </button>
+            </div>
+
+            <!-- ── Subtitle ── -->
+            <div class="px-4 py-2 text-muted" style="flex-shrink:0; font-size:0.85rem;">
+                Pedidos web confirmados pendientes de atención en esta sucursal.
+            </div>
+
+            <!-- ── Loading ── -->
+            <div t-if="state.loading"
+                 class="d-flex align-items-center justify-content-center flex-grow-1">
+                <div class="text-center text-muted">
+                    <i class="fa fa-spinner fa-spin fa-2x mb-3"/>
+                    <p>Cargando pedidos…</p>
+                </div>
+            </div>
+
+            <!-- ── Empty ── -->
+            <div t-elif="!state.loading and orders.length === 0"
+                 class="d-flex align-items-center justify-content-center flex-grow-1">
+                <div class="text-center text-muted">
+                    <i class="fa fa-inbox fa-3x mb-3" style="color:var(--md-green-600);"/>
+                    <p class="fw-bold">Sin pedidos pendientes</p>
+                    <small>No hay pedidos web confirmados para esta sucursal en este momento.</small>
+                </div>
+            </div>
+
+            <!-- ── Table ── -->
+            <div t-else="" class="flex-grow-1 overflow-auto px-3 pb-3">
+                <table class="table table-hover table-sm align-middle md-bento-table">
+                    <thead style="background:var(--md-blue-800); color:#fff; position:sticky; top:0; z-index:1;">
+                        <tr>
+                            <th style="padding:10px 12px; font-weight:600; width:15%;">Pedido</th>
+                            <th style="padding:10px 12px; font-weight:600; width:30%;">Cliente</th>
+                            <th class="text-end" style="padding:10px 12px; font-weight:600; width:18%;">Total</th>
+                            <th class="text-center" style="padding:10px 8px; font-weight:600; width:22%;">Fecha</th>
+                            <th class="text-center" style="padding:10px 8px; font-weight:600; width:15%;">Productos</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <t t-foreach="orders" t-as="order" t-key="order.id">
+                            <tr class="partner-line">
+                                <!-- Pedido # -->
+                                <td style="padding:10px 12px; font-weight:600; color:var(--md-blue-800);">
+                                    <t t-esc="order.name"/>
+                                </td>
+                                <!-- Cliente -->
+                                <td style="padding:10px 12px;">
+                                    <i class="fa fa-user me-1 text-muted"/>
+                                    <t t-esc="order.partner_name"/>
+                                </td>
+                                <!-- Total -->
+                                <td class="text-end" style="padding:10px 12px; font-weight:600;">
+                                    $<t t-esc="order.amount_total.toFixed(2)"/>
+                                </td>
+                                <!-- Fecha -->
+                                <td class="text-center text-muted" style="padding:10px 8px; font-size:0.85rem;">
+                                    <t t-esc="order.date_order"/>
+                                </td>
+                                <!-- # Productos -->
+                                <td class="text-center" style="padding:10px 8px;">
+                                    <span class="badge" style="background-color:var(--md-blue-800); color:#fff;">
+                                        <t t-esc="order.product_count"/>
+                                    </span>
+                                </td>
+                            </tr>
+                        </t>
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+    </t>
+</templates>

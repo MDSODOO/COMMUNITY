@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <!--
+        RegulatoryDetailPopup: ficha regulatoria completa (COFEPRIS) de un
+        producto, sin llamadas al servidor (todo ya viaja en product.template
+        dentro del store del POS). Se abre desde el boton (i) teal, esquina
+        superior izquierda de la ProductCard.
+    -->
+    <t t-name="md_pos_product_labels.RegulatoryDetailPopup">
+        <Dialog size="'md'">
+
+            <t t-set-slot="header">
+                <h5 class="modal-title d-flex align-items-center gap-2">
+                    <span class="badge" style="background:#2C8C99; font-size:0.75rem;">
+                        <i class="fa fa-flask me-1"/>COFEPRIS
+                    </span>
+                    Detalle regulatorio
+                </h5>
+            </t>
+
+            <div class="px-1">
+                <h6 class="fw-bold mb-2" t-esc="product.name"/>
+
+                <div class="d-flex flex-wrap gap-2 mb-3" t-if="substances.length">
+                    <span t-foreach="substances" t-as="sub" t-key="sub.id"
+                          class="badge rounded-pill" t-att-style="sub.style + ' font-size:0.75rem; padding:.3rem .6rem;'">
+                        <t t-esc="sub.name"/>
+                    </span>
+                </div>
+
+                <table class="table table-sm align-middle mb-2" style="font-size:0.85rem;">
+                    <tbody>
+                        <tr t-if="product.product_line_id">
+                            <td class="text-muted" style="width:45%;">Línea / Marca</td>
+                            <td style="font-weight:500;" t-esc="product.product_line_id.name"/>
+                        </tr>
+                        <tr t-if="product.l10n_mx_forma_farmaceutica">
+                            <td class="text-muted">Forma farmacéutica</td>
+                            <td style="font-weight:500;" t-esc="product.l10n_mx_forma_farmaceutica"/>
+                        </tr>
+                        <tr t-if="product.l10n_mx_concentracion">
+                            <td class="text-muted">Concentración</td>
+                            <td style="font-weight:500;" t-esc="product.l10n_mx_concentracion"/>
+                        </tr>
+                        <tr t-if="product.l10n_mx_contenido_empaque">
+                            <td class="text-muted">Contenido del empaque</td>
+                            <td style="font-weight:500;" t-esc="product.l10n_mx_contenido_empaque"/>
+                        </tr>
+                        <tr t-if="product.l10n_mx_tipo_envase">
+                            <td class="text-muted">Tipo de envase</td>
+                            <td style="font-weight:500;" t-esc="product.l10n_mx_tipo_envase"/>
+                        </tr>
+                        <tr t-if="product.l10n_mx_talla">
+                            <td class="text-muted">Talla / Medida</td>
+                            <td style="font-weight:500;" t-esc="product.l10n_mx_talla"/>
+                        </tr>
+                        <tr t-if="product.l10n_mx_dimensiones">
+                            <td class="text-muted">Dimensiones</td>
+                            <td style="font-weight:500;" t-esc="product.l10n_mx_dimensiones"/>
+                        </tr>
+                        <tr t-if="product.l10n_mx_registro_sanitario">
+                            <td class="text-muted">Registro sanitario</td>
+                            <td style="font-weight:500;" t-esc="product.l10n_mx_registro_sanitario"/>
+                        </tr>
+                        <tr t-if="product.l10n_mx_requiere_receta">
+                            <td class="text-muted">Requiere receta</td>
+                            <td><span class="badge bg-warning text-dark">Sí, requiere receta</span></td>
+                        </tr>
+                        <tr t-if="product.l10n_mx_controlado">
+                            <td class="text-muted">Control especial</td>
+                            <td><span class="badge bg-danger">Medicamento controlado</span></td>
+                        </tr>
+                        <tr t-if="product.barcode">
+                            <td class="text-muted">Código de barras</td>
+                            <td style="font-weight:500;" t-esc="product.barcode"/>
+                        </tr>
+                        <tr t-if="product.default_code">
+                            <td class="text-muted">Referencia interna</td>
+                            <td style="font-weight:500;" t-esc="product.default_code"/>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div t-if="homologacionLabel" class="alert alert-info py-2 px-3 mb-0" style="font-size:0.8rem;">
+                    <i class="fa fa-info-circle me-1"/>
+                    Nombre homologado propuesto (<t t-esc="homologacionLabel"/>):
+                    <div class="fst-italic mt-1" t-esc="product.l10n_mx_nombre_homologado"/>
+                </div>
+            </div>
+
+            <t t-set-slot="footer">
+                <button class="btn btn-secondary" t-on-click="props.close">Cerrar</button>
+            </t>
+
+        </Dialog>
+    </t>
+</templates>

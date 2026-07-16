@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="action_report_medicine_depot_scrap_history" model="ir.actions.report">
+        <field name="name">Historial legado de bajas</field>
+        <field name="model">medicine.depot.scrap.history</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">medicine_depot_scrap_batch.report_scrap_history_legacy</field>
+        <field name="report_file">medicine_depot_scrap_batch.report_scrap_history_legacy</field>
+        <field name="binding_model_id" ref="model_medicine_depot_scrap_history"/>
+        <field name="binding_type">report</field>
+        <field name="print_report_name">'Historial legado de bajas'</field>
+    </record>
+
+    <template id="report_scrap_history_legacy">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="web.external_layout">
+                    <t t-set="address" t-value="''"/>
+                    <t t-set="information_block" t-value="''"/>
+                    <div class="page pharma-doc-page">
+                        <!-- Header pharma: primer bloque en .page -->
+                        <t t-call="medicine_depot_scrap_batch.pharma_scrap_batch_layout_header"/>
+                        <div class="pharma-body-address-shell">
+                            <div class="pharma-doc pharma-addr-grid">
+                                <div class="row g-0">
+                                    <div class="col-6 pe-4 pharma-addr-col">
+                                        <span class="pharma-addr-label">Sucursal</span>
+                                        <div class="pharma-addr-name">
+                                            <span t-field="o.location_id"/>
+                                        </div>
+                                        <div class="pharma-addr-lines">Ubicación origen de la orden</div>
+                                    </div>
+                                    <div class="col-6 ps-4 pharma-addr-col pharma-addr-divider">
+                                        <span class="pharma-addr-label">Bajas</span>
+                                        <div class="pharma-addr-name">
+                                            <span t-field="o.scrap_location_id"/>
+                                        </div>
+                                        <div class="pharma-addr-lines">Ubicación virtual de bajas</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="pharma-body-address-shell">
+                            <div class="pharma-doc pharma-addr-grid">
+                                <div class="row g-0">
+                                    <div class="col-12 pharma-addr-col">
+                                        <span class="pharma-addr-label">Motivo de la baja</span>
+                                        <div class="pharma-addr-name">
+                                            <span class="text-muted">—</span>
+                                        </div>
+                                        <div class="pharma-addr-lines">Motivos aplicados a la orden completa</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="pharma-section-ttl">Líneas de Producto</div>
+                        <table class="table table-sm pharma-lines">
+                            <thead>
+                                <tr>
+                                    <th>Producto</th>
+                                    <th>Lote/Serie</th>
+                                    <th>Caducidad</th>
+                                    <th class="text-end">Cantidad A la mano</th>
+                                    <th>UdM</th>
+                                    <th class="text-end">Costo unitario</th>
+                                    <th class="text-end">Costo total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td class="pharma-product-cell">
+                                        <span t-field="o.product_id"/>
+                                    </td>
+                                    <td class="pharma-mono">
+                                        <span t-field="o.lot_id"/>
+                                    </td>
+                                    <td>
+                                        <span t-field="o.expiration_date"
+                                              t-options='{"widget": "date"}'/>
+                                    </td>
+                                    <td class="text-end">
+                                        <span t-field="o.scrap_qty"/>
+                                    </td>
+                                    <td>
+                                        <span t-field="o.product_uom_id"/>
+                                    </td>
+                                    <td class="text-end">
+                                        <span t-field="o.purchase_lot_cost"/>
+                                    </td>
+                                    <td class="text-end">
+                                        <span t-field="o.scrap_total_cost"/>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <div class="pharma-section-ttl">Totales</div>
+                        <div name="total" class="pharma-total-block">
+                            <table>
+                                <tbody>
+                                    <tr>
+                                        <td>Total de líneas</td>
+                                        <td class="text-end">1</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Total Cantidad A la mano</td>
+                                        <td class="text-end">
+                                            <span t-field="o.scrap_qty"/>
+                                        </td>
+                                    </tr>
+                                    <tr class="o_total_row">
+                                        <td>Estado Final</td>
+                                        <td class="text-end">
+                                            <span t-field="o.state"/>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="text-muted mt-3" style="font-size: 0.7rem;">
+                            Registro generado por
+                            <span t-esc="(o.create_uid and o.create_uid.name) or user.name"/> ·
+                            <span t-field="o.create_date" t-options='{"widget": "datetime"}'/>
+                        </div>
+
+                        <div class="pharma-signature-block" style="margin-top: 4rem; padding-top: 0.75rem;">
+                            <div class="row g-5">
+                                <div class="col-6 pharma-signature-col text-center">
+                                    <div class="pharma-signature-line"/>
+                                    <div class="pharma-signature-label">Entrega</div>
+                                </div>
+                                <div class="col-6 pharma-signature-col text-center">
+                                    <div class="pharma-signature-line"/>
+                                    <div class="pharma-signature-label">Recibe</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+</odoo>

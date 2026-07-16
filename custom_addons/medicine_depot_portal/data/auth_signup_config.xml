@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--
+        Registro libre B2C: permite que cualquier visitante cree su cuenta
+        desde /web/signup (objetivo de negocio: autoservicio de clientes).
+
+        noupdate="0" a propósito: el parámetro se reafirma en cada
+        actualización del módulo. Si el negocio decide cerrar el registro
+        libre, hay que retirar este archivo del manifest además de cambiar
+        el ajuste en la base de datos.
+    -->
+    <data noupdate="0">
+        <function model="ir.config_parameter" name="set_param">
+            <value>auth_signup.invitation_scope</value>
+            <value>b2c</value>
+        </function>
+    </data>
+</odoo>

@@ -1,0 +1,198 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <!--
+        StockScreen — Unified A la mano management screen.
+
+        Sub-tabs:
+          1. Inventario General: Código | Producto | Cód. Proveedor | A la Mano | {Mes1} | {Mes2} | {Mes3} | Acción
+          2. Por Reabastecer:    Código | Producto | A la mano | Mín | Máx | Por ordenar | Acción
+    -->
+    <t t-name="bi_pos_stock.StockScreen">
+        <div class="screen stock-screen" style="display:flex; flex-direction:column; height:100%; background:var(--md-screen-bg);">
+
+            <!-- ── Header ── -->
+            <div class="screen-header d-flex align-items-center justify-content-between px-4 py-3"
+                 style="background:linear-gradient(135deg,var(--md-dark) 0%,var(--md-ink) 58%,var(--md-blue-800) 100%); color:#fff; flex-shrink:0;">
+                <button class="btn btn-light btn-sm" t-on-click="back">
+                    <i class="fa fa-arrow-left me-1"/> Volver
+                </button>
+                <h4 class="mb-0 fw-bold">
+                    <i class="fa fa-cubes me-2"/>
+                    A la mano
+                </h4>
+                <div class="d-flex gap-2">
+                    <!-- Export Excel button -->
+                    <button class="btn btn-light btn-sm" t-on-click="exportExcel"
+                            title="Exportar tabla actual a Excel (.xlsx)"
+                            style="color:var(--md-success);">
+                        <i class="fa fa-file-excel-o me-1"/>
+                        Excel
+                    </button>
+                    <!-- Refresh button -->
+                    <button class="btn btn-light btn-sm"
+                            t-on-click="() => this._loadAll()"
+                            t-att-disabled="state.loadingInventory or state.loadingRestock ? true : undefined">
+                        <i t-att-class="(state.loadingInventory or state.loadingRestock)
+                            ? 'fa fa-spinner fa-spin' : 'fa fa-refresh'"/>
+                        Actualizar
+                    </button>
+                </div>
+            </div>
+
+            <!-- ── Sub-tab navigation (Bootstrap nav-tabs, uniform styling) ── -->
+            <ul class="nav stock-tabs" style="flex-shrink:0;">
+                <li class="nav-item flex-fill">
+                    <button type="button"
+                            t-att-class="'nav-link w-100 fw-semibold py-2 ' + (isInventoryTab ? 'active' : '')"
+                            t-on-click="() => this.switchTab('inventory')">
+                        <i class="fa fa-cubes me-1"/> Inventario General
+                    </button>
+                </li>
+                <li class="nav-item flex-fill">
+                    <button type="button"
+                            t-att-class="'nav-link w-100 fw-semibold py-2 ' + (isRestockTab ? 'active' : '')"
+                            t-on-click="() => this.switchTab('restock')">
+                        <i class="fa fa-exclamation-triangle me-1"/> Por Reabastecer
+                        <span t-if="restockCount > 0" class="badge bg-danger ms-1">
+                            <t t-esc="restockCount"/>
+                        </span>
+                    </button>
+                </li>
+            </ul>
+
+            <!-- ══════════════════════════════════════════════════════════════ -->
+            <!-- ── TAB 1: Inventario General ── -->
+            <!-- ══════════════════════════════════════════════════════════════ -->
+            <t t-if="isInventoryTab">
+
+                <!-- Subtitle -->
+                <div class="px-4 py-2 text-muted" style="flex-shrink:0; font-size:0.85rem;">
+                    Transferencias creadas desde la <strong>Matriz</strong> hacia esta sucursal.
+                    Cantidad sugerida = ventas de los últimos 3 meses calendario.
+                </div>
+
+                <!-- Loading -->
+                <div t-if="state.loadingInventory" class="d-flex align-items-center justify-content-center flex-grow-1">
+                    <div class="text-center text-muted">
+                        <i class="fa fa-spinner fa-spin fa-2x mb-3"/>
+                        <p>Cargando inventario…</p>
+                    </div>
+                </div>
+
+                <!-- Empty -->
+                <div t-elif="!state.loadingInventory and inventoryProducts.length === 0"
+                     class="d-flex align-items-center justify-content-center flex-grow-1">
+                    <div class="text-center text-muted">
+                        <i class="fa fa-check-circle fa-3x mb-3" style="color:var(--md-blue-800);"/>
+                        <p>No hay productos almacenables en este POS.</p>
+                    </div>
+                </div>
+
+                <!-- Table -->
+                <div t-else="" class="flex-grow-1 overflow-auto px-3 pb-3">
+                    <table class="table table-hover table-sm align-middle stock-export-table md-bento-table">
+                        <thead style="background:var(--md-blue-800); color:#fff; position:sticky; top:0; z-index:1;">
+                            <tr>
+                                <th style="width:9%;">Código</th>
+                                <th style="width:20%;">Producto</th>
+                                <th style="width:9%;">Línea</th>
+                                <th class="text-end" style="width:9%;">Cód. Proveedor</th>
+                                <th class="text-center" style="width:7%;">A la Mano</th>
+                                <th class="text-center" style="width:7%;"><t t-esc="monthNames[0]"/></th>
+                                <th class="text-center" style="width:7%;"><t t-esc="monthNames[1]"/></th>
+                                <th class="text-center" style="width:7%;"><t t-esc="monthNames[2]"/></th>
+                                <!-- Columnas BF: solo visibles cuando hay snapshot activo -->
+                                <t t-if="bfLabel">
+                                    <th class="text-center"
+                                        style="width:7%; background:var(--md-success); border-left:2px solid #fff;"
+                                        t-att-title="'Inventario BF al ' + bfLabel">
+                                        <div>Inv BF</div>
+                                        <div style="font-size:0.68rem; font-weight:400; opacity:0.9;">
+                                            <t t-esc="bfLabel"/>
+                                        </div>
+                                    </th>
+                                    <th class="text-center"
+                                        style="width:7%; background:var(--md-success);">
+                                        Costo BF
+                                    </th>
+                                    <th class="text-center"
+                                        style="width:7%; background:var(--md-success);">
+                                        P. Most
+                                    </th>
+                                </t>
+                                <th class="text-center no-print" style="width:11%;">Acción</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <t t-foreach="inventoryProducts" t-as="product" t-key="product.product_id">
+                                <ReplenishmentLine
+                                    product="product"
+                                    lineType="'inventory'"
+                                    bfLabel="bfLabel"
+                                    requesting="isRequestingInventory(product.product_id)"
+                                    onSolicitar="() => this.requestInventoryReplenishment(product)"
+                                />
+                            </t>
+                        </tbody>
+                    </table>
+                </div>
+            </t>
+
+            <!-- ══════════════════════════════════════════════════════════════ -->
+            <!-- ── TAB 2: Por Reabastecer ── -->
+            <!-- ══════════════════════════════════════════════════════════════ -->
+            <t t-if="isRestockTab">
+
+                <!-- Subtitle -->
+                <div class="px-4 py-2 text-muted" style="flex-shrink:0; font-size:0.85rem;">
+                    Productos con A la mano ≤ mínimo definido en reglas de reabastecimiento · ordenados por urgencia.
+                </div>
+
+                <!-- Loading -->
+                <div t-if="state.loadingRestock" class="d-flex align-items-center justify-content-center flex-grow-1">
+                    <div class="text-center text-muted">
+                        <i class="fa fa-spinner fa-spin fa-2x mb-3"/>
+                        <p>Cargando datos de reabastecimiento…</p>
+                    </div>
+                </div>
+
+                <!-- Empty -->
+                <div t-elif="!state.loadingRestock and restockProducts.length === 0"
+                     class="d-flex align-items-center justify-content-center flex-grow-1">
+                    <div class="text-center text-muted">
+                        <i class="fa fa-check-circle fa-3x mb-3" style="color:var(--md-success);"/>
+                        <p>No hay productos que requieran reabastecimiento en este momento.</p>
+                    </div>
+                </div>
+
+                <!-- Table -->
+                <div t-else="" class="flex-grow-1 overflow-auto px-3 pb-3">
+                    <table class="table table-hover table-sm align-middle stock-export-table md-bento-table">
+                        <thead style="background:var(--md-blue-700); color:#fff; position:sticky; top:0; z-index:1;">
+                            <tr>
+                                <th style="width:10%;">Código</th>
+                                <th style="width:25%;">Producto</th>
+                                <th class="text-center" style="width:11%;">A la mano</th>
+                                <th class="text-center" style="width:11%;">Mín</th>
+                                <th class="text-center" style="width:11%;">Máx</th>
+                                <th class="text-center" style="width:12%;">Por ordenar</th>
+                                <th class="text-center no-print" style="width:20%;">Acción</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <t t-foreach="restockProducts" t-as="product" t-key="product.orderpoint_id">
+                                <ReplenishmentLine
+                                    product="product"
+                                    lineType="'restock'"
+                                    requesting="isRequestingRestock(product.orderpoint_id)"
+                                    onSolicitar="() => this.requestRestockReplenishment(product)"
+                                />
+                            </t>
+                        </tbody>
+                    </table>
+                </div>
+            </t>
+
+        </div>
+    </t>
+</templates>

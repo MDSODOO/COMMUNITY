@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="res_config_settings_view_form" model="ir.ui.view">
+            <field name="name">res.config.settings.view.form.inherit.bi_pos_stock</field>
+            <field name="model">res.config.settings</field>
+            <field name="inherit_id" ref="point_of_sale.res_config_settings_view_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//block[@id='pos_interface_section']" position="after">
+
+                    <!-- ===== Configuración de A la mano en POS ===== -->
+                    <block title="Configuración de A la mano en POS" id="stock_config">
+
+                        <setting help="Activa para mostrar A la mano por sucursal en la pantalla de productos del POS.">
+                            <field name="pos_pos_display_stock"/>
+                            <label for="pos_pos_display_stock" string="Mostrar A la mano en POS"/>
+                        </setting>
+
+                        <setting invisible="not pos_pos_display_stock"
+                                 help="Elige qué cifra mostrar: conteo físico (A la mano) o A la mano después de reservas.">
+                            <label for="pos_pos_stock_type" string="Tipo de A la mano"/>
+                            <field name="pos_pos_stock_type" widget="radio"/>
+                        </setting>
+
+                        <setting invisible="not pos_pos_display_stock"
+                                 help="Si está activo, se pueden crear pedidos aunque A la mano en sucursal sea cero o negativo.">
+                            <field name="pos_pos_allow_order"/>
+                            <label for="pos_pos_allow_order" string="Permitir pedido sin A la mano"/>
+                        </setting>
+
+                        <setting invisible="not pos_pos_allow_order"
+                                 help="Bloquea el pedido si A la mano cae a esta cantidad o menos.">
+                            <label for="pos_pos_deny_order" string="Umbral mínimo de A la mano"/>
+                            <div class="text-muted">
+                                Deniega el pedido cuando A la mano en sucursal alcanza esta cantidad.
+                            </div>
+                            <field name="pos_pos_deny_order"/>
+                        </setting>
+
+                        <setting invisible="not pos_pos_display_stock">
+                            <label for="pos_stock_position" string="Posición del badge"/>
+                            <field name="pos_stock_position"/>
+                        </setting>
+
+                        <setting invisible="not pos_pos_display_stock">
+                            <span class="o_form_label">Colores del badge</span>
+                            <div class="w-50 row">
+                                <span class="d-block w-75 py-2">Color de fondo</span>
+                                <field name="pos_color_background" class="d-block w-25 p-0 m-0" widget="color"/>
+                            </div>
+                            <div class="w-50 row mt-1">
+                                <span class="d-block w-75 py-2">Color de fuente</span>
+                                <field name="pos_font_background" class="d-block w-25 p-0 m-0" widget="color"/>
+                            </div>
+                        </setting>
+
+                        <setting invisible="not pos_pos_display_stock"
+                                 help="Los productos con A la mano igual o por debajo de esta cantidad aparecerán en la lista de alerta.">
+                            <label for="pos_low_stock" string="Umbral de alerta 'A la mano'"/>
+                            <field name="pos_low_stock"/>
+                        </setting>
+
+                    </block>
+
+                    <!-- ===== Ubicación de A la mano por sucursal ===== -->
+                    <block title="Ubicación de A la mano por sucursal" id="stock_location_config">
+                        <setting help="Opcional: sobreescribe la ubicación de A la mano para este POS. Dejar vacío para usar automáticamente el almacén vinculado al tipo de operación del POS (recomendado para configuraciones multi-sucursal estándar).">
+                            <label for="pos_stock_location_id" string="Ubicación de A la mano (override)"/>
+                            <div class="text-muted">
+                                Dejar vacío para auto-detectar desde el tipo de operación del POS.
+                                Usar solo si se necesita restringir A la mano a una sub-ubicación
+                                (ej. una zona o estante específico dentro del almacén).
+                            </div>
+                            <field name="pos_stock_location_id"/>
+                        </setting>
+                        <!-- REMOVED: show_stock_location radio (All Warehouse / Current Session Warehouse).
+                             That was a frontend-only cosmetic filter with no security value.
+                             Branch scoping is now always enforced server-side via
+                             pos.config._get_branch_stock_locations(). -->
+                    </block>
+
+                </xpath>
+            </field>
+        </record>
+
+        <!--
+            Remove any legacy product form view that referenced the old quant_text field.
+            quant_text was removed from product.product in v19.0.3.x — any stale ir.ui.view
+            record that still references it causes an upgrade crash. This <delete> ensures
+            the DB is clean regardless of which prior version was installed.
+        -->
+        <delete model="ir.ui.view" search="[('model', '=', 'product.product'), ('name', '=', 'product.product.bi.pos.stock.form')]"/>
+
+    </data>
+</odoo>

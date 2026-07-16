@@ -1,0 +1,181 @@
+// Etiquetas compactas en la card de producto de POS, mismo estilo que el
+// kanban de Inventario (md_pharma_regulatory/views/product_visual_views.xml)
+// pero mas chicas dado el espacio reducido de la grilla de POS.
+//
+// El contenedor nucleo (.product-content) es "d-flex" en fila por defecto
+// (ver point_of_sale/.../product_card.xml), asi que si insertamos las
+// etiquetas como hermanas de .product-name sin mas, quedan apretadas al
+// costado en la misma fila (se ven superpuestas/encimadas). Forzamos
+// columna solo cuando el card trae nuestras etiquetas, y le quitamos el
+// aspect-ratio fijo al nombre (que si no ocupa toda la altura del card)
+// para dejarle una franja angosta a las etiquetas debajo.
+// El card en si tiene min-height: 6rem (5rem en pantallas >= lg, ver
+// point_of_sale/.../product_card.scss). Con hasta 5 etiquetas regulatorias
+// (forma/concentracion/contenido/envase/talla) mas la fila de sustancia(s)
+// activa(s) pueden necesitar hasta 3 filas en total; le damos un poco mas
+// de alto solo a los cards que traen nuestras etiquetas para que no
+// queden recortadas, y un poco mas todavia si ademas traen sustancia(s).
+.rightpane .product:has(.md-pos-product-tags):not(:has(.product-img)),
+.rightpane .product:has(.md-pos-substance-tags):not(:has(.product-img)) {
+    min-height: 7.6rem;
+}
+
+.rightpane .product:has(.md-pos-substance-tags):not(:has(.product-img)) {
+    min-height: 8.6rem;
+}
+
+@media screen and (min-width: 992px) {
+    .rightpane .product:has(.md-pos-product-tags):not(:has(.product-img)),
+    .rightpane .product:has(.md-pos-substance-tags):not(:has(.product-img)) {
+        min-height: 6.6rem;
+    }
+
+    .rightpane .product:has(.md-pos-substance-tags):not(:has(.product-img)) {
+        min-height: 7.6rem;
+    }
+}
+
+.product-content:has(.md-pos-product-tags),
+.product-content:has(.md-pos-substance-tags) {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    overflow: hidden;
+}
+
+.product-content:has(.md-pos-product-tags) .product-name,
+.product-content:has(.md-pos-substance-tags) .product-name {
+    flex: 1 1 auto;
+    min-height: 0;
+
+    &.no-image {
+        aspect-ratio: unset;
+
+        // El nombre trae "d-flex" de Bootstrap para centrarlo cuando no hay
+        // imagen (ver point_of_sale/.../product_card.xml), pero ".d-flex"
+        // usa "display: flex !important" y eso pisa el "display: -webkit-box"
+        // que necesita "-webkit-line-clamp" para funcionar. Sin esto el
+        // texto largo se corta feo a mitad de palabra, sin puntos suspensivos.
+        // Forzamos -webkit-box con !important para recuperar el truncado
+        // real; el centrado horizontal lo sigue dando ".text-center".
+        display: -webkit-box !important;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 2;
+    }
+}
+
+// El boton de info de lotes (.lot-info-btn, de otro modulo de trazabilidad
+// FEFO) se posiciona flotando en la esquina superior derecha del card y
+// tapa el nombre/las etiquetas si no le dejamos espacio. Reservamos un
+// padding a la derecha del nombre solo en los cards donde ese boton existe.
+article:has(.lot-info-btn) .product-content:has(.md-pos-product-tags) .product-name,
+article:has(.lot-info-btn) .product-content:has(.md-pos-substance-tags) .product-name {
+    padding-right: 20px;
+}
+
+// Mismo criterio para nuestro propio boton (i) de detalle regulatorio,
+// que va en la esquina superior IZQUIERDA (ver mas abajo .md-pos-reg-info-btn).
+article:has(.md-pos-reg-info-btn) .product-content:has(.md-pos-product-tags) .product-name,
+article:has(.md-pos-reg-info-btn) .product-content:has(.md-pos-substance-tags) .product-name {
+    padding-left: 18px;
+}
+
+.md-pos-product-tags {
+    flex: 0 0 auto;
+    margin-top: 2px;
+    row-gap: 2px;
+    overflow: hidden;
+    max-height: 2.3rem;
+}
+
+.md-pos-tag {
+    font-size: .5rem;
+    font-weight: 500;
+    color: #fff;
+    padding: .1rem .35rem;
+    line-height: 1.1;
+    white-space: nowrap;
+}
+
+// Fila de sustancia(s) activa(s) -- debajo de la fila de forma/concentracion/
+// etc. Color por sustancia (campo "color" de md.active.substance, via
+// tagColorStyle en color_utils.js), no un color fijo como los badges de
+// arriba: cada sustancia necesita distinguirse de las demas.
+//
+// max-height 2.3rem (no 1.4rem): con MAX_SUBSTANCE_BADGES=2 (ver
+// product_card.js) mas el chip "+N", en viewports angostos (~1024px de
+// ancho, grilla de POS en modo tablet, mas columnas -> cards mas
+// angostos) esos hasta 3 pills no siempre caben en una sola linea,
+// sobre todo con nombres largos de sustancia (ej. "ACIDO
+// ACETILSALICILICO"). Con 1.4rem (~1 linea a este font-size) la 2da
+// linea quedaba cortada a la mitad -- un pill ilegible en vez de
+// truncado limpio o oculto por completo (bug encontrado auditando en
+// viewport 1024x768: capturas branch_*_GASA.png / tablet_SELTZ.png).
+// 2.3rem (mismo valor que .md-pos-product-tags) da lugar a 2 lineas
+// completas; el card no tiene una altura fija en ningun ancestro para
+// productos CON imagen (bi_pos_stock fuerza flex-column pero sin
+// min-height para ese caso), asi que crece libremente para acomodar la
+// fila -- no hace falta tocar min-height de card, solo este limite
+// interno.
+.md-pos-substance-tags {
+    flex: 0 0 auto;
+    margin-top: 2px;
+    row-gap: 2px;
+    overflow: hidden;
+    max-height: 2.3rem;
+}
+
+.md-pos-substance-tag {
+    font-size: .5rem;
+    font-weight: 600;
+    padding: .1rem .35rem;
+    line-height: 1.1;
+    white-space: nowrap;
+    text-transform: uppercase;
+}
+
+// Chip "+N" cuando hay mas de 2 sustancias (combinaciones): color neutro,
+// no se le asigna el color de ninguna sustancia en particular.
+.md-pos-substance-more {
+    background: #6c757d;
+    color: #fff;
+}
+
+// Boton (i) de detalle regulatorio completo (popup, ver
+// regulatory_detail_popup.xml). Mismo tamano/posicion que .lot-info-btn de
+// bi_pos_stock pero en la esquina CONTRARIA (izquierda) y con relleno
+// solido en vez de blanco translucido, para que ambos botones nunca se
+// confundan ni se superpongan aunque convivan en la misma card.
+.md-pos-reg-info-btn {
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    z-index: 3;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    font-size: 10px;
+    line-height: 1;
+    border-radius: 50%;
+    background: #2C8C99;
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    color: #fff;
+    cursor: pointer;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+    transition: background .15s;
+}
+
+.md-pos-reg-info-btn:hover {
+    background: #256f79;
+}
+
+@media screen and (max-width: 768px) {
+    .md-pos-tag,
+    .md-pos-substance-tag {
+        font-size: .45rem;
+        padding: .1rem .3rem;
+    }
+}

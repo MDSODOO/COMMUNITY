@@ -1,0 +1,208 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Columnas regulatorias en la lista de productos -->
+    <record id="view_product_template_list_pharma_reg" model="ir.ui.view">
+        <field name="name">product.template.list.pharma.reg</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_tree_view"/>
+        <field name="arch" type="xml">
+            <field name="default_code" position="after">
+                <field name="product_line_id" optional="show" string="Línea"/>
+                <field name="l10n_mx_forma_farmaceutica" optional="show" string="Forma"
+                       widget="badge" decoration-info="1"/>
+                <field name="l10n_mx_concentracion" optional="show" string="Concentración"/>
+                <field name="l10n_mx_contenido_empaque" optional="show" string="Contenido"/>
+                <field name="l10n_mx_tipo_envase" optional="show" string="Envase"/>
+                <field name="l10n_mx_talla" optional="show" string="Talla"/>
+                <field name="l10n_mx_dimensiones" optional="hide" string="Dimensiones"/>
+                <field name="active_substance_ids" optional="hide" widget="many2many_tags"
+                       string="Sustancia Activa" options="{'color_field': 'color'}"/>
+            </field>
+        </field>
+    </record>
+
+    <!-- Tarjeta kanban rediseñada con la misma jerarquía visual que "Lotes - Kanban Handheld":
+         nombre + precio destacado arriba, línea/forma como fila secundaria, badge de
+         existencias con color (verde/gris), imagen como aside. -->
+    <record id="view_product_template_kanban_pharma_reg" model="ir.ui.view">
+        <field name="name">product.template.kanban.pharma.reg</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_kanban_view"/>
+        <field name="arch" type="xml">
+            <field name="product_variant_count" position="after">
+                <field name="product_line_id"/>
+                <field name="l10n_mx_forma_farmaceutica"/>
+                <field name="l10n_mx_concentracion"/>
+                <field name="l10n_mx_contenido_empaque"/>
+                <field name="l10n_mx_tipo_envase"/>
+                <field name="l10n_mx_talla"/>
+                <field name="l10n_mx_dimensiones"/>
+                <field name="active_substance_ids"/>
+                <field name="qty_available"/>
+                <field name="show_on_hand_qty_status_button"/>
+                <field name="l10n_mx_tiene_iva"/>
+                <field name="l10n_mx_iva_label"/>
+                <field name="l10n_mx_price_con_iva"/>
+            </field>
+
+            <!-- Card compacta y estilizada: menos padding, imagen chica -->
+            <xpath expr="//t[@t-name='card']" position="attributes">
+                <attribute name="class" add="o_kanban_card_pharma_reg p-2" separator=" "/>
+                <attribute name="style">min-height:170px</attribute>
+            </xpath>
+
+            <!-- Imagen reducida, en columna vertical, con tamaño FIJO (ancho y alto)
+                 para que todas las cards midan lo mismo sin importar la proporción
+                 de la foto de cada producto. -->
+            <xpath expr="//aside" position="attributes">
+                <attribute name="class" add="d-flex flex-column align-items-center gap-1" separator=" "/>
+                <attribute name="style">min-width:72px; max-width:72px;</attribute>
+            </xpath>
+            <xpath expr="//field[@name='image_128']" position="attributes">
+                <attribute name="options">{'img_class': 'object-fit-contain', 'preview_image': 'image_128'}</attribute>
+                <attribute name="style">width:72px; height:72px; display:block;</attribute>
+            </xpath>
+
+            <!-- Cantidad "A la mano" arriba de la imagen (no al costado del precio),
+                 para distribuir mejor la información y que no se vea compactada. -->
+            <xpath expr="//field[@name='image_128']" position="before">
+                <div class="d-inline-flex flex-column align-items-center px-2 py-1 rounded-2 mb-1"
+                     t-attf-class="{{record.qty_available.raw_value &gt; 0 ? 'bg-success-subtle' : 'bg-danger-subtle'}}">
+                    <div class="fw-bold lh-1" style="font-size:.8rem;"
+                         t-attf-class="{{record.qty_available.raw_value &gt; 0 ? 'text-success' : 'text-danger'}}">
+                        <field name="qty_available"/>
+                    </div>
+                    <div class="text-muted text-uppercase lh-1" style="font-size:7px;">A la mano</div>
+                </div>
+            </xpath>
+
+            <!-- La fila de precio original queda vacía: se mueve arriba en el siguiente xpath.
+                 Esto se hace ANTES de insertar el nuevo bloque para que el selector no
+                 coincida accidentalmente con el <field name="list_price"/> nuevo. -->
+            <xpath expr="//field[@name='list_price']/parent::span" position="replace">
+                <span/>
+            </xpath>
+
+            <!-- Fila superior: Precio arriba a la izquierda, estilo "Lotes - Kanban Handheld"
+                 (base + linea naranja "+ IVA X% = $total" cuando aplica). -->
+            <xpath expr="//div[hasclass('mb-1')]" position="before">
+                <div class="mb-1" style="white-space:nowrap;">
+                    <span class="fw-bold text-success" style="font-size:.95rem;">$<field name="list_price"/></span>
+                    <span t-if="record.l10n_mx_tiene_iva.raw_value" class="d-block fw-bold" style="color:#fd7e14; font-size:.75rem;">
+                        + <field name="l10n_mx_iva_label"/> = $<field name="l10n_mx_price_con_iva"/>
+                    </span>
+                </div>
+            </xpath>
+
+            <!-- Oculta el texto plano "On hand: X" del módulo stock: lo sustituimos por el
+                 chip de arriba a la derecha -->
+            <xpath expr="//div[@t-if='record.show_on_hand_qty_status_button.raw_value']" position="attributes">
+                <attribute name="t-if">0</attribute>
+            </xpath>
+
+            <!-- Línea + Forma/Concentración/Contenido con colores, en formato compacto -->
+            <span t-if="record.default_code.value" position="after">
+                <div class="d-flex flex-wrap align-items-center gap-1 mt-1" style="row-gap:.25rem;">
+                    <span t-if="record.product_line_id.value" class="badge rounded-pill"
+                          style="font-size:.65rem; font-weight:500; background:#C9784F; color:#fff;">
+                        <field name="product_line_id"/>
+                    </span>
+                    <span t-if="record.l10n_mx_forma_farmaceutica.value" class="badge rounded-pill"
+                          style="font-size:.65rem; font-weight:500; background:#2C8C99; color:#fff;">
+                        <field name="l10n_mx_forma_farmaceutica"/>
+                    </span>
+                    <span t-if="record.l10n_mx_concentracion.value" class="badge rounded-pill"
+                          style="font-size:.65rem; font-weight:500; background:#7B4B9E; color:#fff;">
+                        <field name="l10n_mx_concentracion"/>
+                    </span>
+                    <span t-if="record.l10n_mx_contenido_empaque.value" class="badge rounded-pill"
+                          style="font-size:.65rem; font-weight:500; background:#4A5C8C; color:#fff;">
+                        <field name="l10n_mx_contenido_empaque"/>
+                    </span>
+                    <span t-if="record.l10n_mx_tipo_envase.value" class="badge rounded-pill"
+                          style="font-size:.65rem; font-weight:500; background:#5C8A5C; color:#fff;">
+                        <field name="l10n_mx_tipo_envase"/>
+                    </span>
+                    <span t-if="record.l10n_mx_talla.value" class="badge rounded-pill"
+                          style="font-size:.65rem; font-weight:500; background:#B0785C; color:#fff;">
+                        <field name="l10n_mx_talla"/>
+                    </span>
+                </div>
+                <div class="mt-1" t-if="record.active_substance_ids.raw_value.length" style="font-size:.7rem;">
+                    <field name="active_substance_ids" widget="many2many_tags" options="{'color_field': 'color'}"/>
+                </div>
+                <small class="text-muted d-block" t-if="record.l10n_mx_dimensiones.value" style="font-size:.65rem;">
+                    <field name="l10n_mx_dimensiones"/>
+                </small>
+            </span>
+        </field>
+    </record>
+
+    <!-- Filtro "En existencia" para el buscador de productos, y lo activamos por
+         defecto en la acción del menú Inventario > Productos para que siempre se
+         muestren primero los productos que cuentan con existencias. -->
+    <record id="view_product_template_search_pharma_reg" model="ir.ui.view">
+        <field name="name">product.template.search.pharma.reg</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_search_view"/>
+        <field name="arch" type="xml">
+            <filter name="is_storable" position="after">
+                <filter string="En Existencia" name="filter_in_stock" domain="[('qty_available','&gt;',0)]"/>
+            </filter>
+
+            <!-- Busqueda libre: que el buscador tambien encuentre por sustancia
+                 activa, forma farmaceutica y linea/marca, no solo por nombre -->
+            <field name="product_tag_ids" position="after">
+                <field name="active_substance_ids" string="Sustancia Activa"/>
+                <field name="l10n_mx_forma_farmaceutica" string="Forma Farmacéutica"/>
+                <field name="product_line_id" string="Línea/Marca"/>
+            </field>
+
+            <!-- Filtros de flujo habitual de Inventario: encontrar huecos de
+                 informacion regulatoria (mismo criterio que ya usamos para el
+                 barrido manual de sustancias/forma/etc. durante la homologacion
+                 COFEPRIS) y separar productos controlados/con receta -->
+            <filter name="filter_in_stock" position="after">
+                <separator/>
+                <filter string="Sin Sustancia Activa" name="filter_no_substance"
+                        domain="[('active_substance_ids','=',False)]"/>
+                <filter string="Sin Forma Farmacéutica" name="filter_no_forma"
+                        domain="[('l10n_mx_forma_farmaceutica','=',False)]"/>
+                <filter string="Sin Línea/Marca" name="filter_no_line"
+                        domain="[('product_line_id','=',False)]"/>
+                <filter string="Sin Registro Sanitario" name="filter_no_registro"
+                        domain="[('l10n_mx_registro_sanitario','=',False)]"/>
+                <separator/>
+                <filter string="Requiere Receta" name="filter_requiere_receta"
+                        domain="[('l10n_mx_requiere_receta','=',True)]"/>
+                <filter string="Controlado" name="filter_controlado"
+                        domain="[('l10n_mx_controlado','=',True)]"/>
+            </filter>
+
+            <!-- Agrupar por las mismas caracteristicas que ya mostramos como
+                 etiquetas en el kanban de Inventario y en la card de POS -->
+            <filter name="group_by_categ_id" position="after">
+                <filter string="Sustancia Activa" name="group_by_substance"
+                        context="{'group_by':'active_substance_ids'}"/>
+                <filter string="Línea/Marca" name="group_by_product_line"
+                        context="{'group_by':'product_line_id'}"/>
+                <filter string="Forma Farmacéutica" name="group_by_forma"
+                        context="{'group_by':'l10n_mx_forma_farmaceutica'}"/>
+                <filter string="Tipo de Envase" name="group_by_envase"
+                        context="{'group_by':'l10n_mx_tipo_envase'}"/>
+                <filter string="Estado de Homologación" name="group_by_homologacion"
+                        context="{'group_by':'l10n_mx_homologacion_state'}"/>
+            </filter>
+        </field>
+    </record>
+
+    <record id="stock.product_template_action_product" model="ir.actions.act_window">
+        <field name="context">{"search_default_goods": 1, "search_default_filter_in_stock": 1, "default_is_storable": True}</field>
+    </record>
+
+    <!-- La ruta /odoo/inventory/products realmente resuelve a esta otra accion
+         (path="products", id 678 en la base de datos), no a la anterior. -->
+    <record id="sale.product_template_action" model="ir.actions.act_window">
+        <field name="context">{"search_default_filter_to_sell":1, "search_default_filter_in_stock": 1, "sale_multi_pricelist_product_template": 1}</field>
+    </record>
+</odoo>

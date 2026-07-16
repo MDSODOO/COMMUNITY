@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_order_form_lot_after_confirm" model="ir.ui.view">
+        <field name="name">sale.order.form.lot.after.confirm</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_order_form"/>
+        <field name="arch" type="xml">
+
+            <xpath expr="//field[@name='order_line']/list/field[@name='product_uom_qty']" position="after">
+                <!--
+                    Selección de Lote/Serie — solo lotes con stock a la mano (FEFO).
+                    No permite crear ni abrir lotes desde ventas.
+                -->
+                <field name="lot_id"
+                       invisible="product_id.tracking == 'none'"
+                       column_invisible="parent.state == 'sale'"
+                       readonly="0"
+                       options="{'no_create': True, 'no_open': True}"
+                />
+
+                <!--
+                    Fecha de Caducidad — SOLO LECTURA en ventas.
+                    El usuario puede verla pero no editarla bajo ninguna circunstancia.
+                -->
+                <field name="lot_expiration_date"
+                       string="Caduca"
+                       readonly="1"
+                       invisible="not lot_id"
+                       column_invisible="parent.state == 'sale'"
+                />
+
+                <!-- Lotes asignados al albarán de entrega (post-confirmación) -->
+                <field name="picking_lot_ids"
+                       widget="many2many_tags"
+                       column_invisible="parent.state != 'sale'"
+                       readonly="1"
+                />
+
+            </xpath>
+
+        </field>
+    </record>
+
+</odoo>

@@ -1,0 +1,118 @@
+# Spanish (Mexico) translation for medicine_depot_scrap_batch
+# Copyright (C) 2026 Medicine Depot
+# License: LGPL-3
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 19.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-06-10 00:00+0000\n"
+"PO-Revision-Date: 2026-06-10 00:00+0000\n"
+"Last-Translator: Daniel Cervera <daniel.cervera.2029@gmail.com>\n"
+"Language-Team: Spanish (Mexico) <noreply@medicinedepot.mx>\n"
+"Language: es_MX\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#. module: medicine_depot_scrap_batch
+msgid "Cantidad A la mano a dar de baja"
+msgstr "Cantidad A la mano a dar de baja"
+
+#. module: medicine_depot_scrap_batch
+msgid "A la mano"
+msgstr "A la mano"
+
+#. module: medicine_depot_scrap_batch
+msgid "Orden de Baja Múltiple"
+msgstr "Orden de Baja Múltiple"
+
+#. module: medicine_depot_scrap_batch
+msgid "Motivo de baja"
+msgstr "Motivo de baja"
+
+#. module: medicine_depot_scrap_batch
+msgid "Motivo de la baja"
+msgstr "Motivo de la baja"
+
+#. module: medicine_depot_scrap_batch
+msgid "Lote/Serie"
+msgstr "Lote/Serie"
+
+#. module: medicine_depot_scrap_batch
+msgid "Caducidad"
+msgstr "Caducidad"
+
+#. module: medicine_depot_scrap_batch
+msgid "Costo unitario"
+msgstr "Costo unitario"
+
+#. module: medicine_depot_scrap_batch
+msgid "Costo total"
+msgstr "Costo total"
+
+#. module: medicine_depot_scrap_batch
+msgid "Costo (MXN)"
+msgstr "Costo (MXN)"
+
+#. module: medicine_depot_scrap_batch
+msgid "Borrador"
+msgstr "Borrador"
+
+#. module: medicine_depot_scrap_batch
+msgid "Pendiente de Aprobación"
+msgstr "Pendiente de Aprobación"
+
+#. module: medicine_depot_scrap_batch
+msgid "Aprobado"
+msgstr "Aprobado"
+
+#. module: medicine_depot_scrap_batch
+msgid "Validado"
+msgstr "Validado"
+
+#. module: medicine_depot_scrap_batch
+msgid "Cancelado"
+msgstr "Cancelado"
+
+#. module: medicine_depot_scrap_batch
+msgid "Agrega al menos una línea antes de solicitar validación."
+msgstr "Agrega al menos una línea antes de solicitar validación."
+
+#. module: medicine_depot_scrap_batch
+msgid "La cantidad A la mano a dar de baja debe ser mayor a cero."
+msgstr "La cantidad A la mano a dar de baja debe ser mayor a cero."
+
+#. module: medicine_depot_scrap_batch
+msgid "El lote seleccionado no pertenece al producto de la línea."
+msgstr "El lote seleccionado no pertenece al producto de la línea."
+
+#. module: medicine_depot_scrap_batch
+msgid "La línea requiere un producto."
+msgstr "La línea requiere un producto."
+
+#. module: medicine_depot_scrap_batch
+msgid "Solo un Administrador de Inventario puede validar esta orden."
+msgstr "Solo un Administrador de Inventario puede validar esta orden."
+
+#. module: medicine_depot_scrap_batch
+msgid "Baja generada"
+msgstr "Baja generada"
+
+#. module: medicine_depot_scrap_batch
+msgid "Bajas generadas"
+msgstr "Bajas generadas"
+
+#. module: medicine_depot_scrap_batch
+msgid "Periodo"
+msgstr "Periodo"
+
+#. module: medicine_depot_scrap_batch
+msgid "Mes"
+msgstr "Mes"
+
+#. module: medicine_depot_scrap_batch
+msgid "Año"
+msgstr "Año"
+

@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <!-- PRECIO -->
+    <record id="view_sale_order_price_control" model="ir.ui.view">
+        <field name="name">sale.order.price.control</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_order_form"/>
+        <field name="arch" type="xml">
+
+            <xpath expr="//field[@name='order_line']/list//field[@name='price_unit']" position="after">
+                <field name="can_edit_price" column_invisible="1" invisible="1"/>
+                <field name="can_edit_tax" column_invisible="1" invisible="1"/>
+            </xpath>
+
+            <xpath expr="//field[@name='order_line']/list//field[@name='price_unit']" position="attributes">
+                <attribute name="readonly" separator="or" add="not can_edit_price"/>
+            </xpath>
+
+            <xpath expr="//field[@name='order_line']/list//field[@name='tax_ids']" position="attributes">
+                <attribute name="readonly" separator="or" add="not can_edit_tax"/>
+            </xpath>
+
+
+            <!--
+                Ocultar el botón nativo action_confirm (sin índice: funciona con
+                1 o 2 botones nativos según la versión de Odoo 19).
+                El selector [2] original lanzaba ValueError si solo existía 1 botón.
+            -->
+            <xpath expr="//header/button[@name='action_confirm']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+
+            <!--
+                Insertar botones custom anclados en action_confirm (estable).
+                El ancla //header/button[1] era frágil: el primer botón del header
+                puede cambiar entre versiones de Odoo.
+            -->
+            <xpath expr="//header/button[@name='action_confirm']" position="before">
+                <button string="Confirmar" name="action_confirm" type="object"
+                        context="{'validate_analytic': True}" class="btn-primary" data-hotkey="q"
+                        invisible="state != 'sent'"/>
+                <button string="Confirmar" name="action_confirm" type="object"
+                        context="{'validate_analytic': True}"
+                        data-hotkey="q" invisible="state != 'draft'"/>
+            </xpath>
+
+        </field>
+    </record>
+
+</odoo>

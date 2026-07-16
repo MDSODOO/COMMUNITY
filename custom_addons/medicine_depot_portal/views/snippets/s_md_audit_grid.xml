@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <template id="s_md_audit_grid" name="MD · Audit Grid">
+        <section class="s_md_audit_grid s_md_audit_grid--asymmetric o_colored_level"
+                 data-snippet="s_md_audit_grid" data-name="MD Audit Grid">
+            <article class="md-tile md-tile--surface">
+                <span class="md-chip md-chip--warning">Nuestra esencia</span>
+                <h3 class="mb-2">Servicio integral y personalizado.</h3>
+                <p>Cuidamos el bienestar de clientes y farmacias con procesos claros, atención cercana y surtido confiable.</p>
+            </article>
+            <article class="md-tile md-tile--surface">
+                <span class="md-chip md-chip--warning">Valor diferencial</span>
+                <h3 class="mb-2">Acompañamiento normativo.</h3>
+                <p>MedicD organiza trámites, PNOs y capacitación para ayudar a operar farmacias con mayor seguridad.</p>
+            </article>
+            <article class="md-tile md-tile--surface">
+                <span class="md-chip md-chip--warning">Lo que buscamos</span>
+                <h3 class="mb-2">Aliados de confianza.</h3>
+                <p>Mejorar la experiencia en sucursal, crear promociones atractivas y cumplir siempre con la norma.</p>
+            </article>
+        </section>
+    </template>
+
+    <record id="s_md_audit_grid_snippet" model="ir.ui.view">
+        <field name="name">MD · Audit Grid (registro snippet)</field>
+        <field name="type">qweb</field>
+        <field name="mode">extension</field>
+        <field name="inherit_id" ref="website.snippets"/>
+        <field name="arch" type="xml">
+            <xpath expr="//snippets[@id='snippet_structure']" position="inside">
+                <t t-snippet="medicine_depot_portal.s_md_audit_grid"
+                   t-thumbnail="/medicine_depot_portal/static/img/snippets/s_md_audit_grid.svg"/>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

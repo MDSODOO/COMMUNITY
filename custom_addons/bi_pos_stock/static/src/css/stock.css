@@ -1,0 +1,415 @@
+/* ── Product card quantity badges ─────────────────────────────────────────── */
+/* Shared props — all 4 badge positions inherit these */
+.qty-left-label,
+.qty-image-label,
+.qty-tright-label,
+.qty-bright-label {
+    position: absolute;
+    font-size: 0.68rem;
+    font-weight: 700;
+    border-radius: 5px;
+    background-color: var(--md-success);
+    color: #ffffff;
+    min-width: 20px;
+    height: auto;
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    line-height: 1;
+    padding: 2px 6px;
+    z-index: 1;
+}
+
+/* Positional anchors */
+.qty-left-label   { top: 5px;    left: 5px;  }
+.qty-image-label  { top: 25px;   left: 5px;  }
+.qty-tright-label { top: 5px;    right: 5px; }
+.qty-bright-label { bottom: 5px; right: 5px; }
+
+.out-of-stock-qty {
+    background-color: var(--md-danger) !important;
+}
+
+
+/* ── Lot expiry badge (ProductCard bottom-left) ─────────────────────────── */
+.lot-expiry-label {
+    position: absolute;
+    bottom: 5px;
+    left: 5px;
+    font-size: 10px;
+    border-radius: 4px;
+    min-width: 16px;
+    height: auto;
+    line-height: 1.2;
+    padding: 2px 5px;
+    z-index: 2;
+    pointer-events: none;
+    max-width: 90px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* ── Lot info button (ProductCard top-right) ─────────────────────────────── */
+.lot-info-btn {
+    position: absolute;
+    top: 3px;
+    right: 3px;
+    z-index: 3;
+    width: 22px;
+    height: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    font-size: 11px;
+    line-height: 1;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.88);
+    border: 1px solid rgba(0, 0, 0, 0.12);
+    color: var(--md-dark);
+    cursor: pointer;
+    transition: background 0.15s, box-shadow 0.15s, color 0.15s;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.90), 0 1px 3px rgba(0,0,0,0.12);
+}
+.lot-info-btn:hover {
+    background: rgba(255, 255, 255, 1);
+    color: var(--md-blue-800);
+    border-color: var(--md-blue-300);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.90), 0 2px 6px rgba(11,94,122,0.20);
+}
+
+/* ── FEFO guide card (SelectLotPopup) ────────────────────────────────────── */
+.fefo-guide {
+    border-radius: 10px;
+    background: rgba(231, 247, 251, 0.70);
+    border: 1px solid rgba(11, 94, 122, 0.10);
+    padding: 10px 12px;
+}
+.fefo-table-wrapper {
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+/* ── LotDetailPopup — highlight first FEFO row ───────────────────────────── */
+.fefo-first-row {
+    background-color: var(--md-fefo-first) !important;
+    border-left: 3px solid var(--md-fefo-border);
+}
+
+/* ══════════════════════════════════════════════════════════════════════════ */
+/* ── Bento table card ────────────────────────────────────────────────────── */
+/* ══════════════════════════════════════════════════════════════════════════ */
+
+.md-bento-table {
+    background: var(--md-bento-bg);
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow:
+        0 2px 12px rgba(7, 58, 76, 0.08),
+        0 1px 3px rgba(7, 58, 76, 0.04);
+    margin-top: 1rem;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════ */
+/* ── StockScreen — table typography & spacing ────────────────────────────── */
+/* ══════════════════════════════════════════════════════════════════════════ */
+
+.stock-screen .stock-export-table th {
+    font-size: 0.78rem;
+    padding: 7px 8px;
+    white-space: nowrap;
+}
+
+.stock-screen .stock-export-table td {
+    font-size: 0.82rem;
+    padding: 6px 8px;
+    vertical-align: middle;
+    line-height: 1.4;
+}
+
+.stock-screen .stock-export-table .badge {
+    font-size: 0.72rem;
+    padding: 3px 7px;
+    min-width: 32px;
+    font-weight: 600;
+    line-height: 1.3;
+}
+
+.stock-screen .stock-export-table td:nth-child(2) {
+    font-weight: 500;
+}
+
+/* Barcode column — monospace, muted */
+.stock-screen .stock-export-table td:first-child {
+    font-family: 'SF Mono', 'Consolas', 'Monaco', monospace;
+    font-size: 0.78rem;
+    color: var(--md-text-muted);
+    letter-spacing: 0.3px;
+}
+
+.stock-screen .stock-export-table .btn-sm {
+    font-size: 0.75rem;
+    padding: 4px 10px;
+    min-width: 100px;
+}
+
+/* Zebra striping */
+.stock-screen .stock-export-table tbody tr:nth-child(even) {
+    background-color: var(--md-table-even-bg);
+}
+.stock-screen .stock-export-table tbody tr:hover {
+    background-color: var(--md-blue-100);
+}
+
+/* ── StockScreen — pill-style sub-tab navigation ─────────────────────────── */
+.stock-screen .stock-tabs {
+    border-bottom: none;
+    background: var(--md-blue-100);
+    padding: 6px 12px;
+    gap: 6px;
+    display: flex;
+}
+.stock-screen .stock-tabs .nav-item {
+    flex: 1;
+}
+.stock-screen .stock-tabs .nav-link {
+    color: var(--md-blue-800);
+    background: transparent;
+    border: 0;
+    border-radius: 999px;
+    font-size: 0.88rem;
+    font-weight: 600;
+    padding: 8px 16px;
+    width: 100%;
+    text-align: center;
+    transition: background 0.18s ease, color 0.18s ease, box-shadow 0.18s ease, transform 0.15s ease;
+}
+.stock-screen .stock-tabs .nav-link:hover {
+    background: rgba(11, 94, 122, 0.10);
+    color: var(--md-blue-800);
+    transform: translateY(-1px);
+}
+.stock-screen .stock-tabs .nav-link.active {
+    color: #fff;
+    background: var(--md-blue-800);
+    box-shadow: 0 3px 10px rgba(11, 94, 122, 0.30);
+}
+
+/* ══════════════════════════════════════════════════════════════════════════ */
+/* ── Order Widget — bento mini stat tiles ────────────────────────────────── */
+/* ══════════════════════════════════════════════════════════════════════════ */
+
+.md-order-stats {
+    display: flex;
+    gap: 8px;
+    padding: 8px 12px 12px;
+}
+.md-order-stat {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(11, 94, 122, 0.05);
+    border: 1px solid rgba(11, 94, 122, 0.10);
+    border-radius: 10px;
+    padding: 7px 10px;
+}
+.md-order-stat__icon {
+    color: var(--md-blue-800);
+    font-size: 0.95rem;
+    flex-shrink: 0;
+    width: 26px;
+    height: 26px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(11, 94, 122, 0.10);
+    border-radius: 7px;
+}
+.md-order-stat__label {
+    display: block;
+    font-size: 0.65rem;
+    font-weight: 700;
+    color: var(--md-blue-700);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    line-height: 1.2;
+}
+.md-order-stat__value {
+    display: block;
+    font-size: 1rem;
+    font-weight: 900;
+    color: var(--md-blue-800);
+    line-height: 1.1;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════ */
+/* ── POS Modals — Liquid Glass ───────────────────────────────────────────── */
+/* Aplica el mismo lenguaje visual del portal (login, wizard) a los dialogs  */
+/* del POS. Usa valores fijos porque el POS no carga los tokens SCSS del     */
+/* portal; las variables CSS de pos_custom_layout.scss sí están disponibles. */
+/* ══════════════════════════════════════════════════════════════════════════ */
+
+.pos .modal-content {
+    backdrop-filter: blur(18px) saturate(1.42);
+    -webkit-backdrop-filter: blur(18px) saturate(1.42);
+    background: var(--md-modal-bg);
+    border: 1px solid var(--md-modal-border);
+    border-radius: 1.25rem;
+    box-shadow:
+        0 0 0 1px rgba(7, 58, 76, 0.04),
+        0 24px 60px rgba(7, 58, 76, 0.12),
+        0 6px 18px rgba(7, 58, 76, 0.05),
+        inset 0 1px 0 rgba(255, 255, 255, 0.90);
+}
+
+/* Fallback para navegadores sin backdrop-filter (Chromium < 76, Firefox sin flags) */
+@supports not (backdrop-filter: blur(1px)) {
+    .pos .modal-content {
+        background: rgba(255, 255, 255, 0.97);
+    }
+}
+
+/* ══════════════════════════════════════════════════════════════════════════ */
+/* ── DARK MODE ───────────────────────────────────────────────────────────── */
+/* Solo afecta pantallas full-screen y modales — NO tarjetas de producto.    */
+/* Variables controladas en pos_custom_layout.scss (@media prefers-dark).    */
+/* El rightpane del POS (siempre rgb(244,244,244)) nunca se oscurece.        */
+/* ══════════════════════════════════════════════════════════════════════════ */
+
+@media (prefers-color-scheme: dark) {
+    /* ── Rightpane — override Odoo hardcoded light gray ─────────────────────── */
+    /* Odoo fuerza rgb(244,244,244) con alta especificidad; !important lo vence. */
+    .pos .rightpane {
+        background: #0f172a !important;
+    }
+    /* Product list area (grid wrapper transparente — hereda rightpane) */
+    .pos .product-list {
+        background: transparent !important;
+    }
+
+    /* ── Tarjetas de producto ────────────────────────────────────────────────── */
+    /* --md-pos-card-bg cambia a #1e293b via variable (pos_custom_layout.scss). */
+    /* Texto de la tarjeta hereda body (#111827) — necesita override explícito.  */
+    .pos .rightpane .product-name {
+        color: #e2e8f0 !important;
+    }
+    /* Precio y texto secundario dentro de la tarjeta */
+    .pos .rightpane .product .price,
+    .pos .rightpane .product-price {
+        color: #94a3b8 !important;
+    }
+
+    /* ── Lot info button (ⓘ) sobre tarjeta oscura ───────────────────────────── */
+    .lot-info-btn {
+        background: rgba(255, 255, 255, 0.10) !important;
+        border-color: rgba(255, 255, 255, 0.18) !important;
+        color: #e2e8f0 !important;
+        box-shadow: none !important;
+    }
+    .lot-info-btn:hover {
+        background: rgba(255, 255, 255, 0.18) !important;
+        color: #59cbe8 !important;
+        border-color: rgba(89, 203, 232, 0.35) !important;
+        box-shadow: 0 2px 6px rgba(89, 203, 232, 0.18) !important;
+    }
+
+    /* ── Bento table — stock screen ─────────────────────────────────────────── */
+    /* .md-bento-bg ya va a #1e293b via variable; ajustamos sombra para dark.   */
+    .md-bento-table {
+        box-shadow:
+            0 2px 12px rgba(0, 0, 0, 0.40),
+            0 1px 3px  rgba(0, 0, 0, 0.30);
+    }
+
+    /* ── Screens full-screen — color base para texto heredado ─────────────────── */
+    /* El body.pos tiene color #111827 (oscuro). Las pantallas full-screen        */
+    /* sobre fondo #0f172a necesitan sobreescribir el color base para que todo   */
+    /* el texto no heredado explícitamente sea legible.                          */
+    .stock-screen,
+    .ecommerce-orders-screen {
+        color: #e2e8f0;
+    }
+    /* .text-muted Bootstrap usa rgba(55,65,81,0.76) — ilegible sobre oscuro.    */
+    .stock-screen .text-muted,
+    .ecommerce-orders-screen .text-muted {
+        color: #94a3b8 !important;
+    }
+
+    /* ── StockScreen — text colors ──────────────────────────────────────────── */
+    .stock-screen .stock-export-table td {
+        color: #cbd5e1;
+        border-color: rgba(255, 255, 255, 0.08);
+    }
+
+    /* ── StockScreen — tabs in dark ─────────────────────────────────────────── */
+    .stock-screen .stock-tabs {
+        background: rgba(255, 255, 255, 0.05);
+    }
+    .stock-screen .stock-tabs .nav-link {
+        color: #94a3b8;
+    }
+    .stock-screen .stock-tabs .nav-link:hover {
+        background: rgba(255, 255, 255, 0.08);
+        color: #e2e8f0;
+    }
+
+    /* ── FEFO guide card (SelectLotPopup) ───────────────────────────────────── */
+    .fefo-guide {
+        background: rgba(15, 23, 42, 0.85);
+        border-color: rgba(255, 255, 255, 0.10) !important;
+    }
+    .fefo-table-wrapper {
+        border-color: rgba(255, 255, 255, 0.10) !important;
+    }
+    .fefo-guide .table td,
+    .fefo-guide .table th {
+        color: #cbd5e1;
+        border-color: rgba(255, 255, 255, 0.08);
+    }
+    /* Bootstrap .table-light thead → dark equivalent */
+    .fefo-guide thead.table-light,
+    .fefo-guide thead.table-light th {
+        background-color: rgba(255, 255, 255, 0.06) !important;
+        color: #94a3b8 !important;
+    }
+    /* First FEFO row highlight in dark */
+    .fefo-guide .table-active {
+        background: rgba(245, 159, 0, 0.15) !important;
+        color: #fde68a;
+    }
+
+    /* ── POS Modals (LotDetailPopup, SelectLotPopup, etc.) ──────────────────── */
+    /* Color base claro para todo el contenido del modal dark.                   */
+    .pos .modal-content {
+        color: #e2e8f0;
+    }
+    .pos .modal-header {
+        border-bottom-color: rgba(255, 255, 255, 0.10);
+        color: #e2e8f0;
+    }
+    .pos .modal-title {
+        color: #f1f5f9;
+    }
+    .pos .modal-footer {
+        border-top-color: rgba(255, 255, 255, 0.10);
+    }
+    .pos .modal-content .table td {
+        color: #cbd5e1;
+        border-color: rgba(255, 255, 255, 0.08);
+    }
+    .pos .modal-content .table tbody tr:nth-child(even) {
+        background-color: rgba(255, 255, 255, 0.04);
+    }
+    .pos .modal-content .table tbody tr:hover {
+        background-color: rgba(255, 255, 255, 0.07);
+    }
+    .pos .modal-content .text-muted {
+        color: #94a3b8 !important;
+    }
+    /* fefo-first-row inside modal dark */
+    .pos .modal-content .fefo-first-row {
+        background-color: rgba(245, 159, 0, 0.15) !important;
+    }
+}

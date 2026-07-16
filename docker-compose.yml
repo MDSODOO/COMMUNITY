@@ -1,0 +1,56 @@
+name: medicinedepot_dev
+
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: medicinedepot_dev_db
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-medicinedepot_dev}
+      POSTGRES_USER: ${POSTGRES_USER:-odoo}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - medicinedepot_dev_db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-odoo} -d ${POSTGRES_DB:-medicinedepot_dev}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    restart: unless-stopped
+    command: >
+      postgres
+      -c shared_buffers=2GB
+      -c effective_cache_size=4GB
+      -c work_mem=32MB
+      -c maintenance_work_mem=256MB
+
+  odoo:
+    image: odoo:19.0
+    container_name: medicinedepot_dev_odoo
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "${ODOO_PORT:-8069}:8069"
+    environment:
+      HOST: db
+      PORT: 5432
+      USER: ${POSTGRES_USER:-odoo}
+      PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - medicinedepot_dev_odoo_data:/var/lib/odoo
+      - ./custom_addons:/mnt/extra-addons
+      - ./oca_addons/account-financial-tools:/mnt/oca-account-financial-tools
+      - ./oca_addons/account-reconcile:/mnt/oca-account-reconcile
+      - ./oca_addons/account-financial-reporting:/mnt/oca-account-financial-reporting
+      - ./oca_addons/reporting-engine:/mnt/oca-reporting-engine
+      - ./oca_addons/server-ux:/mnt/oca-server-ux
+      - ./config/odoo.conf:/etc/odoo/odoo.conf
+    command: >
+      odoo
+      --addons-path=/usr/lib/python3/dist-packages/odoo/addons,/mnt/extra-addons,/mnt/oca-account-financial-tools,/mnt/oca-account-reconcile,/mnt/oca-account-financial-reporting,/mnt/oca-reporting-engine,/mnt/oca-server-ux
+      --log-level=info
+    restart: unless-stopped
+
+volumes:
+  medicinedepot_dev_db_data:
+  medicinedepot_dev_odoo_data:

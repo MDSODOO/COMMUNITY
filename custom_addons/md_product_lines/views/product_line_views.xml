@@ -1,0 +1,60 @@
+<odoo>
+    <record id="view_md_product_line_list" model="ir.ui.view">
+        <field name="name">md.product.line.list</field>
+        <field name="model">md.product.line</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="name"/>
+                <field name="parent_line_id" string="Línea Principal" optional="show"/>
+                <field name="sublinea_count" string="Sublíneas" optional="hide"/>
+                <field name="product_count"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_md_product_line_form" model="ir.ui.view">
+        <field name="name">md.product.line.form</field>
+        <field name="model">md.product.line</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="%(product.product_template_action)d" type="action"
+                                class="oe_stat_button" icon="fa-cubes">
+                            <field name="product_count" widget="statinfo" string="Productos"/>
+                        </button>
+                    </div>
+                    <group>
+                        <field name="name"/>
+                        <field name="active"/>
+                        <field name="parent_line_id"
+                               help="Si esta línea es en realidad una sublínea de un distribuidor/marca más amplia (ej. 'SENSIMEDICAL' bajo 'JAYOR'), indícalo aquí para mantener el nombre corto en los productos."/>
+                        <field name="legacy_ref" readonly="1"/>
+                    </group>
+                    <notebook>
+                        <page name="sublineas" string="Sublíneas" invisible="not sublinea_ids">
+                            <field name="sublinea_ids">
+                                <list editable="bottom">
+                                    <field name="name"/>
+                                    <field name="product_count"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_md_product_line" model="ir.actions.act_window">
+        <field name="name">Líneas de Producto</field>
+        <field name="res_model">md.product.line</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <menuitem id="menu_md_product_line"
+              name="Líneas de Producto"
+              action="action_md_product_line"
+              parent="stock.menu_stock_config_settings"
+              sequence="60"/>
+</odoo>

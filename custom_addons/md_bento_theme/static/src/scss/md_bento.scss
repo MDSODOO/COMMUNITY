@@ -1,0 +1,414 @@
+// ── Banner Promocional ────────────────────────────────────────────────────────
+// Sigue el lenguaje bento: overflow+border-radius, box-shadow de elevación,
+// fade-out adaptable al fondo de la página.
+// NOTA: se evitan múltiples unquote() en shorthand y min() — causan errores
+// de compilación en el entorno de Odoo.sh (Dart Sass 1.x).
+.md-bento-promo-banner {
+  border-radius: 0 0 2rem 2rem;
+  box-shadow:
+    0 12px 40px rgba(7, 58, 76, 0.14),
+    0 3px 10px rgba(7, 58, 76, 0.07);
+  display: block;
+  line-height: 0;
+  overflow: hidden;
+  position: relative;
+}
+
+.md-bento-promo-banner a {
+  display: block;
+  line-height: 0;
+}
+
+.md-bento-promo-banner img {
+  display: block;
+  // Escala fluida: min 280px (mobile), ideal 33vw, máx 650px (4K)
+  max-height: unquote("clamp(280px, 33vw, 650px)");
+  object-fit: cover;
+  object-position: center 22%;
+  transition: transform .55s cubic-bezier(0.25, 0.8, 0.25, 1);
+  width: 100%;
+}
+
+.md-bento-promo-banner a:hover img {
+  transform: scale(1.015);
+}
+
+// Fade-out inferior que usa el custom property de Bootstrap para body-bg
+.md-bento-promo-banner::after {
+  background: linear-gradient(to bottom, transparent 45%, var(--bs-body-bg, #E7F7FB) 100%);
+  bottom: 0;
+  content: "";
+  height: unquote("clamp(3rem, 5vw, 5.5rem)");
+  left: 0;
+  pointer-events: none;
+  position: absolute;
+  right: 0;
+}
+
+// ── Responsive ────────────────────────────────────────────────────────────────
+@media (min-width: 768px) and (max-width: 991.98px) {
+  .md-bento-promo-banner img {
+    max-height: 340px;
+    object-position: center 20%;
+  }
+}
+
+@media (max-width: 767.98px) {
+  .md-bento-promo-banner {
+    border-radius: 0 0 1.5rem 1.5rem;
+  }
+
+  .md-bento-promo-banner img {
+    max-height: 240px;
+    object-position: center 15%;
+  }
+
+  .md-bento-promo-banner::after {
+    height: 2.75rem;
+  }
+}
+
+// ── Dark mode ─────────────────────────────────────────────────────────────────
+// .o_dark_mode/[data-bs-theme] son selectores de backend, nunca presentes en
+// el frontend — ver docs/audits/2026-07-01_backend_dark_mode_audit.md.
+body[data-color-scheme="dark"] .md-bento-promo-banner::after {
+  background: linear-gradient(to bottom, transparent 45%, var(--bs-body-bg, #071c22) 100%);
+}
+
+body[data-color-scheme="dark"] .md-bento-promo-banner {
+  box-shadow:
+    0 12px 40px rgba(0, 0, 0, 0.35),
+    0 3px 10px rgba(0, 0, 0, 0.18);
+}
+
+.md-bento-promo-banner + .md-bento-hero {
+  padding-top: .5rem;
+}
+
+.md-bento-hero {
+  min-height: unquote("clamp(28rem, 60vh, 40rem)");
+  padding-top: unquote("clamp(1rem, 2vw, 1.75rem)");
+  position: relative;
+}
+
+.md-bento-hero::before {
+  background:
+    linear-gradient(120deg, rgba($md-blue, .16), transparent 36%),
+    linear-gradient(320deg, rgba($md-green-600, .18), transparent 42%);
+  border-radius: 999px;
+  content: "";
+  filter: blur(10px);
+  inset: 4rem unquote("clamp(1rem, 8vw, 8rem)") auto auto;
+  min-height: 18rem;
+  pointer-events: none;
+  position: absolute;
+  width: unquote("min(44vw, 38rem)");
+}
+
+.md-hero-card,
+.md-hero-aside {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 22rem;
+  overflow: hidden;
+  padding: unquote("clamp(1.75rem, 3.5vw, 3.5rem)");
+  position: relative;
+}
+
+.md-hero-card h1 {
+  font-size: unquote("clamp(2.5rem, 6vw, 5rem)");
+  font-weight: 700;
+  letter-spacing: -.04em;
+  line-height: 1.05;
+  margin: .9rem 0 1.25rem;
+  max-width: 11ch;
+}
+
+.md-hero-lead {
+  font-size: unquote("clamp(1.05rem, 2vw, 1.35rem)");
+  max-width: 46rem;
+}
+
+.md-hero-aside h2 {
+  font-size: unquote("clamp(1.5rem, 3.2vw, 2.8rem)");
+  font-weight: 700;
+  letter-spacing: -.035em;
+  line-height: 1.05;
+  margin: 2rem 0 1rem;
+  max-width: 12ch;
+}
+
+.md-orb {
+  border-radius: 999px;
+  filter: blur(1px);
+  opacity: .75;
+  position: absolute;
+}
+
+.md-orb-blue {
+  background: linear-gradient(135deg, var(--md-blue), transparent);
+  height: 13rem;
+  right: -3rem;
+  top: -3rem;
+  width: 13rem;
+}
+
+.md-orb-green {
+  background: linear-gradient(135deg, var(--md-green), var(--md-lime));
+  bottom: -4rem;
+  height: 10rem;
+  left: 2rem;
+  width: 10rem;
+}
+
+.md-metrics-strip {
+  overflow: hidden;
+  padding: unquote("clamp(1rem, 3vw, 1.75rem)");
+  position: relative;
+}
+
+.md-metrics-strip::before {
+  background: linear-gradient(90deg, transparent, var(--md-blue) 20%, var(--md-green) 80%, transparent);
+  border-radius: 999px;
+  content: "";
+  height: 2px;
+  left: 8%;
+  position: absolute;
+  right: 8%;
+  top: 0;
+}
+
+.md-metrics-strip strong,
+.md-metrics-strip span {
+  display: block;
+}
+
+.md-metrics-strip strong {
+  color: var(--md-text);
+  font-size: unquote("clamp(1.1rem, 2vw, 1.55rem)");
+}
+
+.md-metrics-strip span {
+  color: var(--md-muted);
+  margin-top: .25rem;
+}
+
+.md-service-bento-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.md-service-tile {
+  color: var(--md-text);
+  display: flex;
+  flex-direction: column;
+  min-height: 12rem;
+  padding: unquote("clamp(1.25rem, 2vw, 1.75rem)");
+  position: relative;
+  text-decoration: none;
+  transition: border-color .2s ease, box-shadow .2s ease, transform .2s ease;
+}
+
+.md-service-tile:hover {
+  border-color: color-mix(in srgb, var(--md-blue), var(--md-line) 40%);
+  box-shadow: var(--md-shadow-strong);
+  color: var(--md-text);
+  transform: translateY(-4px);
+}
+
+.md-service-tile span {
+  color: var(--md-green);
+  font-weight: 800;
+  letter-spacing: .12em;
+}
+
+.md-service-tile h3 {
+  font-size: unquote("clamp(1.2rem, 2.1vw, 1.75rem)");
+  font-weight: 700;
+  letter-spacing: -.025em;
+  margin: auto 0 .75rem;
+}
+
+.md-service-tile p {
+  margin-bottom: 0;
+}
+
+.md-service-tile-large {
+  background:
+    linear-gradient(165deg, rgba(22, 166, 217, 0.22), rgba(22, 166, 217, 0.07) 55%, rgba(255, 255, 255, 0.3)),
+    rgba(255, 255, 255, 0.65) !important;
+  border-color: rgba(22, 166, 217, 0.38) !important;
+  grid-column: span 2;
+  grid-row: span 2;
+  min-height: 24rem;
+}
+
+.md-service-tile-large::after {
+  bottom: unquote("clamp(1.35rem, 2.5vw, 2rem)");
+  color: var(--md-blue);
+  content: "→";
+  font-size: 1.6rem;
+  opacity: .45;
+  position: absolute;
+  right: unquote("clamp(1.35rem, 2.5vw, 2rem)");
+  transition: opacity .2s ease, transform .2s ease;
+}
+
+.md-service-tile-large:hover::after {
+  opacity: .85;
+  transform: translateX(4px);
+}
+
+.md-commercial-section {
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--md-blue), transparent 90%), transparent),
+    color-mix(in srgb, var(--md-card), transparent 20%);
+}
+
+.md-logo-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.md-logo-tile {
+  align-items: center;
+  aspect-ratio: 2.6 / 1;
+  background: color-mix(in srgb, var(--md-card), white 16%);
+  border: 1px solid var(--md-line);
+  border-radius: 1.25rem;
+  color: var(--md-muted);
+  display: flex;
+  font-weight: 900;
+  justify-content: center;
+  letter-spacing: .16em;
+}
+
+.md-editorial-card {
+  display: flex;
+  flex-direction: column;
+  min-height: 17rem;
+  overflow: hidden;
+  padding: unquote("clamp(1.5rem, 2.5vw, 2.25rem)");
+  position: relative;
+}
+
+.md-editorial-card::before {
+  border-radius: 1.5rem 1.5rem 0 0;
+  content: "";
+  height: 3px;
+  left: 0;
+  position: absolute;
+  right: 0;
+  top: 0;
+}
+
+.md-editorial-card:nth-child(odd)::before {
+  background: linear-gradient(90deg, var(--md-lime), var(--md-green));
+}
+
+.md-editorial-card:nth-child(even)::before {
+  background: linear-gradient(90deg, var(--md-blue), color-mix(in srgb, var(--md-blue), var(--md-green) 55%));
+}
+
+.md-editorial-card > span {
+  color: var(--md-green);
+  font-size: .8rem;
+  font-weight: 800;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+}
+
+.md-editorial-card h3 {
+  font-size: unquote("clamp(1.75rem, 3.2vw, 3rem)");
+  font-weight: 700;
+  letter-spacing: -.035em;
+  line-height: 1.05;
+  margin: auto 0 1rem;
+}
+
+.md-final-cta-section {
+  background:
+    radial-gradient(38rem 22rem at 15% 50%, rgba(22, 166, 217, 0.07), transparent 70%),
+    radial-gradient(32rem 20rem at 85% 50%, rgba(151, 215, 0, 0.07), transparent 70%);
+}
+
+.md-final-cta {
+  align-items: center;
+  display: flex;
+  gap: 2rem;
+  justify-content: space-between;
+  padding: unquote("clamp(1.5rem, 3vw, 2.5rem)");
+}
+
+.md-final-cta h2 {
+  font-size: unquote("clamp(1.75rem, 3.5vw, 3.5rem)");
+  font-weight: 700;
+  letter-spacing: -.035em;
+  line-height: 1.05;
+  margin: .75rem 0 1rem;
+  max-width: 13ch;
+}
+
+.md-bento-section--services {
+  background:
+    radial-gradient(48rem 30rem at 100% 0%, rgba(22, 166, 217, 0.06), transparent 65%),
+    radial-gradient(36rem 24rem at 0% 100%, rgba(151, 215, 0, 0.05), transparent 65%);
+}
+
+.md-bento-section--editorial {
+  background:
+    radial-gradient(42rem 26rem at 0% 30%, rgba(151, 215, 0, 0.06), transparent 65%),
+    radial-gradient(32rem 20rem at 100% 70%, rgba(22, 166, 217, 0.05), transparent 65%);
+}
+
+.md-bento .md-reveal {
+  opacity: 0;
+  transform: translateY(18px);
+  transition: opacity .45s ease, transform .45s ease;
+}
+
+.md-bento .md-reveal.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+@media (max-width: 991.98px) {
+  .md-service-bento-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .md-service-tile-large {
+    grid-column: span 2;
+    min-height: 24rem;
+  }
+
+  .md-final-cta {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 575.98px) {
+  .md-bento-hero {
+    min-height: auto;
+  }
+
+  .md-hero-card,
+  .md-hero-aside {
+    min-height: 22rem;
+    padding: 1.5rem;
+  }
+
+  .md-service-bento-grid,
+  .md-logo-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .md-service-tile-large {
+    grid-column: auto;
+    min-height: 18rem;
+  }
+}

@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_md_regulatory_review_list" model="ir.ui.view">
+        <field name="name">md.regulatory.review.list</field>
+        <field name="model">md.regulatory.review</field>
+        <field name="arch" type="xml">
+            <list string="Revisión regulatoria (PLM)" decoration-muted="state == 'rejected'" decoration-success="state == 'approved'">
+                <field name="product_id"/>
+                <field name="search_term"/>
+                <field name="candidate_label"/>
+                <field name="match_confidence"/>
+                <field name="state"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_md_regulatory_review_form" model="ir.ui.view">
+        <field name="name">md.regulatory.review.form</field>
+        <field name="model">md.regulatory.review</field>
+        <field name="arch" type="xml">
+            <form string="Revisión regulatoria (PLM)">
+                <header>
+                    <button name="action_approve" type="object" string="Aprobar y aplicar al producto"
+                            class="oe_highlight" invisible="state != 'pending'"/>
+                    <button name="action_reject" type="object" string="Rechazar" invisible="state != 'pending'"/>
+                    <button name="action_reset_pending" type="object" string="Regresar a pendiente" invisible="state == 'pending'"/>
+                    <field name="state" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group string="Producto y búsqueda">
+                            <field name="product_id"/>
+                            <field name="search_term"/>
+                            <field name="plm_search_url" widget="url"/>
+                        </group>
+                        <group string="Candidato encontrado en PLM (automático, sin confirmar)">
+                            <field name="match_confidence"/>
+                            <field name="candidate_label"/>
+                            <field name="candidate_pharma_form"/>
+                            <field name="candidate_product_type"/>
+                            <field name="candidate_description"/>
+                        </group>
+                    </group>
+                    <group string="Valores a aplicar (llenar tras verificar manualmente en PLM/COFEPRIS)">
+                        <field name="proposed_substance_name"/>
+                        <field name="proposed_concentracion"/>
+                        <field name="proposed_forma_farmaceutica"/>
+                        <field name="proposed_laboratorio"/>
+                        <field name="proposed_registro_sanitario"/>
+                    </group>
+                    <group string="Notas">
+                        <field name="reviewer_notes" nolabel="1"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_md_regulatory_review_search" model="ir.ui.view">
+        <field name="name">md.regulatory.review.search</field>
+        <field name="model">md.regulatory.review</field>
+        <field name="arch" type="xml">
+            <search string="Buscar revisiones">
+                <field name="product_id"/>
+                <field name="candidate_label"/>
+                <filter string="Pendientes" name="pending" domain="[('state','=','pending')]"/>
+                <filter string="Confianza alta" name="high_conf" domain="[('match_confidence','=','high')]"/>
+                <filter string="Confianza baja / ambiguo" name="low_conf" domain="[('match_confidence','=','low')]"/>
+                <separator/>
+                <filter string="Aprobados" name="approved" domain="[('state','=','approved')]"/>
+                <filter string="Rechazados" name="rejected" domain="[('state','=','rejected')]"/>
+                <separator/>
+                <filter string="Estado" name="group_state" context="{'group_by': 'state'}"/>
+                <filter string="Confianza" name="group_conf" context="{'group_by': 'match_confidence'}"/>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_md_regulatory_review" model="ir.actions.act_window">
+        <field name="name">Revisión regulatoria (candidatos PLM)</field>
+        <field name="res_model">md.regulatory.review</field>
+        <field name="view_mode">list,form</field>
+        <field name="context">{'search_default_pending': 1}</field>
+    </record>
+
+    <menuitem id="menu_md_regulatory_review"
+              name="Revisión regulatoria (PLM)"
+              parent="stock.menu_stock_config_settings"
+              action="action_md_regulatory_review"
+              sequence="60"/>
+</odoo>

@@ -1,0 +1,152 @@
+// Medicine Depot · Responsive module
+// Mobile-first breakpoints (min-width), touch targets, viewport optimization.
+
+// ── Tablet (≥ 768px) ──────────────────────────────────────────────────────────
+@media (min-width: $bp-md) {
+    .md-product-grid {
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    }
+
+    .md_pv_hero_meta {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .md_pv_stepper {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+// ── Desktop (≥ 992px) ─────────────────────────────────────────────────────────
+@media (min-width: $bp-lg) {
+    .md-product-grid {
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    }
+
+    .md_pv_stepper {
+        grid-template-columns: repeat(6, 1fr);
+    }
+}
+
+// ── Legacy max-width queries (preserved for existing components) ──────────────
+@media (max-width: 1050px) {
+    .md-hero-main,
+    .md-card--cta,
+    .md-map-card {
+        grid-column: span 6;
+    }
+
+    .md-hero-main {
+        grid-column: span 12;
+        min-height: auto;
+        gap: 44px;
+    }
+
+    .md-card--cta {
+        grid-row: auto;
+    }
+
+    .md-branch-grid,
+    .md-step-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .md_pv_stepper {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .md_pv_hero_meta {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 767.98px) {
+    // ── Touch targets: minimum 44×44px ────────────────────────────────────────
+    .md-btn,
+    .md-btn-primary,
+    .md-bento-pill,
+    .md_pv_btn,
+    .md-branch-card a {
+        min-height: 44px;
+        min-width: 44px;
+    }
+
+    // ── Mobile section padding ─────────────────────────────────────────────────
+    .md-section {
+        padding: 3rem 0;
+    }
+
+    // ── Typography scale ─────────────────────────────────────────────────────
+    .md-section-head {
+        display: grid;
+        gap: 14px;
+    }
+
+    .md-section-head h1 {
+        font-size: 2.8rem;
+    }
+
+    .md-section-head h2,
+    .md_pv_hero_copy h2 {
+        font-size: 2rem;
+    }
+
+    // ── Card vertical spacing ─────────────────────────────────────────────────
+    .md-tile,
+    .md-blog-card,
+    .md-branch-card,
+    .md-service-card {
+        margin-bottom: 12px;
+    }
+
+    // ── Grid stacking ─────────────────────────────────────────────────────────
+    .md-branch-grid,
+    .md-step-grid,
+    .md-step-grid--stacked,
+    .md_pv_fields {
+        grid-template-columns: 1fr;
+    }
+
+    .md_pv_field--span2 {
+        grid-column: span 1;
+    }
+
+    .md_pv_stepper,
+    .md_pv_review_grid {
+        display: block;
+    }
+
+    .md_pv_stepper_item,
+    .md_pv_review_card {
+        margin-bottom: 12px;
+    }
+
+    .md_pv_section_head {
+        display: grid;
+    }
+
+    .md_pv_actions {
+        display: grid;
+    }
+
+    .md_pv_submit_stack {
+        margin-left: 0;
+        min-width: 0;
+    }
+
+    .md-hero-copy h1 { font-size: 2.8rem; }
+
+    .md-hero-main {
+        padding: 26px;
+    }
+}
+
+// ── Small mobile (< 400px) ─────────────────────────────────────────────────────
+@media (max-width: 399px) {
+    .md-product-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .md-hero-copy h1 {
+        font-size: 2.2rem;
+    }
+}

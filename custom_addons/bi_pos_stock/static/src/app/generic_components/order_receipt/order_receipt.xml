@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates>
+    <!--
+        OrderDisplay extension — encabezado de columnas "Producto | Precio" en el ticket.
+
+        FIXED: `.order-container` vive en el arch de point_of_sale.OrderDisplay, no en
+        OrderReceipt (que solo invoca a OrderDisplay como componente hijo — t-inherit no
+        puede ver dentro de un componente hijo, de ahí el OwlError original
+        "cannot be located in element tree" al heredar point_of_sale.OrderReceipt).
+        Mismo patrón que bi_pos_stock.OrderDisplay en order_widget.xml, que ya funciona
+        apuntando a `.order-summary` dentro de ese mismo componente.
+
+        Efecto colateral conocido: OrderDisplay se reutiliza tanto en el ticket impreso
+        como en el carrito de ProductScreen, así que este encabezado aparece en ambos
+        lugares — igual que el widget .md-order-stats ya existente.
+    -->
+    <t t-name="bi_pos_stock.OrderReceiptItemsHeader" t-inherit="point_of_sale.OrderDisplay" t-inherit-mode="extension" owl="1">
+        <xpath expr="//div[hasclass('order-container')]" position="before">
+            <div class="md-receipt-items-header d-flex justify-content-between">
+                <span>Producto</span>
+                <span>Precio</span>
+            </div>
+        </xpath>
+    </t>
+
+    <!--
+        ReceiptHeader extension — nombre de la caja/sucursal antes de "Atendido por".
+
+        CONFIRMADO contra el código fuente real de Odoo 19
+        (addons/point_of_sale/static/src/app/screens/receipt_screen/receipt/receipt_header/
+        receipt_header.xml): `.cashier` vive en point_of_sale.ReceiptHeader, un componente
+        hijo invocado por OrderReceipt como <ReceiptHeader order="order"/> — no en
+        OrderReceipt mismo (de ahí los OwlError de las 2 sondas anteriores, que probaron
+        point_of_sale.OrderReceipt y point_of_sale.ReceiptScreen sin éxito). La variable de
+        contexto real es `order` (no `receipt`).
+
+        `order.company.name` es el nombre legal de la persona física/moral en el RFC de
+        esta empresa (no presentable al cliente) — se usa `order.config.name` en su lugar,
+        el mismo campo que el footer nativo de OrderReceipt ya usa para `.pos-config-name`
+        (ej. "MDS MERIDA 1").
+
+        Clase propia `md-receipt-company-name` para poder excluirla en CSS del hide de
+        `.pos-receipt-contact > div:not(.cashier)` (ver pos_receipt_print.scss) — sin esto,
+        esa regla también ocultaba este div nuevo por error.
+    -->
+    <t t-name="bi_pos_stock.ReceiptHeaderCompanyName" t-inherit="point_of_sale.ReceiptHeader" t-inherit-mode="extension" owl="1">
+        <xpath expr="//div[hasclass('cashier')]" position="before">
+            <div class="md-receipt-company-name text-center fw-bold"><t t-esc="order.config.name"/></div>
+        </xpath>
+    </t>
+
+    <!--
+        OrderReceipt extension — limpieza de footer.
+
+        `.footer-powered-by` y el bloque de dos columnas (sucursal/dirección/RFC/email/
+        website) sí viven directamente en el arch de point_of_sale.OrderReceipt (no en un
+        componente hijo) — confirmado contra el código fuente real, por eso este xpath
+        apunta a OrderReceipt y no a ReceiptHeader.
+
+        Quita el watermark "Powered by Odoo" y agrega un bloque nuevo, centrado y a 12px,
+        con email/website de la compañía. El bloque nativo de sucursal/dirección/RFC/email/
+        website se oculta vía CSS (pos_receipt_print.scss) para no duplicar información —
+        el nombre de la compañía ya quedó arriba, junto al cajero (ver
+        bi_pos_stock.ReceiptHeaderCompanyName).
+
+        Email y website van en el MISMO div separados por <br/> (no dos <div> distintos)
+        para que no quede un renglón en blanco entre ambos.
+    -->
+    <t t-name="bi_pos_stock.OrderReceiptFooterCleanup" t-inherit="point_of_sale.OrderReceipt" t-inherit-mode="extension" owl="1">
+        <xpath expr="//div[hasclass('footer-powered-by')]" position="before">
+            <div class="text-center" style="font-size: 12px; margin-top: 5px;">
+                <t t-esc="order.company.email"/><br/>
+                <t t-esc="order.company.website"/>
+            </div>
+        </xpath>
+        <xpath expr="//div[hasclass('footer-powered-by')]" position="replace"/>
+    </t>
+</templates>

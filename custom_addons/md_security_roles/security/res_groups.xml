@@ -1,0 +1,95 @@
+<odoo>
+    <data noupdate="1">
+
+        <record id="module_category_md_security" model="ir.module.category">
+            <field name="name">MDS - Roles Operativos</field>
+            <field name="description">Categoría de seguridad personalizada para los roles operativos de MedicineDepot Sureste. Toda la lógica de negocio vive en ACL y reglas de registro propias, no en los grupos genéricos de Odoo. / Custom security category for MedicineDepot Sureste operational roles. All business logic lives in our own ACL and record rules, not in Odoo's generic groups.</field>
+            <field name="sequence">15</field>
+        </record>
+
+        <!-- Odoo 19: res.groups ya no cuelga directo de ir.module.category —
+             ahora cuelga de res.groups.privilege, que a su vez cuelga de la
+             categoría. Un solo "privilegio" agrupa nuestros 5 roles como
+             opciones dentro de la misma categoría.
+             Odoo 19: res.groups no longer hangs directly off ir.module.category —
+             it now hangs off res.groups.privilege, which itself hangs off the
+             category. One single "privilege" groups our 5 roles as options
+             within the same category. -->
+        <record id="privilege_md_roles" model="res.groups.privilege">
+            <field name="name">Rol Operativo MDS</field>
+            <field name="category_id" ref="module_category_md_security"/>
+            <field name="sequence">10</field>
+        </record>
+
+        <!-- 1. Dirección — Administrador real de Odoo en las 4 apps + Settings.
+             Es la única excepción intencional: "acceso total" significa literalmente
+             eso, incluida la configuración que Odoo solo expone a nivel Manager. -->
+        <record id="group_md_direccion" model="res.groups">
+            <field name="name">Dirección / Administración</field>
+            <field name="privilege_id" ref="privilege_md_roles"/>
+            <field name="comment">Acceso total al sistema, incluida configuración. Único grupo que usa el nivel Administrador nativo de Odoo — el resto de los roles se define 100% con ACL y reglas propias. / Full system access, including configuration. The only group using Odoo's native Administrator level — every other role is defined 100% with our own ACL and rules.</field>
+            <field name="implied_ids" eval="[(4, ref('base.group_system')),
+                                             (4, ref('point_of_sale.group_pos_manager')),
+                                             (4, ref('purchase.group_purchase_manager')),
+                                             (4, ref('stock.group_stock_manager')),
+                                             (4, ref('account.group_account_manager'))]"/>
+        </record>
+
+        <!-- 2. Gerencia — SOLO los niveles base donde Odoo bloquea la función por código,
+             no por ACL:
+             - PdV Manager: sin él, un gerente solo ve/edita pedidos de SU PROPIA sesión
+               (regla nativa de point_of_sale), no puede rectificar pagos de otros cajeros.
+             - Compras Manager: la aprobación de órdenes (doble validación) está
+               hardcodeada a este grupo, no hay forma de "autorizar" sin él.
+             - Inventario: nivel Usuario alcanza (la tarea solo pide Read).
+             - Contabilidad: nivel Facturación (no Manager) — Cinthia crea/edita
+               asientos vía nuestra propia ACL, pero no configura conciliación,
+               impuestos ni cierre de ejercicio (eso queda reservado a Dirección). -->
+        <record id="group_md_gerencia" model="res.groups">
+            <field name="name">Gerencia de Sucursal / Auditoría</field>
+            <field name="privilege_id" ref="privilege_md_roles"/>
+            <field name="comment">Autoriza compras, rectifica pagos de punto de venta y audita CFDI/contabilidad. Los niveles base implicados son el mínimo que Odoo exige por código para esas funciones puntuales — todo lo demás (qué modelos puede tocar, qué no) está definido en nuestra propia ACL. / Authorizes purchases, amends point-of-sale payments and audits CFDI/accounting. Implied base levels are the strict minimum Odoo's own code requires for those specific functions — everything else is defined in our own ACL.</field>
+            <field name="implied_ids" eval="[(4, ref('point_of_sale.group_pos_manager')),
+                                             (4, ref('purchase.group_purchase_manager')),
+                                             (4, ref('stock.group_stock_user')),
+                                             (4, ref('account.group_account_invoice'))]"/>
+        </record>
+
+        <!-- 3. Cajeros — únicamente lo indispensable para abrir una sesión de PoS.
+             Sin esto, el propio point_of_sale.py rechaza el login de caja.
+             base.group_user (Usuario Interno) es igual de indispensable: sin
+             él, Odoo trata al usuario como "portal" y lo manda a la pantalla
+             de autoservicio en vez del backend — lo confirmamos empíricamente
+             con Playwright (login real terminaba en "My account", no en la
+             app). Los demás grupos ya lo heredan transitivamente via sus
+             niveles Manager/Stock User; Cajeros es el único que no. -->
+        <record id="group_md_cajeros" model="res.groups">
+            <field name="name">Cajeros (Punto de Venta)</field>
+            <field name="privilege_id" ref="privilege_md_roles"/>
+            <field name="comment">Acceso restringido exclusivamente a la operación diaria de caja. Implica únicamente el nivel mínimo que Odoo exige por código para abrir una sesión de PoS — sin él, la apertura de caja se rechaza sin importar la ACL. / Access restricted exclusively to daily cash-register operation. Implies only the minimum level Odoo's own code requires to open a PoS session — without it, session login is rejected regardless of ACL.</field>
+            <field name="implied_ids" eval="[(4, ref('base.group_user')), (4, ref('point_of_sale.group_pos_user'))]"/>
+        </record>
+
+        <!-- 4. Almacén — únicamente lo indispensable para que el módulo de Inventario cargue. -->
+        <record id="group_md_almacen" model="res.groups">
+            <field name="name">Operadores de Almacén (Handheld CT58)</field>
+            <field name="privilege_id" ref="privilege_md_roles"/>
+            <field name="comment">Consultas logísticas y movimientos de inventario desde equipos handheld. Implica únicamente el nivel mínimo que Odoo exige por código para operar en Inventario. / Logistics queries and inventory movements from handheld devices. Implies only the minimum level Odoo's own code requires to operate in Inventory.</field>
+            <field name="implied_ids" eval="[(4, ref('stock.group_stock_user'))]"/>
+        </record>
+
+        <!-- 5. Encargado — Cajero + supervisión de turno. Hereda Cajeros vía
+             implied_ids (todo Encargado ES Cajero), y suma PdV Manager (ver/
+             rectificar pedidos de otros cajeros, descuentos manuales) +
+             Inventario nivel Usuario (consulta "A la mano", sin editar). -->
+        <record id="group_md_encargado" model="res.groups">
+            <field name="name">Encargado de Turno</field>
+            <field name="privilege_id" ref="privilege_md_roles"/>
+            <field name="comment">Cajero con privilegios de supervisión: ve y rectifica pedidos de todo el turno (no solo los propios), anula/devuelve ventas, aplica descuentos manuales, y consulta inventario "A la mano" sin poder editarlo. / Cashier with shift-supervision privileges: sees and amends the whole shift's orders (not just their own), voids/refunds sales, applies manual discounts, and views "A la mano" (On Hand) inventory without editing it.</field>
+            <field name="implied_ids" eval="[(4, ref('group_md_cajeros')),
+                                             (4, ref('point_of_sale.group_pos_manager')),
+                                             (4, ref('stock.group_stock_user'))]"/>
+        </record>
+
+    </data>
+</odoo>

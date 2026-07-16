@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <template id="md_homepage_override"
+              inherit_id="medicine_depot_portal.public_home_page"
+              name="Medicine Depot - Homepage Redesign"
+              priority="20"
+              active="False">
+
+        <!-- 1. Reemplaza hero bento del portal con nuevo hero + sección "Somos" -->
+        <xpath expr="//t[@t-call='medicine_depot_portal.s_md_hero_bento']"
+               position="replace">
+            <t t-call="medicine_depot_website.s_md_hero"/>
+            <section class="md-section md-section--cream">
+                <div class="md-bento-container">
+                    <div class="md-section-head">
+                        <span class="md-eyebrow">Somos MedicineDepot</span>
+                        <h2>Mayorista de medicamentos con acompañamiento normativo.</h2>
+                        <p class="md-lead">
+                            El mayorista de medicamentos que además ofrece acompañamiento normativo
+                            a todos nuestros afiliados.
+                        </p>
+                    </div>
+                    <t t-call="medicine_depot_website.s_md_bento_grid"/>
+                </div>
+            </section>
+        </xpath>
+
+        <!-- 2. Reemplaza sección original de service grid con Socios + Podcast -->
+        <xpath expr="//t[@t-call='medicine_depot_portal.s_md_service_grid']/ancestor::section[1]"
+               position="replace">
+            <section class="md-section md-section--dark md-section--dark-stack">
+                <div class="md-bento-container">
+                    <div class="md-section-head">
+                        <span class="md-eyebrow">Socios comerciales</span>
+                        <h2>Laboratorios y marcas que respaldan nuestro catálogo.</h2>
+                    </div>
+                    <t t-call="medicine_depot_website.s_md_socios"/>
+                </div>
+            </section>
+            <section class="md-section md-section--dark md-section--dark-stack md-section--dark-final">
+                <div class="md-bento-container">
+                    <div class="md-section-head">
+                        <span class="md-eyebrow">Podcast</span>
+                        <h2>Escucha ahora Pláticas Farmacéuticas.</h2>
+                    </div>
+                    <t t-call="medicine_depot_website.s_md_podcast"/>
+                </div>
+            </section>
+        </xpath>
+
+        <!-- 3. Reemplaza sección de auditoría con "Mercados que atendemos" -->
+        <xpath expr="//t[@t-call='medicine_depot_portal.s_md_audit_grid']/ancestor::section[1]"
+               position="replace">
+            <section class="md-section md-section--blue-light">
+                <div class="md-bento-container">
+                    <div class="md-section-head">
+                        <span class="md-eyebrow">Los mercados que atendemos</span>
+                        <h2>Clínicas, farmacias y distribuidores de medicamentos.</h2>
+                        <p class="md-lead">Surtido, asesoría y atención comercial para cada perfil de cliente en el sector salud.</p>
+                    </div>
+                    <t t-call="medicine_depot_portal.s_md_service_grid"/>
+                </div>
+            </section>
+        </xpath>
+
+        <!-- 4. Agrega sección de newsletter / CTA después del blog -->
+        <xpath expr="//t[@t-call='medicine_depot_portal.s_md_blog_grid']/ancestor::section[1]"
+               position="after">
+            <section class="md-section md-section--gray">
+                <div class="md-bento-container">
+                    <div class="s_md_home_cta">
+                        <div>
+                            <span class="md-eyebrow">Programa MedicD</span>
+                            <h2>Ordena tu farmacia con acompañamiento normativo.</h2>
+                            <p class="md-lead">
+                                Trámite de aviso de funcionamiento, machotes para PNOs, apoyo para apertura y capacitaciones como SICAD.
+                            </p>
+                        </div>
+                        <div class="s_md_home_cta-actions gap-3">
+                            <a href="/afiliacion" class="md-btn md-btn--primary">Iniciar afiliación</a>
+                            <a href="/contactus" class="md-btn md-btn--ghost">Hablar con ventas</a>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </xpath>
+
+    </template>
+
+</odoo>

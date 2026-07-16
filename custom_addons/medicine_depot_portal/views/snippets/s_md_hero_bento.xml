@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <template id="s_md_hero_bento" name="MD · Hero Bento">
+        <section class="s_md_hero_bento o_colored_level" data-snippet="s_md_hero_bento" data-name="MD Hero Bento">
+            <article class="md-tile md-tile--blue md-hero-main">
+                <div class="md-hero-copy">
+                    <span class="md-eyebrow">Sitio web integral</span>
+                    <h1>Todo para tu farmacia, en <em>un solo ecosistema</em>.</h1>
+                    <p class="md-lead">
+                        Rediseño Bento para unir catálogo, afiliación, MedicD,
+                        sucursales, blog, contacto y farmacovigilancia.
+                    </p>
+                </div>
+                <div class="md-btn-row">
+                    <a class="md-btn md-btn--primary btn btn-primary" href="/afiliacion">Iniciar afiliación</a>
+                    <a class="md-btn md-btn--secondary btn btn-secondary" href="/medicd">Conocer MedicD</a>
+                </div>
+            </article>
+
+            <article class="md-tile md-tile--lime md-card md-card--cta">
+                <span class="md-card-tag">CTA principal</span>
+                <h3>Afiliación profesional</h3>
+                <p>Convierte el proceso documental en una ruta guiada.</p>
+                <a class="md-btn md-btn--ghost" href="/afiliacion">Ver flujo</a>
+            </article>
+
+            <article class="md-tile md-tile--dark md-card md-card--cta">
+                <span class="md-card-tag">Diferenciador</span>
+                <h3>MedicD como producto estrella</h3>
+                <p>Mayor protagonismo para apertura de farmacia, trámites y PNOs.</p>
+                <a class="md-btn md-btn--primary btn btn-primary" href="/medicd">Explorar beneficios</a>
+            </article>
+        </section>
+    </template>
+
+    <record id="s_md_hero_bento_snippet" model="ir.ui.view">
+        <field name="name">MD · Hero Bento (registro snippet)</field>
+        <field name="type">qweb</field>
+        <field name="mode">extension</field>
+        <field name="inherit_id" ref="website.snippets"/>
+        <field name="arch" type="xml">
+            <xpath expr="//snippets[@id='snippet_structure']" position="inside">
+                <t t-snippet="medicine_depot_portal.s_md_hero_bento"
+                   t-thumbnail="/medicine_depot_portal/static/img/snippets/s_md_hero_bento.svg"/>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

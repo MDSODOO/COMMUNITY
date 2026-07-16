@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="156" height="56" viewBox="0 0 156 56" role="img" aria-label="Genoma">
+  <rect width="156" height="56" rx="14" fill="#fff"/>
+  <path d="M31 36c12 0 12-16 24-16M31 20c12 0 12 16 24 16" fill="none" stroke="#16A6D9" stroke-width="3" stroke-linecap="round"/>
+  <text x="99" y="34" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="800" fill="#17394C">Genoma</text>
+</svg>

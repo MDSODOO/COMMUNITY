@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_medicine_depot_scrap_history_legacy_search" model="ir.ui.view">
+        <field name="name">medicine.depot.scrap.history.search</field>
+        <field name="model">medicine.depot.scrap.history</field>
+        <field name="arch" type="xml">
+            <search string="Historial de bajas">
+                <field name="name"/>
+                <field name="date_done"/>
+                <field name="product_id"/>
+                <field name="lot_id"/>
+                <field name="location_id"/>
+                <field name="company_id" groups="base.group_multi_company"/>
+                <filter name="date_done_filter" string="Fecha de baja" date="date_done"/>
+                <separator/>
+                <filter name="this_month"
+                        string="Este mes"
+                        domain="[
+                            ('date_done', '&gt;=', context_today().strftime('%Y-%m-01')),
+                            ('date_done', '&lt;', (context_today() + relativedelta(months=1)).strftime('%Y-%m-01'))
+                        ]"/>
+                <filter name="last_3_months"
+                        string="Últimos 3 meses"
+                        domain="[
+                            ('date_done', '&gt;=', (context_today() - relativedelta(months=3)).strftime('%Y-%m-01'))
+                        ]"/>
+                <filter name="current_year"
+                        string="Año actual"
+                        domain="[
+                            ('date_done', '&gt;=', context_today().strftime('%Y-01-01'))
+                        ]"/>
+                <separator/>
+                <filter name="group_product" string="Agrupar por producto" context="{'group_by': 'product_id'}"/>
+                <filter name="group_location" string="Agrupar por sucursal" context="{'group_by': 'location_id'}"/>
+                <filter name="group_month" string="Agrupar por mes" context="{'group_by': 'date_done:month'}"/>
+                <filter name="group_company" string="Agrupar por compañía" context="{'group_by': 'company_id'}" groups="base.group_multi_company"/>
+            </search>
+        </field>
+    </record>
+
+    <record id="view_medicine_depot_scrap_history_legacy_tree" model="ir.ui.view">
+        <field name="name">medicine.depot.scrap.history.tree</field>
+        <field name="model">medicine.depot.scrap.history</field>
+        <field name="arch" type="xml">
+            <list class="o_scrap_batch_module" create="0" edit="0" delete="0" default_order="date_done desc">
+                <field name="date_done" string="Fecha"/>
+                <field name="name" string="Referencia"/>
+                <field name="company_id" groups="base.group_multi_company"/>
+                <field name="product_id" string="Producto"/>
+                <field name="lot_id" string="Lote" optional="show"/>
+                <field name="expiration_date" string="Caducidad" optional="show"/>
+                <field name="location_id" string="Sucursal"/>
+                <field name="scrap_qty" string="Cantidad" sum="Total"/>
+                <field name="product_uom_id" string="UdM"/>
+                <field name="purchase_lot_cost" widget="monetary" string="Costo unitario" optional="show"/>
+                <field name="currency_id" column_invisible="1"/>
+                <field name="scrap_total_cost" widget="monetary" string="Costo total" sum="Total"/>
+                <field name="state" widget="badge" string="Estado"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_medicine_depot_scrap_history_legacy_form" model="ir.ui.view">
+        <field name="name">medicine.depot.scrap.history.form</field>
+        <field name="model">medicine.depot.scrap.history</field>
+        <field name="arch" type="xml">
+            <form string="Historial legado de bajas" create="0" edit="0" delete="0">
+                <header>
+                    <button name="action_print_legacy_report"
+                            string="Imprimir PDF"
+                            type="object"
+                            class="btn-primary"/>
+                </header>
+                <sheet class="o_scrap_batch_module">
+                    <group>
+                        <group>
+                            <field name="name" readonly="1"/>
+                            <field name="date_done" readonly="1"/>
+                            <field name="state" readonly="1"/>
+                            <field name="company_id" readonly="1"/>
+                        </group>
+                        <group>
+                            <field name="location_id" readonly="1"/>
+                            <field name="scrap_location_id" readonly="1"/>
+                            <field name="create_uid" readonly="1"/>
+                            <field name="create_date" readonly="1"/>
+                        </group>
+                    </group>
+                    <group string="Detalle de producto">
+                        <group>
+                            <field name="product_id" readonly="1"/>
+                            <field name="lot_id" readonly="1"/>
+                            <field name="expiration_date" readonly="1"/>
+                        </group>
+                        <group>
+                            <field name="scrap_qty" readonly="1"/>
+                            <field name="product_uom_id" readonly="1"/>
+                            <field name="purchase_lot_cost" widget="monetary" readonly="1"/>
+                            <field name="scrap_total_cost" widget="monetary" readonly="1"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_medicine_depot_scrap_history_legacy_pivot" model="ir.ui.view">
+        <field name="name">medicine.depot.scrap.history.pivot</field>
+        <field name="model">medicine.depot.scrap.history</field>
+        <field name="arch" type="xml">
+            <pivot string="Histórico agrupado" display_quantity="false">
+                <field name="location_id" type="row"/>
+                <field name="date_done" interval="month" type="col"/>
+                <field name="scrap_total_cost" type="measure" string="Costo"/>
+                <field name="scrap_qty" type="measure" string="Piezas"/>
+            </pivot>
+        </field>
+    </record>
+
+    <record id="view_medicine_depot_scrap_history_legacy_graph" model="ir.ui.view">
+        <field name="name">medicine.depot.scrap.history.graph</field>
+        <field name="model">medicine.depot.scrap.history</field>
+        <field name="arch" type="xml">
+            <graph string="Tendencia histórica" type="bar" stacked="1">
+                <field name="date_done" interval="month" type="row"/>
+                <field name="location_id" type="col"/>
+                <field name="scrap_total_cost" type="measure" string="Costo"/>
+            </graph>
+        </field>
+    </record>
+
+    <record id="action_medicine_depot_scrap_history_legacy" model="ir.actions.act_window">
+        <field name="name">Historial legado de bajas</field>
+        <field name="res_model">medicine.depot.scrap.history</field>
+        <field name="view_mode">list,form,pivot,graph</field>
+        <field name="search_view_id" ref="view_medicine_depot_scrap_history_legacy_search"/>
+        <field name="context">{'search_default_current_year': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Registros históricos de bajas en modo solo lectura. Costos
+                calculados desde la PO de origen del lote.
+            </p>
+        </field>
+    </record>
+
+    <menuitem id="menu_medicine_depot_scrap_history_legacy"
+              name="Historial legado de bajas"
+              parent="stock.menu_stock_scrap"
+              action="action_medicine_depot_scrap_history_legacy"
+              sequence="45"
+              groups="stock.group_stock_user"/>
+</odoo>

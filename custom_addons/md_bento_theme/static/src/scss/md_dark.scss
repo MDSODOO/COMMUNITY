@@ -1,0 +1,71 @@
+// .o_dark_mode/[data-bs-theme] son selectores de backend, nunca presentes en
+// el frontend público — ver docs/audits/2026-07-01_backend_dark_mode_audit.md.
+// El toggle real del frontend (public_animations.js) escribe
+// data-color-scheme="dark" en <body> (o en .md-bento-public si existe, que
+// también es <body> por body_classname — ver medicine_depot_portal/portal_bento.scss).
+
+body[data-color-scheme="dark"] .md-bento {
+  background:
+    radial-gradient(circle at top left, rgba($md-blue, .18), transparent 34rem),
+    radial-gradient(circle at bottom right, rgba($md-green-600, .12), transparent 30rem),
+    var(--md-surface);
+}
+
+body[data-color-scheme="dark"] .md-bento-site .md-bento-navbar {
+  background:
+    linear-gradient(135deg, rgba(7,28,34,.86), rgba(7,28,34,.62));
+  border-bottom-color: var(--md-line);
+}
+
+body[data-color-scheme="dark"] .md-logo-tile,
+body[data-color-scheme="dark"] .md-trust-card > div {
+  background: rgba(255,255,255,.055);
+}
+
+body[data-color-scheme="dark"] .md-product-card {
+  background:
+    linear-gradient(145deg, rgba(255,255,255,.08), rgba(255,255,255,.035));
+}
+
+/* Tile de imagen bento en oscuro. */
+body[data-color-scheme="dark"] .md-shop #products_grid .md-product-media,
+body[data-color-scheme="dark"] .md-shop #products_grid .oe_product_image {
+  background: rgba(255, 255, 255, .06) !important;
+}
+
+/* En oscuro el producto conserva su color real (sin multiply, que lo invertiria). */
+body[data-color-scheme="dark"] .md-shop #products_grid .md-product-media img,
+body[data-color-scheme="dark"] .md-shop #products_grid .oe_product_image_img {
+  mix-blend-mode: normal !important;
+  object-fit: contain !important;
+}
+
+/* Carrito (/shop/cart) — tarjeta de resumen (.o_total_card) en oscuro */
+body[data-color-scheme="dark"] .o_total_card.card {
+  border-color: rgba(255, 255, 255, .12) !important;
+  background: var(--bs-tertiary-bg, #1a1f2e) !important;
+}
+
+/* Corrección de menús desplegables en modo oscuro para el frontend (Website/Shop/Portal) */
+body[data-color-scheme="dark"] .dropdown-menu {
+  background-color: var(--bs-body-bg, #1a1f2e) !important;
+  color: var(--bs-body-color, #e8eaf0) !important;
+  border-color: var(--bs-border-color, rgba(255, 255, 255, 0.15)) !important;
+
+  .dropdown-item {
+    color: var(--bs-body-color, #e8eaf0) !important;
+
+    &:hover, &:focus, &.active {
+      background-color: var(--bs-primary-soft, rgba(22, 166, 217, 0.12)) !important;
+      color: var(--bs-primary, #16A6D9) !important;
+    }
+  }
+
+  .dropdown-divider {
+    border-top-color: var(--bs-border-color, rgba(255, 255, 255, 0.15)) !important;
+  }
+
+  .dropdown-header {
+    color: var(--bs-secondary-color, #a9c0c6) !important;
+  }
+}

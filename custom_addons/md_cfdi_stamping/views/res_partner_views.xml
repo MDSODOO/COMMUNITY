@@ -1,0 +1,13 @@
+<odoo>
+    <record id="view_partner_form_cfdi" model="ir.ui.view">
+        <field name="name">res.partner.form.cfdi</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='vat']" position="after">
+                <field name="l10n_mx_regimen_fiscal"/>
+                <field name="l10n_mx_uso_cfdi"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

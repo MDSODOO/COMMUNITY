@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <template id="s_md_service_grid" name="MD · Service Grid">
+        <section class="s_md_service_grid o_colored_level"
+                 data-snippet="s_md_service_grid" data-name="MD Service Grid">
+            <a class="md-tile md-tile--surface md-service-card" href="/afiliacion">
+                <i class="fa fa-id-card-o" aria-hidden="true"/>
+                <h3 class="mb-2">Afiliación</h3>
+                <p>Presenta tus documentos y realiza tu alta en línea para convertirte en cliente.</p>
+                <span>Comenzar</span>
+            </a>
+            <a class="md-tile md-tile--surface md-service-card" href="/medicd">
+                <i class="fa fa-file-text-o" aria-hidden="true"/>
+                <h3 class="mb-2">MedicD</h3>
+                <p>Programa de afiliación para apertura, aviso de funcionamiento y PNOs para farmacia.</p>
+                <span>Conocer</span>
+            </a>
+            <a class="md-tile md-tile--surface md-service-card" href="/sucursales">
+                <i class="fa fa-map-marker" aria-hidden="true"/>
+                <h3 class="mb-2">Sucursales</h3>
+                <p>Ubica tu sucursal más cercana para atención de mostrador y acompañamiento comercial.</p>
+                <span>Ubicar</span>
+            </a>
+            <a class="md-tile md-tile--surface md-service-card" href="/farmacovigilancia">
+                <i class="fa fa-shield" aria-hidden="true"/>
+                <h3 class="mb-2">Farmacovigilancia</h3>
+                <p>Canal de reporte trazable para eventos y seguimiento de seguridad del producto.</p>
+                <span>Reportar</span>
+            </a>
+            <a class="md-tile md-tile--surface md-service-card" href="/blog">
+                <i class="fa fa-newspaper-o" aria-hidden="true"/>
+                <h3 class="mb-2">Blog</h3>
+                <p>Notas de Mi Farmacia, Actualidad Farmacéutica y Normatividad para tu operación.</p>
+                <span>Leer</span>
+            </a>
+            <a class="md-tile md-tile--surface md-service-card" href="/contactus">
+                <i class="fa fa-comments-o" aria-hidden="true"/>
+                <h3 class="mb-2">Contacto</h3>
+                <p>Atención experta y de buen gusto para ventas, dudas y soporte.</p>
+                <span>Contactar</span>
+            </a>
+        </section>
+    </template>
+
+    <record id="s_md_service_grid_snippet" model="ir.ui.view">
+        <field name="name">MD · Service Grid (registro snippet)</field>
+        <field name="type">qweb</field>
+        <field name="mode">extension</field>
+        <field name="inherit_id" ref="website.snippets"/>
+        <field name="arch" type="xml">
+            <xpath expr="//snippets[@id='snippet_structure']" position="inside">
+                <t t-snippet="medicine_depot_portal.s_md_service_grid"
+                   t-thumbnail="/medicine_depot_portal/static/img/snippets/s_md_service_grid.svg"/>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

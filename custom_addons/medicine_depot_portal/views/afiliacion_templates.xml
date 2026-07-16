@@ -1,0 +1,326 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="afiliacion_page" model="ir.ui.view">
+        <field name="name">Afiliación Profesional</field>
+        <field name="type">qweb</field>
+        <field name="key">medicine_depot_portal.afiliacion_page</field>
+        <field name="inherit_id" eval="False"/>
+        <field name="arch" type="xml">
+            <t t-call="medicine_depot_portal.public_shell">
+                <section class="md-section md-section--glass md-section--compact md-bento-section md_affiliacion_page_wrap">
+                    <t t-set="partner_color" t-value="partner and partner.color or 0"/>
+                    <div t-attf-class="md_bento_portal md_affiliacion_portal md_nav_c-#{partner_color}">
+
+                                    <t t-if="not is_affiliate">
+                                        <form class="md_affiliacion_form" id="afiliacion_form" method="POST" enctype="multipart/form-data">
+                                            <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+
+                                            <section class="md_data_card md_data_card--hero md_data_card--afiliacion_main">
+                                                <t t-call="medicine_depot_portal.s_md_wizard_hero">
+                                                    <t t-set="wizard_eyebrow" t-value="'Afiliación profesional'"/>
+                                                    <t t-set="wizard_title" t-value="'Integra tu cuenta con validación documental.'"/>
+                                                    <t t-set="wizard_summary_left" t-value="('Tiempo estimado', '5-7 min', 'Completa datos, sube documentos y revisa antes de enviar.')"/>
+                                                    <t t-set="wizard_summary_right" t-value="('Documentos', 'PDF, JPG, PNG', 'Hasta 5 MB por archivo y validación automática.')"/>
+                                                    <t t-set="wizard_steps" t-value="[
+                                                        {'number': '01', 'label': 'Datos', 'hint': 'Perfil y sucursal'},
+                                                        {'number': '02', 'label': 'COFEPRIS', 'hint': 'Permisos sanitarios'},
+                                                        {'number': '03', 'label': 'Legales', 'hint': 'Documentación base'},
+                                                        {'number': '04', 'label': 'Revisión', 'hint': 'Privacidad y envío'},
+                                                    ]"/>
+                                                    <t t-set="wizard_step_attr" t-value="'data-aff-step-jump'"/>
+                                                    <t t-set="wizard_progress_label" t-value="'Progreso del expediente'"/>
+                                                </t>
+
+                                                <div class="md_affiliacion_layout d-grid gap-3">
+                                                <div class="md_affiliacion_body md_affiliacion_wizard" data-affiliacion-wizard="true">
+                                                    <section class="md_affiliacion_section md_affiliacion_section--general is-active" data-aff-step="1" id="afiliacion-step-1">
+                                                        <div class="md_affiliacion_section_head">
+                                                            <div>
+                                                                <h2 class="md_affiliacion_section_title">Datos Generales</h2>
+                                                                <p>Lo esencial para identificar tu expediente y canal de contacto.</p>
+                                                            </div>
+                                                            <span class="md_affiliacion_section_kicker">Paso 1 de 4</span>
+                                                        </div>
+                                                        <div class="md_affiliacion_fields">
+                                                            <div class="md_affiliacion_field md_affiliacion_field--span2">
+                                                                <label for="nombre">Nombre completo</label>
+                                                                <input id="nombre" type="text" name="nombre" required="required" class="form-control"
+                                                                       t-att-value="partner and partner.name or ''"/>
+                                                            </div>
+
+                                                            <div class="md_affiliacion_field">
+                                                                <label for="email">Correo profesional</label>
+                                                                <input id="email" type="email" name="email" required="required" class="form-control"
+                                                                       t-att-value="partner and partner.email or ''"/>
+                                                            </div>
+
+                                                            <div class="md_affiliacion_field">
+                                                                <label for="telefono">Teléfono</label>
+                                                                <input id="telefono" type="tel" name="telefono" required="required" class="form-control"
+                                                                       t-att-value="partner and partner.phone or ''"/>
+                                                            </div>
+
+                                                            <div class="md_affiliacion_field">
+                                                                <label for="especialidad">Especialidad / Giro</label>
+                                                                <input id="especialidad" type="text" name="especialidad" required="required" class="form-control"
+                                                                       t-att-value="partner and partner.function or ''"/>
+                                                            </div>
+
+                                                            <input id="x_studio_contact_type" type="hidden" name="x_studio_contact_type" value="cliente"/>
+
+                                                            <div class="md_affiliacion_field">
+                                                                <label for="x_studio_person_type">Tipo de persona</label>
+                                                                <select id="x_studio_person_type" name="x_studio_person_type" class="form-control">
+                                                                    <option value="">Selecciona una opción</option>
+                                                                    <t t-foreach="person_type_options" t-as="opt">
+                                                                        <option t-att-value="opt[0]"
+                                                                                t-att-selected="'selected' if partner and partner.x_studio_person_type == opt[0] else None">
+                                                                            <t t-esc="opt[1]"/>
+                                                                        </option>
+                                                                    </t>
+                                                                </select>
+                                                            </div>
+
+                                                            <div class="md_affiliacion_field md_affiliacion_field--span2">
+                                                                <label for="x_studio_branch_office">Sucursal</label>
+                                                                <select id="x_studio_branch_office" name="x_studio_branch_office" class="form-control">
+                                                                    <option value="">Selecciona una opción</option>
+                                                                    <t t-foreach="branch_office_options" t-as="opt">
+                                                                        <option t-att-value="opt[0]"
+                                                                                t-att-selected="'selected' if selected_branch_office == opt[0] else None">
+                                                                            <t t-esc="opt[1]"/>
+                                                                        </option>
+                                                                    </t>
+                                                                </select>
+                                                            </div>
+                                                        </div>
+
+                                                        <div class="md_affiliacion_segment_block">
+                                                            <span class="md_affiliacion_segment_label">Perfil profesional</span>
+                                                            <input type="hidden" name="perfil_profesional" id="perfil_profesional" value="Médico"/>
+                                                            <div class="md_affiliacion_segment" id="md_aff_profile_seg" role="radiogroup" aria-label="Perfil profesional">
+                                                                <button type="button" class="md_affiliacion_seg_btn is-on" data-aff-profile="Médico">Médico</button>
+                                                                <button type="button" class="md_affiliacion_seg_btn" data-aff-profile="Farmacéutico">Farmacéutico</button>
+                                                                <button type="button" class="md_affiliacion_seg_btn" data-aff-profile="Odontólogo">Odontólogo</button>
+                                                                <button type="button" class="md_affiliacion_seg_btn" data-aff-profile="Veterinario">Veterinario</button>
+                                                                <button type="button" class="md_affiliacion_seg_btn" data-aff-profile="Otro">Otro</button>
+                                                            </div>
+                                                        </div>
+
+                                                        <div class="md_affiliacion_step_actions">
+                                                            <p class="md_affiliacion_step_hint">Campos obligatorios: nombre, correo, teléfono y especialidad.</p>
+                                                            <button type="button" class="md_affiliacion_step_btn md_affiliacion_step_btn--primary" data-aff-next="true">
+                                                                Continuar
+                                                            </button>
+                                                        </div>
+                                                    </section>
+
+                                                    <section class="md_affiliacion_section md_affiliacion_section--cofepris" id="documentos-pendientes" data-aff-step="2">
+                                                        <div class="md_affiliacion_section_head">
+                                                            <div>
+                                                                <h2 class="md_affiliacion_section_title">COFEPRIS</h2>
+                                                                <p>Documentación sanitaria para validar la operación.</p>
+                                                            </div>
+                                                            <span class="md_affiliacion_section_kicker">Paso 2 de 4</span>
+                                                        </div>
+                                                        <div class="md_affiliacion_file_grid">
+                                                            <div class="md_affiliacion_file_field">
+                                                                <label for="x_studio_operation_notice">Aviso de Funcionamiento</label>
+                                                                <input id="x_studio_operation_notice" type="file" name="x_studio_operation_notice"
+                                                                       class="form-control md_aff_file_input" accept=".pdf,.jpg,.jpeg,.png"/>
+                                                                <small class="md_affiliacion_file_status"
+                                                                       t-if="partner and partner.x_studio_operation_notice">Documento cargado actualmente.</small>
+                                                            </div>
+
+                                                            <div class="md_affiliacion_file_field">
+                                                                <label for="x_studio_sanitary_license">Licencia Sanitaria</label>
+                                                                <input id="x_studio_sanitary_license" type="file" name="x_studio_sanitary_license"
+                                                                       class="form-control md_aff_file_input" accept=".pdf,.jpg,.jpeg,.png"/>
+                                                                <small class="md_affiliacion_file_status"
+                                                                       t-if="partner and partner.x_studio_sanitary_license">Documento cargado actualmente.</small>
+                                                            </div>
+
+                                                            <div class="md_affiliacion_file_field md_affiliacion_file_field--span2">
+                                                                <label for="x_studio_sanitary_responsible_notice">Aviso de Responsable Sanitario</label>
+                                                                <input id="x_studio_sanitary_responsible_notice" type="file" name="x_studio_sanitary_responsible_notice"
+                                                                       class="form-control md_aff_file_input" accept=".pdf,.jpg,.jpeg,.png"/>
+                                                                <small class="md_affiliacion_file_status"
+                                                                       t-if="partner and partner.x_studio_sanitary_responsible_notice">Documento cargado actualmente.</small>
+                                                            </div>
+                                                        </div>
+                                                        <div class="md_affiliacion_step_actions">
+                                                            <button type="button" class="md_affiliacion_step_btn md_affiliacion_step_btn--ghost" data-aff-back="true">Anterior</button>
+                                                            <button type="button" class="md_affiliacion_step_btn md_affiliacion_step_btn--primary" data-aff-next="true">Continuar</button>
+                                                        </div>
+                                                    </section>
+
+                                                    <section class="md_affiliacion_section md_affiliacion_section--docs" data-aff-step="3">
+                                                        <div class="md_affiliacion_section_head">
+                                                            <div>
+                                                                <h2 class="md_affiliacion_section_title">Documentos Legales</h2>
+                                                                <p>Identidad, domicilio, cédula y constancia fiscal.</p>
+                                                            </div>
+                                                            <span class="md_affiliacion_section_kicker">Paso 3 de 4</span>
+                                                        </div>
+                                                        <div class="md_affiliacion_file_grid">
+                                                            <div class="md_affiliacion_file_field">
+                                                                <label for="x_studio_ine">INE</label>
+                                                                <input id="x_studio_ine" type="file" name="x_studio_ine"
+                                                                       class="form-control md_aff_file_input" accept=".pdf,.jpg,.jpeg,.png"/>
+                                                                <small class="md_affiliacion_file_status"
+                                                                       t-if="partner and partner.x_studio_ine">Documento cargado actualmente.</small>
+                                                            </div>
+
+                                                            <div class="md_affiliacion_file_field">
+                                                                <label for="x_studio_proof_of_address">Comprobante de domicilio</label>
+                                                                <input id="x_studio_proof_of_address" type="file" name="x_studio_proof_of_address"
+                                                                       class="form-control md_aff_file_input" accept=".pdf,.jpg,.jpeg,.png"/>
+                                                                <small class="md_affiliacion_file_status"
+                                                                       t-if="partner and partner.x_studio_proof_of_address">Documento cargado actualmente.</small>
+                                                            </div>
+
+                                                            <div class="md_affiliacion_file_field">
+                                                                <label for="x_studio_professional_license">Cédula profesional</label>
+                                                                <input id="x_studio_professional_license" type="file" name="x_studio_professional_license"
+                                                                       class="form-control md_aff_file_input" accept=".pdf,.jpg,.jpeg,.png"/>
+                                                                <small class="md_affiliacion_file_status"
+                                                                       t-if="partner and partner.x_studio_professional_license">Documento cargado actualmente.</small>
+                                                            </div>
+
+                                                            <div class="md_affiliacion_file_field">
+                                                                <label for="x_studio_tax_status_certificate">Constancia de situación fiscal</label>
+                                                                <input id="x_studio_tax_status_certificate" type="file" name="x_studio_tax_status_certificate"
+                                                                       class="form-control md_aff_file_input" accept=".pdf,.jpg,.jpeg,.png"/>
+                                                                <small class="md_affiliacion_file_status"
+                                                                       t-if="partner and partner.x_studio_tax_status_certificate">Documento cargado actualmente.</small>
+                                                            </div>
+                                                        </div>
+                                                        <div class="md_affiliacion_step_actions">
+                                                            <button type="button" class="md_affiliacion_step_btn md_affiliacion_step_btn--ghost" data-aff-back="true">Anterior</button>
+                                                            <button type="button" class="md_affiliacion_step_btn md_affiliacion_step_btn--primary" data-aff-next="true">Continuar</button>
+                                                        </div>
+                                                    </section>
+
+                                                    <section class="md_affiliacion_section md_affiliacion_section--submit" data-aff-step="4">
+                                                        <div class="md_affiliacion_section_head">
+                                                            <div>
+                                                                <h2 class="md_affiliacion_section_title">Revisión final y privacidad</h2>
+                                                                <p>Confirma que los datos estén correctos antes de enviar.</p>
+                                                            </div>
+                                                            <span class="md_affiliacion_section_kicker">Paso 4 de 4</span>
+                                                        </div>
+
+                                                        <div class="md_affiliacion_review_grid">
+                                                            <article class="md_affiliacion_review_card">
+                                                                <strong>Revisa antes de enviar</strong>
+                                                                <p>
+                                                                    Verifica datos, archivos y sucursal antes de enviar tu expediente.
+                                                                    El equipo de Medicine Depot validará tu solicitud en 24–48 horas hábiles.
+                                                                </p>
+                                                            </article>
+                                                            <article class="md_affiliacion_review_card md_affiliacion_review_card--soft">
+                                                                <strong>Qué sigue</strong>
+                                                                <p>
+                                                                    Una vez recibido el formulario, el backend crea o actualiza tu partner
+                                                                    con los mismos campos de siempre, sin cambiar el flujo de datos.
+                                                                </p>
+                                                            </article>
+                                                        </div>
+
+                                                        <label class="md_affiliacion_privacy">
+                                                            <input type="checkbox" name="privacy" required="required"/>
+                                                            <span>
+                                                                Acepto el <a href="/aviso-de-privacidad" target="_blank">aviso de privacidad</a>
+                                                                y autorizo el tratamiento de mis datos para fines de afiliación profesional.
+                                                            </span>
+                                                        </label>
+
+                                                        <div class="md_affiliacion_step_actions md_affiliacion_step_actions--final">
+                                                            <button type="button" class="md_affiliacion_step_btn md_affiliacion_step_btn--ghost" data-aff-back="true">Anterior</button>
+                                                            <div class="md_affiliacion_submit_stack">
+                                                                <p class="md_affiliacion_legal">Validamos tu expediente en un lapso de 24–48h hábiles.</p>
+                                                                <button type="submit" class="md_affiliacion_submit_btn" id="submit_btn" disabled="disabled">
+                                                                    Enviar solicitud
+                                                                </button>
+                                                            </div>
+                                                        </div>
+                                                        <div class="alert alert-danger d-none mt-3" id="afiliacion_error_box" role="alert"/>
+
+                                                        <div class="md_affiliacion_success d-none" id="success_screen">
+                                                            <div class="md_affiliacion_success_icon">
+                                                                <svg width="34" height="34" viewBox="0 0 24 24" fill="none">
+                                                                    <path d="M5 12l5 5L20 7" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                                                </svg>
+                                                            </div>
+                                                            <strong>Solicitud enviada</strong>
+                                                            <span>Tu información fue recibida correctamente.</span>
+                                                        </div>
+                                                    </section>
+                                                </div><!-- /md_affiliacion_body -->
+
+                                                <aside class="md_affiliacion_aside d-flex flex-column gap-3" aria-label="Resumen del expediente">
+                                                    <div class="md_affiliacion_checklist_card d-flex flex-column gap-3">
+                                                        <span class="md_affiliacion_aside_kicker">Checklist del expediente</span>
+                                                        <div class="md_affiliacion_checklist" id="md_aff_checklist" data-aff-checklist="true"/>
+                                                    </div>
+                                                    <div class="md_affiliacion_help_card d-flex flex-column gap-2">
+                                                        <span class="md_affiliacion_aside_kicker md_affiliacion_aside_kicker--green">¿Necesitas ayuda?</span>
+                                                        <p>Un asesor puede acompañarte por WhatsApp mientras integras tu expediente.</p>
+                                                        <a class="md_affiliacion_help_btn" href="https://wa.me/5219991002030" target="_blank" rel="noopener">
+                                                            <svg viewBox="0 0 24 24" fill="currentColor" width="17" height="17"><path d="M12 2a10 10 0 0 0-8.5 15.2L2 22l4.9-1.3A10 10 0 1 0 12 2zm0 18a8 8 0 0 1-4.1-1.1l-.3-.2-2.9.8.8-2.8-.2-.3A8 8 0 1 1 12 20z"/></svg>
+                                                            Escribir a un asesor
+                                                        </a>
+                                                    </div>
+                                                </aside>
+                                                </div><!-- /md_affiliacion_layout -->
+                                            </section>
+                                        </form>
+                                    </t>
+
+                                    <t t-else="">
+                                        <section class="md_data_card md_data_card--hero md_data_card--afiliacion_main md_affiliacion_state_card" id="estado-afiliacion">
+                                <div class="md_affiliacion_intro">
+                                    <div class="md_card_head">
+                                        <i class="fa fa-check-circle" aria-hidden="true"/>
+                                        <span>Afiliación activa</span>
+                                    </div>
+                                    <h1 class="md_affiliacion_title">Gracias por formar parte de nuestra red.</h1>
+                                    <p class="md_affiliacion_subtitle">
+                                        Tu cuenta ya está registrada como cliente afiliado en Medicine Depot.
+                                    </p>
+                                </div>
+
+                                <div class="md_affiliacion_body">
+                                    <div class="md_affiliacion_section md_affiliacion_state_message">
+                                        <p class="mb-2">Tu estado de cuenta continúa activo. Puedes revisar tus datos y documentos desde el portal.</p>
+                                        <a href="/my/home" class="md-btn md-btn--primary">Ir al portal</a>
+                                    </div>
+
+                                    <t t-if="has_missing_docs">
+                                        <div class="md_affiliacion_section md_affiliacion_state_warning" id="documentos-pendientes">
+                                            <h2 class="md_affiliacion_section_title">Documentos oficiales pendientes</h2>
+                                            <p class="mb-2">
+                                                Aún tienes documentos obligatorios pendientes de cargar en tu expediente.
+                                            </p>
+                                            <ul class="mb-3">
+                                                <t t-foreach="missing_docs" t-as="doc">
+                                                    <li><t t-esc="doc['label']"/></li>
+                                                </t>
+                                            </ul>
+                                            <a t-att-href="affiliation_upload_url" class="md-btn md-btn--ghost">
+                                                Actualizar expediente
+                                            </a>
+                                        </div>
+                                    </t>
+                                </div>
+                                        </section>
+                                    </t>
+
+                    </div>
+                </section>
+            </t>
+        </field>
+    </record>
+
+</odoo>

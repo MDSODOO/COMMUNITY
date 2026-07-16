@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+        <record id="view_production_lot_list_hide_company" model="ir.ui.view">
+            <field name="name">Lotes - Empresa en Lista</field>
+            <field name="model">stock.lot</field>
+            <field name="inherit_id" ref="md_lots_management.view_production_lot_tree_customized"/>
+            <field name="arch" type="xml">
+                <xpath expr="//list" position="attributes">
+                    <attribute name="open_form_view">1</attribute>
+                </xpath>
+                <xpath expr="//list" position="inside">
+                    <field name="company_id" string="Sucursal" optional="show"/>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>

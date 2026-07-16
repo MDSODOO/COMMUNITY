@@ -1,0 +1,31 @@
+// Medicine Depot — paleta corporativa
+// Fuente de verdad: solo variables, sin selectores.
+
+// ── Primarios ──────────────────────────────────────────────────────────────
+$md-primary:       #16A6D9;   // azul principal
+$md-primary-2:     #3dbde6;   // hover / acento claro
+$md-primary-dark:  #073A4C;   // azul oscuro
+$md-primary-soft:  #e0f5fb;   // tint 10 %
+
+// ── Acción / estados ──────────────────────────────────────────────────────
+$md-action:        #97D700;   // verde de acción (aprobado / ok)
+$md-action-soft:   #eef9c2;
+
+$md-danger:        #e30613;   // caducidad
+$md-danger-soft:   #fde2e3;
+
+$md-warning:       #f59f00;   // merma
+$md-warning-soft:  #fff4d6;
+
+// ── Neutros ───────────────────────────────────────────────────────────────
+$md-ink:           #0e1730;
+$md-ink-2:         #33405e;
+$md-muted:         #7a86a3;
+$md-paper:         #f4f6fb;
+$md-card-bg:       #ffffff;
+$md-border:        #e3e7f1;
+
+// ── Espaciado / forma ─────────────────────────────────────────────────────
+$md-radius-sm:     6px;
+$md-radius-md:     10px;
+$md-radius-lg:     14px;

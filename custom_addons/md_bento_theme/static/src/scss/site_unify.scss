@@ -1,0 +1,2173 @@
+// Medicine Depot · Unified Surface Layer
+// Capa de armonización para páginas nativas (shop/blog/portal/contacto)
+// y refinamientos globales de legibilidad, grid, interacción y responsive.
+:root {
+    @each $name, $value in $md-css-props {
+        #{$name}: #{$value};
+    }
+
+    --md-space-1: 8px;
+    --md-space-2: 12px;
+    --md-space-3: 16px;
+    --md-space-4: 24px;
+    --md-space-5: 32px;
+    --md-space-6: 48px;
+
+    --md-radius-btn: var(--md-r-pill);
+    --md-radius-input: 10px;
+    --md-radius-card: var(--md-r-card);
+
+    --md-shadow-1: var(--md-shadow-sm);
+    --md-shadow-2: var(--md-shadow-glass);
+    --md-shadow-3: var(--md-shadow-md);
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// FUERTE: Fuerza font-family en todos los cuerpos que usan el tema Bento
+// Garantiza que incluso selectores débiles hereden Source Sans Pro
+// ─────────────────────────────────────────────────────────────────────────────
+body.md-site-unified,
+body.md-bento-site,
+body.md-bento-public {
+    font-family: $md-font-title;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+body.md-site-unified {
+    color: $md-ink;
+    background: $md-gray-100;
+    text-rendering: optimizeLegibility;
+    overflow-x: clip;
+}
+
+html {
+    scroll-padding-top: var(--md-scroll-padding-top);
+}
+
+body.md-site-unified #wrapwrap {
+    overflow-x: clip;
+}
+
+body.md-route-public.md-bento-public .md-section {
+    scroll-margin-top: 106px;
+}
+
+body.md-route-public.md-bento-public .md-section + .md-section {
+    margin-top: unquote("clamp(20px, 3vw, 40px)");
+}
+
+body.md-site-unified h1,
+body.md-site-unified h2 {
+    letter-spacing: -0.02em;
+    line-height: 1.15;
+}
+
+body.md-site-unified h3,
+body.md-site-unified h4,
+body.md-site-unified h5,
+body.md-site-unified h6 {
+    letter-spacing: 0;
+    line-height: 1.12;
+}
+
+body.md-site-unified p,
+body.md-site-unified li,
+body.md-site-unified label,
+body.md-site-unified .text-muted {
+    line-height: 1.6;
+    font-size: 1.05rem;
+}
+
+body.md-site-unified :where(a, button, .btn, .nav-link, .md_data_card, .md-tile) {
+    transition: transform 0.18s ease, box-shadow 0.18s ease, background-color 0.18s ease, color 0.18s ease, border-color 0.18s ease;
+}
+
+body.md-site-unified :focus-visible {
+    outline: 3px solid rgba($md-green, 0.5);
+    outline-offset: 2px;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Native Header Harmonization (Shop, Blog, Portal, Contact)
+// ─────────────────────────────────────────────────────────────────────────────
+
+body.md-site-unified:not(.md-bento-public) {
+    #top {
+        position: sticky;
+        top: 0;
+        z-index: 45;
+        background: transparent;
+        padding: 10px unquote("clamp(10px, 3vw, 22px)") 8px;
+        transition: padding 0.18s ease;
+    }
+
+    #top.md-native-scrolled {
+        padding-top: 6px;
+        padding-bottom: 6px;
+    }
+
+    #top .navbar {
+        border-radius: 14px;
+        border: 1px solid rgba($md-blue, 0.16);
+        background: rgba($md-white, 0.94);
+        box-shadow: var(--md-shadow-2);
+        backdrop-filter: blur(14px) saturate(1.18);
+        -webkit-backdrop-filter: blur(14px) saturate(1.18);
+    }
+
+    #top .navbar-brand img {
+        max-height: 48px;
+        width: auto;
+        object-fit: contain;
+    }
+
+    #top .navbar-brand img.md-official-logo {
+        max-height: 56px;
+    }
+
+    // Evita doble navbar visible (desktop + mobile) en algunos temas/overrides.
+    #top nav[data-name='Navbar']:not(.o_header_mobile) {
+        display: flex !important;
+    }
+
+    #top nav.o_header_mobile {
+        display: none !important;
+    }
+
+    #top .nav-link {
+        min-height: 36px;
+        display: inline-flex;
+        align-items: center;
+        border-radius: var(--md-radius-btn);
+        padding: 7px 12px;
+        font-size: 0.86rem;
+        font-weight: 700;
+        color: $md-ink;
+
+        &:hover {
+            color: $md-blue-800;
+            background: rgba($md-blue, 0.08);
+        }
+
+        &.active,
+        &[aria-current="page"] {
+            color: $md-green-900 !important;
+            background: rgba($md-green, 0.24);
+        }
+    }
+
+    .btn.btn-primary,
+    .btn.btn_cta {
+        @include md-btn-primary;
+        padding: 12px 24px;
+        font-size: 0.96rem;
+        letter-spacing: 0.04em;
+        border-radius: $md-r-pill;
+    }
+
+    #top .offcanvas,
+    #top .o_navbar_mobile {
+        border-left: 1px solid rgba($md-blue, 0.14);
+        background: rgba($md-white, 0.98);
+    }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Wrap, Containers, Native Cards
+// ─────────────────────────────────────────────────────────────────────────────
+
+.md-wrap-unified {
+    width: unquote("min(1280px, calc(100% - 2rem))");
+    margin-inline: auto;
+}
+
+body.md-site-unified .card,
+body.md-site-unified .o_card,
+body.md-site-unified .o_portal_index_card {
+    border-radius: var(--md-radius-card);
+    border: 1px solid rgba($md-blue, 0.1);
+    box-shadow: var(--md-shadow-1);
+}
+
+body.md-site-unified .badge {
+    border-radius: 999px;
+}
+
+body.md-route-shop .md-wrap-unified,
+body.md-route-blog .md-wrap-unified,
+body.md-route-contact .md-wrap-unified,
+body.md-route-medicd .md-wrap-unified {
+    margin-top: unquote("clamp(10px, 2.5vw, 22px)");
+    margin-bottom: unquote("clamp(18px, 3vw, 30px)");
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Shop — Catálogo, Tarjetas, Filtros (Mejoras 7–12)
+// ─────────────────────────────────────────────────────────────────────────────
+
+body.md-route-shop {
+    #wrap.js_sale {
+        background: transparent;
+    }
+
+    #o_wsale_products_header {
+        padding: 14px 16px !important;
+        border-radius: var(--md-radius-card);
+        border: 1px solid rgba($md-blue, 0.12);
+        background: rgba($md-white, 0.96);
+        box-shadow: var(--md-shadow-1);
+        margin-bottom: 14px;
+
+        h1,
+        .h1,
+        .o_wsale_products_header_title {
+            font-family: $md-font-title;
+            letter-spacing: 0;
+            font-weight: 800;
+            color: $md-ink;
+        }
+    }
+
+    .o_wsale_products_main_row {
+        gap: var(--md-space-3);
+        align-items: flex-start;
+    }
+
+    #products_grid_before {
+        top: 98px;
+    }
+
+    .o_wsale_products_grid_before_rail {
+        height: auto !important;
+        max-height: calc(100vh - 132px);
+        overflow-y: auto !important;
+        scrollbar-width: thin;
+        scrollbar-color: rgba($md-blue, 0.28) rgba($md-blue, 0.06);
+        padding-right: 2px;
+    }
+
+    .o_wsale_products_grid_before_rail::-webkit-scrollbar {
+        width: 8px;
+    }
+
+    .o_wsale_products_grid_before_rail::-webkit-scrollbar-thumb {
+        background: rgba($md-blue, 0.26);
+        border-radius: 999px;
+    }
+
+    .o_wsale_products_grid_before_rail::-webkit-scrollbar-track {
+        background: rgba($md-blue, 0.06);
+    }
+
+    // Sidebar/filtros — bento card (Mejora 10)
+    .o_wsale_products_grid_before_rail,
+    .o_wsale_sidebar {
+        border-radius: var(--md-radius-bento);
+        border: 1px solid rgba($md-blue, 0.12);
+        background: rgba($md-white, 0.88);
+        backdrop-filter: blur(16px) saturate(1.2);
+        -webkit-backdrop-filter: blur(16px) saturate(1.2);
+        box-shadow: var(--md-shadow-glass);
+        padding: unquote("clamp(16px, 2vw, 24px)");
+
+        .o_wsale_sidebar_header,
+        h5, h6 {
+            font-family: $md-font-title;
+            font-weight: 700;
+            color: $md-ink;
+            letter-spacing: 0;
+        }
+    }
+
+    .o_wsale_products_header_search_form_container {
+        .search-query,
+        .form-control {
+            border-radius: var(--md-radius-btn);
+            border: 1px solid rgba($md-blue, 0.18);
+            min-height: 40px;
+            box-shadow: none;
+        }
+
+        .btn {
+            border-radius: var(--md-radius-btn);
+        }
+    }
+
+    #wrap:not(.md-shop) #o_wsale_products_grid {
+        --o-wsale-products-grid-gap: 18px !important;
+    }
+
+    .o_sortby_dropdown .btn {
+        border-radius: var(--md-radius-btn);
+        border: 1px solid rgba($md-blue, 0.16);
+        background: rgba($md-white, 0.94);
+        min-height: 40px;
+    }
+
+    // Tarjeta de producto — bento lift (Mejora 7)
+    #wrap:not(.md-shop) .o_wsale_product_grid_wrapper {
+        border-radius: var(--md-radius-card);
+        border: 1px solid $md-line;
+        background: $md-white;
+        box-shadow: var(--md-shadow-sm);
+        overflow: hidden;
+        transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+
+        &:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--md-shadow-glass);
+            border-color: rgba($md-blue, 0.25);
+        }
+
+        // Hover overlay imagen (Mejora 9)
+        .o_product_image,
+        .oe_product_image {
+            position: relative;
+            overflow: hidden;
+
+            &::after {
+                content: '';
+                position: absolute;
+                inset: 0;
+                background: rgba($md-blue-900, 0.22);
+                opacity: 0;
+                transition: opacity 0.22s ease;
+                pointer-events: none;
+            }
+        }
+
+        &:hover .o_product_image::after,
+        &:hover .oe_product_image::after {
+            opacity: 1;
+        }
+    }
+
+    #wrap:not(.md-shop) .oe_product_cart {
+        padding: 12px;
+        gap: 10px;
+    }
+
+    #wrap:not(.md-shop) .o_wsale_product_information {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    #wrap:not(.md-shop) .oe_product_image_img {
+        object-fit: contain;
+        background: linear-gradient(180deg, #{$md-gray-50} 0%, #{$md-gray-100} 100%);
+    }
+
+    #wrap:not(.md-shop) .o_wsale_products_item_title {
+        font-family: $md-font-title;
+        font-weight: 700;
+        line-height: 1.3;
+        min-height: 2.6em;
+        max-height: 2.6em;
+        overflow: hidden;
+        color: $md-ink;
+
+        a {
+            color: inherit;
+            text-decoration: none;
+        }
+    }
+
+    .oe_subdescription_wrapper {
+        min-height: 2.6em;
+    }
+
+    .oe_subdescription {
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    // Precio de producto (Mejora 8)
+    .oe_currency_value,
+    .product_price .currency {
+        font-weight: 900;
+        color: $md-blue-800;
+        font-size: 1.05rem;
+    }
+
+    .oe_product_cart .text-decoration-line-through,
+    .oe_product_cart .o_wsale_product_old_price {
+        color: $md-muted !important;
+        font-size: 0.8rem;
+        font-weight: 400;
+    }
+
+    // Badge de oferta
+    .o_ribbon,
+    .badge.bg-danger,
+    .badge.text-bg-danger {
+        background: $md-green !important;
+        color: $md-green-900 !important;
+        border-radius: var(--md-radius-btn);
+        font-weight: 700;
+        font-size: 0.72rem;
+    }
+
+    // Botón add-to-cart en tarjeta (Mejora 11)
+    .o_wsale_product_btn_primary.btn,
+    .o_add_to_cart_btn {
+        border-radius: var(--md-radius-btn);
+        font-weight: 800;
+        border: 0;
+        background: $md-brand-gradient;
+        color: $md-white;
+        transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
+        box-shadow: 0 8px 20px rgba($md-blue, 0.22);
+
+        &:hover {
+            filter: saturate(1.1);
+            transform: translateY(-1px);
+            box-shadow: 0 12px 26px rgba($md-blue, 0.28);
+            color: $md-white;
+        }
+    }
+
+    .o_add_wishlist.btn {
+        border-radius: var(--md-radius-btn);
+    }
+
+    // Paginación (Mejora 12)
+    .pagination .page-link {
+        border-radius: var(--md-radius-btn) !important;
+        color: $md-blue;
+        border: 1px solid $md-line;
+        font-weight: 600;
+        transition: background 0.18s ease, border-color 0.18s ease, color 0.18s ease;
+
+        &:hover {
+            background: $md-blue-100;
+            border-color: rgba($md-blue, 0.4);
+            color: $md-blue-800;
+        }
+    }
+
+    .pagination .page-item.active .page-link {
+        background: $md-green !important;
+        border-color: $md-green !important;
+        color: $md-green-900 !important;
+        font-weight: 700;
+        box-shadow: 0 4px 12px rgba($md-green, 0.3);
+    }
+
+    .pagination .page-item.disabled .page-link {
+        color: $md-gray-300;
+        background: transparent;
+    }
+
+    // Galería — página de producto (Mejora 13)
+    #o-carousel-product .carousel-inner,
+    .product_detail_img,
+    .o_product_page_image_top {
+        border-radius: var(--md-radius-bento);
+        overflow: hidden;
+        box-shadow: var(--md-shadow-sm);
+    }
+
+    #wrap:not(.md-shop) .oe_product_image_img {
+        @include md-media-scale(1.05, 0.4s);
+    }
+
+    .o_product_page_image_thumbnail {
+        border-radius: $md-r-card;
+        border: 2px solid transparent;
+        overflow: hidden;
+        cursor: pointer;
+        transition: border-color 0.18s ease, box-shadow 0.18s ease;
+
+        &.active,
+        &:hover {
+            border-color: $md-blue;
+            box-shadow: 0 0 0 2px rgba($md-blue, 0.22);
+        }
+    }
+
+    // Jerarquía de precio — producto individual (Mejora 14)
+    .product_price .oe_price .oe_currency_value,
+    #product_details .oe_price .oe_currency_value {
+        font-size: 2.2rem !important;
+        font-weight: 900 !important;
+        color: $md-blue-800 !important;
+        line-height: 1;
+    }
+
+    .product_price .o_base_unit_price_wrapper {
+        font-size: 0.84rem;
+        color: $md-muted;
+        margin-top: 2px;
+    }
+
+    // Add-to-cart button — producto individual (Mejora 15)
+    #add_to_cart,
+    .btn_add_to_cart,
+    a#add_to_cart {
+        @include md-btn-primary;
+        padding: 14px 30px !important;
+        font-size: 1.05rem !important;
+        border-radius: var(--md-radius-btn) !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        gap: 8px !important;
+        text-decoration: none !important;
+    }
+
+    // Descripción de producto (Mejora 16)
+    .product_description_short,
+    .tab-content .tab-pane p {
+        line-height: 1.75;
+        font-size: $md-text-lg;
+        color: $md-ink;
+
+        a { color: $md-blue; }
+        h3, h4 { font-family: $md-font-title; letter-spacing: 0; }
+    }
+
+    // Breadcrumb (Mejora 17)
+    .breadcrumb-item {
+        font-size: $md-text-sm;
+
+        a {
+            color: $md-muted;
+            text-decoration: none;
+            transition: color 0.15s ease;
+            &:hover { color: $md-blue; }
+        }
+
+        &.active { color: $md-ink; font-weight: 700; }
+        + .breadcrumb-item::before { color: $md-gray-400; }
+    }
+
+    #product_detail_main {
+        align-items: flex-start !important;
+        gap: 1.25rem;
+    }
+
+    #product_details {
+        top: 104px;
+        align-self: flex-start;
+
+        #o_wsale_product_details_content {
+            border-radius: var(--md-radius-bento);
+            border: 1px solid rgba($md-blue, 0.1);
+            background: rgba($md-white, 0.88);
+            backdrop-filter: blur(16px) saturate(1.2);
+            -webkit-backdrop-filter: blur(16px) saturate(1.2);
+            box-shadow: var(--md-shadow-glass);
+            padding: unquote("clamp(24px, 3vw, 32px)");
+        }
+    }
+
+    .o_wsale_product_details_content_section_title h1,
+    .o_wsale_product_details_content_section_title .h1 {
+        font-family: $md-font-title;
+        letter-spacing: 0;
+        line-height: 1.14;
+    }
+
+    .o_wsale_product_details_content_section_cta #o_wsale_cta_wrapper {
+        gap: 10px !important;
+    }
+
+    .o_wsale_product_details_content_section_cta .css_quantity {
+        display: inline-flex;
+        align-items: stretch;
+        border-radius: var(--md-radius-btn);
+        border: 1.5px solid rgba($md-blue, 0.22) !important;
+        overflow: hidden;
+        min-height: 46px;
+        background: $md-white;
+        box-shadow: var(--md-shadow-1);
+
+        // Botones +/-
+        .js_add_cart_json,
+        .input-group-btn .btn,
+        > button {
+            border: none !important;
+            border-radius: 0 !important;
+            background: rgba($md-blue, 0.05);
+            color: $md-blue;
+            font-size: 1.25rem;
+            font-weight: 700;
+            line-height: 1;
+            min-width: 44px;
+            padding: 0 !important;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.15s ease, color 0.15s ease;
+            flex-shrink: 0;
+
+            &:hover {
+                background: rgba($md-blue, 0.14);
+                color: $md-blue-800;
+            }
+
+            &:focus-visible {
+                outline: 2px solid rgba($md-blue, 0.4);
+                outline-offset: -2px;
+            }
+        }
+
+        // Input numérico central
+        .quantity,
+        input[type="text"].form-control,
+        input[type="number"].form-control {
+            border: none !important;
+            border-left: 1.5px solid rgba($md-blue, 0.12) !important;
+            border-right: 1.5px solid rgba($md-blue, 0.12) !important;
+            border-radius: 0 !important;
+            text-align: center !important;
+            font-weight: 700 !important;
+            font-size: 1rem !important;
+            color: $md-ink !important;
+            background: $md-white !important;
+            box-shadow: none !important;
+            min-width: 56px;
+            max-width: 72px;
+            padding: 0 4px !important;
+        }
+    }
+
+    .o_wsale_product_images.o_wsale_sticky_object {
+        top: 104px;
+    }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Cart & Checkout (Mejoras 18–23)
+// ─────────────────────────────────────────────────────────────────────────────
+
+body.o_website_sale_checkout,
+body.md-route-shop {
+    // Inputs de formulario (Mejora 18)
+    .o_website_sale .form-control,
+    .o_checkout .form-control,
+    .address .form-control {
+        border-radius: var(--md-radius-input) !important;
+        border: 1.5px solid $md-line !important;
+        min-height: 44px;
+        box-shadow: none !important;
+        transition: border-color 0.18s ease, box-shadow 0.18s ease;
+
+        &:focus {
+            border-color: $md-blue !important;
+            box-shadow: 0 0 0 3px rgba($md-blue, 0.16) !important;
+            outline: none;
+        }
+    }
+
+    // Tabla del carrito (Mejora 19)
+    .o_website_sale_cart table,
+    #cart_products table {
+        border-radius: var(--md-radius-card);
+        overflow: hidden;
+        box-shadow: var(--md-shadow-1);
+        border: 1px solid $md-line;
+
+        thead th {
+            background: $md-blue-100;
+            color: $md-blue-800;
+            font-family: $md-font-title;
+            font-weight: 700;
+            border-bottom: 2px solid rgba($md-blue, 0.15);
+        }
+
+        tbody tr {
+            transition: background 0.15s ease;
+            &:hover { background: rgba($md-blue, 0.03); }
+        }
+    }
+
+    .js_cart_lines > .mt-5.mb-3 {
+        border-radius: var(--md-radius-card);
+        border: 1px solid rgba($md-blue, 0.14);
+        background: rgba($md-white, 0.96);
+        box-shadow: var(--md-shadow-1);
+        max-width: 560px;
+        margin: 1rem auto !important;
+        padding: 1.5rem 1.25rem;
+
+        h5 {
+            font-family: $md-font-title;
+            font-size: 1.7rem;
+            margin-bottom: 0.9rem !important;
+            color: $md-ink;
+            letter-spacing: 0;
+        }
+
+        p > a.btn.btn-primary {
+            @include md-btn-primary;
+            min-width: 172px;
+            text-decoration: none;
+        }
+    }
+
+    // Panel resumen glassmorphism (Mejora 20)
+    .cart_summary,
+    .o_cart_summary,
+    .js_cart_lines + .card,
+    #order_total_wrapper,
+    .o_total_table {
+        background: rgba($md-white, 0.95) !important;
+        backdrop-filter: blur(12px) saturate(1.2);
+        -webkit-backdrop-filter: blur(12px) saturate(1.2);
+        border: 1px solid $md-line !important;
+        border-radius: $md-r !important;
+        box-shadow: $md-shadow-md !important;
+        padding: unquote("clamp(16px, 3vw, 28px)") !important;
+    }
+
+    // Botón confirmar (Mejora 21)
+    a[href*="/shop/confirm_order"],
+    .a-submit.btn.btn-primary,
+    button[type="submit"].btn-primary.o_btn_confirm_order {
+        @include md-btn-primary;
+        width: 100%;
+        padding: 16px 24px;
+        font-size: 1.05rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        text-decoration: none;
+    }
+
+    // Indicador de pasos (Mejora 23)
+    .o_wizard,
+    .o_checkout_progress,
+    .o_checkout_steps {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 1.5rem;
+
+        .o_wizard_step,
+        .o_checkout_step {
+            flex: 1;
+            text-align: center;
+            padding: 8px 12px;
+            border-radius: var(--md-radius-card);
+            font-size: $md-text-sm;
+            font-weight: 700;
+            background: $md-gray-100;
+            color: $md-muted;
+            border: 1px solid $md-line;
+
+            &.done {
+                background: $md-green-100;
+                color: $md-green-600;
+                border-color: rgba($md-green, 0.3);
+            }
+
+            &.active {
+                background: $md-blue;
+                color: $md-white;
+                border-color: $md-blue;
+                box-shadow: 0 4px 12px rgba($md-blue, 0.28);
+            }
+        }
+    }
+
+    @media (max-width: 991.98px) {
+        #top nav[data-name='Navbar']:not(.o_header_mobile) {
+            display: none !important;
+        }
+
+        #top nav.o_header_mobile {
+            display: block !important;
+        }
+    }
+}
+
+// Mobile checkout (Mejora 22)
+@media (max-width: $bp-md) {
+    body.o_website_sale_checkout {
+        .col-md-7,
+        .col-md-5 {
+            order: initial;
+        }
+
+        .o_cart_summary,
+        .cart_summary {
+            margin-bottom: 1.5rem;
+        }
+    }
+
+    body.md-route-shop {
+        #product_details {
+            top: auto;
+
+            #o_wsale_product_details_content {
+                padding: 12px;
+            }
+        }
+
+        .o_wsale_product_images.o_wsale_sticky_object {
+            top: auto;
+        }
+    }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Blog (Mejora 26)
+// ─────────────────────────────────────────────────────────────────────────────
+
+body.md-route-blog {
+    #wrap.js_blog {
+        background: transparent;
+    }
+
+    article,
+    .o_record_cover_container,
+    .o_blog_post_card {
+        border-radius: var(--md-radius-card);
+    }
+
+    .o_record_cover_container,
+    .o_blog_post_card {
+        border: 1px solid rgba($md-blue, 0.1);
+        background: rgba($md-white, 0.98);
+        box-shadow: var(--md-shadow-1);
+        overflow: hidden;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+        &:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--md-shadow-2);
+        }
+    }
+
+    // Imagen del artículo — aspect ratio 16/9
+    .o_record_cover_image,
+    .o_blog_post_card .o_record_cover_container {
+        aspect-ratio: 16 / 9;
+        object-fit: cover;
+    }
+
+    // Fecha y categoría
+    .o_blog_post_card .small,
+    .o_blog_post_card .o_post_date {
+        color: $md-muted;
+        font-size: $md-text-sm;
+    }
+
+    // Tag badge
+    .o_blog_post_tag {
+        background: $md-green-100;
+        color: $md-green-600;
+        border-radius: var(--md-radius-btn);
+        padding: 3px 10px;
+        font-size: 0.72rem;
+        font-weight: 700;
+    }
+
+    .alert.alert-info {
+        border-radius: var(--md-radius-card);
+        border: 1px solid rgba($md-blue, 0.2);
+        background: rgba($md-blue, 0.12);
+        color: $md-ink;
+        box-shadow: var(--md-shadow-1);
+    }
+
+    #o_wblog_posts_loop .col > h2 {
+        font-family: $md-font-title;
+        font-size: 2.1rem;
+        letter-spacing: 0;
+        color: $md-ink;
+        margin-bottom: 0.9rem;
+    }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Forms (Contacto + MedicD + Wizards)
+// ─────────────────────────────────────────────────────────────────────────────
+
+body.md-site-unified .s_website_form .form-control,
+body.md-site-unified .md_pv_input,
+body.md-site-unified .md_affiliacion_field .form-control,
+body.md-site-unified .md_affiliacion_file_field .form-control {
+    border-radius: var(--md-radius-input);
+    border: 1px solid rgba($md-blue, 0.2);
+    min-height: 44px;
+    box-shadow: none;
+}
+
+body.md-site-unified .s_website_form .form-control:focus,
+body.md-site-unified .md_pv_input:focus,
+body.md-site-unified .md_affiliacion_field .form-control:focus,
+body.md-site-unified .md_affiliacion_file_field .form-control:focus {
+    border-color: $md-blue;
+    box-shadow: 0 0 0 3px rgba($md-blue, 0.14);
+}
+
+body.md-site-unified .s_website_form .btn.btn-primary,
+body.md-site-unified .md_pv_btn--primary,
+body.md-site-unified .md_affiliacion_step_btn--next,
+body.md-site-unified .md_affiliacion_step_btn--submit {
+    border-radius: var(--md-radius-btn);
+}
+
+body.md-route-contact .s_website_form,
+body.md-route-medicd .md_pv_form {
+    background: rgba($md-white, 0.98);
+    border: 1px solid rgba($md-blue, 0.12);
+    border-radius: var(--md-radius-card);
+    box-shadow: var(--md-shadow-1);
+    padding: unquote("clamp(14px, 2.3vw, 24px)");
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Portal
+// ─────────────────────────────────────────────────────────────────────────────
+
+body.md-route-portal {
+    #wrap.o_portal_wrap {
+        width: unquote("min(1280px, calc(100% - 1.5rem))");
+        margin-inline: auto;
+    }
+
+    .o_portal_index_card:not(.d-none) {
+        border-radius: var(--md-radius-card);
+        border: 1px solid rgba($md-blue, 0.1);
+        background: rgba($md-white, 0.98);
+        box-shadow: var(--md-shadow-1);
+    }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Media / SVG / Assets
+// ─────────────────────────────────────────────────────────────────────────────
+
+.md-bento-brand-logo,
+.s_md_hero-hot-sale-picture img,
+.md-peninsula-svg,
+.oe_product_image_img {
+    image-rendering: auto;
+}
+
+.s_md_socios-logo {
+    min-height: 62px;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Mobile-first refinements
+// ─────────────────────────────────────────────────────────────────────────────
+
+@media (max-width: 767.98px) {
+    .md-wrap-unified {
+        width: unquote("min(1280px, calc(100% - 1rem))");
+    }
+
+    body.md-site-unified:not(.md-bento-public) #top {
+        padding: 6px 8px;
+    }
+
+    body.md-site-unified:not(.md-bento-public) #top .navbar {
+        border-radius: 12px;
+    }
+
+    body.md-route-shop #wrap:not(.md-shop) #o_wsale_products_grid {
+        --o-wsale-ppr: 2 !important;
+    }
+
+    body.md-route-shop .o_wsale_products_grid_before_rail {
+        padding: 10px;
+    }
+
+    body.md-route-shop #wrap:not(.md-shop) .oe_product_cart {
+        padding: 8px;
+    }
+
+    body.md-route-shop #wrap:not(.md-shop) .o_wsale_products_item_title {
+        min-height: 3em;
+        max-height: 3em;
+        font-size: 0.78rem;
+    }
+
+    body.md-route-shop #wrap:not(.md-shop) .product_price .oe_currency_value {
+        font-size: 1rem;
+        font-weight: 900;
+    }
+    
+    body.md-route-shop .product_price .text-danger {
+        font-size: var(--md-text-sm);
+        vertical-align: super;
+    }
+    
+    body.md-site-unified input,
+    body.md-site-unified .btn,
+    body.md-site-unified select {
+        min-height: 48px;
+    }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Mapas y Media
+// ─────────────────────────────────────────────────────────────────────────────
+.md-section--dark iframe[src*="google.com/maps"] {
+    filter: invert(0.9) hue-rotate(180deg);
+}
+
+.oe_product_image_img[src$="product_product-image"],
+.oe_product_image_img:not([src]) {
+    background-color: rgba($md-gray-500, 0.1);
+}
+@media (max-width: 575.98px) {
+    body.md-route-shop #wrap:not(.md-shop) #o_wsale_products_grid {
+        --o-wsale-ppr: 2 !important;
+        --o-wsale-products-grid-gap: 12px !important;
+    }
+
+    // Mejora 30 · Evitar overflow horizontal de la barra buscador/orden/filtros en móvil:
+    // el core fuerza flex-nowrap y la suma de anchos excede el viewport (~404px en 390px)
+    body.md-route-shop .products_header {
+        flex-wrap: wrap !important;
+
+        .o_wsale_products_header_search_form_container {
+            flex: 1 1 100%;
+            order: -1;
+            margin-right: 0 !important;
+        }
+    }
+
+    body.md-route-blog .container,
+    body.md-route-contact .container,
+    body.md-route-medicd .container {
+        padding-left: 12px;
+        padding-right: 12px;
+    }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Service Grid — hover activo con acento verde (Mejora 27)
+// ─────────────────────────────────────────────────────────────────────────────
+
+.s_md_service_grid .md-tile,
+.s_md_audit_grid .md-tile,
+.s_features.md-bento-grid .md-tile {
+    transition: transform 0.22s ease, box-shadow 0.22s ease, border-top-color 0.22s ease;
+    border-top: 3px solid transparent;
+
+    &:hover {
+        transform: translateY(-4px);
+        box-shadow: $md-shadow;
+        border-top-color: $md-green;
+    }
+
+    // Ícono con fondo circular
+    .md-chip {
+        background: $md-blue-100;
+        color: $md-blue-800;
+        font-size: 11px;
+        font-weight: 900;
+        text-transform: uppercase;
+        padding: 5px 10px;
+        border-radius: 999px;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+    }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Error pages — branding consistente (Mejora 28)
+// ─────────────────────────────────────────────────────────────────────────────
+
+// Aplica a 403/404 nativas (via CSS, independiente de body class)
+.o_website_error_wrap,
+#wrapwrap > #wrap .o_error_code {
+    min-height: 50vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem;
+    text-align: center;
+}
+
+// Encabezado del error
+h1.o_error_code,
+.http_error h1 {
+    font-family: $md-font-title;
+    font-size: unquote("clamp(3rem, 8vw, 6rem)");
+    font-weight: 900;
+    color: $md-blue-800;
+    line-height: 1;
+    margin-bottom: 0.5rem;
+}
+
+.http_error p,
+.o_error_message {
+    color: $md-muted;
+    font-size: $md-text-lg;
+    max-width: 42ch;
+    margin-inline: auto;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Fase 2 — Mejoras E-commerce adicionales
+// ─────────────────────────────────────────────────────────────────────────────
+
+// ── Skeleton loading (M3) ────────────────────────────────────────────────────
+@keyframes md-skeleton-pulse {
+    0%, 100% { opacity: 1; }
+    50%       { opacity: 0.45; }
+}
+
+.md-skeleton-card {
+    border-radius: var(--md-radius-card);
+    background: $md-gray-100;
+    border: 1px solid $md-line;
+    padding: 12px;
+    animation: md-skeleton-pulse 1.6s ease-in-out infinite;
+
+    .md-sk-img  { width: 100%; aspect-ratio: 4/3; background: $md-gray-200; border-radius: var(--md-radius-card); margin-bottom: 10px; }
+    .md-sk-line { height: 10px; background: $md-gray-200; border-radius: 6px; margin: 6px 0; }
+    .md-sk-line--short { width: 55%; }
+    .md-sk-btn  { height: 34px; background: $md-gray-200; border-radius: var(--md-radius-btn); margin-top: 12px; }
+}
+
+// Sticky add-to-cart bar (M15 — CSS part).
+// Regla standalone a propósito: shop_ux.js (medicine_depot_portal) crea este
+// elemento con document.body.appendChild(...) — NO vive dentro de #wrap, así
+// que nunca debió depender de un selector "body.md-route-shop #wrap ...".
+// Antes vivía adentro de ese bloque y por eso jamás se posicionaba fixed
+// (bug verificado en vivo). No se movió a depender de body.md-route-shop
+// porque activar esa clase (ver medicine_depot_portal/static/src/js/
+// public_surface_bridge.js) reactiva de golpe todo el bloque de abajo,
+// que choca con las cards bento del grid — ver CHANGELOG 2026-07-03.
+.md-sticky-atc-bar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 60;
+    background: rgba($md-white, 0.96);
+    backdrop-filter: blur(14px) saturate(1.3);
+    border-top: 1px solid $md-line;
+    box-shadow: 0 -8px 28px rgba($md-ink-900, 0.10);
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    transform: translateY(100%);
+    transition: transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
+
+    &.is-visible { transform: translateY(0); }
+
+    .md-sticky-atc-name {
+        flex: 1;
+        font-family: $md-font-title;
+        font-weight: 700;
+        font-size: $md-text-base;
+        color: $md-ink;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .md-sticky-atc-price {
+        font-weight: 900;
+        color: $md-blue-800;
+        font-size: 1.1rem;
+        white-space: nowrap;
+    }
+
+    .md-sticky-atc-btn {
+        @include md-btn-primary;
+        padding: 12px 24px;
+        font-size: 0.96rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        text-decoration: none;
+        white-space: nowrap;
+    }
+}
+
+// ── Image aspect-ratio + zoom (M2, M14) ──────────────────────────────────────
+body.md-route-shop #wrap:not(.md-shop) {
+    .o_product_image,
+    .oe_product_image {
+        aspect-ratio: 4 / 3;
+        overflow: hidden;
+
+        img, .o_product_image_img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            object-position: center;
+            transition: transform 0.38s ease;
+        }
+    }
+
+    .o_wsale_product_grid_wrapper:hover .o_product_image img,
+    .o_wsale_product_grid_wrapper:hover .oe_product_image img {
+        transform: scale(1.06);
+    }
+
+    // Empty state (M6)
+    .o_wsale_products_grid_empty {
+        grid-column: 1 / -1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 3rem 1.5rem;
+        text-align: center;
+        border-radius: var(--md-radius-card);
+        border: 2px dashed $md-line;
+        color: $md-muted;
+        gap: 16px;
+
+        svg { width: 64px; height: 64px; opacity: 0.4; }
+        p   { margin: 0; font-size: $md-text-lg; }
+        a   { @include md-btn-primary; padding: 12px 28px; font-size: 0.96rem; text-decoration: none; display: inline-flex; }
+    }
+
+    // Sort-bar sticky (M1)
+    .o_wsale_sort_bar,
+    .o_wsale_products_topbar {
+        position: sticky;
+        top: 76px;
+        z-index: 30;
+        background: rgba($md-white, 0.94);
+        backdrop-filter: blur(10px);
+        border-radius: var(--md-radius-card);
+        border: 1px solid $md-line;
+        padding: 8px 14px;
+        margin-bottom: 16px;
+        box-shadow: var(--md-shadow-1);
+        transition: box-shadow 0.2s ease;
+
+        &.is-sticky { box-shadow: var(--md-shadow-2); }
+    }
+
+    // Product attribute pills (M18)
+    .css_attribute_color,
+    .variant_attribute .css_attribute_color,
+    .o_product_configurator .o_variant_pills .btn {
+        border-radius: var(--md-radius-btn) !important;
+        border: 2px solid $md-line !important;
+        min-width: 36px;
+        min-height: 36px;
+        padding: 6px 12px;
+        font-size: $md-text-sm;
+        font-weight: 600;
+        transition: border-color 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+
+        &.active, &:hover {
+            border-color: $md-blue !important;
+            box-shadow: 0 0 0 2px rgba($md-blue, 0.22);
+        }
+    }
+
+    // Trust strip (M19)
+    .md-pdp-trust-strip {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 1rem;
+        padding-top: 1rem;
+        border-top: 1px solid $md-line;
+
+        .md-trust-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: $md-text-sm;
+            font-weight: 600;
+            color: $md-muted;
+
+            svg { width: 16px; height: 16px; flex-shrink: 0; }
+        }
+    }
+
+    // Related products horizontal scroll (M20)
+    .md-related-scroll {
+        display: grid;
+        grid-auto-flow: column;
+        grid-auto-columns: unquote("min(280px, 70vw)");
+        gap: $md-gap;
+        overflow-x: auto;
+        scroll-snap-type: x mandatory;
+        scrollbar-width: none;
+        padding-bottom: 8px;
+
+        &::-webkit-scrollbar { display: none; }
+
+        > * { scroll-snap-align: start; }
+    }
+
+    // Quantity stepper (M17 — CSS part)
+    .md-qty-stepper {
+        display: inline-flex;
+        align-items: center;
+        border: 1.5px solid $md-line;
+        border-radius: var(--md-radius-btn);
+        overflow: hidden;
+        height: 42px;
+
+        button {
+            width: 36px;
+            height: 100%;
+            background: $md-gray-50;
+            border: 0;
+            cursor: pointer;
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: $md-ink;
+            transition: background 0.15s ease;
+
+            &:hover { background: $md-blue-100; }
+            &:active { background: $md-blue-200; }
+        }
+
+        input {
+            width: 44px;
+            height: 100%;
+            border: 0;
+            border-left: 1.5px solid $md-line;
+            border-right: 1.5px solid $md-line;
+            text-align: center;
+            font-weight: 700;
+            font-size: $md-text-base;
+            color: $md-ink;
+            background: $md-white;
+        }
+    }
+}
+
+// ── Checkout — Floating labels (M21) ─────────────────────────────────────────
+body.o_website_sale_checkout {
+    .form-group.o_has_floating_label,
+    .form-group {
+        position: relative;
+        margin-top: 1.2rem;
+
+        label {
+            position: absolute;
+            top: 13px;
+            left: 14px;
+            font-size: $md-text-base;
+            color: $md-muted;
+            pointer-events: none;
+            transition: top 0.18s ease, font-size 0.18s ease, color 0.18s ease;
+            background: transparent;
+            padding: 0 4px;
+            z-index: 1;
+        }
+
+        .form-control:focus ~ label,
+        .form-control:not(:placeholder-shown) ~ label,
+        .form-control.o_has_value ~ label {
+            top: -9px;
+            font-size: 0.72rem;
+            color: $md-blue;
+            background: $md-white;
+        }
+
+        .form-control { padding-top: 14px; }
+    }
+
+    // Payment method icons grid (M22)
+    .o_payment_option_card,
+    .o_payment_provider_option {
+        border-radius: var(--md-radius-card);
+        border: 2px solid $md-line;
+        padding: 10px 14px;
+        cursor: pointer;
+        transition: border-color 0.18s ease, box-shadow 0.18s ease;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+
+        &.o_checked,
+        &:has(input:checked),
+        &.checked {
+            border-color: $md-blue;
+            box-shadow: 0 0 0 2px rgba($md-blue, 0.18);
+            background: $md-blue-100;
+        }
+
+        img {
+            max-height: 28px;
+            width: auto;
+            object-fit: contain;
+        }
+    }
+
+    // Mobile sticky "Confirmar" (M23)
+    @media (max-width: $bp-md) {
+        .o_portal_wrap_confirm_order {
+            padding-bottom: 80px;
+        }
+
+        .md-checkout-sticky-footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            z-index: 60;
+            background: rgba($md-white, 0.96);
+            backdrop-filter: blur(14px);
+            border-top: 1px solid $md-line;
+            padding: 12px 16px;
+            box-shadow: 0 -6px 24px rgba($md-ink-900, 0.08);
+        }
+    }
+
+    // Order summary collapse on mobile (M24)
+    @media (max-width: $bp-md) {
+        .cart_summary,
+        .o_cart_summary {
+            &.is-collapsed .cart_summary_items {
+                display: none;
+            }
+
+            .md-summary-toggle {
+                width: 100%;
+                background: none;
+                border: none;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 0 0 8px;
+                cursor: pointer;
+                font-weight: 700;
+                color: $md-ink;
+            }
+        }
+    }
+}
+
+// ── Offcanvas cart (M8) ───────────────────────────────────────────────────────
+.o_cart_sidebar,
+#o_extra_menu_items .o_cart_dropdown,
+.offcanvas.o_cart_offcanvas {
+    border-radius: $md-r 0 0 $md-r !important;
+    width: unquote("min(420px, 94vw)") !important;
+
+    .offcanvas-header {
+        border-bottom: 1px solid $md-line;
+        padding: 1rem 1.25rem;
+        background: $md-white;
+
+        h5 { font-family: $md-font-title; font-weight: 900; color: $md-ink; }
+    }
+
+    // Free shipping progress (M13)
+    .md-free-shipping-progress {
+        padding: 10px 1.25rem;
+        background: $md-blue-100;
+        border-bottom: 1px solid $md-line;
+        font-size: $md-text-sm;
+        color: $md-blue-800;
+        font-weight: 600;
+
+        .md-free-shipping-bar-track {
+            height: 6px;
+            background: rgba($md-blue, 0.18);
+            border-radius: $md-r-pill;
+            margin-top: 6px;
+
+            .md-free-shipping-bar-fill {
+                height: 100%;
+                background: $md-brand-gradient;
+                border-radius: $md-r-pill;
+                transition: width 0.4s ease;
+            }
+        }
+    }
+
+    // Cart item thumbnail (M13)
+    .o_cart_product {
+        display: grid;
+        grid-template-columns: 64px 1fr auto;
+        gap: 10px;
+        padding: 10px 1.25rem;
+        border-bottom: 1px solid rgba($md-line, 0.6);
+
+        .o_product_image {
+            width: 64px;
+            height: 64px;
+            border-radius: var(--md-radius-card);
+            border: 1px solid $md-line;
+            overflow: hidden;
+
+            img { width: 100%; height: 100%; object-fit: contain; }
+        }
+    }
+
+    // Empty state (M11)
+    .o_cart_empty {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 3rem 1.5rem;
+        text-align: center;
+        gap: 16px;
+        color: $md-muted;
+
+        svg { width: 80px; height: 80px; opacity: 0.35; }
+        h5  { font-family: $md-font-title; font-weight: 700; color: $md-ink; margin: 0; }
+        p   { font-size: $md-text-sm; margin: 0; }
+
+        a {
+            @include md-btn-primary;
+            padding: 12px 28px;
+            text-decoration: none;
+            display: inline-flex;
+        }
+    }
+
+    // Sticky subtotal footer (M12)
+    .o_cart_subtotal_footer {
+        position: sticky;
+        bottom: 0;
+        background: rgba($md-white, 0.96);
+        backdrop-filter: blur(10px);
+        border-top: 1px solid $md-line;
+        padding: 14px 1.25rem;
+        box-shadow: 0 -6px 20px rgba($md-ink-900, 0.06);
+
+        .o_total_table { box-shadow: none; border: 0; padding: 0; background: transparent; }
+    }
+}
+
+// ── Confirmation page animation (M25) ────────────────────────────────────────
+@keyframes md-check-draw {
+    0%   { stroke-dashoffset: 60; opacity: 0; }
+    40%  { opacity: 1; }
+    100% { stroke-dashoffset: 0; opacity: 1; }
+}
+
+@keyframes md-confirm-scale-in {
+    0%   { transform: scale(0.7); opacity: 0; }
+    60%  { transform: scale(1.08); }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+.o_website_sale_confirmation .oe_website_sale,
+.md-confirmation-wrap {
+    .md-confirm-check-wrap {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        background: $md-green-100;
+        margin: 0 auto 1.5rem;
+        animation: md-confirm-scale-in 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+
+        svg {
+            width: 40px;
+            height: 40px;
+
+            path {
+                stroke-dasharray: 60;
+                stroke-dashoffset: 60;
+                animation: md-check-draw 0.6s 0.35s ease both;
+            }
+        }
+    }
+
+    h2, h3 {
+        font-family: $md-font-title;
+        font-weight: 900;
+        color: $md-ink;
+    }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Mejora 9 · Headings con fuente corporativa unificada.
+// Refuerza $md-font-title sobre H1–H6 incluso si el tema base los
+// sobrescribe vía clases utilitarias (h1, .display-1, .o_h1, etc.).
+// Mejora 16 · Evita líneas con una sola palabra usando text-wrap balance.
+// pretty se aplica a párrafos guía para conservar rio izquierdo.
+// ─────────────────────────────────────────────────────────────────────────────
+
+body.md-site-unified h1,
+body.md-site-unified h2,
+body.md-site-unified .h1,
+body.md-site-unified .h2,
+body.md-site-unified .display-1,
+body.md-site-unified .display-2,
+body.md-site-unified .display-3,
+body.md-site-unified .display-4 {
+    font-family: $md-font-title;
+    letter-spacing: -0.01em;
+    text-wrap: balance;
+    -webkit-hyphens: auto;
+    hyphens: auto;
+}
+
+body.md-site-unified h3,
+body.md-site-unified h4,
+body.md-site-unified h5,
+body.md-site-unified h6,
+body.md-site-unified .h3,
+body.md-site-unified .h4,
+body.md-site-unified .h5,
+body.md-site-unified .h6 {
+    font-family: $md-font-title;
+    text-wrap: balance;
+}
+
+body.md-site-unified .md-lead,
+body.md-site-unified .lead,
+body.md-site-unified p.md-eyebrow + p {
+    text-wrap: pretty;
+}
+
+// Refuerzo específico para las plantillas Bento públicas, que no
+// comparten clase con .md-site-unified pero también deben respetar
+// la jerarquía tipográfica.
+body.md-bento-public h1,
+body.md-bento-public h2,
+body.md-bento-public .md-page-title,
+body.md-bento-public .md-section-head h2 {
+    font-family: $md-font-title;
+    text-wrap: balance;
+    letter-spacing: -0.01em;
+}
+
+// Refuerzo sobre body.md-bento-site: la clase del shell Bento que
+// inyecta layout.xml.  Garantiza que TODOS los descendientes (incluido
+// el footer #footer.md-bento-footer) hereden Source Sans Pro sin
+// depender de reglas inline o del tema base de Odoo.
+body.md-bento-site {
+    font-family: $md-font-title;
+}
+
+body.md-bento-site h1,
+body.md-bento-site h2,
+body.md-bento-site h3,
+body.md-bento-site h4,
+body.md-bento-site h5,
+body.md-bento-site h6 {
+    font-family: $md-font-title;
+    text-wrap: balance;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Mejora 17/18/20 · Utility classes para rendimiento de imágenes.
+// .md-img-cover-1-1 / .md-img-cover-16-9: aspect-ratio fijo + object-fit
+// para reservar espacio antes de cargar y evitar Content Layout Shift.
+// Cualquier <img> que se etiquete con estas clases mantiene proporción
+// estable incluso si el atributo width/height heredado se ignora.
+// ─────────────────────────────────────────────────────────────────────────────
+
+.md-img-cover-1-1,
+.md-img-cover-16-9 {
+    display: block;
+    width: 100%;
+    height: auto;
+    object-fit: cover;
+    background: linear-gradient(180deg, #{$md-gray-50} 0%, #{$md-gray-100} 100%);
+}
+
+.md-img-cover-1-1  { aspect-ratio: 1 / 1; }
+.md-img-cover-16-9 { aspect-ratio: 16 / 9; }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Mejora 26 · Sumario del carrito flotante (sticky).
+// Activamos position: sticky en el panel lateral del total para que
+// acompañe al usuario al hacer scroll por sus productos. El offset
+// considera el navbar (~96px) y se desactiva en móvil porque la
+// columna del total cae bajo los productos.
+// ─────────────────────────────────────────────────────────────────────────────
+
+body.md-site-unified .md-cart-summary-sticky,
+body.md-site-unified #cart_total,
+body.md-site-unified #o_wsale_total_accordion_parent,
+body.md-site-unified .o_wsale_total_accordion_parent,
+body.md-site-unified .o_website_sale .o_cart_summary,
+body.md-site-unified .o_website_sale_checkout .cart_summary {
+    @media (min-width: 992px) {
+        position: sticky;
+        top: 112px;
+        align-self: flex-start;
+        z-index: 5;
+        max-height: calc(100vh - 132px);
+        overflow-y: auto;
+        scrollbar-width: thin;
+        scrollbar-color: rgba($md-blue, 0.28) rgba($md-blue, 0.06);
+    }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Mejora 27 · Animación en checkout. Barra de progreso fluida basada
+// en transition: width 0.3s ease. Aplica al wizard nativo y a cualquier
+// contenedor etiquetado con .md-checkout-wizard.
+// ─────────────────────────────────────────────────────────────────────────────
+
+body.md-site-unified .o_wizard,
+body.md-site-unified .md-checkout-wizard {
+    position: relative;
+    padding-bottom: 14px;
+
+    &::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        height: 4px;
+        background: rgba($md-blue, 0.10);
+        border-radius: 999px;
+        pointer-events: none;
+    }
+
+    &::after {
+        content: '';
+        position: absolute;
+        left: 0;
+        bottom: 0;
+        height: 4px;
+        width: var(--md-checkout-progress, 33%);
+        background: $md-brand-gradient;
+        border-radius: 999px;
+        transition: width 0.3s ease;
+        pointer-events: none;
+    }
+
+    &[data-step='1'] { --md-checkout-progress: 25%; }
+    &[data-step='2'] { --md-checkout-progress: 50%; }
+    &[data-step='3'] { --md-checkout-progress: 75%; }
+    &[data-step='4'] { --md-checkout-progress: 100%; }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Mejora 28 · Toasts/Píldoras flotantes.
+// Contenedor global montado vía website.layout (#md-toast-stack) y
+// estilos que promueven las alertas nativas de Odoo (alert-success,
+// alert-warning, alert-info, alert-danger) al estilo "pill toast".
+// ─────────────────────────────────────────────────────────────────────────────
+
+.md-toast-stack {
+    position: fixed;
+    top: unquote("clamp(16px, 4vh, 28px)");
+    right: unquote("clamp(16px, 4vw, 28px)");
+    z-index: 1080;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-width: #{unquote("min(380px, calc(100vw - 32px))")};
+    pointer-events: none;
+}
+
+.md-toast-stack > * {
+    pointer-events: auto;
+}
+
+@keyframes md-toast-in {
+    0%   { opacity: 0; transform: translateY(-8px) scale(0.96); }
+    100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.md-toast,
+.md-toast-stack .alert,
+body.md-site-unified .o_notification.md-toast--pill {
+    padding: 12px 18px;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, 0.55);
+    background: rgba($md-white, 0.94);
+    backdrop-filter: blur(16px) saturate(1.2);
+    -webkit-backdrop-filter: blur(16px) saturate(1.2);
+    box-shadow:
+        0 14px 32px rgba($md-ink-900, 0.16),
+        0 4px 10px rgba($md-ink-900, 0.08);
+    font-weight: 600;
+    color: $md-ink;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    animation: md-toast-in 0.22s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+    margin: 0;
+}
+
+.md-toast--success,
+.md-toast-stack .alert-success {
+    background: rgba($md-green-100, 0.94);
+    color: $md-green-900;
+    border-color: rgba($md-green, 0.4);
+}
+
+.md-toast--warning,
+.md-toast-stack .alert-warning {
+    background: rgba(255, 245, 224, 0.94);
+    color: color-mix(in srgb, #{$md-warning}, black 38%);
+    border-color: rgba(255, 196, 79, 0.4);
+}
+
+.md-toast--danger,
+.md-toast-stack .alert-danger {
+    background: rgba(254, 233, 233, 0.94);
+    color: color-mix(in srgb, #{$md-danger}, black 28%);
+    border-color: rgba(214, 80, 80, 0.4);
+}
+
+.md-toast--info,
+.md-toast-stack .alert-info {
+    background: rgba($md-blue-100, 0.94);
+    color: $md-blue-800;
+    border-color: rgba($md-blue, 0.32);
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Mejora 29 · Empty states amigables.
+// Tarjeta central con icono translúcido + CTA primario para los
+// escenarios "carrito vacío" y "sin resultados de búsqueda".
+// ─────────────────────────────────────────────────────────────────────────────
+
+.md-empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    max-width: 480px;
+    margin: unquote("clamp(24px, 5vw, 48px)") auto;
+    padding: unquote("clamp(28px, 5vw, 48px)") unquote("clamp(20px, 4vw, 36px)");
+    text-align: center;
+    border-radius: var(--md-radius-card, 18px);
+    border: 1px solid rgba($md-blue, 0.12);
+    background: rgba($md-white, 0.96);
+    box-shadow: var(--md-shadow-1);
+}
+
+.md-empty-state__icon {
+    width: 88px;
+    height: 88px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba($md-blue, 0.10);
+    color: $md-blue;
+    font-size: 36px;
+
+    i { line-height: 1; }
+}
+
+.md-empty-state__title {
+    font-family: $md-font-title;
+    font-weight: 800;
+    font-size: unquote("clamp(1.25rem, 2.4vw, 1.55rem)");
+    color: $md-ink;
+    margin: 0;
+    text-wrap: balance;
+}
+
+.md-empty-state__text {
+    color: $md-muted;
+    font-size: 0.96rem;
+    line-height: 1.55;
+    max-width: 36ch;
+    margin: 0 auto;
+    text-wrap: pretty;
+}
+
+.md-empty-state__cta {
+    @include md-btn-primary;
+    text-decoration: none;
+    padding: 12px 24px;
+    font-size: 0.96rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 6px;
+}
+
+.md-empty-state--cart .md-empty-state__icon {
+    background: rgba($md-green, 0.18);
+    color: $md-green-900;
+}
+
+.md-empty-state--search .md-empty-state__icon {
+    background: rgba($md-blue, 0.12);
+    color: $md-blue-800;
+}
+
+// Promoción automática: el bloque "carrito vacío" nativo de
+// website_sale ya recibe estilos de tarjeta centralizada arriba en
+// este archivo. Aquí añadimos el icono translúcido y CTA esperado por
+// la mejora 29 cuando el wrapper trae sólo el mensaje + enlace.
+body.md-site-unified .js_cart_lines > .mt-5.mb-3 {
+    text-align: center;
+
+    > h5 {
+        text-wrap: balance;
+    }
+
+    > h5::before {
+        content: '\f07a';
+        font-family: 'FontAwesome', 'Font Awesome 5 Free', sans-serif;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 72px;
+        height: 72px;
+        margin: 0 auto 14px;
+        border-radius: 50%;
+        background: rgba($md-green, 0.18);
+        color: $md-green-900;
+        font-size: 30px;
+        font-weight: normal;
+    }
+}
+
+body.md-site-unified .o_wsale_products_grid_empty {
+    text-wrap: balance;
+
+    &::before {
+        content: '\f002';
+        font-family: 'FontAwesome', 'Font Awesome 5 Free', sans-serif;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 72px;
+        height: 72px;
+        margin: 0 auto;
+        border-radius: 50%;
+        background: rgba($md-blue, 0.12);
+        color: $md-blue-800;
+        font-size: 30px;
+    }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Fase 2.2 · Shop — backdrop-filter, zoom cubic-bezier, drawer móvil, skeleton
+// ─────────────────────────────────────────────────────────────────────────────
+
+// Glassmorphic product card (overlay blur sobre fondo de página)
+body.md-route-shop #wrap:not(.md-shop) .o_wsale_product_grid_wrapper {
+    background: rgba($md-white, 0.92);
+    backdrop-filter: blur(8px) saturate(1.1);
+    -webkit-backdrop-filter: blur(8px) saturate(1.1);
+}
+
+// Zoom con easing spring en imagen de producto
+body.md-route-shop #wrap:not(.md-shop) .oe_product_image_img {
+    transition: transform 0.48s cubic-bezier(0.22, 1, 0.36, 1),
+                filter 0.48s cubic-bezier(0.22, 1, 0.36, 1);
+    transform-origin: center center;
+    will-change: transform;
+}
+body.md-route-shop #wrap:not(.md-shop) .o_wsale_product_grid_wrapper:hover .oe_product_image_img {
+    transform: scale(1.06);
+    filter: saturate(1.08);
+}
+
+// Skeleton AJAX: clase inyectada por JS mientras carga el grid
+body.md-route-shop.md-filtering #wrap:not(.md-shop) .o_wsale_product_grid_wrapper {
+    pointer-events: none;
+    background: linear-gradient(90deg, $md-gray-100 25%, $md-gray-50 50%, $md-gray-100 75%);
+    background-size: 400% 100%;
+    animation: md-skeleton-shimmer 1.5s ease-in-out infinite;
+    border-color: transparent;
+    box-shadow: none;
+    color: transparent;
+
+    img, .o_wsale_product_information { opacity: 0; }
+}
+
+// Overlay oscuro del drawer móvil
+.md-shop-drawer-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba($md-ink-900, 0.48);
+    backdrop-filter: blur(4px) saturate(1.1);
+    -webkit-backdrop-filter: blur(4px) saturate(1.1);
+    z-index: 1040;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.28s ease;
+
+    &.is-open {
+        opacity: 1;
+        pointer-events: auto;
+    }
+}
+
+// FAB flotante "Filtros" en móvil
+.md-filter-fab {
+    display: none;
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    z-index: 1039;
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    background: $md-brand-gradient;
+    color: $md-white;
+    align-items: center;
+    justify-content: center;
+    border: 0;
+    font-size: 1.2rem;
+    box-shadow: 0 8px 20px rgba($md-blue, 0.32);
+    transition: transform 0.22s cubic-bezier(0.22, 1, 0.36, 1),
+                box-shadow 0.22s ease;
+    cursor: pointer;
+
+    &:hover {
+        transform: scale(1.1);
+        box-shadow: 0 12px 28px rgba($md-blue, 0.4);
+    }
+}
+
+@media (max-width: 991.98px) {
+    body.md-route-shop {
+        .o_wsale_products_grid_before_rail,
+        .o_wsale_sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            width: #{unquote("min(320px, 88vw)")};
+            z-index: 1050;
+            border-radius: 0 var(--md-radius-bento) var(--md-radius-bento) 0;
+            max-height: 100dvh;
+            overflow-y: auto;
+            transform: translateX(-110%);
+            transition: transform 0.34s cubic-bezier(0.22, 1, 0.36, 1);
+
+            &.is-open { transform: translateX(0); }
+        }
+    }
+
+    .md-filter-fab { display: inline-flex; }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Fase 2.3 · Portal — ocultar o_portal_docs, timeline de entregas
+// ─────────────────────────────────────────────────────────────────────────────
+
+body.md-route-portal .o_portal_docs { display: none !important; }
+
+// Timeline horizontal de tracking de entregas
+.md-delivery-timeline {
+    display: flex;
+    align-items: flex-start;
+    overflow-x: auto;
+    padding: 0.5rem 0 1.25rem;
+    gap: 0;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+
+    &::-webkit-scrollbar { display: none; }
+}
+
+.md-timeline-node {
+    flex: 1;
+    min-width: 80px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+
+    // Línea conectora entre nodos
+    &::before {
+        content: '';
+        position: absolute;
+        top: 13px;
+        left: calc(-50% + 14px);
+        right: calc(50% + 14px);
+        height: 2px;
+        background: rgba($md-blue, 0.18);
+        transition: background 0.32s ease;
+    }
+    &:first-child::before { display: none; }
+
+    &.is-done::before { background: $md-green; }
+}
+
+.md-timeline-dot {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: rgba($md-blue, 0.12);
+    border: 2px solid rgba($md-blue, 0.22);
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.28s ease, box-shadow 0.28s ease, border-color 0.28s ease;
+
+    .is-done & {
+        background: $md-green;
+        border-color: $md-green;
+        box-shadow: 0 0 0 4px rgba($md-green, 0.18);
+    }
+
+    .is-active & {
+        background: $md-blue;
+        border-color: $md-blue;
+        box-shadow: 0 0 0 6px rgba($md-blue, 0.18);
+        animation: md-pin-pulse-active 1.8s ease-out infinite;
+    }
+
+    .fa { font-size: 0.72rem; color: $md-white; opacity: 0; }
+    .is-done & .fa { opacity: 1; }
+}
+
+.md-timeline-label {
+    margin-top: 10px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-align: center;
+    color: $md-muted;
+    line-height: 1.3;
+    padding: 0 4px;
+
+    .is-active & { color: $md-blue; font-weight: 700; }
+    .is-done & { color: $md-ink; }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Fase 2.6 · Farmacovigilancia — slide entre pasos del wizard
+// ─────────────────────────────────────────────────────────────────────────────
+
+// Los pasos usan [data-pv-step] + is-active / is-exiting (añadidos por JS)
+.md_pv_section {
+    display: none;
+
+    &.is-active {
+        display: grid;
+        gap: 1rem;
+        animation: md-slide-right 0.32s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    }
+
+    &.is-exiting {
+        display: grid;
+        gap: 1rem;
+        animation: md-slide-left 0.28s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+        pointer-events: none;
+    }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Reduced motion
+// ─────────────────────────────────────────────────────────────────────────────
+
+@media (prefers-reduced-motion: reduce) {
+    body.md-site-unified *,
+    body.md-site-unified *::before,
+    body.md-site-unified *::after {
+        animation-duration: 0.001ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.001ms !important;
+    }
+}

@@ -1,0 +1,195 @@
+// Portal Picking Visibility · estilos Bento/Glass para /my/pickings
+// Autocontenido: no depende de variables de otros módulos para que el
+// módulo funcione aunque medicine_depot_portal no esté instalado.
+
+$pk-ink:      #17394c;
+$pk-muted:    #667481;
+$pk-line:     rgba(20, 30, 60, 0.10);
+$pk-accent:   #16A6D9;
+$pk-success:  #1F9D55;
+$pk-warning:  #D9822B;
+$pk-radius:   16px;
+$pk-shadow:   0 8px 32px rgba(20, 30, 60, 0.08);
+
+// ── Item 37/38 · bloques de información en tarjetas glass ────────────
+.o_portal_picking_sidebar {
+    .pk-bento {
+        padding: 1rem 1.1rem;
+        border: 1px solid rgba(255, 255, 255, 0.55);
+        border-radius: $pk-radius;
+        background: rgba(255, 255, 255, 0.82);
+        backdrop-filter: blur(16px) saturate(1.4);
+        -webkit-backdrop-filter: blur(16px) saturate(1.4);
+        box-shadow: $pk-shadow;
+
+        @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+            background: rgba(255, 255, 255, 0.96);
+        }
+
+        h6 {
+            margin-bottom: 0.6rem;
+            color: $pk-ink;
+        }
+
+        address {
+            margin-bottom: 0;
+            line-height: 1.5;
+            color: $pk-ink;
+        }
+    }
+
+    .pk-info-row {
+        display: flex;
+        justify-content: space-between;
+        gap: 0.75rem;
+        padding: 0.5rem 0;
+        border-bottom: 1px solid $pk-line;
+
+        &:last-child { border-bottom: 0; }
+
+        strong { color: $pk-muted; font-weight: 600; }
+    }
+}
+
+// ── Item 39 · timeline de estados del pedido ─────────────────────────
+.pk-timeline {
+    display: flex;
+    align-items: flex-start;
+    list-style: none;
+    margin: 0 0 1.5rem;
+    padding: 0;
+    counter-reset: pk-step;
+
+    .pk-step {
+        position: relative;
+        flex: 1 1 0;
+        text-align: center;
+        font-size: 0.78rem;
+        color: $pk-muted;
+        padding-top: 34px;
+
+        // Línea conectora
+        &::before {
+            content: "";
+            position: absolute;
+            top: 12px;
+            left: -50%;
+            width: 100%;
+            height: 3px;
+            background: $pk-line;
+            z-index: 0;
+        }
+
+        &:first-child::before { display: none; }
+
+        // Nodo
+        &::after {
+            content: "";
+            position: absolute;
+            top: 4px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #fff;
+            border: 3px solid $pk-line;
+            z-index: 1;
+        }
+
+        &.is-done {
+            color: $pk-ink;
+            font-weight: 600;
+
+            &::before { background: $pk-success; }
+            &::after  { background: $pk-success; border-color: $pk-success; }
+        }
+
+        &.is-current {
+            color: $pk-ink;
+            font-weight: 700;
+
+            &::before { background: $pk-accent; }
+            &::after {
+                background: $pk-accent;
+                border-color: $pk-accent;
+                box-shadow: 0 0 0 4px rgba($pk-accent, 0.18);
+            }
+        }
+    }
+}
+
+// ── Item 44 · badge animado para estado en progreso ──────────────────
+@keyframes pk-pulse {
+    0%   { box-shadow: 0 0 0 0 rgba($pk-warning, 0.45); }
+    70%  { box-shadow: 0 0 0 8px rgba($pk-warning, 0); }
+    100% { box-shadow: 0 0 0 0 rgba($pk-warning, 0); }
+}
+
+.badge.bg-warning.pk-pulse {
+    animation: pk-pulse 1.8s ease-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .badge.bg-warning.pk-pulse { animation: none; }
+}
+
+// ── Item 42 · tabla de movimientos → tarjetas en móvil ───────────────
+@media (max-width: 575.98px) {
+    #picking_moves table.o_portal_my_doc_table {
+        thead { display: none; }
+
+        tbody tr {
+            display: block;
+            margin-bottom: 0.85rem;
+            padding: 0.85rem 1rem;
+            border: 1px solid $pk-line;
+            border-radius: $pk-radius;
+            background: #fff;
+            box-shadow: 0 4px 14px rgba(20, 30, 60, 0.05);
+        }
+
+        tbody td {
+            display: flex;
+            justify-content: space-between;
+            gap: 1rem;
+            padding: 0.35rem 0;
+            border: 0;
+            text-align: right;
+
+            &::before {
+                content: attr(data-label);
+                font-weight: 600;
+                color: $pk-muted;
+                text-align: left;
+            }
+
+            &:first-child {
+                text-align: left;
+                &::before { content: none; }
+            }
+        }
+    }
+}
+
+// ── Item 43 · estado vacío con ilustración ───────────────────────────
+.pk-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 0.75rem;
+    padding: 3rem 1.5rem;
+    border: 1px dashed $pk-line;
+    border-radius: $pk-radius;
+    background: rgba(255, 255, 255, 0.6);
+    color: $pk-muted;
+
+    svg { width: 72px; height: 72px; opacity: 0.7; }
+
+    .pk-empty-title {
+        font-size: 1.05rem;
+        font-weight: 700;
+        color: $pk-ink;
+    }
+}

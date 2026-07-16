@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <record id="view_move_pay_control" model="ir.ui.view">
+        <field name="name">account.move.pay.control</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="account.view_move_form"/>
+        <field name="arch" type="xml">
+
+            <xpath expr="//header" position="inside">
+                <field name="can_draft" invisible="1"/>
+                <field name="can_pay" invisible="1"/>
+            </xpath>
+
+            <xpath expr="//button[@name='action_register_payment']" position="attributes">
+                <attribute name="invisible">not can_pay</attribute>
+            </xpath>
+
+            <xpath expr="//button[@name='button_draft']" position="attributes">
+                <attribute name="invisible">not can_draft</attribute>
+            </xpath>
+
+        </field>
+    </record>
+
+    <record id="view_move_vendor_payment_reference" model="ir.ui.view">
+        <field name="name">account.move.vendor.payment.reference</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="account.view_move_form"/>
+        <field name="arch" type="xml">
+
+            <xpath expr="//field[@name='payment_reference']" position="after">
+                <field name="md_authorization_check_number"
+                       string="Número de autorización o cheque"
+                       invisible="move_type not in ('in_invoice', 'in_refund')"/>
+            </xpath>
+
+        </field>
+    </record>
+
+    <record id="view_in_invoice_tree_payment_columns" model="ir.ui.view">
+        <field name="name">account.move.in.invoice.list.payment.columns</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="account.view_in_invoice_tree"/>
+        <field name="arch" type="xml">
+
+            <xpath expr="/*[self::tree or self::list]" position="attributes">
+                <attribute name="editable">bottom</attribute>
+                <attribute name="open_form_view">1</attribute>
+            </xpath>
+
+            <xpath expr="/*[self::tree or self::list]" position="inside">
+                <field name="md_payment_method_display"
+                       string="Forma / Método de pago"
+                       optional="show"/>
+                <field name="md_authorization_check_number"
+                       string="Número de autorización o cheque"
+                       optional="show"/>
+            </xpath>
+
+        </field>
+    </record>
+
+</odoo>

@@ -1,0 +1,232 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Único punto de impresión desde la lista — binding activo -->
+    <record id="action_report_scrap_batch_consolidated" model="ir.actions.report">
+        <field name="name">Reporte Consolidado de Bajas</field>
+        <field name="model">stock.scrap.batch</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">medicine_depot_scrap_batch.report_scrap_consolidated</field>
+        <field name="report_file">medicine_depot_scrap_batch.report_scrap_consolidated</field>
+        <field name="binding_model_id" ref="model_stock_scrap_batch"/>
+        <field name="binding_type">report</field>
+        <field name="print_report_name">'Bajas Consolidado - %s' % (object.name)</field>
+    </record>
+
+    <!-- ═══════════════════════════════════════════════════════════════════
+         TEMPLATE PRINCIPAL — Reporte Consolidado de Bajas por Día
+
+         t-foreach="docs[0:1]" establece o en el scope EXTERIOR al t-call
+         (igual que todos los templates de pharma_reports). Cuando o está
+         dentro del body del t-call, no llega al scope de
+         web.external_layout_standard y los overrides de supresión evalúan
+         o como False → t-if=True → header nativo renderiza de todas formas.
+
+         El header pharma propio del consolidado va como PRIMER BLOQUE
+         dentro de div.page — patrón validado en pharma_reports.
+    ════════════════════════════════════════════════════════════════════════ -->
+    <template id="report_scrap_consolidated">
+        <t t-call="web.html_container">
+            <t t-foreach="docs[0:1]" t-as="o">
+            <t t-call="web.external_layout">
+                <t t-set="address" t-value="''"/>
+                <t t-set="information_block" t-value="''"/>
+
+                <t t-set="_sb_co" t-value="groups[0]['company'].sudo() if groups else env.company.sudo()"/>
+
+                <div class="page pharma-doc-page">
+
+                    <!-- ═══ HEADER PHARMA — primer bloque en .page ══════ -->
+                    <div class="pharma-full-header">
+                        <div class="d-flex align-items-start justify-content-between pharma-doc-header">
+                            <div class="pharma-logo-shell">
+                                <img t-if="_sb_co.logo" class="md-logo"
+                                     t-att-src="image_data_uri(_sb_co.logo)" alt="Logo"/>
+                                <div t-if="_sb_co.report_header"
+                                     t-field="_sb_co.report_header"
+                                     class="o_company_tagline fw-bold mt-1"/>
+                            </div>
+                            <div class="pharma-doc-info text-end">
+                                <span class="pharma-doc-type">Consolidado de Bajas</span>
+                                <span class="pharma-doc-num">
+                                    <t t-esc="str(len(groups)) + ' día(s)'"/>
+                                </span>
+                                <span class="pharma-doc-date">
+                                    <t t-esc="str(groups[0]['date']) if groups else ''"/>
+                                    <t t-if="groups and len(groups) > 1">
+                                        — <t t-esc="str(groups[-1]['date'])"/>
+                                    </t>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="pharma-stripe">
+                            <span class="pharma-stripe-band pharma-stripe-band-brand"/>
+                            <span class="pharma-stripe-band pharma-stripe-band-teal"/>
+                            <span class="pharma-stripe-band pharma-stripe-band-lime"/>
+                        </div>
+                        <div class="row g-0 pharma-meta-band">
+                            <div class="col-3 pharma-meta-cell">
+                                <span class="pharma-meta-label">Generado por</span>
+                                <span class="pharma-meta-val" t-esc="user.name or '—'"/>
+                            </div>
+                            <div class="col-3 pharma-meta-cell">
+                                <span class="pharma-meta-label">Órdenes incluidas</span>
+                                <span class="pharma-meta-val" t-esc="len(docs)"/>
+                            </div>
+                            <div class="col-3 pharma-meta-cell">
+                                <span class="pharma-meta-label">Total unidades</span>
+                                <span class="pharma-meta-val" t-esc="'%.2f' % grand_total_qty"/>
+                            </div>
+                            <div class="col-3 pharma-meta-cell">
+                                <span class="pharma-meta-label">Compañía</span>
+                                <span class="pharma-meta-val" t-esc="_sb_co.name or '—'"/>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ═══ BLOQUE POR DÍA ══════════════════════════════ -->
+                    <t t-foreach="groups" t-as="group">
+
+                        <div class="pharma-section-ttl" style="margin-top: 1.2rem;">
+                            Bajas del día:
+                            <t t-esc="str(group['date'])"/>
+                        </div>
+
+                        <!-- Metadata del día sin pharma-body-address-shell — evita
+                             márgenes globales acumulados en el t-foreach -->
+                        <div class="pharma-doc pharma-addr-grid" style="margin-bottom: 0.4rem;">
+                            <div class="row g-0">
+                                <div class="col-6 pe-4 pharma-addr-col">
+                                    <span class="pharma-addr-label">Órdenes incluidas</span>
+                                    <div class="pharma-addr-name">
+                                        <t t-esc="', '.join(b.name for b in group['batches'])"/>
+                                    </div>
+                                </div>
+                                <div class="col-6 ps-4 pharma-addr-col pharma-addr-divider">
+                                    <span class="pharma-addr-label">Motivo(s) de baja</span>
+                                    <div class="pharma-addr-name">
+                                        <t t-if="group['reason_tags']">
+                                            <t t-esc="', '.join(group['reason_tags'])"/>
+                                        </t>
+                                        <t t-else="">
+                                            <span class="text-muted">—</span>
+                                        </t>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <table class="table table-sm pharma-lines">
+                            <thead>
+                                <tr>
+                                    <th>Producto</th>
+                                    <th>Lote(s)</th>
+                                    <th class="text-end">CANTIDAD A LA MANO DADA DE BAJA</th>
+                                    <th>UdM</th>
+                                    <th class="text-end">Costo total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr t-foreach="group['lines']" t-as="line">
+                                    <td class="pharma-product-cell">
+                                        <t t-esc="line['product'].display_name"/>
+                                    </td>
+                                    <td class="pharma-mono" style="font-size: 0.78rem;">
+                                        <t t-esc="', '.join(line['lots']) if line['lots'] else '—'"/>
+                                    </td>
+                                    <td class="text-end">
+                                        <t t-esc="'%.2f' % line['qty']"/>
+                                    </td>
+                                    <td>
+                                        <t t-esc="line['uom'].name if line['uom'] else ''"/>
+                                    </td>
+                                    <td class="text-end">
+                                        <t t-esc="'%.2f' % line['cost']"/>
+                                        <t t-if="group['currency']">
+                                            <span style="font-size: 0.75rem; margin-left: 2px;">
+                                                <t t-esc="group['currency'].symbol"/>
+                                            </span>
+                                        </t>
+                                    </td>
+                                </tr>
+                            </tbody>
+                            <tfoot>
+                                <tr class="o_total_row">
+                                    <td colspan="2"><strong>Subtotal del día</strong></td>
+                                    <td class="text-end">
+                                        <strong><t t-esc="'%.2f' % group['day_total_qty']"/></strong>
+                                    </td>
+                                    <td/>
+                                    <td class="text-end">
+                                        <strong><t t-esc="'%.2f' % group['day_total_cost']"/>
+                                            <t t-if="group['currency']">
+                                                <span style="font-size: 0.75rem; margin-left: 2px;">
+                                                    <t t-esc="group['currency'].symbol"/>
+                                                </span>
+                                            </t>
+                                        </strong>
+                                    </td>
+                                </tr>
+                            </tfoot>
+                        </table>
+
+                    </t>
+
+                    <!-- ═══ TOTALES GLOBALES — patrón inv-total-table ═══ -->
+                    <div class="inv-totals-wrapper"
+                         style="clear: both; display: block; width: 100%; margin-top: 1.5rem; margin-bottom: 1.5rem; page-break-inside: avoid; font-size: 0.9rem;">
+                        <div class="pharma-section-ttl">Totales Globales</div>
+                        <table class="inv-total-table inv-total-fullwidth" style="table-layout: auto;">
+                            <thead>
+                                <tr>
+                                    <th class="text-start">Concepto</th>
+                                    <th class="text-end">Detalle / Importe</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Días con bajas</td>
+                                    <td class="text-end"><span t-esc="len(groups)"/></td>
+                                </tr>
+                                <tr>
+                                    <td>Órdenes procesadas</td>
+                                    <td class="text-end"><span t-esc="len(docs)"/></td>
+                                </tr>
+                                <tr>
+                                    <td>Total Cantidad A la mano dada de baja</td>
+                                    <td class="text-end">
+                                        <span t-esc="'%.2f' % grand_total_qty"/>
+                                    </td>
+                                </tr>
+                                <tr class="o_total_row">
+                                    <td>Costo total acumulado</td>
+                                    <td class="text-end">
+                                        <span t-esc="'%.2f' % grand_total_cost"/>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="text-muted" style="font-size: 0.7rem;">
+                        Reporte generado por <t t-esc="user.name"/>
+                    </div>
+
+                    <div class="pharma-signature-block" style="margin-top: 2rem; padding-top: 0.75rem;">
+                        <div class="row g-5">
+                            <div class="col-6 pharma-signature-col text-center">
+                                <div class="pharma-signature-line"/>
+                                <div class="pharma-signature-label">Responsable de bajas</div>
+                            </div>
+                            <div class="col-6 pharma-signature-col text-center">
+                                <div class="pharma-signature-line"/>
+                                <div class="pharma-signature-label">Autorización</div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </t>
+            </t>
+        </t>
+    </template>
+</odoo>

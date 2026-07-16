@@ -1,0 +1,356 @@
+// ════════════════════════════════════════════════════════════════════════
+// backend_bento.scss — Capa visual Bento-box del backend (Medicine Depot)
+// ────────────────────────────────────────────────────────────────────────
+// Consume los design tokens definidos en backend_tokens.scss (cargado antes
+// en web.assets_backend). Scope limitado a estilos de superficie; no altera
+// lógica OWL ni layouts flex/grid nativos de Odoo 19.
+//
+// Todos los valores de color, tipografía, espaciado y forma provienen de
+// las CSS custom properties --md-*. No hardcodear hex/px aquí.
+// ════════════════════════════════════════════════════════════════════════
+
+.o_web_client {
+
+    // ── Control panel: tarjeta glass con fallback opaco (Step 9 / 17) ─────
+    .o_control_panel {
+        padding-top: var(--md-space-2);
+        padding-bottom: var(--md-space-2);
+        border-bottom: 1px solid rgba(22, 166, 217, 0.14);
+        background: rgba(255, 255, 255, 0.97);          // fallback sólido
+        box-shadow: 0 6px 20px rgba(21, 35, 48, 0.05);
+
+        @supports (backdrop-filter: blur(1px)) {
+            background: rgba(255, 255, 255, 0.88);
+            backdrop-filter: blur(10px) saturate(1.2);
+            -webkit-backdrop-filter: blur(10px) saturate(1.2);
+        }
+    }
+
+    // ── Botón primario: pill con gradiente de marca ──────────────────────
+    .btn.btn-primary {
+        border-radius: var(--md-radius-pill);
+        border: 0;
+        background: linear-gradient(120deg, var(--md-primary) 0%, var(--md-action) 100%);
+        box-shadow: 0 10px 20px rgba(22, 166, 217, 0.22);
+
+        &:hover {
+            filter: saturate(1.08);
+            box-shadow: 0 14px 24px rgba(22, 166, 217, 0.28);
+        }
+    }
+
+    // ── Breadcrumb: separador tipográfico + color de marca (Step 20) ─────
+    .o_breadcrumb {
+        .breadcrumb-item + .breadcrumb-item::before {
+            content: "/";
+            color: var(--md-muted);
+            font-weight: 300;
+            opacity: 0.6;
+        }
+
+        .breadcrumb-item:last-child a,
+        .breadcrumb-item.active {
+            color: var(--md-primary);
+            font-weight: 600;
+        }
+    }
+
+    // ════════════════════════════════════════════════════════════════════
+    //  VISTA LISTA
+    // ════════════════════════════════════════════════════════════════════
+    .o_list_view {
+        // Densidad de fila: respiro vertical + legibilidad (Step 7)
+        .o_data_row .o_data_cell {
+            padding-top: 6px;
+            padding-bottom: 6px;
+            line-height: 1.45;
+        }
+
+        // Accent de hover de fila
+        .o_data_row:hover > .o_data_cell {
+            background: rgba(22, 166, 217, 0.05);
+        }
+
+        // Números tabulares: alineación de columnas numéricas (Step 5)
+        .o_data_cell.o_field_number,
+        .o_data_cell.o_list_number,
+        .o_data_cell[name$="_amount"],
+        .o_data_cell[name$="_qty"],
+        .o_data_cell[name$="_price"] {
+            font-variant-numeric: tabular-nums;
+            font-feature-settings: "tnum";
+        }
+
+        // Skeleton shimmer al cargar más filas (Step 22)
+        .o_data_row.o_loading_more td {
+            background: linear-gradient(
+                90deg,
+                var(--md-paper) 25%,
+                var(--md-primary-soft) 50%,
+                var(--md-paper) 75%
+            );
+            background-size: 200% 100%;
+            animation: md-shimmer 1.4s infinite;
+        }
+    }
+
+    // ════════════════════════════════════════════════════════════════════
+    //  VISTA KANBAN — regla única consolidada (Step 16 / 17)
+    // ════════════════════════════════════════════════════════════════════
+    .o_kanban_view .o_kanban_record {
+        border-radius: var(--md-radius-md);
+        border: 1px solid rgba(22, 166, 217, 0.12);
+        box-shadow: var(--md-shadow-1);
+        transition: box-shadow 0.2s ease, transform 0.18s ease;
+
+        &:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 28px rgba(22, 166, 217, 0.14);
+        }
+    }
+
+    // ════════════════════════════════════════════════════════════════════
+    //  VISTA FORMULARIO
+    // ════════════════════════════════════════════════════════════════════
+    .o_form_view {
+        // Relleno fluido de la hoja + aire entre campos (tokens nativos Odoo 19)
+        --formView-sheet-padding-x: clamp(16px, 3.5vw, 40px);
+        --formView-sheet-padding-y: clamp(20px, 3.5vw, 40px);
+        --inner-group-row-gap: var(--md-space-3);       // 12px vía sistema (Step 11)
+
+        // Ancho de hoja con breakpoint intermedio para laptop HD (Step 10)
+        .o_form_sheet_bg {
+            max-width: clamp(1024px, 88vw, 1440px);
+
+            @media (max-width: 1440px) { max-width: #{'min(1280px, 94vw)'}; }
+            @media (max-width: 1280px) {
+                max-width: 100%;
+                padding-inline: var(--md-space-4);
+            }
+        }
+
+        // Título de sección de <group string="..."> con accent (Step 3)
+        .o_horizontal_separator,
+        .o_group_label {
+            font-size: var(--md-text-sm);
+            font-weight: var(--md-weight-heading);
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: var(--md-color-text-dark);
+        }
+
+        // Label de campo: peso unificado (Step 4)
+        .o_inner_group .o_td_label > label {
+            color: var(--md-color-text-dark);
+            font-weight: var(--md-weight-label);
+        }
+
+        // Grupos de nivel superior como card Bento (Step 18)
+        // Solo grupos externos directos de la hoja → evita doble borde en
+        // grupos anidados (.o_inner_group queda sin tratamiento de card).
+        .o_form_sheet > .o_group {
+            background: var(--md-card-bg);
+            border: 1px solid var(--md-border);
+            border-radius: var(--md-radius-md);
+            padding: var(--md-space-4);
+            box-shadow: var(--md-shadow-1);
+            margin-bottom: var(--md-space-3);
+        }
+
+        // Smart buttons: gap + estilo pill de marca global (Step 12 / 23)
+        .oe_button_box {
+            gap: var(--md-space-2);
+            padding: var(--md-space-2) 0;
+            flex-wrap: wrap;
+
+            .oe_stat_button,
+            .o_stat_button {
+                border-radius: var(--md-radius-lg);
+                border: var(--bs-border-width) solid var(--bs-primary-border-subtle, rgba(22, 166, 217, 0.24));
+                background: var(--md-primary-soft);
+                color: var(--md-primary);
+                transition: background 0.18s ease;
+
+                .o_stat_value { font-weight: 700; font-variant-numeric: tabular-nums; }
+                .o_stat_text  { color: var(--md-color-text-secondary); }
+
+                &:hover { background: var(--bs-primary-bg-subtle, rgba(22, 166, 217, 0.14)); }
+            }
+        }
+
+        // Focus ring de marca — sin !important, especificidad suficiente (Step 27)
+        .o_field_widget {
+            input:focus,
+            textarea:focus,
+            select:focus {
+                border-color: var(--md-primary);
+                box-shadow: 0 0 0 3px rgba(22, 166, 217, 0.15);
+                outline: none;
+            }
+        }
+
+        // Notebook: pestaña activa con accent de marca (Step 19)
+        .o_notebook .nav-tabs {
+            .nav-link.active {
+                border-bottom: 2px solid var(--md-primary);
+                color: var(--md-primary);
+                font-weight: 600;
+            }
+            .nav-link:hover:not(.active) {
+                background: var(--md-primary-soft);
+                border-radius: var(--md-radius-sm) var(--md-radius-sm) 0 0;
+            }
+        }
+
+        // Tags relacionales: gap + radio uniforme Bento (Step 26)
+        .o_field_many2many_tags .badge,
+        .o_field_tags .badge {
+            border-radius: var(--md-radius-sm);
+            padding: 3px 8px;
+            font-size: var(--md-text-xs);
+            font-weight: 500;
+            margin: 2px;
+            border: 1px solid rgba(22, 166, 217, 0.18);
+            background: var(--md-primary-soft);
+            color: var(--md-primary-dark);
+            transition: background 0.15s ease;
+
+            &:hover { background: rgba(22, 166, 217, 0.14); }
+        }
+
+        // ── Barra de estado: tarjeta glass (Step 14 / 17) ─────────────────
+        .o_form_statusbar {
+            margin-bottom: var(--md-space-4);            // 16px vía sistema
+            border: 1px solid rgba(22, 166, 217, 0.12);
+            border-radius: var(--md-radius-md);
+            background: rgba(255, 255, 255, 0.97);       // fallback sólido
+
+            @supports (backdrop-filter: blur(1px)) {
+                background: rgba(255, 255, 255, 0.82);
+                backdrop-filter: blur(12px) saturate(1.15);
+                -webkit-backdrop-filter: blur(12px) saturate(1.15);
+            }
+
+            // Estado actual de la barra: color de marca (Step 24)
+            .o_arrow_button.o_arrow_button_current {
+                color: var(--md-primary);
+                font-weight: var(--md-weight-heading);
+            }
+            // Estados semánticos por data-value (selectores válidos Odoo 19)
+            .o_arrow_button_current[data-value="sale"],
+            .o_arrow_button_current[data-value="done"],
+            .o_arrow_button_current[data-value="posted"]  { color: var(--md-success); }
+            .o_arrow_button_current[data-value="cancel"]  {
+                color: var(--md-muted);
+                text-decoration: line-through;
+            }
+        }
+    }
+
+    // ── Chatter: aislamiento glass + densidad (Step 17 / 25) ─────────────
+    .o_chatter {
+        border: 1px solid rgba(22, 166, 217, 0.08);
+        border-radius: var(--md-radius-lg);
+        background: rgba(255, 255, 255, 0.62);
+        box-shadow: inset 0 2px 10px rgba(21, 35, 48, 0.02);
+
+        @supports (backdrop-filter: blur(1px)) {
+            backdrop-filter: blur(10px) saturate(1.1);
+            -webkit-backdrop-filter: blur(10px) saturate(1.1);
+        }
+
+        .o_avatar img,
+        .o_avatar_many img {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            border: 2px solid rgba(22, 166, 217, 0.2);
+        }
+
+        .o_mail_message_core {
+            border-bottom: 1px solid rgba(22, 166, 217, 0.07);
+            padding-bottom: var(--md-space-3);
+            margin-bottom: var(--md-space-3);
+        }
+
+        .o_mail_message_date,
+        .o_mail_datetime {
+            color: var(--md-muted);
+            font-size: var(--md-text-xs);
+        }
+    }
+
+    // ── Menú de acción del control panel: botón pill outline ─────────────
+    .o_cp_action_menus .btn {
+        border-radius: var(--md-radius-pill);
+        border-width: var(--bs-border-width);
+        border-color: var(--bs-border-color);
+        color: var(--bs-primary);
+        background: var(--bs-body-bg);
+        transition: background 0.18s ease, color 0.18s ease, border-color 0.18s ease;
+
+        &:hover {
+            border-color: var(--bs-primary-border-subtle, var(--bs-primary));
+            background: var(--bs-primary-bg-subtle, rgba(var(--bs-primary-rgb, 22, 166, 217), 0.08));
+            color: var(--bs-primary-text-emphasis, var(--bs-primary));
+        }
+    }
+
+    // ── Dropdowns: glass leve coherente con Bento (Step 21) ──────────────
+    .o_dropdown_menu,
+    .dropdown-menu {
+        border-radius: var(--md-radius-md);
+        border: 1px solid var(--md-dropdown-border);
+        box-shadow: var(--md-shadow-2);
+        color: var(--md-dropdown-color);
+        background: var(--md-dropdown-bg);
+
+        // Mapeo de variables nativas de Bootstrap 5 / Odoo 19
+        --bs-dropdown-bg: var(--md-dropdown-bg);
+        --bs-dropdown-color: var(--md-dropdown-color);
+        --bs-dropdown-border-color: var(--md-dropdown-border);
+        --bs-dropdown-link-color: var(--md-dropdown-color);
+        --bs-dropdown-link-hover-color: var(--md-dropdown-hover-color);
+        --bs-dropdown-link-hover-bg: var(--md-dropdown-hover-bg);
+        --bs-dropdown-link-active-color: var(--md-dropdown-hover-color);
+        --bs-dropdown-link-active-bg: var(--md-dropdown-hover-bg);
+
+        // Sin backdrop-filter: los popovers de Odoo (.o_popover) se renderizan
+        // vía portal con position:fixed fuera del flujo normal, y esa
+        // combinación (backdrop-filter + position:fixed + portal) tiene
+        // bugs de compositing conocidos en Chromium — el fondo puede pintar
+        // blanco sólido en vez del color oscuro, aunque el computed style sea
+        // correcto (reproducido en el menú de Acción de Contactos, ver
+        // docs/audits/2026-07-01_backend_dark_mode_audit.md). El fondo ya es
+        // prácticamente opaco (ver --md-dropdown-bg), así que el blur no
+        // aporta nada visible que valga el riesgo.
+
+        .dropdown-item {
+            color: var(--md-dropdown-color);
+
+            &:hover, &:focus, &.active {
+                background: var(--md-dropdown-hover-bg);
+                color: var(--md-dropdown-hover-color);
+            }
+        }
+    }
+
+    // ── Spinner de carga con color de marca (Step 22) ────────────────────
+    .o_spinner,
+    .o_loading .spinner-border,
+    .o_loading_indicator .spinner-border {
+        color: var(--md-primary);
+        border-top-color: var(--md-primary);
+    }
+}
+
+// ── Keyframes del skeleton shimmer (Step 22) ─────────────────────────────
+@keyframes md-shimmer {
+    0%   { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
+// El override de dark mode vive en backend_dark.scss (bundle
+// web.assets_web_dark, que Odoo 19 solo carga con el tema oscuro activo).
+// Un gate local con .o_dark_mode/[data-bs-theme] nunca coincide con el DOM
+// real — ver docs/audits/2026-07-01_backend_dark_mode_audit.md.

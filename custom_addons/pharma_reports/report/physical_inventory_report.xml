@@ -1,0 +1,437 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--
+      ════════════════════════════════════════════════════════════════════
+      Reporte de Ajuste de Inventario Físico — pharma_reports
+      Modelo: stock.quant
+      Diseño: pharma corporativo (header tricolor, meta-banda,
+              tabla agrupada por ubicación, colores semánticos Δ)
+
+      REGLA CRÍTICA: "A la mano" SIEMPRE.
+      ════════════════════════════════════════════════════════════════════
+    -->
+
+    <record id="paperformat_physical_inventory_pharma" model="report.paperformat">
+        <field name="name">Inventario Físico — Medicine Depot</field>
+        <field name="default" eval="False"/>
+        <field name="format">Letter</field>
+        <field name="page_height" eval="False"/>
+        <field name="page_width" eval="False"/>
+        <field name="orientation">Portrait</field>
+        <field name="margin_top">10</field>
+        <field name="margin_bottom">8</field>
+        <field name="margin_left">7</field>
+        <field name="margin_right">7</field>
+        <field name="header_line" eval="False"/>
+        <field name="header_spacing">0</field>
+        <field name="dpi">90</field>
+    </record>
+
+    <!-- ── Acción del reporte ─────────────────────────────────────────── -->
+    <record id="action_report_physical_inventory" model="ir.actions.report">
+        <field name="name">Reporte de Ajuste de Inventario Físico</field>
+        <field name="model">stock.quant</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">pharma_reports.report_physical_inventory_document</field>
+        <field name="report_file">pharma_reports.report_physical_inventory_document</field>
+        <field name="print_report_name">'Inventario Físico - %s' % (object.location_id.name)</field>
+        <field name="binding_model_id" ref="stock.model_stock_quant"/>
+        <field name="binding_type">report</field>
+        <field name="paperformat_id" ref="paperformat_physical_inventory_pharma"/>
+    </record>
+
+    <!-- Acción del menú Acción: descarga Excel con el mismo detalle operativo. -->
+    <record id="action_export_physical_inventory_excel" model="ir.actions.server">
+        <field name="name">Exportar Inventario Físico a Excel</field>
+        <field name="model_id" ref="stock.model_stock_quant"/>
+        <field name="binding_model_id" ref="stock.model_stock_quant"/>
+        <field name="binding_type">action</field>
+        <field name="state">code</field>
+        <field name="code">action = records.action_export_physical_inventory_excel()</field>
+    </record>
+
+    <!-- ── Plantilla principal del documento ─────────────────────────── -->
+    <template id="report_physical_inventory_document">
+        <t t-call="web.html_container">
+            <t t-call="web.basic_layout">
+                <t t-set="company" t-value="docs[0].company_id.sudo() if docs else False"/>
+                <t t-set="_locations" t-value="docs.mapped('location_id')"/>
+                <t t-set="_user_ids" t-value="docs.mapped('user_id').filtered(lambda u: u.id)"/>
+                <t t-set="_solicita" t-value="', '.join(_user_ids.mapped('name')[:2]) if _user_ids else '—'"/>
+
+                <div class="page pharma-doc-page pharma-inv-page">
+                    <!--
+                      ── HEADER PHARMA (inventario) ──────────────────────
+                      Header propio para stock.quant: no reutilizamos
+                      pharma_full_header (condicionado a sale/purchase/picking).
+                      Mismo look: logo + doc-info + stripe + meta-band.
+                    -->
+                    <div class="pharma-full-header">
+                        <!-- Logo + doc-info -->
+                        <div class="d-flex align-items-start justify-content-between pharma-doc-header">
+                            <div class="pharma-logo-shell">
+                                <img t-if="company and company.logo"
+                                     class="md-logo"
+                                     t-att-src="image_data_uri(company.logo)"
+                                     alt="Logo"/>
+                                <div t-if="company and company.report_header"
+                                     t-field="company.report_header"
+                                     class="o_company_tagline fw-bold mt-1"/>
+                            </div>
+                            <div class="pharma-doc-info text-end">
+                                <span class="pharma-doc-type">Inventario Físico</span>
+                                <span class="pharma-doc-num">Ajuste de Inventario</span>
+                            </div>
+                        </div>
+
+                        <!-- Franja tricolor brand → teal → lime -->
+                        <div class="pharma-stripe">
+                            <span class="pharma-stripe-band pharma-stripe-band-brand"/>
+                            <span class="pharma-stripe-band pharma-stripe-band-teal"/>
+                            <span class="pharma-stripe-band pharma-stripe-band-lime"/>
+                        </div>
+
+                        <!-- Meta-band: Empresa | Sucursal | Solicita | Realiza | Fecha | Motivo -->
+                        <div class="row g-0 pharma-meta-band">
+                            <div class="col-2 pharma-meta-cell">
+                                <span class="pharma-meta-label">Empresa</span>
+                                <span class="pharma-meta-val">
+                                    <t t-esc="company.name if company else '—'"/>
+                                </span>
+                            </div>
+                            <div class="col-2 pharma-meta-cell">
+                                <span class="pharma-meta-label">Sucursal</span>
+                                <span class="pharma-meta-val">
+                                    <t t-if="_locations">
+                                        <t t-esc="', '.join(_locations.mapped('display_name')[:2])"/>
+                                        <t t-if="len(_locations) &gt; 2"> +<t t-esc="len(_locations) - 2"/></t>
+                                    </t>
+                                    <t t-else="">—</t>
+                                </span>
+                            </div>
+                            <div class="col-2 pharma-meta-cell">
+                                <span class="pharma-meta-label">Solicita</span>
+                                <span class="pharma-meta-val">
+                                    <t t-esc="_solicita"/>
+                                </span>
+                            </div>
+                            <div class="col-2 pharma-meta-cell">
+                                <span class="pharma-meta-label">Realiza</span>
+                                <span class="pharma-meta-val">
+                                    <t t-esc="user.name or '—'"/>
+                                </span>
+                            </div>
+                            <div class="col-2 pharma-meta-cell">
+                                <span class="pharma-meta-label">Fecha del ajuste</span>
+                                <span class="pharma-meta-val">
+                                    <t t-esc="datetime.date.today().strftime('%d/%m/%Y')"/>
+                                </span>
+                            </div>
+                            <div class="col-2 pharma-meta-cell">
+                                <span class="pharma-meta-label">Motivo</span>
+                                <span class="pharma-meta-val">
+                                    <t t-esc="adjustment_reason"/>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- /HEADER PHARMA -->
+
+                    <!-- ── CONCENTRADO DE VARIACIONES ─────────────────── -->
+                    <t t-set="_total_lines" t-value="len(docs)"/>
+                    <div class="pharma-section-ttl pharma-inv-summary-title">Concentrado de variaciones</div>
+                    <div class="pharma-inv-summary-panel">
+                        <div class="pharma-inv-summary-row">
+                            <!-- Total líneas -->
+                            <div class="pharma-inv-summary-card pharma-inv-card-neutral">
+                                <span class="pharma-inv-card-value">
+                                    <t t-esc="_total_lines"/>
+                                </span>
+                                <span class="pharma-inv-card-label">Total líneas</span>
+                            </div>
+                            <!-- Variación piezas -->
+                            <div class="pharma-inv-summary-card pharma-inv-card-warning pharma-inv-summary-card-wide">
+                                <span class="pharma-inv-card-value pharma-inv-card-money">
+                                    <t t-esc="summary.get('variation_qty_fmt')"/>
+                                </span>
+                                <span class="pharma-inv-card-label">Variación piezas</span>
+                            </div>
+                            <!-- Variación costo -->
+                            <div class="pharma-inv-summary-card pharma-inv-card-warning pharma-inv-summary-card-wide">
+                                <span class="pharma-inv-card-value pharma-inv-card-money">
+                                    <t t-esc="summary.get('variation_value_fmt')"/>
+                                </span>
+                                <span class="pharma-inv-card-label">Variación costo</span>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- /CONCENTRADO DE VARIACIONES -->
+
+                    <!--
+                      ── TABLA PRINCIPAL — Agrupada por Ubicación ───────
+                      Iteramos sobre ubicaciones únicas y luego sus quants.
+                      Columnas base del formato operativo:
+                      línea | código | producto | lote | caducidad |
+                      A la mano | contada | diferencia | costos.
+                    -->
+
+                    <div class="pharma-section-ttl mt-2">Detalle por Ubicación</div>
+
+                    <table class="table pharma-lines pharma-inv-table">
+                        <thead>
+                            <tr>
+                                <th style="width:7%"><strong>Línea</strong></th>
+                                <th style="width:10%"><strong>Código</strong></th>
+                                <th style="width:21%"><strong>Producto</strong></th>
+                                <th style="width:10%"><strong>Lote</strong></th>
+                                <th style="width:10%"><strong>Caducidad</strong></th>
+                                <th style="width:6%" class="text-end"><strong>A la mano</strong></th>
+                                <th style="width:6%" class="text-end"><strong>Contada</strong></th>
+                                <th style="width:7%" class="text-end"><strong>Δ</strong></th>
+                                <th style="width:7%" class="text-end"><strong>Costo Unit.</strong></th>
+                                <th style="width:8%" class="text-end"><strong>Costo A la mano</strong></th>
+                                <th style="width:8%" class="text-end"><strong>Costo contado</strong></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <t t-foreach="_locations" t-as="location">
+                                <!--
+                                  Subheader por ubicación (fondo brand).
+                                  Ocupa toda la fila con colspan=11.
+                                -->
+                                <tr class="pharma-inv-location-row">
+                                    <td colspan="11">
+                                        <span class="pharma-inv-location-icon">&#9679;</span>
+                                        <t t-esc="location.display_name"/>
+                                    </td>
+                                </tr>
+
+                                <t t-set="_loc_quants" t-value="docs.filtered(lambda q: q.location_id.id == location.id)"/>
+                                <t t-foreach="_loc_quants" t-as="quant">
+                                    <!--
+                                      Clases semánticas de fila:
+                                        - pharma-inv-row-neg → diferencia negativa (faltante)
+                                        - pharma-inv-row-pos → diferencia positiva (sobrante)
+                                        - pharma-inv-row-ok  → conciliado (Δ = 0)
+                                        - Sin clase extra si no hay conteo
+                                    -->
+                                    <t t-set="_row_class" t-value="''"/>
+                                    <t t-if="quant.inventory_quantity_set and quant.inventory_diff_quantity &lt; 0">
+                                        <t t-set="_row_class" t-value="'pharma-inv-row-neg'"/>
+                                    </t>
+                                    <t t-if="quant.inventory_quantity_set and quant.inventory_diff_quantity &gt; 0">
+                                        <t t-set="_row_class" t-value="'pharma-inv-row-pos'"/>
+                                    </t>
+                                    <t t-if="quant.inventory_quantity_set and quant.inventory_diff_quantity == 0">
+                                        <t t-set="_row_class" t-value="'pharma-inv-row-ok'"/>
+                                    </t>
+                                    <t t-set="_unit_cost" t-value="unit_costs.get(quant.id, 0.0)"/>
+                                    <t t-set="_on_hand_value" t-value="on_hand_values.get(quant.id, 0.0)"/>
+                                    <t t-set="_counted_value" t-value="counted_values.get(quant.id, 0.0)"/>
+
+                                    <tr t-att-class="_row_class">
+                                        <!-- Línea -->
+                                        <td>
+                                            <span t-esc="line_names.get(quant.id, '—')"/>
+                                        </td>
+
+                                        <!-- Código de producto -->
+                                        <td>
+                                            <span class="pharma-mono">
+                                                <t t-esc="quant.product_id.barcode or quant.product_id.default_code or '—'"/>
+                                            </span>
+                                        </td>
+
+                                        <!-- Producto -->
+                                        <td class="pharma-product-cell">
+                                            <span t-esc="product_names.get(quant.id, quant.product_id.name or '')"/>
+                                        </td>
+
+                                        <!-- Lote / Número de Serie -->
+                                        <td>
+                                            <t t-if="quant.lot_id">
+                                                <span class="pharma-mono">
+                                                    <t t-esc="quant.lot_id.name"/>
+                                                </span>
+                                            </t>
+                                            <t t-else="">
+                                                <span class="pharma-inv-empty">—</span>
+                                            </t>
+                                        </td>
+
+                                        <!-- Fecha de Caducidad -->
+                                        <td>
+                                            <t t-if="quant.expiration_date">
+                                                <!--
+                                                  CRÍTICO farmacéutico: resaltar en rojo
+                                                  si la fecha ya caducó o caduca en 30 días.
+                                                -->
+                                                <t t-set="_exp_cls" t-value="'pharma-inv-expiry-warn' if quant.expiration_date.date() &lt;= (datetime.date.today() + datetime.timedelta(days=30)) else ''"/>
+                                                <span t-att-class="'pharma-mono ' + _exp_cls"
+                                                      t-field="quant.expiration_date"
+                                                      t-options='{"widget": "date"}'/>
+                                            </t>
+                                            <t t-else="">
+                                                <span class="pharma-inv-empty">—</span>
+                                            </t>
+                                        </td>
+
+                                        <!-- A la mano — cantidad teórica del sistema. -->
+                                        <td class="text-end">
+                                            <span t-field="quant.quantity"
+                                                  t-options='{"widget": "float", "precision": 2}'/>
+                                        </td>
+
+                                        <!-- Cantidad Contada (puede ser 0 si no se contó) -->
+                                        <td class="text-end">
+                                            <t t-if="quant.inventory_quantity_set">
+                                                <strong>
+                                                    <span t-field="quant.inventory_quantity"
+                                                          t-options='{"widget": "float", "precision": 2}'/>
+                                                </strong>
+                                            </t>
+                                            <t t-else="">
+                                                <span class="pharma-inv-empty">—</span>
+                                            </t>
+                                        </td>
+
+                                        <!-- Δ Diferencia con color semántico -->
+                                        <td class="text-end">
+                                            <t t-if="quant.inventory_quantity_set">
+                                                <t t-set="_diff_cls" t-value="'pharma-inv-diff-neg' if quant.inventory_diff_quantity &lt; 0 else ('pharma-inv-diff-pos' if quant.inventory_diff_quantity &gt; 0 else 'pharma-inv-diff-zero')"/>
+                                                <strong>
+                                                    <span t-att-class="_diff_cls"
+                                                          t-field="quant.inventory_diff_quantity"
+                                                          t-options='{"widget": "float", "precision": 2}'/>
+                                                </strong>
+                                            </t>
+                                            <t t-else="">
+                                                <span class="pharma-inv-empty">—</span>
+                                            </t>
+                                        </td>
+
+                                        <!-- Costo unitario -->
+                                        <td class="text-end">
+                                            <span class="pharma-inv-money">
+                                                <t t-esc="'$ %.2f' % _unit_cost"/>
+                                            </span>
+                                        </td>
+
+                                        <!-- Costo A la mano -->
+                                        <td class="text-end">
+                                            <span class="pharma-inv-money">
+                                                <t t-esc="'$ %.2f' % _on_hand_value"/>
+                                            </span>
+                                        </td>
+
+                                        <!-- Costo contado -->
+                                        <td class="text-end">
+                                            <t t-if="quant.inventory_quantity_set">
+                                                <span class="pharma-inv-money">
+                                                    <t t-esc="'$ %.2f' % _counted_value"/>
+                                                </span>
+                                            </t>
+                                            <t t-else="">
+                                                <span class="pharma-inv-empty">—</span>
+                                            </t>
+                                        </td>
+
+                                    </tr>
+                                </t>
+                                <!-- /foreach quant -->
+
+                            </t>
+                            <!-- /foreach location -->
+
+                            <!--
+                              Fila GRAN TOTAL — al final de la tabla.
+                            -->
+                            <t t-set="_all_counted" t-value="docs.filtered(lambda q: q.inventory_quantity_set)"/>
+                            <tr class="pharma-inv-grand-total-row">
+                                <td colspan="5"><strong>TOTAL GENERAL</strong></td>
+                                <td class="text-end">
+                                    <strong>
+                                        <t t-esc="'%.2f' % sum(docs.mapped('quantity'))"/>
+                                    </strong>
+                                </td>
+                                <td class="text-end">
+                                    <strong>
+                                        <t t-if="_all_counted">
+                                            <t t-esc="'%.2f' % sum(_all_counted.mapped('inventory_quantity'))"/>
+                                        </t>
+                                        <t t-else="">—</t>
+                                    </strong>
+                                </td>
+                                <td class="text-end">
+                                    <t t-if="_all_counted">
+                                        <t t-set="_grand_diff" t-value="sum(_all_counted.mapped('inventory_diff_quantity'))"/>
+                                        <t t-set="_gd_cls" t-value="'pharma-inv-diff-neg' if _grand_diff &lt; 0 else ('pharma-inv-diff-pos' if _grand_diff &gt; 0 else 'pharma-inv-diff-zero')"/>
+                                        <strong>
+                                            <span t-att-class="_gd_cls">
+                                                <t t-esc="'%.2f' % _grand_diff"/>
+                                            </span>
+                                        </strong>
+                                    </t>
+                                    <t t-else="">—</t>
+                                </td>
+                                <td/>
+                                <td class="text-end">
+                                    <strong><t t-esc="'$ %.2f' % summary.get('total_on_hand_value', 0.0)"/></strong>
+                                </td>
+                                <td class="text-end">
+                                    <t t-if="_all_counted">
+                                        <strong><t t-esc="'$ %.2f' % summary.get('total_counted_value', 0.0)"/></strong>
+                                    </t>
+                                    <t t-else="">—</t>
+                                </td>
+                            </tr>
+
+                        </tbody>
+                    </table>
+                    <!-- /TABLA PRINCIPAL -->
+
+                    <!--
+                      ── BLOQUE DE FIRMA ─────────────────────────────────
+                      Requerido para auditoría farmacéutica.
+                    -->
+                    <div class="pharma-inv-observations mt-2">
+                        <strong>Observaciones:</strong>
+                        Ajuste de inventario por conteo físico. Revisar diferencias por lote,
+                        caducidad y valor antes de confirmar movimientos contables.
+                    </div>
+
+                    <div class="pharma-signature-block">
+                        <div class="row">
+                            <div class="col-5 pharma-signature-col text-center">
+                                <div class="pharma-signature-line"/>
+                                <span class="pharma-signature-label">Responsable de Almacén</span>
+                            </div>
+                            <div class="col-2"/>
+                            <div class="col-5 pharma-signature-col text-center">
+                                <div class="pharma-signature-line"/>
+                                <span class="pharma-signature-label">Auditor / Supervisor</span>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- /BLOQUE DE FIRMA -->
+
+                    <!--
+                      ── NOTA LEGAL / LEYENDA ────────────────────────────
+                    -->
+                    <div class="pharma-inv-footnote mt-3">
+                        <em>
+                            Este documento es resultado de un conteo físico de inventario.
+                            La columna "<strong>A la mano</strong>" representa la cantidad
+                            teórica registrada en el sistema previo al ajuste.
+                            La columna "<strong>Contada</strong>" representa la cantidad
+                            verificada físicamente.
+                        </em>
+                    </div>
+
+                </div>
+                <!-- /page -->
+            </t>
+        </t>
+    </template>
+
+</odoo>

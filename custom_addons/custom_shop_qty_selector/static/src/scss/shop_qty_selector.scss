@@ -1,0 +1,1925 @@
+// ═══════════════════════════════════════════════════════════════════
+//  custom_shop_qty_selector  —  Bootstrap 5.3 / Odoo 19
+//
+//  A. Badge A la mano
+//  B. Cadena flex para cards de altura uniforme
+//  C. CTA reveal (hover)
+//  D. Widget qty  [ − | 1 | + | PZA ]
+//  E. Página de detalle
+//  F. Responsive
+// ═══════════════════════════════════════════════════════════════════
+
+// Item 30 · micro-animación de escala del display de cantidad
+@keyframes o_sqty_bump {
+    0%   { transform: scale(1); }
+    40%  { transform: scale(1.18); }
+    100% { transform: scale(1); }
+}
+
+.o_sqty_bump {
+    animation: o_sqty_bump 0.18s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .o_sqty_bump { animation: none; }
+}
+
+// ── Tokens ──────────────────────────────────────────────────────────
+$c-in:    #16a34a;
+$c-out:   #f59e0b;
+$c-low:   #d97706;
+$c-gray:  #6b7280;
+$radius:  8px;
+$md-brand-gradient: linear-gradient(90deg, #3AA5C9 0%, #4DB39C 50%, #8DC63F 100%);
+$md-card-shadow: 0 14px 34px rgba(25, 53, 72, 0.08);
+$md-card-shadow-hover: 0 20px 42px rgba(25, 53, 72, 0.14);
+$md-card-control-height: 24px;
+
+
+// ══════════════════════════════════════════════════════════════════
+//  A. Badge A la mano
+// ══════════════════════════════════════════════════════════════════
+
+.o_sqty_stock {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 9px;
+    border-radius: $radius;
+    border: 1px solid #bbf7d0;
+    background: #f0fdf4;
+    font-size: 11.5px;
+    font-weight: 500;
+    color: #1f2937;
+    line-height: 1.3;
+
+    &.o_sqty_low          { background: #fffbeb; border-color: #fcd34d; }
+    &.o_sqty_out_stock    { background: #fff7ed; border-color: #fdba74; }
+    &.o_sqty_stock_hidden { display: none !important; }
+
+    // Shimmer de carga
+    &.o_sqty_loading {
+        height: 26px;
+        border-color: #e5e7eb;
+        background: linear-gradient(90deg, #f3f4f6 25%, #eaecef 50%, #f3f4f6 75%);
+        background-size: 200% 100%;
+        animation: sqty-shimmer 1.4s infinite;
+    }
+
+    // Variante para página de detalle (más grande)
+    &.o_sqty_detail {
+        padding: 10px 16px;
+        font-size: 14px;
+        border-radius: 10px;
+    }
+}
+
+.o_sqty_dot {
+    display: inline-block;
+    flex-shrink: 0;
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    .o_sqty_in_stock  & { background: $c-in;  animation: sqty-pulse 2s ease-out infinite; }
+    .o_sqty_low       & { background: $c-low; }
+    .o_sqty_out_stock & { background: $c-out; }
+}
+
+.o_sqty_label strong { font-weight: 700; color: $c-in; }
+.o_sqty_qty          { font-weight: 700; color: $c-in; }
+.o_sqty_low .o_sqty_qty { color: $c-low; }
+.o_sqty_unit         { color: $c-gray; font-weight: 500; }
+.o_sqty_empty        { color: $c-out; font-weight: 600; }
+.o_sqty_empty strong { color: $c-out; }
+
+// ══════════════════════════════════════════════════════════════════
+//  A2. Badge % de descuento (grid)
+// ══════════════════════════════════════════════════════════════════
+
+// $danger de Bootstrap en este build = #dc3545 (confirmado en vivo: PDP
+// .text-danger renderiza rgb(220, 53, 69)). Se usa el hex literal en vez de
+// var(--bs-danger)/var(--bs-danger-rgb) porque esas custom properties NO
+// resuelven en este frontend (verificado: background quedaba transparente
+// pese al CSS) — el build de Bootstrap de Odoo no las expone a este scope.
+$md-danger: #dc3545;
+
+.o_md_discount_badge {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    z-index: 4;
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: $md-danger;
+    color: #fff;
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1.3;
+    box-shadow: 0 4px 10px rgba(220, 53, 69, .35);
+}
+
+// El pill de la PDP reutiliza .o_md_discount_badge (mismo estilo que el
+// grid); el contenedor de la galería necesita position:relative para que
+// el absolute del badge ancle a su esquina y no a un ancestro más grande.
+.o_wsale_product_images {
+    position: relative;
+}
+
+@keyframes sqty-pulse {
+    0%   { box-shadow: 0 0 0 0   rgba($c-in, 0.5); }
+    70%  { box-shadow: 0 0 0 5px rgba($c-in, 0);   }
+    100% { box-shadow: 0 0 0 0   rgba($c-in, 0);   }
+}
+@keyframes sqty-shimmer {
+    0%   { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
+
+// ══════════════════════════════════════════════════════════════════
+//  B. Cards de altura uniforme — Flexbox alignment chain
+//
+//  Problema resuelto: los nombres de producto con distinta longitud
+//  provocan que precios y botones queden desalineados entre tarjetas
+//  de una misma fila.
+//
+//  Solución:
+//    1. Cadena flex-column completa desde .oe_product_cart hasta
+//       .o_wsale_product_sub.
+//    2. Títulos con line-clamp a 2 líneas → altura fija del bloque
+//       de nombre, sin importar la longitud del texto.
+//    3. margin-top: auto en el bloque inferior (precio + CTA) para
+//       anclarlo al fondo de la tarjeta.
+//
+//  Jerarquía:
+//    .oe_product_cart                          ← h-100 (BS)
+//    └─ .o_wsale_product_grid_wrapper          ← h-100 (nativo)
+//       └─ form                                ← h-100 + flex-column
+//          └─ .o_wsale_product_information     ← flex:1 + flex-column
+//             ├─ a (imagen)
+//             ├─ .o_wsale_product_info_attributes_wrapper ← flex:1
+//             │   └─ h2.o_wsale_products_item_title       ← line-clamp:2
+//             └─ .o_wsale_product_sub          ← mt-auto (anclaje)
+// ══════════════════════════════════════════════════════════════════
+
+#products_grid,
+#products_grid_before {
+
+    // ── 0. Container card: forzar stretch uniforme ────────────────
+    //     position: relative habilita el anclaje absoluto del botón
+    //     flotante de wishlist (.o_add_wishlist) sobre la imagen.
+    .oe_product_cart {
+        display: flex;
+        flex-direction: column;
+        position: relative;
+        overflow: hidden;
+        border: 1px solid rgba(58, 165, 201, 0.12);
+        border-radius: 14px;
+        background: rgba(255, 255, 255, 0.98);
+        box-shadow: $md-card-shadow;
+        transition: border-color 0.18s ease,
+                    box-shadow 0.18s ease,
+                    transform 0.18s ease;
+
+        &:hover,
+        &:focus-within {
+            border-color: rgba(58, 165, 201, 0.28);
+            box-shadow: $md-card-shadow-hover;
+            transform: translateY(-2px);
+        }
+    }
+
+    // ── 1. Wrapper: 100% height (refuerzo) ───────────────────────
+    .o_wsale_product_grid_wrapper {
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+
+    // ── 2. Form: flex-column de altura completa ──────────────────
+    .o_wsale_product_grid_wrapper > form {
+        height: 100%;
+        display: flex !important;
+        flex-direction: column !important;
+    }
+
+    // ── 3. Bloque de información: llena el espacio disponible ────
+    .o_wsale_product_information {
+        display: flex !important;
+        flex-direction: column !important;
+        flex: 1 1 auto;
+    }
+
+    // ── 4. Atributos + nombre: crece para empujar CTA abajo ─────
+    .o_wsale_product_info_attributes_wrapper {
+        flex: 1 1 auto;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    // ── 5. Título del producto: clamp a 2 líneas ─────────────────
+    //  Garantiza altura uniforme del bloque de nombre sin importar
+    //  la longitud del texto. Línea 3+ se trunca con "…".
+    .o_wsale_products_item_title {
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        line-height: 1.32;
+        font-weight: 700;
+        letter-spacing: 0;
+        // Reservar 2 líneas de alto (font-size heredado × line-height × 2)
+        // Esto evita "saltos" cuando un título ocupa 1 vs 2 líneas.
+        min-height: calc(2em * 1.32);
+
+        a {
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+    }
+
+    // ── 6. Precio + badge + CTA: anclado al fondo ───────────────
+    //  margin-top: auto empuja este bloque al extremo inferior de
+    //  la tarjeta, independientemente de la altura del contenido
+    //  superior (nombre, imagen).
+    .o_wsale_product_sub {
+        flex-shrink: 0;
+        margin-top: auto;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 6px;
+        padding-top: 6px;
+    }
+
+    // ── 7. Precio: altura mínima consistente ────────────────────
+    .product_price {
+        min-height: 1.5em;
+        display: flex;
+        align-items: flex-end;
+        font-weight: 800;
+        letter-spacing: 0;
+    }
+
+    .o_sqty_stock {
+        width: fit-content;
+        max-width: 100%;
+        padding: 3px 8px;
+        border-color: rgba(22, 163, 74, 0.18);
+        background: rgba(240, 253, 244, 0.88);
+        font-size: 11px;
+    }
+
+    // ── Imagen del producto: proporción uniforme + contain ────────
+    //  Normaliza CUALQUIER imagen (cuadrada, panorámica, vertical)
+    //  para que todas las cards tengan el mismo cuadro visual sin
+    //  recortes ni deformaciones.
+    .oe_product_image {
+        aspect-ratio: 1 / 1;
+        width: 100%;
+        height: auto !important;
+        background: linear-gradient(180deg, #fbfdfd 0%, #f4f9f7 100%);
+    }
+
+    .oe_product_image_link {
+        display: flex !important;
+        width: 100%;
+        height: 100%;
+        align-items: center;
+        justify-content: center;
+        padding: 10px;
+    }
+
+    .oe_product_image_img_wrapper {
+        width: 100%;
+        height: 100%;
+    }
+
+    .oe_product_image_img,
+    .oe_product_image_img_secondary {
+        width: 100% !important;
+        height: 100% !important;
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: contain !important;
+        object-position: center;
+    }
+}
+
+.o_sqty_card_footer {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+
+// ══════════════════════════════════════════════════════════════════
+//  C. CTA estático — siempre visible
+//     JS añade .o_sqty_cta_hidden cuando el producto no tiene cantidad.
+// ══════════════════════════════════════════════════════════════════
+
+.o_sqty_cta_reveal {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 6px;
+    flex: 0 0 auto;
+    overflow: hidden;
+    transition: opacity 0.18s ease,
+                transform 0.18s ease,
+                max-height 0.18s ease,
+                margin-top 0.18s ease;
+
+    &.o_sqty_cta_hidden { display: none !important; }
+
+    &.o_sqty_cta_no_stock {
+        .js_shop_qty_selector,
+        .o_wsale_product_btn {
+            display: none !important;
+        }
+    }
+}
+
+@media (hover: hover) and (min-width: 992px) {
+    #products_grid .oe_product_cart .o_sqty_card_footer,
+    #products_grid_before .oe_product_cart .o_sqty_card_footer {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr);
+        gap: 8px;
+    }
+
+    // grid-template-columns: auto 28px → la primera pista mide
+    // exactamente lo que mide el pill (fit-content), la segunda
+    // exactamente 28px del boton. justify-content: center alinea el
+    // par [pill | boton] al eje del card (UX request: cards centradas).
+    #products_grid .oe_product_cart .o_sqty_cta_reveal,
+    #products_grid_before .oe_product_cart .o_sqty_cta_reveal {
+        display: grid;
+        grid-template-columns: auto 28px;
+        justify-content: center;
+        align-items: center;
+        gap: 6px;
+        width: 100%;
+        max-height: none;
+        margin-top: 0;
+        opacity: 1;
+        pointer-events: auto;
+        transform: none;
+    }
+
+    // Badge "A la mano" y demás contenido del footer
+    // tambien centrados para mantener simetria visual.
+    #products_grid .oe_product_cart .o_sqty_card_footer,
+    #products_grid_before .oe_product_cart .o_sqty_card_footer {
+        justify-items: center;
+        text-align: center;
+    }
+}
+
+// Botón agregar: ancho completo
+.o_sqty_cta_reveal .o_wsale_product_btn {
+    display: flex !important;
+    align-items: center !important;
+    width: 100%;
+    height: auto !important;
+    min-height: 0 !important;
+    flex: 0 0 auto !important;
+
+    button.btn,
+    a.btn,
+    .btn-primary {
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        width: 100%;
+        height: $md-card-control-height !important;
+        min-height: $md-card-control-height !important;
+        max-height: $md-card-control-height;
+        flex: 0 0 auto !important;
+        flex-grow: 0 !important;
+        padding: 0 0.55rem !important;
+        border: 0 !important;
+        border-radius: 999px;
+        background: $md-brand-gradient !important;
+        color: #ffffff !important;
+        line-height: 1 !important;
+        box-shadow: 0 5px 12px rgba(58, 165, 201, 0.14);
+        transition: transform 0.16s ease,
+                    box-shadow 0.16s ease,
+                    filter 0.16s ease;
+
+        i,
+        .fa,
+        .oi {
+            color: #ffffff !important;
+            font-size: 0.78rem !important;
+            line-height: 1 !important;
+            margin: 0;
+        }
+
+        span {
+            color: #ffffff !important;
+        }
+
+        &:hover,
+        &:focus {
+            color: #ffffff !important;
+            filter: brightness(1.06) saturate(1.04);
+            transform: translateY(-1px);
+            box-shadow: 0 14px 26px rgba(58, 165, 201, 0.24),
+                        0 7px 16px rgba(141, 198, 63, 0.18);
+        }
+    }
+}
+
+@media (hover: hover) and (min-width: 992px) {
+    .o_sqty_cta_reveal .o_wsale_product_btn {
+        width: 28px;
+        min-width: 28px !important;
+        justify-content: flex-end;
+
+        button.btn,
+        a.btn,
+        .btn-primary {
+            width: 28px;
+            min-width: 28px;
+            padding-inline: 0 !important;
+
+            .o_label,
+            span:not(.fa):not(.oi) {
+                display: none !important;
+            }
+        }
+    }
+}
+
+
+// ══════════════════════════════════════════════════════════════════
+//  D. Widget qty  [ − | display | + | PZA ]
+// ══════════════════════════════════════════════════════════════════
+
+.o_shop_qty_selector {
+    // fit-content: el contenedor se ajusta al ancho real de los hijos
+    // (26 + 40 + 26 + ~42 = ~134px). Cero gap por construccion. El grid
+    // padre se ajusta para que el boton del carrito quede inmediato.
+    width: fit-content;
+    max-width: 100%;
+    min-width: 0;
+
+    // Bootstrap 5 input-group con anchos fijos por hijo. No dependemos
+    // de flex-grow para distribuir espacio: cada elemento mide lo que
+    // tiene que medir y el contenedor abraza el total exacto.
+    .css_quantity {
+        --bs-border-radius: 999px;
+        --bs-focus-ring-width: 0;
+        display: inline-flex !important;
+        flex-wrap: nowrap !important;
+        align-items: stretch !important;
+        width: fit-content !important;
+        max-width: 100%;
+        min-width: 0;
+        height: $md-card-control-height;
+        min-height: $md-card-control-height;
+        border-radius: 999px;
+        overflow: hidden;
+        background: #fff;
+        border: 1px solid #d1d5db;
+        box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.7);
+
+        // Reset visual a todos los hijos: misma altura, sin borde, sin
+        // shadow propio (ni en focus). Importante: !important sobre las
+        // dimensiones para vencer estados :focus/:hover de BS5.
+        > .btn,
+        > .form-control,
+        > .input-group-text {
+            height: $md-card-control-height !important;
+            min-height: $md-card-control-height !important;
+            padding-top: 0 !important;
+            padding-bottom: 0 !important;
+            line-height: 1;
+            border: 0 !important;
+            border-radius: 0 !important;
+            box-shadow: none !important;
+            background: #fff;
+            transition: background-color 0.18s ease, color 0.18s ease;
+        }
+
+        .sqty-minus,
+        .sqty-plus {
+            flex: 0 0 26px !important;
+            width: 26px !important;
+            min-width: 26px !important;
+            max-width: 26px !important;
+            padding-left: 0 !important;
+            padding-right: 0 !important;
+            font-size: 0.72rem;
+            color: #24424d;
+
+            i, .oi, .fa { line-height: 1; }
+
+            &:hover:not(:disabled):not(.disabled) {
+                background: rgba(29, 155, 131, 0.1);
+                color: #157764;
+            }
+            // active/focus NO cambian dimensiones: usamos box-shadow inset
+            &:active:not(:disabled):not(.disabled) {
+                background: rgba(29, 155, 131, 0.18);
+            }
+            &:focus,
+            &:focus-visible {
+                outline: 0 !important;
+                box-shadow: inset 0 0 0 2px rgba(29, 155, 131, 0.42) !important;
+            }
+        }
+
+        .sqty-display {
+            // Ancho fijo: el input ya no compite por espacio sobrante.
+            // 40px aloja hasta 4 digitos (9999) en font-size 11px.
+            flex: 0 0 40px !important;
+            width: 40px !important;
+            min-width: 40px !important;
+            max-width: 40px !important;
+            padding: 0 2px !important;
+            font-weight: 700;
+            font-size: 11px;
+            color: #111827;
+            text-align: center;
+            -moz-appearance: textfield;
+            border-left: 1px solid #edf0f2 !important;
+            border-right: 1px solid #edf0f2 !important;
+
+            &::-webkit-outer-spin-button,
+            &::-webkit-inner-spin-button {
+                -webkit-appearance: none;
+                margin: 0;
+            }
+
+            &:focus {
+                position: relative;
+                z-index: 1;
+                outline: 0 !important;
+                background: #fff;
+                box-shadow: inset 0 0 0 2px rgba(29, 155, 131, 0.28) !important;
+            }
+
+            &.o_sqty_invalid {
+                animation: sqty-shake 0.55s ease-in-out;
+                box-shadow: inset 0 0 0 2px $c-out !important;
+            }
+        }
+
+        @keyframes sqty-shake {
+            10%, 90% { transform: translateX(-1px); }
+            20%, 80% { transform: translateX(2px); }
+            30%, 50%, 70% { transform: translateX(-3px); }
+            40%, 60% { transform: translateX(3px); }
+        }
+
+        .o_sqty_unit {
+            flex: 0 0 auto !important;
+            width: auto !important;
+            min-width: 0 !important;
+            padding: 0 9px !important;
+            background: rgba(29, 155, 131, 0.1);
+            color: #157764;
+            font-size: 8.5px;
+            font-weight: 800;
+            letter-spacing: 0;
+            border-left: 1px solid rgba(29, 155, 131, 0.16);
+        }
+    }
+
+    .o_sqty_syncing { opacity: 0.5; pointer-events: none; }
+
+    .sqty-minus.disabled,
+    .sqty-minus:disabled { opacity: 0.3; pointer-events: none; }
+}
+
+
+// ══════════════════════════════════════════════════════════════════
+//  E. Página de detalle — layout vertical CTA
+// ══════════════════════════════════════════════════════════════════
+
+#add_to_cart_wrap {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 10px;
+
+    .css_quantity {
+        width: 100% !important;
+        justify-content: center;
+        border-radius: $radius;
+        overflow: hidden;
+    }
+
+    #add_to_cart,
+    .o_we_buy_now { width: 100% !important; justify-content: center !important; }
+}
+
+.o_md_product_detail_panel {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    padding: 24px;
+    border: 1px solid rgba(58, 165, 201, 0.14);
+    border-radius: 18px;
+    background: rgba(255, 255, 255, 0.96);
+    box-shadow: 0 22px 48px rgba(25, 53, 72, 0.08);
+
+    h1,
+    .h1 {
+        margin-bottom: 0;
+        color: #17394c;
+        font-weight: 800;
+        letter-spacing: 0;
+        line-height: 1.16;
+    }
+
+    .product_price {
+        margin-bottom: 0;
+        color: #17394c;
+        font-weight: 800;
+        letter-spacing: 0;
+    }
+
+    .o_md_active_ingredient_tags {
+        margin: 0;
+    }
+
+    .o_md_product_line_tags {
+        margin: 0;
+    }
+
+    .o_sqty_detail {
+        margin-bottom: 0 !important;
+        padding: 12px 16px;
+        border-color: rgba(22, 163, 74, 0.18);
+        background: rgba(240, 253, 244, 0.92);
+        font-weight: 600;
+    }
+
+    .o_md_stock_notify_wrap {
+        margin-bottom: 0 !important;
+
+        #out_of_stock_message .badge,
+        #product_stock_notification_message {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            width: 100%;
+            padding: 10px 14px;
+            border-radius: 10px;
+            border: 1px solid #fdba74;
+            background: #fff7ed;
+            color: #b45309 !important;
+            text-wrap: balance;
+            font-weight: 600;
+            box-shadow: none;
+            text-decoration: none;
+        }
+
+        #out_of_stock_message .badge i,
+        #product_stock_notification_message i {
+            color: #f59e0b !important;
+        }
+
+        #stock_notification_form .input-group {
+            overflow: hidden;
+            border-radius: 999px;
+            border: 1px solid rgba(58, 165, 201, 0.28);
+            background: #ffffff;
+        }
+
+        #stock_notification_form .form-control {
+            border: 0;
+            box-shadow: none;
+        }
+
+        #product_stock_notification_form_submit_button {
+            border: 0;
+            background: $md-brand-gradient;
+            color: #ffffff;
+            font-weight: 700;
+        }
+
+        #stock_notification_success_message .text-muted {
+            margin: 0;
+            padding: 10px 14px !important;
+            border-radius: 10px;
+            border: 1px solid rgba(58, 165, 201, 0.22);
+            background: rgba(240, 249, 255, 0.8);
+            color: #1e3a56 !important;
+            font-weight: 500;
+        }
+    }
+}
+
+// ── PDP "Bento pill": pastilla horizontal centrada bajo el precio,
+//    fusionando el selector de cantidad nativo (.css_quantity) con
+//    el botón #add_to_cart en una sola superficie continua. La
+//    pastilla se autocomprime al ancho del contenido (fit-content)
+//    y queda centrada en su contenedor (justify-content center).
+//    Se conservan los nodos nativos — sólo se restyleean. ────────
+.o_md_product_detail_actions {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    padding: 16px;
+    border: 1px solid rgba(58, 165, 201, 0.16);
+    border-radius: 18px;
+    background: linear-gradient(180deg, rgba(245, 251, 252, 0.96) 0%, rgba(237, 248, 244, 0.96) 100%);
+
+    // Wrapper horizontal: cantidad + boton agregar quedan en linea.
+    // form[name='o_wsale_cta_wrapper'] / o_we_buy_now_wrapper varían
+    // entre temas — selectores defensivos para todos los niveles.
+    > form,
+    > .o_we_buy_now_wrapper,
+    .css_quantity,
+    #add_to_cart_wrap {
+        width: auto;
+        max-width: 100%;
+    }
+
+    // Pastilla unificada qty + CTA — usa fit-content para no ocupar
+    // el 100% del panel; el padre la centra con align-items: center.
+    .css_quantity {
+        display: inline-flex !important;
+        flex-wrap: nowrap !important;
+        align-items: stretch !important;
+        width: fit-content !important;
+        min-height: 46px;
+        height: 46px;
+        border: 1px solid rgba(58, 165, 201, 0.32);
+        border-radius: 999px;
+        overflow: hidden;
+        background: #ffffff;
+        box-shadow: 0 6px 14px rgba(58, 165, 201, 0.12);
+
+        > .btn,
+        > .form-control,
+        > .input-group-text {
+            height: 46px !important;
+            border: 0 !important;
+            border-radius: 0 !important;
+            box-shadow: none !important;
+        }
+
+        .form-control,
+        input[type="number"] {
+            flex: 0 0 64px !important;
+            width: 64px !important;
+            min-width: 64px !important;
+            max-width: 64px !important;
+            text-align: center;
+            font-weight: 700;
+            color: #17394c;
+        }
+
+        .btn {
+            flex: 0 0 46px !important;
+            width: 46px !important;
+            min-width: 46px !important;
+            background: transparent !important;
+            color: #17394c !important;
+        }
+    }
+
+    // Botón "Añadir al carrito": pill horizontal pegado al qty.
+    // En desktop quedan lado a lado vía flex-row en #add_to_cart_wrap.
+    #add_to_cart_wrap {
+        display: flex !important;
+        flex-direction: row !important;
+        flex-wrap: wrap;
+        align-items: center !important;
+        justify-content: center !important;
+        gap: 10px;
+    }
+
+    #add_to_cart,
+    .o_we_buy_now {
+        height: 46px;
+        min-height: 46px;
+        padding: 0 22px !important;
+        border: 0 !important;
+        border-radius: 999px !important;
+        background: $md-brand-gradient !important;
+        color: #ffffff !important;
+        font-weight: 800;
+        letter-spacing: 0;
+        box-shadow: 0 14px 28px rgba(58, 165, 201, 0.2);
+        transition: transform 0.16s ease,
+                    box-shadow 0.16s ease,
+                    filter 0.16s ease;
+
+        &:hover,
+        &:focus-visible {
+            color: #ffffff !important;
+            filter: brightness(1.05) saturate(1.03);
+            transform: translateY(-1px);
+            box-shadow: 0 18px 34px rgba(58, 165, 201, 0.26),
+                        0 8px 18px rgba(141, 198, 63, 0.16);
+        }
+    }
+}
+
+// Badge "A la mano" en PDP: centrado bajo el panel premium
+// para alinearse con la nueva pastilla horizontal.
+.o_md_product_detail_panel .o_sqty_detail {
+    align-self: center;
+}
+
+
+// ══════════════════════════════════════════════════════════════════
+//  F. Responsive
+// ══════════════════════════════════════════════════════════════════
+
+@media (max-width: 575.98px) {
+    .o_sqty_stock  { font-size: 11px; }
+    .sqty-display  { font-size: 13px; }
+
+    #products_grid .oe_product_cart .o_add_wishlist,
+    #products_grid_before .oe_product_cart .o_add_wishlist {
+        width: 28px;
+        height: 28px;
+        top: 6px;
+        right: 6px;
+
+        i, .fa { font-size: 0.82rem; }
+    }
+}
+
+// ══════════════════════════════════════════════════════════════════
+//  2026 shop polish: smooth dropdown filters + Bento product cards
+// ══════════════════════════════════════════════════════════════════
+
+$md-shop-cyan: #16a6d9;
+$md-shop-lime: #97d700;
+$md-shop-ink: #17394c;
+$md-shop-card-border: rgba(22, 166, 217, 0.14);
+
+body.md-route-shop,
+#wrap:has(#o_wsale_container) {
+    --md-shop-ease: cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+.o_md_filters_panel,
+.o_md_categories_panel,
+#o_wsale_offcanvas_content {
+    .accordion-collapse,
+    .wsale_products_categories_list.accordion-collapse {
+        display: block !important;
+        max-height: 620px;
+        overflow: hidden;
+        opacity: 1;
+        visibility: visible;
+        transform: translateY(0);
+        transition:
+            max-height 0.42s var(--md-shop-ease),
+            opacity 0.28s ease,
+            transform 0.34s var(--md-shop-ease),
+            visibility 0s linear 0s;
+        will-change: max-height, opacity, transform;
+    }
+
+    .accordion-collapse.collapse:not(.show),
+    .wsale_products_categories_list.accordion-collapse.collapse:not(.show) {
+        max-height: 0;
+        opacity: 0;
+        visibility: hidden;
+        transform: translateY(-8px);
+        transition:
+            max-height 0.34s var(--md-shop-ease),
+            opacity 0.22s ease,
+            transform 0.26s var(--md-shop-ease),
+            visibility 0s linear 0.34s;
+    }
+
+    .accordion-collapse.collapsing {
+        display: block !important;
+        overflow: hidden;
+        opacity: 0.92;
+        transform: translateY(-3px);
+        transition:
+            height 0.38s var(--md-shop-ease),
+            max-height 0.38s var(--md-shop-ease),
+            opacity 0.24s ease,
+            transform 0.3s var(--md-shop-ease);
+    }
+
+    .accordion-button {
+        position: relative;
+        border-radius: 10px !important;
+        padding: 0.46rem 0.52rem !important;
+
+        &::before {
+            content: "";
+            position: absolute;
+            inset: 5px auto 5px 0;
+            width: 3px;
+            border-radius: 999px;
+            background: linear-gradient(180deg, $md-shop-cyan, $md-shop-lime);
+            opacity: 0;
+            transform: scaleY(0.45);
+            transition:
+                opacity 0.24s ease,
+                transform 0.3s var(--md-shop-ease);
+        }
+
+        &:not(.collapsed),
+        &[data-status="active"] {
+            background: rgba($md-shop-cyan, 0.06) !important;
+            color: $md-shop-ink !important;
+
+            &::before {
+                opacity: 1;
+                transform: scaleY(1);
+            }
+        }
+    }
+
+    .accordion-body,
+    .o_md_active_ingredient_filter_body,
+    .o_md_product_line_filter_body {
+        transform-origin: top;
+    }
+}
+
+.o_wsale_products_grid_before_rail,
+#o_wsale_offcanvas_content {
+    .form-check {
+        isolation: isolate;
+
+        &::before {
+            content: "";
+            position: absolute;
+            inset: 2px 0 2px 0;
+            border-radius: 8px;
+            background: linear-gradient(90deg, rgba($md-shop-cyan, 0.08), rgba($md-shop-lime, 0.07));
+            opacity: 0;
+            transform: scaleX(0.96);
+            transform-origin: left center;
+            transition:
+                opacity 0.22s ease,
+                transform 0.3s var(--md-shop-ease);
+            z-index: -1;
+        }
+
+        &:hover::before,
+        &:has(.form-check-input:checked)::before {
+            opacity: 1;
+            transform: scaleX(1);
+        }
+    }
+
+    .form-check-label {
+        min-width: 0;
+        overflow-wrap: anywhere;
+    }
+}
+
+#products_grid,
+#products_grid_before {
+    .oe_product_cart {
+        border-radius: 18px;
+        border: 1px solid $md-shop-card-border;
+        background:
+            linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(246, 252, 250, 0.96)),
+            #fff;
+        box-shadow:
+            0 18px 42px rgba(23, 57, 76, 0.08),
+            0 1px 0 rgba(255, 255, 255, 0.88) inset;
+        overflow: hidden;
+        transition:
+            transform 0.26s var(--md-shop-ease),
+            box-shadow 0.26s ease,
+            border-color 0.26s ease;
+
+        &:hover,
+        &:focus-within {
+            transform: translateY(-4px);
+            border-color: rgba($md-shop-cyan, 0.28);
+            box-shadow:
+                0 26px 60px rgba(23, 57, 76, 0.13),
+                0 0 0 4px rgba($md-shop-lime, 0.08);
+        }
+    }
+
+    .o_wsale_product_grid_wrapper {
+        border-radius: inherit;
+        background: transparent;
+    }
+
+    .o_product_image,
+    .oe_product_image {
+        border-radius: 14px;
+        background:
+            radial-gradient(circle at 85% 12%, rgba($md-shop-lime, 0.18), transparent 28%),
+            linear-gradient(135deg, rgba($md-shop-cyan, 0.08), rgba(255, 255, 255, 0.72));
+        overflow: hidden;
+    }
+
+    .o_wsale_product_information {
+        position: relative;
+        z-index: 1;
+    }
+
+    .o_wsale_products_item_title a {
+        color: $md-shop-ink;
+        transition: color 0.18s ease;
+    }
+
+    .oe_product_cart:hover .o_wsale_products_item_title a {
+        color: #0e83ad;
+    }
+
+    .product_price {
+        display: inline-flex;
+        align-items: baseline;
+        gap: 4px;
+        padding-top: 4px;
+        color: $md-shop-ink;
+        font-weight: 900;
+    }
+
+    .o_sqty_card_footer {
+        border-radius: 13px;
+        background: rgba(255, 255, 255, 0.72);
+        border: 1px solid rgba(22, 166, 217, 0.10);
+    }
+}
+
+@media (max-width: 575.98px) {
+    #products_grid,
+    #products_grid_before {
+        .oe_product_cart {
+            border-radius: 15px;
+            padding: 11px 11px 10px;
+        }
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .o_md_filters_panel,
+    .o_md_categories_panel,
+    #o_wsale_offcanvas_content {
+        .accordion-collapse,
+        .accordion-collapse.collapsing,
+        .wsale_products_categories_list.accordion-collapse {
+            transition: none !important;
+        }
+    }
+}
+
+
+// ══════════════════════════════════════════════════════════════════
+//  G. Wishlist flotante sobre la imagen del producto
+//
+//  Reubica el botón nativo .o_add_wishlist (de website_sale_wishlist)
+//  como chip circular blanco anclado al esquina superior derecha de
+//  la tarjeta — visualmente sobre la imagen del producto.
+//
+//  Selector vía CSS (no XPath) porque el botón se inyecta por
+//  inherits del módulo wishlist y el orden de aplicación en odoo.sh
+//  puede diferir del árbol público.
+// ══════════════════════════════════════════════════════════════════
+
+#products_grid .oe_product_cart,
+#products_grid_before .oe_product_cart {
+
+    .o_add_wishlist,
+    button.o_add_wishlist,
+    a.o_add_wishlist {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        z-index: 10;
+
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        width: 32px;
+        height: 32px;
+        padding: 0;
+        margin: 0;
+
+        border: 0;
+        border-radius: 50%;
+        background: $md-brand-gradient;
+        color: #ffffff;
+        box-shadow: 0 8px 18px rgba(58, 165, 201, 0.18),
+                    0 3px 8px rgba(20, 30, 60, 0.12);
+
+        transition: color 0.15s ease,
+                    transform 0.15s ease,
+                    box-shadow 0.15s ease,
+                    background-color 0.15s ease;
+
+        i, .fa, .oi {
+            font-size: 0.9rem;
+            line-height: 1;
+            margin: 0;
+            color: inherit;
+        }
+
+        &:hover,
+        &:focus-visible {
+            color: #dc2626;
+            transform: translateY(-1px) scale(1.04);
+            box-shadow: 0 10px 22px rgba(58, 165, 201, 0.24),
+                        0 5px 12px rgba(20, 30, 60, 0.16);
+            background: $md-brand-gradient;
+            outline: none;
+        }
+
+        // Estado "ya en wishlist" (clase nativa que añade el módulo).
+        &.o_in_wishlist,
+        &.added {
+            color: #dc2626;
+            background-color: #fff;
+        }
+    }
+}
+
+
+// ══════════════════════════════════════════════════════════════════
+//  H. Ingrediente activo: tags clicables y filtro lateral
+// ══════════════════════════════════════════════════════════════════
+
+.o_md_active_ingredient_tags,
+.o_md_product_line_tags {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    gap: 6px;
+    margin: 0 0 2px;
+}
+
+#product_details .o_md_active_ingredient_tags,
+#product_details .o_md_product_line_tags {
+    justify-content: flex-start;
+    margin: -4px 0 16px;
+}
+
+.o_md_product_meta_label {
+    display: inline-flex;
+    align-items: center;
+    min-height: 24px;
+    color: #516a74;
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0;
+    text-transform: uppercase;
+}
+
+.o_md_active_ingredient_tag,
+.o_md_product_line_tag {
+    display: inline-flex;
+    align-items: center;
+    max-width: 100%;
+    min-height: 24px;
+    padding: 4px 10px;
+    border: 1px solid rgba(58, 165, 201, 0.35);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.92);
+    color: #2d6f7f !important;
+    font-size: 0.72rem;
+    font-weight: 700;
+    line-height: 1.1;
+    text-decoration: none !important;
+    text-transform: uppercase;
+    letter-spacing: 0;
+    box-shadow: 0 4px 10px rgba(58, 165, 201, 0.08);
+    transition: transform 0.16s ease,
+                box-shadow 0.16s ease,
+                border-color 0.16s ease,
+                color 0.16s ease;
+
+    &:hover,
+    &:focus-visible {
+        border-color: rgba(141, 198, 63, 0.65);
+        color: #24596a !important;
+        transform: translateY(-1px);
+        box-shadow: 0 7px 16px rgba(58, 165, 201, 0.16);
+        outline: none;
+    }
+}
+
+.o_md_product_line_tag {
+    border-color: rgba(29, 155, 131, 0.32);
+    background: rgba(29, 155, 131, 0.08);
+    color: #157764;
+
+    &:hover,
+    &:focus-visible {
+        border-color: rgba(29, 155, 131, 0.5);
+        background: rgba(29, 155, 131, 0.16);
+        box-shadow: 0 7px 16px rgba(29, 155, 131, 0.14);
+    }
+}
+
+// ── Eyebrow de Línea (arriba del título en la card) ───────────────
+//  Estilo "category tag" minimal: uppercase pequeño, color brand
+//  apagado, sin pastilla ni borde. Funciona como ancla clickable.
+.o_md_product_line_eyebrow {
+    display: inline-flex;
+    align-items: center;
+    max-width: 100%;
+    margin: 0 0 4px;
+    padding: 0;
+    color: #1d9b83 !important;
+    font-size: 0.65rem;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    line-height: 1.1;
+    text-transform: uppercase;
+    text-decoration: none !important;
+    transition: color 0.16s ease;
+
+    span {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        max-width: 100%;
+    }
+
+    &:hover,
+    &:focus-visible {
+        color: #157764 !important;
+        outline: none;
+    }
+
+    &::before {
+        content: "";
+        display: inline-block;
+        width: 14px;
+        height: 1.5px;
+        margin-right: 6px;
+        background: currentColor;
+        opacity: 0.8;
+        flex-shrink: 0;
+    }
+}
+
+.o_md_active_ingredient_tags_compact {
+    min-height: 24px;
+    gap: 5px;
+}
+
+.o_md_active_ingredient_tags_compact .o_md_active_ingredient_tag {
+    max-width: calc(50% - 14px);
+    min-height: 22px;
+    padding: 3px 8px;
+    font-size: 0.67rem;
+
+    span {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+}
+
+.o_md_active_ingredient_more {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 26px;
+    min-height: 22px;
+    padding: 3px 8px;
+    border: 1px solid rgba(77, 179, 156, 0.28);
+    border-radius: 999px;
+    background: rgba(77, 179, 156, 0.1);
+    color: #24596a;
+    font-size: 0.68rem;
+    font-weight: 800;
+    line-height: 1;
+}
+
+// ══════════════════════════════════════════════════════════════════
+//  Premium shop filters sidebar
+// ══════════════════════════════════════════════════════════════════
+
+$md-filter-text:          #183943;
+$md-filter-separator:     rgba(17, 47, 58, 0.1);
+$md-filter-accent:        #1d9b83;
+$md-filter-accent-strong: #157764;
+$md-filter-accent-bg:     rgba(29, 155, 131, 0.12);
+$md-filter-hover-bg:      rgba(29, 155, 131, 0.08);
+
+#products_grid_before {
+    --md-shop-sidebar-top: 1.25rem;
+    top: var(--md-shop-sidebar-top);
+    z-index: 2;
+}
+
+.o_wsale_products_grid_before_rail,
+.o_md_shop_filters_rail {
+    height: auto !important;
+    max-height: calc(100vh - var(--md-shop-sidebar-top, 1.25rem) - 1.25rem);
+    overflow-y: auto !important;
+    overscroll-behavior: contain;
+    scrollbar-gutter: stable;
+    // Items 23/24 · panel flotante translúcido con bordes curvos y sombra suave
+    padding: 1.1rem 1rem;
+    border: 1px solid rgba(255, 255, 255, 0.55);
+    border-radius: var(--md-r-card, 16px);
+    background: rgba(255, 255, 255, 0.82);
+    backdrop-filter: blur(var(--md-blur-glass, 16px)) saturate(1.4);
+    -webkit-backdrop-filter: blur(var(--md-blur-glass, 16px)) saturate(1.4);
+    box-shadow: var(--md-shadow-glass, 0 8px 32px rgba(0, 0, 0, 0.08));
+
+    @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+        background: rgba(255, 255, 255, 0.95);
+    }
+}
+
+.products_categories,
+.o_md_filters_panel {
+    color: $md-filter-text;
+}
+
+.o_md_filters_panel,
+.o_md_categories_panel {
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+    overflow: visible;
+
+    .accordion-item,
+    .nav-item {
+        position: relative;
+        margin: 0 !important;
+        padding: 0.45rem 0;
+        border: 0 !important;
+        border-bottom: 1px solid $md-filter-separator !important;
+        border-radius: 0 !important;
+        background: transparent !important;
+        box-shadow: none !important;
+        overflow: visible;
+        transition:
+            background-color 0.3s ease,
+            border-color 0.3s ease,
+            transform 0.3s ease;
+
+        &:last-child {
+            border-bottom: 0 !important;
+        }
+
+        &:hover {
+            transform: translateX(2px);
+        }
+    }
+
+    .accordion-header,
+    h6 {
+        margin: 0 !important;
+        background: transparent !important;
+        box-shadow: none !important;
+    }
+
+    .accordion-button {
+        min-height: 0;
+        padding: 0.1rem 0 !important;
+        background: transparent !important;
+        color: $md-filter-text;
+        box-shadow: none !important;
+        font-size: 0.85rem;
+        font-weight: 750;
+        letter-spacing: 0;
+        text-transform: none;
+        transition:
+            color 0.24s ease,
+            opacity 0.24s ease;
+
+        b {
+            font-size: inherit;
+            font-weight: inherit;
+            letter-spacing: 0;
+            text-transform: none;
+        }
+
+        &::after {
+            width: 0.78rem;
+            height: 0.78rem;
+            background-size: 0.78rem;
+            margin-left: auto;
+            opacity: 0.72;
+            transition:
+                transform 0.28s ease,
+                opacity 0.28s ease;
+        }
+
+        // Hover y expandido: mantener color dark uniforme (alineado con
+        // Categorías). Sólo el chevron rota para señalizar expansión.
+        &:hover {
+            color: $md-filter-text;
+            background: transparent !important;
+        }
+
+        &:not(.collapsed) {
+            color: $md-filter-text;
+            background: transparent !important;
+
+            &::after {
+                transform: rotate(180deg);
+                opacity: 1;
+            }
+        }
+
+        &:focus {
+            box-shadow: none !important;
+            outline: 0;
+        }
+    }
+
+    .accordion-collapse,
+    .collapsing {
+        opacity: 1;
+        transform: translateY(0);
+        transition:
+            height 0.3s ease,
+            opacity 0.3s ease,
+            transform 0.3s ease;
+    }
+
+    .accordion-collapse:not(.show) {
+        opacity: 0;
+        transform: translateY(-4px);
+    }
+
+    .accordion-body {
+        padding: 0.35rem 0 0.1rem !important;
+    }
+
+    .d-flex.flex-wrap {
+        gap: 0.3rem;
+    }
+}
+
+.o_wsale_products_grid_before_rail,
+#o_wsale_offcanvas_content {
+    .form-check {
+        position: relative;
+        display: flex;
+        align-items: center;
+        gap: 0.45rem;
+        min-height: 1.5rem;
+        margin: 0 !important;
+        padding: 0.12rem 0.35rem 0.12rem 0;
+        border-radius: 5px;
+        transition:
+            background-color 0.3s ease,
+            transform 0.3s ease,
+            box-shadow 0.3s ease;
+
+        &:hover {
+            background: $md-filter-hover-bg;
+            transform: translateX(2px);
+        }
+    }
+
+    .form-check-input {
+        position: absolute;
+        inline-size: 1px;
+        block-size: 1px;
+        margin: 0;
+        opacity: 0;
+        pointer-events: none;
+    }
+
+    .form-check-label {
+        position: relative;
+        display: flex;
+        align-items: center;
+        flex: 1 1 auto;
+        min-height: 1.15rem;
+        width: 100%;
+        padding-left: 1.6rem;
+        color: $md-filter-text;
+        font-size: 0.82rem;
+        font-weight: 500;
+        line-height: 1.25;
+        cursor: pointer;
+        transition: all 0.3s ease;
+
+        &::before {
+            content: "";
+            position: absolute;
+            left: 0.1rem;
+            top: 50%;
+            width: 0.95rem;
+            height: 0.95rem;
+            transform: translateY(-50%);
+            border: 1.5px solid rgba(24, 57, 67, 0.34);
+            border-radius: 4px;
+            background: #fff;
+            transition: all 0.3s ease;
+        }
+
+        &::after {
+            content: "";
+            position: absolute;
+            left: 0.4rem;
+            top: 50%;
+            width: 0.3rem;
+            height: 0.55rem;
+            border-right: 2px solid #fff;
+            border-bottom: 2px solid #fff;
+            opacity: 0;
+            transform: translateY(-58%) rotate(45deg) scale(0.8);
+            transition: all 0.3s ease;
+        }
+    }
+
+    .form-check-input:checked + .form-check-label {
+        color: $md-filter-accent-strong;
+        font-weight: 800;
+    }
+
+    .form-check-input:checked + .form-check-label::before {
+        border-color: $md-filter-accent;
+        background: $md-filter-accent;
+        box-shadow:
+            0 0 0 4px $md-filter-accent-bg,
+            inset 0 0 0 1px rgba(255, 255, 255, 0.18);
+    }
+
+    .form-check-input:checked + .form-check-label::after {
+        opacity: 1;
+        transform: translateY(-58%) rotate(45deg) scale(1);
+    }
+
+    .form-check-input:focus-visible + .form-check-label::before {
+        border-color: $md-filter-accent;
+        box-shadow: 0 0 0 4px $md-filter-accent-bg;
+    }
+
+    input[type="radio"] + .form-check-label::before {
+        border-radius: 999px;
+    }
+
+    input[type="radio"] + .form-check-label::after {
+        left: 0.35rem;
+        width: 0.42rem;
+        height: 0.42rem;
+        border: 0;
+        border-radius: 999px;
+        background: #fff;
+        transform: translateY(-50%) scale(0.45);
+    }
+
+    input[type="radio"]:checked + .form-check-label::after {
+        opacity: 1;
+        transform: translateY(-50%) scale(1);
+    }
+}
+
+// Estado "activo" de un grupo de filtro: el título permanece dark para
+// homologar con Categorías. La señal visual la dan los items marcados
+// (form-check-input:checked + label::before/::after).
+.o_md_filter_group_active {
+    > .accordion-header .accordion-button,
+    > h6 .accordion-button,
+    > .accordion-button {
+        color: $md-filter-text;
+        font-weight: 750;
+    }
+}
+
+.o_md_categories_panel,
+.products_categories {
+    .wsale_products_categories_list a,
+    .accordion-header > a {
+        display: flex;
+        align-items: center;
+        width: 100%;
+        padding: 0.22rem 0.4rem;
+        border-radius: 5px;
+        color: $md-filter-text;
+        font-size: 0.82rem;
+        font-weight: 500;
+        text-decoration: none !important;
+        transition: all 0.3s ease;
+
+        &:hover {
+            color: $md-filter-accent-strong;
+            background: $md-filter-hover-bg;
+        }
+
+        &.text-decoration-underline {
+            color: $md-filter-accent-strong;
+            background: $md-filter-accent-bg;
+            font-weight: 700;
+        }
+    }
+
+    .nav-hierarchy {
+        margin-top: 0.25rem !important;
+        padding-left: 0.85rem !important;
+        border-left: 1px solid $md-filter-separator;
+    }
+
+    .o_categories_recursive_button {
+        transition: all 0.3s ease;
+
+        &:hover {
+            color: $md-filter-accent-strong;
+        }
+    }
+}
+
+.o_md_filter_count,
+.o_wsale_filter_count,
+.form-check .badge,
+.wsale_products_categories_list .badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 1.55rem;
+    height: 1.2rem;
+    margin-left: auto;
+    padding: 0 0.45rem;
+    border: 1px solid rgba(29, 155, 131, 0.22);
+    border-radius: 999px;
+    background: rgba(29, 155, 131, 0.1);
+    color: $md-filter-accent-strong;
+    font-size: 0.7rem;
+    font-weight: 700;
+    line-height: 1;
+    transition: all 0.3s ease;
+}
+
+.o_md_active_ingredient_filter,
+.o_md_product_line_filter {
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+    overflow: visible;
+
+    .o_md_active_ingredient_filter_body,
+    .o_md_product_line_filter_body {
+        padding: 0.6rem 0 0.2rem;
+    }
+}
+
+#wrap:has(#o_wsale_container) {
+    background:
+        linear-gradient(
+            180deg,
+            rgba(224, 247, 243, 0.46) 0%,
+            rgba(244, 252, 248, 0.54) 36%,
+            rgba(255, 247, 244, 0.38) 100%
+        );
+}
+
+#wrap:has(#o_wsale_container) #o_wsale_container {
+    background: transparent;
+}
+
+@media (max-width: 991.98px) {
+    #products_grid_before {
+        top: auto;
+    }
+
+    .o_wsale_products_grid_before_rail,
+    .o_md_shop_filters_rail {
+        max-height: none;
+    }
+}
+
+// ── Clear filters: discreto y minimal (desktop + offcanvas) ───────
+//  El botón nativo es sólido btn-{{navClass}} (gris masivo). Lo
+//  convertimos en text-button sutil con underline animado en hover.
+.o_wsale_products_grid_before_rail .py-3.border-bottom,
+.o_wsale_products_grid_before_rail > .border-bottom {
+    padding-top: 0.5rem !important;
+    padding-bottom: 0.5rem !important;
+    border-bottom-color: $md-filter-separator !important;
+}
+
+.o_wsale_products_grid_before_rail .py-3.border-bottom a.btn,
+#o_wsale_offcanvas .offcanvas-body.border-top a.btn {
+    display: inline-flex !important;
+    width: auto !important;
+    align-items: center;
+    justify-content: flex-start !important;
+    padding: 0.2rem 0 !important;
+    border: 0 !important;
+    background: transparent !important;
+    color: $md-filter-text !important;
+    font-size: 0.78rem !important;
+    font-weight: 600 !important;
+    letter-spacing: 0.02em;
+    text-transform: none;
+    text-decoration: none !important;
+    box-shadow: none !important;
+    transition: color 0.18s ease;
+
+    &::before {
+        content: "\f00d"; // FontAwesome x
+        font-family: "FontAwesome";
+        margin-right: 6px;
+        font-size: 0.7rem;
+        font-weight: 400;
+        opacity: 0.55;
+    }
+
+    &:hover,
+    &:focus-visible {
+        color: $md-filter-accent-strong !important;
+        background: transparent !important;
+        text-decoration: underline !important;
+        text-underline-offset: 3px;
+        outline: none;
+    }
+
+    &.disabled,
+    &[aria-disabled="true"] {
+        opacity: 0.35;
+        pointer-events: none;
+    }
+}
+
+// ── Refino tipográfico de la card (Paso 3, audit) ────────────────
+#products_grid,
+#products_grid_before {
+    .o_wsale_products_item_title {
+        font-size: 0.9rem;
+        line-height: 1.3;
+        margin-bottom: 4px;
+
+        a {
+            color: #17394c;
+        }
+    }
+
+    .product_price {
+        font-size: 0.95rem;
+        color: #17394c;
+    }
+
+    .oe_product_cart {
+        padding: 14px 14px 12px;
+    }
+
+    .o_wsale_product_information {
+        padding-top: 8px;
+    }
+}
+
+@media (max-width: 575.98px) {
+    .o_md_active_ingredient_tags,
+    .o_md_product_line_tags {
+        gap: 5px;
+        margin-bottom: 6px;
+    }
+
+    .o_md_active_ingredient_tag,
+    .o_md_product_line_tag {
+        min-height: 22px;
+        padding: 3px 8px;
+        font-size: 0.68rem;
+    }
+
+    .o_md_active_ingredient_tags_compact .o_md_active_ingredient_tag {
+        max-width: calc(100% - 34px);
+    }
+
+    .o_md_product_detail_panel {
+        gap: 12px;
+        padding: 18px;
+        border-radius: 14px;
+    }
+
+    .o_md_product_detail_actions {
+        padding: 12px;
+    }
+
+    .o_md_filters_panel,
+    .o_md_categories_panel {
+        padding: 0;
+
+        .accordion-item,
+        .nav-item { padding: 0.65rem 0; }
+
+        .accordion-button { font-size: 0.9rem; }
+    }
+
+    .o_wsale_products_grid_before_rail,
+    #o_wsale_offcanvas_content {
+        .form-check-label { font-size: 0.84rem; }
+    }
+}
+
+// ══════════════════════════════════════════════════════════════════
+//  G. Paginación, breadcrumbs y feedback de CTA (Bento / Glass)
+// ══════════════════════════════════════════════════════════════════
+
+// Item 32 · paginación de la tienda con controles Bento
+.o_wsale_products_main_table .pagination,
+#products_grid .pagination,
+.products_pager .pagination {
+    gap: 6px;
+
+    .page-item .page-link {
+        min-width: 40px;
+        height: 40px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0;
+        border: 1px solid rgba(25, 53, 72, 0.10);
+        border-radius: 12px;
+        color: #17394c;
+        background: rgba(255, 255, 255, 0.85);
+        font-weight: 700;
+        transition: background 0.16s ease, color 0.16s ease, transform 0.16s ease, box-shadow 0.16s ease;
+
+        &:hover {
+            background: rgba(29, 155, 131, 0.12);
+            color: #157764;
+            transform: translateY(-1px);
+            box-shadow: 0 6px 16px rgba(25, 53, 72, 0.10);
+        }
+    }
+
+    .page-item.active .page-link {
+        border-color: transparent;
+        color: #fff;
+        background: $md-brand-gradient;
+        box-shadow: 0 8px 18px rgba(58, 165, 201, 0.24);
+    }
+
+    .page-item.disabled .page-link {
+        opacity: 0.45;
+    }
+}
+
+// Item 33 · breadcrumbs con estética Glassmorphism
+.o_wsale_products_breadcrumb,
+#wrap .breadcrumb {
+    display: inline-flex;
+    flex-wrap: wrap;
+    align-items: center;
+    padding: 6px 14px;
+    border-radius: var(--md-r-pill, 999px);
+    background: rgba(255, 255, 255, 0.78);
+    backdrop-filter: blur(var(--md-blur-glass, 16px)) saturate(1.3);
+    -webkit-backdrop-filter: blur(var(--md-blur-glass, 16px)) saturate(1.3);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    box-shadow: var(--md-shadow-glass, 0 8px 32px rgba(0, 0, 0, 0.08));
+    font-size: 0.84rem;
+
+    .breadcrumb-item a {
+        color: #157764;
+        text-decoration: none;
+
+        &:hover { text-decoration: underline; }
+    }
+
+    .breadcrumb-item.active {
+        color: #17394c;
+        font-weight: 700;
+    }
+}
+
+// Item 31 · micro-confirmación al pulsar "Agregar al carrito"
+.o_sqty_cta_reveal .o_wsale_product_btn,
+#product_details a#add_to_cart,
+#product_details .js_add_cart_json {
+    transition: transform 0.12s ease, filter 0.16s ease, box-shadow 0.16s ease;
+
+    &:active {
+        transform: scale(0.95);
+        filter: saturate(1.1);
+    }
+}
+
+@keyframes o_sqty_cart_pop {
+    0%   { transform: scale(1); }
+    35%  { transform: scale(1.08); }
+    100% { transform: scale(1); }
+}
+
+.o_sqty_cart_added {
+    animation: o_sqty_cart_pop 0.32s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.o_md_cart_submit_locked {
+    pointer-events: none;
+    opacity: 0.72;
+    cursor: progress !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .o_sqty_cart_added { animation: none; }
+}

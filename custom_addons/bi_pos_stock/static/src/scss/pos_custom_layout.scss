@@ -1,0 +1,339 @@
+// =============================================================================
+// pos_custom_layout.scss — bi_pos_stock layout overrides
+// Odoo 19 Enterprise POS — FEFO / Multi-Branch edition
+//
+// PURPOSE
+// -------
+// 1. Widen the left pane (ticket / order panel) so cashiers have more
+//    room to see order lines and numpad without scrolling.
+//
+// 2. Enlarge product cards in the right pane so lot expiry badges
+//    (lot-expiry-label, lot-info-btn) are clearly readable and don't
+//    overlap with the product name.
+//
+// STRATEGY
+// --------
+// All overrides use ".pos" as a parent selector which gives specificity
+// (0,2,0) vs core's (0,1,0) — no !important needed.
+// File loads AFTER core POS CSS in the asset bundle (see __manifest__.py),
+// so cascade order also favours our rules.
+//
+// Bootstrap 5 breakpoints used (Odoo 19 standard):
+//   xl  → max-width: 1199.98px
+//   lg  → max-width:  991.98px
+//   md  → max-width:  767.98px
+//   sm  → max-width:  575.98px
+//
+// Core baseline values we override
+//   .leftpane              width / max-width   : 450px (desktop), 400px (tablet <xl)
+//   .product-list          grid minmax          : 115px (desktop), 100px (<xl)
+//   .rightpane .product    min-height           : 6rem (desktop),   5rem (lg+)
+// =============================================================================
+
+:root {
+    // Brand Colors
+    --md-blue: #16A6D9;       // Pantone 2995 C
+    --md-green: #97D700;      // Pantone 375 C
+    --md-dark: #073A4C;       // Brand Dark
+    --md-ink: #152330;
+    
+    // Semantic / Status Colors
+    --md-success: #1F9D55;    // Pantone 348 C
+    --md-warning: #D9822B;    // Pantone 137 C
+    --md-danger: #D3222A;     // Pantone 186 C
+    
+    // Scale / Tonalities
+    --md-blue-900: #073A4C;
+    --md-blue-800: #0B5E7A;
+    --md-blue-700: #0D7FA8;
+    --md-blue-300: #59CBE8;
+    --md-blue-200: #A4DBE8;
+    --md-blue-100: #E7F7FB;
+    
+    --md-green-900: #1F3200;
+    --md-green-600: #72A800;
+    --md-green-300: #B9EA43;
+    --md-green-200: #D9EA9A;
+    --md-green-100: #F2F9D9;
+
+    // Lot expiry ring — purple accent (visually distinct from traffic-light badges)
+    --md-expiry:     #875A7B;
+    --md-expiry-rgb: 135, 90, 123;
+
+    // FEFO first-row highlight — intentional light-yellow, not a theme status color
+    --md-fefo-first:  #fffde7;
+    --md-fefo-border: #ffc107;
+
+    // Screen background — Bootstrap gray-100 equivalent
+    --md-screen-bg: #f8f9fa;
+
+    // Dark-mode-switchable tokens (light defaults — identical to current hardcoded values)
+    --md-pos-card-bg:        #ffffff;
+    --md-pos-card-border:    var(--md-blue-200);
+    --md-bento-bg:           #ffffff;
+    --md-lot-info-btn-bg:    rgba(255, 255, 255, 0.88);
+    --md-lot-info-btn-hover: rgba(255, 255, 255, 1.0);
+    --md-modal-bg:           rgba(255, 255, 255, 0.84);
+    --md-modal-border:       rgba(255, 255, 255, 0.76);
+    --md-table-even-bg:      #faf9fc;
+    --md-text-muted:         #666666;
+    --md-order-stat-bg:      rgba(11, 94, 122, 0.05);
+    --md-order-stat-border:  rgba(11, 94, 122, 0.10);
+    --md-order-stat-icon-bg: rgba(11, 94, 122, 0.10);
+}
+
+// ── Dark mode ─────────────────────────────────────────────────────────────────
+//
+// Odoo adapta leftpane/topheader en dark OS. El rightpane y las tarjetas de
+// producto NO las adapta — se sobreescriben con !important desde stock.css.
+//
+// Elementos adaptados:
+//   • Rightpane + tarjetas de producto (override con !important)
+//   • Pantallas full-screen (.stock-screen, .ecommerce-orders-screen)
+//   • Modales (.modal-content)
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        // Tarjetas de producto en dark mode
+        --md-pos-card-bg:     #1e293b;
+        --md-pos-card-border: rgba(255, 255, 255, 0.08);
+
+        // Pantallas full-screen
+        --md-screen-bg:      #0f172a;
+        --md-bento-bg:       #1e293b;
+        --md-table-even-bg:  rgba(255, 255, 255, 0.04);
+        --md-text-muted:     #94a3b8;
+
+        // FEFO highlight
+        --md-fefo-first:     rgba(245, 159, 0, 0.15);
+        --md-fefo-border:    rgba(245, 159, 0, 0.55);
+
+        // Modales POS
+        --md-modal-bg:       rgba(15, 23, 42, 0.97);
+        --md-modal-border:   rgba(255, 255, 255, 0.12);
+    }
+}
+
+// ── BRAND BUTTONS FOR NAVBAR ──
+.btn-md-navbar-stock {
+    background-color: var(--md-blue-800) !important;
+    border-color: var(--md-blue-800) !important;
+    color: #fff !important;
+    font-weight: 600;
+    font-size: 0.875rem;
+    transition: all 0.2s ease;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.18), 0 2px 6px rgba(11,94,122,0.18);
+
+    &:hover {
+        background-color: var(--md-blue-700) !important;
+        border-color: var(--md-blue-700) !important;
+        color: #fff !important;
+        transform: translateY(-1px);
+        box-shadow: inset 0 1px 0 rgba(255,255,255,0.18), 0 5px 14px rgba(11,94,122,0.28);
+    }
+
+    &:active {
+        transform: translateY(0);
+        box-shadow: inset 0 1px 0 rgba(255,255,255,0.10);
+    }
+}
+
+.btn-md-navbar-ecommerce {
+    background-color: var(--md-green-600) !important;
+    border-color: var(--md-green-600) !important;
+    color: #fff !important;
+    font-weight: 600;
+    font-size: 0.875rem;
+    transition: all 0.2s ease;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.18), 0 2px 6px rgba(114,168,0,0.18);
+
+    &:hover {
+        background-color: var(--md-green) !important;
+        border-color: var(--md-green) !important;
+        color: #fff !important;
+        transform: translateY(-1px);
+        box-shadow: inset 0 1px 0 rgba(255,255,255,0.18), 0 5px 14px rgba(114,168,0,0.28);
+    }
+
+    &:active {
+        transform: translateY(0);
+        box-shadow: inset 0 1px 0 rgba(255,255,255,0.10);
+    }
+}
+
+// ── BRAND ACTION BUTTONS FOR TABLES ──
+.btn-md-action-inventory {
+    background-color: var(--md-blue-800) !important;
+    border-color: var(--md-blue-800) !important;
+    color: #fff !important;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    
+    &:hover:not(:disabled) {
+        background-color: var(--md-blue-700) !important;
+        border-color: var(--md-blue-700) !important;
+        color: #fff !important;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+    
+    &:disabled {
+        background-color: #cbd5e1 !important;
+        border-color: #cbd5e1 !important;
+        color: #64748b !important;
+        cursor: not-allowed;
+        transform: none !important;
+        box-shadow: none !important;
+    }
+}
+
+.btn-md-action-restock {
+    background-color: var(--md-blue-700) !important;
+    border-color: var(--md-blue-700) !important;
+    color: #fff !important;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    
+    &:hover:not(:disabled) {
+        background-color: var(--md-blue) !important;
+        border-color: var(--md-blue) !important;
+        color: #fff !important;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+    
+    &:disabled {
+        background-color: #cbd5e1 !important;
+        border-color: #cbd5e1 !important;
+        color: #64748b !important;
+        cursor: not-allowed;
+        transform: none !important;
+        box-shadow: none !important;
+    }
+}
+
+.btn-md-action-requested {
+    background-color: var(--md-success) !important;
+    border-color: var(--md-success) !important;
+    color: #fff !important;
+}
+
+
+// ── 1. LEFT PANE — wider ticket panel ────────────────────────────────────────
+//
+// New values:
+//   ≥ 1200px  (desktop)  : 560px  (~40% of a 1440px screen)
+//   992–1199px (tablet L): 460px
+//   < 992px   (tablet S) : fluid — remove fixed width, flex handles it
+//
+// We also update .payment-screen .left-content (uses the same variable
+// in core CSS) to keep visual consistency with the order panel.
+
+.pos .leftpane {
+    width: 560px;
+    max-width: 560px;
+
+    @include media-breakpoint-down(xl) {   // < 1200px
+        width: 460px;
+        max-width: 460px;
+    }
+
+    @include media-breakpoint-down(lg) {   // < 992px  — go fluid
+        width: auto;
+        max-width: none;
+    }
+}
+
+// Keep Payment screen consistent with the new left-pane width
+.payment-screen .left-content {
+    width: 560px;
+    min-width: 560px;
+
+    @include media-breakpoint-down(xl) {
+        width: 460px;
+        min-width: 460px;
+    }
+
+    @include media-breakpoint-down(lg) {
+        width: auto;
+        min-width: unset;
+    }
+}
+
+
+// ── 2. PRODUCT GRID — bigger tiles ───────────────────────────────────────────
+//
+// Increasing minmax from 115 → 165px gives:
+//   • more horizontal space for the product name
+//   • the lot-expiry-label badge (bottom-left) stops overlapping the name
+//   • the lot-info-btn (top-right) stays cleanly inside the card bounds
+//
+// New grid values:
+//   ≥ 1200px  : minmax(165px, 1fr)   [was 115px]
+//   992–1199px: minmax(145px, 1fr)   [was 100px]
+//   768–991px : minmax(130px, 1fr)   [was 100px — same]
+//   < 576px   : 1fr column (full width)  [unchanged]
+
+.pos .product-list {
+    grid-template-columns: repeat(auto-fill, minmax(165px, 1fr));
+
+    @include media-breakpoint-down(xl) {   // < 1200px
+        grid-template-columns: repeat(auto-fill, minmax(145px, 1fr));
+    }
+
+    @include media-breakpoint-down(md) {   // < 768px
+        grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    }
+
+    @include media-breakpoint-down(sm) {   // < 576px
+        grid-template-columns: repeat(auto-fill, 1fr);
+    }
+}
+
+
+// ── 3. PRODUCT CARD — extra vertical height ───────────────────────────────────
+//
+// The lot-expiry-label sits at the bottom of the card (position: absolute,
+// bottom: 5px). The original min-height of 6rem (≈96px) leaves only ~10px
+// of clearance below a two-line product name. Increasing to 8rem (128px)
+// gives comfortable breathing room.
+//
+// Selector mirrors core rule:
+//   @at-root .rightpane .product:not(:has(.product-img)) { min-height: 6rem; }
+// Adding .pos raises specificity from (0,2,0) to (0,3,0).
+
+.pos .rightpane .product:not(:has(.product-img)) {
+    min-height: 8rem;
+
+    @include media-breakpoint-up(lg) {   // ≥ 992px
+        min-height: 7rem;
+    }
+}
+
+
+// ── 4. PRODUCT NAME — allow 3 lines when card is taller ──────────────────────
+//
+// Core clamps to 2 lines. With the extra height we can show up to 3 lines
+// without visual overflow, which helps long product names.
+// Scope to rightpane only (receipt + other contexts keep 2 lines).
+
+.pos .rightpane .product-name:not(.no-image) {
+    -webkit-line-clamp: 3;
+}
+
+
+// ── 5. CARD — ensure lot badges sit inside the new padded area ───────────────
+//
+// The .lot-expiry-label and .lot-info-btn are positioned absolute.
+// These micro-adjustments prevent them from clipping against the
+// card's bottom border (which is 6px thick in .rightpane .product).
+
+.pos .rightpane .product {
+    // Reserve bottom space so the expiry badge doesn't sit on the border
+    padding-bottom: 4px;
+}
+
+.pos .rightpane .lot-expiry-label {
+    // Nudge up slightly above the thicker bottom border
+    bottom: 9px;
+}

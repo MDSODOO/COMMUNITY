@@ -1,0 +1,819 @@
+$md-report-brand: #234759 !default;
+$md-report-brand-mid: #555555 !default;
+$md-report-teal: #4db39c !default;
+$md-report-lime: #8dc63f !default;
+$md-report-cream: #f3f3f3 !default;
+$md-report-border: #d3d3d3 !default;
+$md-report-thead-from: #3aa5c9 !default;
+$md-report-thead-mid:  #4db39c !default;
+$md-report-thead-to:   #8dc63f !default;
+$md-report-ink: #1a2332 !default;
+$md-report-ink-2: #374151 !default;
+$md-report-ink-3: #6b7280 !default;
+$md-report-white: #ffffff !default;
+$md-report-xs: 0.61rem !default;
+$md-report-sm: 0.76rem !default;
+$md-report-base: 0.75rem !default;
+$md-report-lg: 0.88rem !default;
+
+.pharma-doc-page {
+    color: $md-report-ink;
+    font-family: "Lato", "Helvetica Neue", Arial, sans-serif;
+}
+
+.pharma-doc-page * {
+    font-family: "Lato", "Helvetica Neue", Arial, sans-serif;
+}
+
+/* Título nativo del documento (h1/h2/h3 directos del page) — oculto.
+   pharma_doc_info ya muestra el label + número + fecha en la esquina
+   superior derecha del header. Sólo apuntamos a descendientes directos
+   para no afectar headings que pudieran existir dentro del cuerpo
+   (e.g. en una descripción de producto). */
+.pharma-doc-page > h1,
+.pharma-doc-page > h2,
+.pharma-doc-page > h3,
+.pharma-doc-page > div > h1,
+.pharma-doc-page > div > h2,
+.pharma-doc-page > div > h3 {
+    display: none !important;
+}
+
+/* Texto promocional "Conecta tu software con [empresa] para crear
+   cotizaciones en automático." — viene del template estándar de
+   Odoo Enterprise. Lo intentamos ocultar por XPATH en sale_order_report.xml;
+   este CSS sólo cubre el patrón de enlace odoo.com (defensa secundaria,
+   no oculta términos legítimos). */
+.pharma-doc-page p:has(a[href*='odoo.com']),
+.pharma-doc-page p:has(a[href*='/odoo']) {
+    display: none !important;
+}
+
+.pharma-order-info {
+    margin-bottom: 1.5rem !important;
+}
+
+.pharma-info-label {
+    display: block;
+    margin-bottom: 0.25rem;
+    font-size: 0.68rem;
+    font-weight: 700;
+    color: $md-report-ink;
+}
+
+.pharma-info-value {
+    font-size: 1rem;
+    font-weight: 500;
+    color: $md-report-ink;
+}
+
+.pharma-header-shell,
+.pharma-full-header {
+    width: 100%;
+}
+
+.pharma-full-header {
+    margin-bottom: 0.4rem;
+}
+
+/* Header row: logo (left) + doc-info (right). 2px brand border-bottom
+   replica el .doc-header del mockup (Orden de Venta Final.html §HEADER). */
+.pharma-doc-header {
+    width: 100%;
+    padding-bottom: 0.4rem;
+    border-bottom: 2px solid $md-report-brand;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+}
+
+.pharma-logo-shell {
+    flex-shrink: 0;
+}
+
+.md-logo {
+    max-height: 52px;
+    width: auto;
+}
+
+/* Doc-info upper-right: label uppercase + número grande brand + fecha teal.
+   Match mockup .doc-type/.doc-num/.doc-date. */
+.pharma-doc-info {
+    flex-shrink: 0;
+    margin-left: auto;
+    text-align: right;
+}
+
+.pharma-doc-type {
+    display: block;
+    margin-bottom: 0.15rem;
+    color: $md-report-ink-3;
+    font-size: $md-report-xs;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+
+.pharma-doc-num {
+    display: block;
+    color: $md-report-brand;
+    font-size: 1.5rem;
+    font-weight: 800;
+    line-height: 1.1;
+    letter-spacing: 0.02em;
+}
+
+.pharma-doc-date {
+    display: block;
+    margin-top: 0.1rem;
+    color: $md-report-teal;
+    font-size: 0.72rem;
+    font-weight: 600;
+}
+
+.pharma-meta-band {
+    margin-bottom: 0.45rem;
+    background-color: $md-report-cream !important;
+    border: 1px solid $md-report-border;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+}
+
+.pharma-meta-cell {
+    padding: 0.45rem 0.8rem;
+    border-right: 1px solid $md-report-border;
+}
+
+.pharma-meta-cell:last-child {
+    border-right: 0;
+}
+
+.pharma-meta-label {
+    display: block;
+    margin-bottom: 0.15rem;
+    font-size: $md-report-xs;
+    font-weight: 700;
+    color: $md-report-ink-3;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.pharma-meta-val {
+    display: block;
+    color: $md-report-ink;
+    font-size: 0.8rem;
+    font-weight: 600;
+    line-height: 1.25;
+    overflow-wrap: break-word;
+    word-break: break-word;
+}
+
+.pharma-meta-val-sm {
+    font-size: 0.62rem;
+    font-weight: 500;
+    line-height: 1.25;
+    overflow-wrap: anywhere;
+    word-break: break-all;
+}
+
+.pharma-addr-grid {
+    line-height: 1.35;
+}
+
+.pharma-body-address-shell {
+    display: block;
+    width: 100%;
+    margin: 0 0 0.75rem;
+    page-break-inside: avoid;
+}
+
+.pharma-addr-col {
+    max-width: 100%;
+    overflow-wrap: break-word;
+    word-break: break-word;
+}
+
+/* Divider vertical Sucursal | Cliente — 1.5px cream-mid (mockup §address-grid). */
+.pharma-addr-divider {
+    border-left: 1.5px solid $md-report-border;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+}
+
+.pharma-addr-label {
+    display: block;
+    margin-bottom: 0.35rem;
+    padding-bottom: 0.2rem;
+    border-bottom: 2px solid $md-report-brand-mid;
+    color: $md-report-brand-mid;
+    font-size: $md-report-xs;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.pharma-addr-name {
+    margin-bottom: 0.2rem;
+    color: $md-report-ink;
+    font-size: 0.82rem;
+    font-weight: 700;
+    line-height: 1.25;
+}
+
+.pharma-addr-lines,
+.pharma-addr-lines address,
+.pharma-addr-lines div,
+.pharma-addr-lines span {
+    margin: 0;
+    color: $md-report-ink-2;
+    font-size: $md-report-sm;
+    font-style: normal;
+    line-height: 1.45;
+}
+
+.pharma-addr-rfc {
+    display: block;
+    margin-top: 0.2rem;
+    color: $md-report-brand;
+    font-size: $md-report-sm;
+    font-weight: 700;
+}
+
+.pharma-stripe {
+    width: 100%;
+    margin-top: 0.35rem;
+    font-size: 0;
+    line-height: 0;
+    /* Evita que la 3ra banda salte de renglón en wkhtmltopdf y deje
+       un hueco blanco a la derecha (3 × 33.34% sumaba > 100%). */
+    white-space: nowrap;
+}
+
+.pharma-stripe-band {
+    display: inline-block;
+    width: 33.33%;
+    height: 4px;
+    vertical-align: top;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+}
+
+.pharma-stripe-band-brand {
+    background-color: $md-report-brand !important;
+}
+
+.pharma-stripe-band-teal {
+    background-color: $md-report-teal !important;
+}
+
+.pharma-stripe-band-lime {
+    background-color: $md-report-lime !important;
+}
+
+.pharma-section-ttl {
+    margin: 0.45rem 0 0.3rem;
+    padding-bottom: 0.2rem;
+    border-bottom: 2px solid $md-report-brand;
+    color: $md-report-brand;
+    font-size: $md-report-xs;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+}
+
+table.pharma-lines {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+table.pharma-lines th,
+table.pharma-lines td {
+    padding: 0.3rem 0.45rem !important;
+    vertical-align: top;
+    font-size: 0.68rem !important;
+    line-height: 1.4;
+}
+
+/* Header de tabla alineado al "golden template" de factura:
+   fallback sólido + gradiente webkit para wkhtmltopdf. */
+.pharma-doc-page table.pharma-lines thead th {
+    border: 0 !important;
+    background-color: $md-report-thead-from !important;
+    background-image: -webkit-linear-gradient(
+        left,
+        $md-report-thead-from 0%,
+        $md-report-thead-mid 50%,
+        $md-report-thead-to 100%
+    ) !important;
+    background-image: linear-gradient(
+        90deg,
+        $md-report-thead-from 0%,
+        $md-report-thead-mid 50%,
+        $md-report-thead-to 100%
+    ) !important;
+    color: #ffffff !important;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+    color-adjust: exact;
+}
+
+table.pharma-lines thead th strong {
+    color: $md-report-white !important;
+}
+
+.pharma-doc-page table.pharma-lines thead th span {
+    color: $md-report-white !important;
+}
+
+table.pharma-lines tbody tr {
+    border-bottom: 1px solid $md-report-border;
+}
+
+table.pharma-lines tbody tr:first-child td {
+    border-top: 1px solid $md-report-border;
+}
+
+table.pharma-lines tbody tr:nth-child(even) {
+    background-color: $md-report-cream !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+}
+
+table.pharma-lines tbody td {
+    color: $md-report-ink-2;
+}
+
+.pharma-product-cell {
+    color: $md-report-ink;
+}
+
+/* Lote/Caducidad inline bajo el nombre del producto — replica formato de factura */
+.pharma-lot-inline {
+    margin-top: 0.15rem;
+    color: $md-report-ink-3;
+    font-size: 0.62rem;
+    line-height: 1.3;
+    font-style: normal;
+}
+
+.pharma-mono {
+    font-family: "Courier New", monospace;
+    font-size: 0.68rem !important;
+    color: $md-report-ink-3;
+}
+
+.pharma-total-block {
+    width: 100% !important;
+    page-break-inside: avoid;
+    clear: both;
+}
+
+.pharma-signature-block {
+    margin-top: 2.75rem;
+    page-break-inside: avoid;
+    break-inside: avoid;
+}
+
+.pharma-signature-col {
+    padding-top: 0.25rem;
+}
+
+.pharma-signature-line {
+    width: 68%;
+    margin: 0 auto 0.55rem;
+    border-top: 2px solid $md-report-ink;
+    height: 0;
+}
+
+.pharma-signature-label {
+    color: $md-report-ink;
+    font-size: 0.95rem;
+    font-weight: 700;
+    line-height: 1.2;
+}
+
+.pharma-total-block > table {
+    width: 260px !important;
+    max-width: 260px !important;
+    margin-left: auto !important;
+    margin-right: 0 !important;
+    border-collapse: collapse;
+    table-layout: fixed;
+}
+
+/* Tabla de totales: tipografía unificada con .pharma-lines td
+   ($md-report-base = 0.75rem). Mantiene coherencia visual entre la
+   tabla principal de productos y el bloque de totales en todos los
+   reportes (cotización, albarán). */
+.pharma-total-block > table tr td {
+    padding: 0.4rem 0.55rem;
+    color: $md-report-ink-2;
+    font-size: $md-report-base;
+    line-height: 1.35;
+}
+
+/* Subtotal (primera fila) con fondo gris azulado coherente con factura. */
+.pharma-total-block > table tr:first-child > td {
+    background-color: #eef2f5 !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+}
+
+div[name='total'] table tr:last-child > td,
+div[name='total'] table tr.o_total_row > td,
+div[name='total'] table tr.border-black > td {
+    padding: 0.5rem 0.55rem !important;
+    border-color: $md-report-brand !important;
+    background-color: $md-report-brand !important;
+    color: $md-report-white !important;
+    font-size: 0.86rem !important;
+    font-weight: 700 !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+}
+
+div[name='total'] table tr:last-child > td span,
+div[name='total'] table tr:last-child > td strong {
+    color: $md-report-white !important;
+}
+
+div.article[data-oe-model='sale.order'] ~ div.footer .o_footer_content,
+div.article[data-oe-model='stock.picking'] ~ div.footer .o_footer_content,
+div.article[data-oe-model='purchase.order'] ~ div.footer .o_footer_content {
+    display: block !important;
+    padding-top: 0.65rem !important;
+    text-align: center !important;
+}
+
+div.article[data-oe-model='sale.order'] ~ div.footer .o_footer_content > div,
+div.article[data-oe-model='sale.order'] ~ div.footer .o_footer_content > span,
+div.article[data-oe-model='stock.picking'] ~ div.footer .o_footer_content > div,
+div.article[data-oe-model='stock.picking'] ~ div.footer .o_footer_content > span,
+div.article[data-oe-model='purchase.order'] ~ div.footer .o_footer_content > div,
+div.article[data-oe-model='purchase.order'] ~ div.footer .o_footer_content > span {
+    width: 100% !important;
+    max-width: none !important;
+    margin: 0 auto !important;
+    text-align: center !important;
+}
+
+div.article[data-oe-model='sale.order'] ~ div.footer .text-start,
+div.article[data-oe-model='sale.order'] ~ div.footer .text-end,
+div.article[data-oe-model='sale.order'] ~ div.footer .flex-grow-1,
+div.article[data-oe-model='sale.order'] ~ div.footer .col-4,
+div.article[data-oe-model='sale.order'] ~ div.footer .col-8,
+div.article[data-oe-model='stock.picking'] ~ div.footer .text-start,
+div.article[data-oe-model='stock.picking'] ~ div.footer .text-end,
+div.article[data-oe-model='stock.picking'] ~ div.footer .flex-grow-1,
+div.article[data-oe-model='stock.picking'] ~ div.footer .col-4,
+div.article[data-oe-model='stock.picking'] ~ div.footer .col-8,
+div.article[data-oe-model='purchase.order'] ~ div.footer .text-start,
+div.article[data-oe-model='purchase.order'] ~ div.footer .text-end,
+div.article[data-oe-model='purchase.order'] ~ div.footer .flex-grow-1,
+div.article[data-oe-model='purchase.order'] ~ div.footer .col-4,
+div.article[data-oe-model='purchase.order'] ~ div.footer .col-8 {
+    width: 100% !important;
+    margin: 0 auto !important;
+    text-align: center !important;
+}
+
+div.article[data-oe-model='sale.order'] ~ div.footer .o_company_tagline,
+div.article[data-oe-model='stock.picking'] ~ div.footer .o_company_tagline,
+div.article[data-oe-model='purchase.order'] ~ div.footer .o_company_tagline {
+    display: none !important;
+}
+
+div.article[data-oe-model='sale.order'] ~ div.footer .o_footer_content p,
+div.article[data-oe-model='stock.picking'] ~ div.footer .o_footer_content p,
+div.article[data-oe-model='purchase.order'] ~ div.footer .o_footer_content p {
+    margin: 0;
+}
+
+div.article[data-oe-model='sale.order'] ~ div.footer .o_footer_content a,
+div.article[data-oe-model='stock.picking'] ~ div.footer .o_footer_content a,
+div.article[data-oe-model='purchase.order'] ~ div.footer .o_footer_content a {
+    color: $md-report-brand !important;
+    text-decoration: none;
+}
+
+div.article[data-oe-model='sale.order'] > h2,
+div.article[data-oe-model='stock.picking'] > h2,
+div.article[data-oe-model='purchase.order'] > h2 {
+    display: none !important;
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   Inventario Físico — Physical Inventory Report
+   Clases específicas para report_physical_inventory_document.
+   Aplican SOLO dentro de .pharma-inv-page.
+   ══════════════════════════════════════════════════════════════════ */
+
+/* Página raíz del reporte de inventario */
+.pharma-inv-page {
+    color: $md-report-ink;
+    font-family: "Lato", "Helvetica Neue", Arial, sans-serif;
+}
+
+/* ── Tarjetas de resumen (bento cards) ─────────────────────────── */
+.pharma-inv-summary-title {
+    margin-top: 0.55rem;
+    margin-bottom: 0;
+    padding: 0.18rem 0.35rem;
+    border: 1px solid $md-report-border;
+    border-bottom: 0;
+    background-color: $md-report-cream !important;
+    line-height: 1.15;
+}
+
+.pharma-inv-summary-panel {
+    padding: 0.26rem 0.36rem 0.28rem;
+    border: 1px solid $md-report-border;
+    border-top: 3px solid $md-report-brand;
+    background-color: #f8fafc !important;
+    margin-bottom: 0.45rem;
+    text-align: center;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+}
+
+.pharma-inv-summary-row {
+    display: inline-block;
+    margin: 0 auto;
+    max-width: 100%;
+    text-align: center;
+    white-space: nowrap;
+    font-size: 0;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+}
+
+.pharma-inv-summary-card {
+    display: inline-block;
+    width: 0.74in;
+    min-height: 0.54in;
+    margin-right: 0.05in;
+    padding: 0.18rem 0.2rem;
+    border-radius: 0;
+    text-align: center;
+    border: 1px solid $md-report-border;
+    border-top-width: 3px;
+    vertical-align: top;
+    background-color: $md-report-cream !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+}
+
+.pharma-inv-summary-card:last-child {
+    margin-right: 0;
+}
+
+.pharma-inv-card-value {
+    display: block;
+    font-size: 0.82rem;
+    font-weight: 800;
+    line-height: 1.1;
+    letter-spacing: -0.01em;
+}
+
+.pharma-inv-card-money {
+    font-size: 0.62rem !important;
+    white-space: nowrap;
+}
+
+.pharma-inv-card-label {
+    display: block;
+    margin-top: 0.05rem;
+    font-size: 0.4rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    line-height: 1.12;
+}
+
+.pharma-inv-summary-card-wide {
+    width: 1.15in;
+}
+
+/* Variantes de color de tarjetas */
+.pharma-inv-card-neutral {
+    border-top-color: $md-report-brand !important;
+    .pharma-inv-card-value { color: $md-report-brand; }
+    .pharma-inv-card-label { color: $md-report-ink-3; }
+}
+
+.pharma-inv-card-info {
+    border-top-color: $md-report-teal !important;
+    .pharma-inv-card-value { color: $md-report-teal; }
+    .pharma-inv-card-label { color: $md-report-teal; }
+}
+
+.pharma-inv-card-danger {
+    border-top-color: #ef4444 !important;
+    .pharma-inv-card-value { color: #dc2626; }
+    .pharma-inv-card-label { color: #dc2626; }
+}
+
+.pharma-inv-card-success {
+    border-top-color: $md-report-lime !important;
+    .pharma-inv-card-value { color: #16a34a; }
+    .pharma-inv-card-label { color: #16a34a; }
+}
+
+.pharma-inv-card-warning {
+    border-top-color: #fbbf24 !important;
+    .pharma-inv-card-value { color: #92400e; }
+    .pharma-inv-card-label { color: #92400e; }
+}
+
+/* ── Tabla de inventario ────────────────────────────────────────── */
+.pharma-inv-table {
+    border-collapse: collapse;
+    table-layout: fixed;
+    width: 100%;
+}
+
+.pharma-inv-table th,
+.pharma-inv-table td {
+    padding: 0.16rem 0.18rem !important;
+    font-size: 0.5rem !important;
+    line-height: 1.2;
+}
+
+.pharma-inv-table td:first-child,
+.pharma-inv-table .pharma-product-cell {
+    font-size: 0.48rem !important;
+    line-height: 1.15;
+    overflow-wrap: anywhere;
+}
+
+.pharma-inv-table thead th {
+    font-size: 0.48rem !important;
+    letter-spacing: 0 !important;
+    white-space: normal !important;
+    line-height: 1.1;
+}
+
+.pharma-inv-table td.text-end,
+.pharma-inv-subtotal-row td.text-end,
+.pharma-inv-grand-total-row td.text-end {
+    white-space: nowrap;
+}
+
+.pharma-inv-table tbody td:nth-child(6),
+.pharma-inv-table tbody td:nth-child(7),
+.pharma-inv-table tbody td:nth-child(8) {
+    font-size: 0.48rem !important;
+    line-height: 1.15;
+}
+
+.pharma-inv-table tbody td:nth-child(6) span,
+.pharma-inv-table tbody td:nth-child(7) span,
+.pharma-inv-table tbody td:nth-child(8) span,
+.pharma-inv-table tbody td:nth-child(7) strong,
+.pharma-inv-table tbody td:nth-child(8) strong {
+    font-size: 0.48rem !important;
+    line-height: 1.15;
+}
+
+.pharma-inv-table .pharma-mono {
+    font-family: "Courier New", monospace;
+    font-size: 0.48rem !important;
+    overflow-wrap: anywhere;
+}
+
+.pharma-inv-money {
+    font-family: "Courier New", monospace;
+    font-size: 0.48rem !important;
+    white-space: nowrap;
+}
+
+.pharma-inv-money {
+    color: $md-report-ink-2;
+}
+
+/* Fila de subgrupo por ubicación */
+.pharma-inv-location-row td {
+    background-color: $md-report-brand !important;
+    color: $md-report-white !important;
+    font-size: 0.52rem !important;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 0.24rem 0.34rem !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+}
+
+.pharma-inv-location-icon {
+    margin-right: 0.4rem;
+    color: $md-report-lime;
+}
+
+/* Filas con color semántico de diferencia */
+.pharma-inv-row-neg {
+    background-color: #fff5f5 !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+}
+
+.pharma-inv-row-pos {
+    background-color: #f0fff4 !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+}
+
+.pharma-inv-row-ok {
+    background-color: #f7fbff !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+}
+
+/* ── Diferencia Δ — colores semánticos ─────────────────────────── */
+.pharma-inv-diff-neg {
+    color: #dc2626 !important;
+    font-weight: 700;
+}
+
+.pharma-inv-diff-pos {
+    color: #16a34a !important;
+    font-weight: 700;
+}
+
+.pharma-inv-diff-zero {
+    color: $md-report-ink-3 !important;
+    font-weight: 400;
+}
+
+/* ── Fecha de Caducidad — alerta farmacéutica ───────────────────── */
+/* Se usa cuando exp_date <= hoy + 30 días */
+.pharma-inv-expiry-warn {
+    color: #dc2626 !important;
+    font-weight: 700;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+}
+
+/* ── Fila subtotal por ubicación ────────────────────────────────── */
+.pharma-inv-subtotal-row td {
+    background-color: #eef2f5 !important;
+    border-top: 1.5px solid $md-report-border !important;
+    font-size: 0.5rem !important;
+    padding: 0.18rem 0.2rem !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+}
+
+/* ── Fila gran total ─────────────────────────────────────────────── */
+.pharma-inv-grand-total-row td {
+    background-color: $md-report-brand !important;
+    color: $md-report-white !important;
+    font-size: 0.52rem !important;
+    font-weight: 700 !important;
+    padding: 0.26rem 0.3rem !important;
+    border-top: 2px solid $md-report-brand !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+}
+
+.pharma-inv-grand-total-row .pharma-inv-diff-neg,
+.pharma-inv-grand-total-row .pharma-inv-diff-pos,
+.pharma-inv-grand-total-row .pharma-inv-diff-zero {
+    /* En la fila grand total, el color siempre es blanco para legibilidad */
+    color: $md-report-white !important;
+}
+
+/* ── Celda vacía placeholder ────────────────────────────────────── */
+.pharma-inv-empty {
+    color: $md-report-ink-3;
+    font-style: italic;
+}
+
+/* ── Nota al pie ─────────────────────────────────────────────────── */
+.pharma-inv-footnote {
+    border-top: 1px solid $md-report-border;
+    padding-top: 0.45rem;
+    color: $md-report-ink-3;
+    font-size: $md-report-xs;
+    line-height: 1.45;
+}
+
+.pharma-inv-observations {
+    padding: 0.4rem 0.55rem;
+    border: 1px solid $md-report-border;
+    background-color: #f8fafc !important;
+    color: $md-report-ink-2;
+    font-size: $md-report-xs;
+    line-height: 1.4;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+}
+
+/* ── Ocultar h2 nativo del reporte stock.quant ─────────────────── */
+div.article[data-oe-model='stock.quant'] > h2 {
+    display: none !important;
+}

@@ -1,0 +1,90 @@
+// Cargado SOLO cuando Odoo activa el modo oscuro (bundle web.assets_web_dark).
+// Sin selector de dark mode — este archivo completo ya es el override oscuro.
+
+// ── Statusbar del formulario de bajas ────────────────────────────────────────
+// La clase o_scrap_batch_form se añade al <form> en la vista XML.
+// El <header> (statusbar + botones) está fuera de .o_scrap_batch_module.
+// Odoo fuerza rgba(255,255,255,0.82) con alta especificidad — usamos !important.
+.o_scrap_batch_form {
+    .o_form_statusbar {
+        background: #111827 !important;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+
+        // Pipeline de estados: flechas inactivas
+        .o_arrow_button {
+            background: rgba(255, 255, 255, 0.04) !important;
+            color: #64748b !important;
+            border-color: transparent !important;
+
+            &:hover:not(:disabled) {
+                background: rgba(255, 255, 255, 0.08) !important;
+                color: #94a3b8 !important;
+            }
+        }
+
+        // Estado actual (o_arrow_button_current) — cualquier color de Bootstrap
+        .o_arrow_button.o_arrow_button_current,
+        .o_arrow_button.btn-success.o_arrow_button_current,
+        .o_arrow_button.btn-primary.o_arrow_button_current,
+        .o_statusbar_status .o_arrow_button_current {
+            background: #16a6d9 !important;
+            color: #fff !important;
+            border-color: transparent !important;
+        }
+
+        // Botones de acción (Imprimir PDF, Validar, Solicitar Validación)
+        .o_statusbar_buttons .btn {
+            &.btn-secondary {
+                background: rgba(255, 255, 255, 0.06) !important;
+                border-color: rgba(255, 255, 255, 0.12) !important;
+                color: #94a3b8 !important;
+
+                &:hover {
+                    background: rgba(255, 255, 255, 0.10) !important;
+                    color: #e2e8f0 !important;
+                }
+            }
+
+            &.btn-primary {
+                background: rgba(22, 166, 217, 0.15) !important;
+                border-color: rgba(22, 166, 217, 0.35) !important;
+                color: #59cbe8 !important;
+            }
+
+            &.btn-success {
+                background: rgba(31, 157, 85, 0.15) !important;
+                border-color: rgba(31, 157, 85, 0.35) !important;
+                color: #4ade80 !important;
+            }
+        }
+    }
+}
+
+.o_scrap_batch_module {
+    --md-ink:           #e8eaf0;
+    --md-ink-2:         #b0b8cc;
+    --md-muted:         #6b7490;
+    --md-paper:         #13172a;
+    --md-card-bg:       #1a1f2e;
+    --md-border:        rgba(255, 255, 255, 0.10);
+    --md-primary-soft:  rgba(22, 166, 217, 0.12);
+    --md-action-soft:   rgba(151, 215, 0, 0.12);
+    --md-danger-soft:   rgba(227, 6, 19, 0.12);
+    --md-warning-soft:  rgba(245, 159, 0, 0.12);
+    --md-shadow-1:      0 1px 2px rgba(0, 0, 0, 0.3), 0 1px 3px rgba(0, 0, 0, 0.4);
+    --md-shadow-2:      0 4px 12px rgba(0, 0, 0, 0.5);
+
+    .md-badge {
+        &.draft     { background: #1e293b; color: #cbd5e1; border: 1px solid #334155; }
+        &.cancelled { background: #0f172a; color: #64748b; }
+        &.review,
+        &.tag-mer   { color: #f0c476; border-color: rgba(245, 159, 0, 0.35); }
+        &.approved  { color: #b6e36a; }
+        &.tag-cad   { color: #ff8a90; border-color: rgba(227, 6, 19, 0.35); }
+    }
+
+    table.md-pivot {
+        td.heat-1,
+        td.heat-2 { color: #5a1a1d; }
+    }
+}

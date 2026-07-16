@@ -1,0 +1,325 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- binding_model_id omitido: "Bajas Consolidado" es el único reporte
+         accesible desde el menú Imprimir de la lista. Este reporte sigue
+         accesible desde el botón "Imprimir PDF" del formulario individual. -->
+    <record id="action_report_stock_scrap_batch" model="ir.actions.report">
+        <field name="name">Orden de bajas múltiple</field>
+        <field name="model">stock.scrap.batch</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">medicine_depot_scrap_batch.report_scrap_batch</field>
+        <field name="report_file">medicine_depot_scrap_batch.report_scrap_batch</field>
+        <field name="print_report_name">'Orden de bajas - %s' % (object.name)</field>
+    </record>
+
+    <!-- ═══════════════════════════════════════════════════════════════════
+         SUB-TEMPLATE: header pharma reutilizable
+
+         Se llama como PRIMER BLOQUE dentro de div.page (patrón probado en
+         pharma_reports). NO se inyecta vía xpath position="after" sobre
+         web.external_layout_* — ese selector es inestable en Odoo 19 y
+         puede dejar el header fuera de flujo o sin inyectar.
+
+         Maneja stock.scrap.batch y medicine.depot.scrap.history.
+    ════════════════════════════════════════════════════════════════════════ -->
+    <template id="pharma_scrap_batch_layout_header">
+        <t t-set="_sb" t-value="o if o else doc"/>
+        <t t-if="_sb and _sb._name in ('stock.scrap.batch', 'medicine.depot.scrap.history')">
+            <t t-set="_sb_co" t-value="_sb.company_id.sudo()"/>
+            <div class="pharma-full-header">
+                <div class="d-flex align-items-start justify-content-between pharma-doc-header">
+                    <div class="pharma-logo-shell">
+                        <img t-if="_sb_co.logo" class="md-logo"
+                             t-att-src="image_data_uri(_sb_co.logo)" alt="Logo"/>
+                        <div t-if="_sb_co.report_header"
+                             t-field="_sb_co.report_header"
+                             class="o_company_tagline fw-bold mt-1"/>
+                    </div>
+                    <div class="pharma-doc-info text-end">
+                        <span class="pharma-doc-type">Orden de Bajas</span>
+                        <span class="pharma-doc-num" t-esc="_sb.name or ''"/>
+                        <span class="pharma-doc-date">
+                            <t t-if="_sb._name == 'stock.scrap.batch'">
+                                <span t-field="_sb.date" t-options='{"widget": "date"}'/>
+                            </t>
+                            <t t-if="_sb._name == 'medicine.depot.scrap.history'">
+                                <span t-field="_sb.date_done" t-options='{"widget": "date"}'/>
+                            </t>
+                        </span>
+                    </div>
+                </div>
+                <div class="pharma-stripe">
+                    <span class="pharma-stripe-band pharma-stripe-band-brand"/>
+                    <span class="pharma-stripe-band pharma-stripe-band-teal"/>
+                    <span class="pharma-stripe-band pharma-stripe-band-lime"/>
+                </div>
+                <div class="row g-0 pharma-meta-band">
+                    <div class="col-3 pharma-meta-cell">
+                        <span class="pharma-meta-label">Responsable</span>
+                        <span class="pharma-meta-val" t-esc="_sb.create_uid.name or '—'"/>
+                    </div>
+                    <div class="col-3 pharma-meta-cell">
+                        <span class="pharma-meta-label">Referencia</span>
+                        <span class="pharma-meta-val" t-esc="_sb.name or '—'"/>
+                    </div>
+                    <div class="col-3 pharma-meta-cell">
+                        <span class="pharma-meta-label">Estado</span>
+                        <span class="pharma-meta-val" t-field="_sb.state"/>
+                    </div>
+                    <div class="col-3 pharma-meta-cell">
+                        <span class="pharma-meta-label">Compañía</span>
+                        <span class="pharma-meta-val" t-esc="_sb_co.name or '—'"/>
+                    </div>
+                </div>
+            </div>
+        </t>
+    </template>
+
+    <!-- ═══════════════════════════════════════════════════════════════════
+         OVERRIDES DE LAYOUT — solo supresión, sin inyección (priority 1000)
+
+         Patrón validado por pharma_reports (report_layout_overrides.xml):
+         los overrides ÚNICAMENTE ocultan los bloques nativos de empresa.
+         El header pharma se coloca como primer bloque dentro de div.page
+         en cada template, nunca via position="after" sobre el layout.
+    ════════════════════════════════════════════════════════════════════════ -->
+
+    <!-- Layout STANDARD ─────────────────────────────────────────────────── -->
+    <template id="scrap_batch_suppress_header_standard"
+              inherit_id="web.external_layout_standard"
+              priority="1000">
+        <xpath expr="//div[hasclass('d-flex') and (.//img[hasclass('o_company_logo_small')] or .//img[hasclass('o_company_logo')])]" position="attributes">
+            <attribute name="t-if">not ((o and o._name in ('sale.order', 'stock.picking', 'purchase.order', 'account.move', 'stock.scrap.batch', 'medicine.depot.scrap.history')) or (doc and doc._name in ('sale.order', 'stock.picking', 'purchase.order', 'account.move', 'stock.scrap.batch', 'medicine.depot.scrap.history')))</attribute>
+        </xpath>
+        <xpath expr="//div[hasclass('row') and .//*[@name='company_address']]" position="attributes">
+            <attribute name="t-if">not ((o and o._name in ('sale.order', 'stock.picking', 'purchase.order', 'account.move', 'stock.scrap.batch', 'medicine.depot.scrap.history')) or (doc and doc._name in ('sale.order', 'stock.picking', 'purchase.order', 'account.move', 'stock.scrap.batch', 'medicine.depot.scrap.history')))</attribute>
+        </xpath>
+        <xpath expr="//h2[@t-out='layout_document_title' or @t-esc='layout_document_title'] | //h3[@t-out='layout_document_title' or @t-esc='layout_document_title']" position="attributes">
+            <attribute name="t-if">not ((o and o._name in ('sale.order', 'stock.picking', 'purchase.order', 'account.move', 'stock.scrap.batch', 'medicine.depot.scrap.history')) or (doc and doc._name in ('sale.order', 'stock.picking', 'purchase.order', 'account.move', 'stock.scrap.batch', 'medicine.depot.scrap.history')))</attribute>
+        </xpath>
+    </template>
+
+    <!-- Layout BOLD ─────────────────────────────────────────────────────── -->
+    <template id="scrap_batch_suppress_header_bold"
+              inherit_id="web.external_layout_bold"
+              priority="1000">
+        <xpath expr="//div[hasclass('row') and .//*[@name='company_address']]" position="attributes">
+            <attribute name="t-if">not ((o and o._name in ('sale.order', 'stock.picking', 'purchase.order', 'account.move', 'stock.scrap.batch', 'medicine.depot.scrap.history')) or (doc and doc._name in ('sale.order', 'stock.picking', 'purchase.order', 'account.move', 'stock.scrap.batch', 'medicine.depot.scrap.history')))</attribute>
+        </xpath>
+        <xpath expr="//h2[@t-out='layout_document_title' or @t-esc='layout_document_title'] | //h3[@t-out='layout_document_title' or @t-esc='layout_document_title']" position="attributes">
+            <attribute name="t-if">not ((o and o._name in ('sale.order', 'stock.picking', 'purchase.order', 'account.move', 'stock.scrap.batch', 'medicine.depot.scrap.history')) or (doc and doc._name in ('sale.order', 'stock.picking', 'purchase.order', 'account.move', 'stock.scrap.batch', 'medicine.depot.scrap.history')))</attribute>
+        </xpath>
+    </template>
+
+    <!-- Layout BOXED ────────────────────────────────────────────────────── -->
+    <template id="scrap_batch_suppress_header_boxed"
+              inherit_id="web.external_layout_boxed"
+              priority="1000">
+        <xpath expr="//div[hasclass('row') and .//*[@name='company_address']]" position="attributes">
+            <attribute name="t-if">not ((o and o._name in ('sale.order', 'stock.picking', 'purchase.order', 'account.move', 'stock.scrap.batch', 'medicine.depot.scrap.history')) or (doc and doc._name in ('sale.order', 'stock.picking', 'purchase.order', 'account.move', 'stock.scrap.batch', 'medicine.depot.scrap.history')))</attribute>
+        </xpath>
+        <xpath expr="//h2[@t-out='layout_document_title' or @t-esc='layout_document_title'] | //h3[@t-out='layout_document_title' or @t-esc='layout_document_title']" position="attributes">
+            <attribute name="t-if">not ((o and o._name in ('sale.order', 'stock.picking', 'purchase.order', 'account.move', 'stock.scrap.batch', 'medicine.depot.scrap.history')) or (doc and doc._name in ('sale.order', 'stock.picking', 'purchase.order', 'account.move', 'stock.scrap.batch', 'medicine.depot.scrap.history')))</attribute>
+        </xpath>
+    </template>
+
+    <!-- Layout STRIPED ──────────────────────────────────────────────────── -->
+    <template id="scrap_batch_suppress_header_striped"
+              inherit_id="web.external_layout_striped"
+              priority="1000">
+        <xpath expr="//div[hasclass('d-flex') and .//*[@name='company_address']]" position="attributes">
+            <attribute name="t-if">not ((o and o._name in ('sale.order', 'stock.picking', 'purchase.order', 'account.move', 'stock.scrap.batch', 'medicine.depot.scrap.history')) or (doc and doc._name in ('sale.order', 'stock.picking', 'purchase.order', 'account.move', 'stock.scrap.batch', 'medicine.depot.scrap.history')))</attribute>
+        </xpath>
+        <xpath expr="//h2[@t-out='layout_document_title' or @t-esc='layout_document_title'] | //h3[@t-out='layout_document_title' or @t-esc='layout_document_title']" position="attributes">
+            <attribute name="t-if">not ((o and o._name in ('sale.order', 'stock.picking', 'purchase.order', 'account.move', 'stock.scrap.batch', 'medicine.depot.scrap.history')) or (doc and doc._name in ('sale.order', 'stock.picking', 'purchase.order', 'account.move', 'stock.scrap.batch', 'medicine.depot.scrap.history')))</attribute>
+        </xpath>
+    </template>
+
+    <!-- Layout FOLDER ───────────────────────────────────────────────────── -->
+    <template id="scrap_batch_suppress_header_folder"
+              inherit_id="web.external_layout_folder"
+              priority="1000">
+        <xpath expr="//div[contains(concat(' ', normalize-space(@class), ' '), ' header ') or contains(concat(' ', normalize-space(@t-attf-class), ' '), ' header ')]" position="attributes">
+            <attribute name="t-if">not ((o and o._name in ('account.move', 'stock.scrap.batch', 'medicine.depot.scrap.history')) or (doc and doc._name in ('account.move', 'stock.scrap.batch', 'medicine.depot.scrap.history')))</attribute>
+        </xpath>
+        <xpath expr="//h2[@t-out='layout_document_title' or @t-esc='layout_document_title'] | //h3[@t-out='layout_document_title' or @t-esc='layout_document_title']" position="attributes">
+            <attribute name="t-if">not ((o and o._name in ('account.move', 'stock.scrap.batch', 'medicine.depot.scrap.history')) or (doc and doc._name in ('account.move', 'stock.scrap.batch', 'medicine.depot.scrap.history')))</attribute>
+        </xpath>
+    </template>
+
+    <!-- Layout WAVE ─────────────────────────────────────────────────────── -->
+    <template id="scrap_batch_suppress_header_wave"
+              inherit_id="web.external_layout_wave"
+              priority="1000">
+        <xpath expr="//div[contains(concat(' ', normalize-space(@class), ' '), ' header ') or contains(concat(' ', normalize-space(@t-attf-class), ' '), ' header ')]" position="attributes">
+            <attribute name="t-if">not ((o and o._name in ('account.move', 'stock.scrap.batch', 'medicine.depot.scrap.history')) or (doc and doc._name in ('account.move', 'stock.scrap.batch', 'medicine.depot.scrap.history')))</attribute>
+        </xpath>
+        <xpath expr="//h2[@t-out='layout_document_title' or @t-esc='layout_document_title'] | //h3[@t-out='layout_document_title' or @t-esc='layout_document_title']" position="attributes">
+            <attribute name="t-if">not ((o and o._name in ('account.move', 'stock.scrap.batch', 'medicine.depot.scrap.history')) or (doc and doc._name in ('account.move', 'stock.scrap.batch', 'medicine.depot.scrap.history')))</attribute>
+        </xpath>
+    </template>
+
+    <!-- Layout BUBBLE ───────────────────────────────────────────────────── -->
+    <template id="scrap_batch_suppress_header_bubble"
+              inherit_id="web.external_layout_bubble"
+              priority="1000">
+        <xpath expr="//div[contains(concat(' ', normalize-space(@class), ' '), ' header ') or contains(concat(' ', normalize-space(@t-attf-class), ' '), ' header ')]" position="attributes">
+            <attribute name="t-if">not ((o and o._name in ('account.move', 'stock.scrap.batch', 'medicine.depot.scrap.history')) or (doc and doc._name in ('account.move', 'stock.scrap.batch', 'medicine.depot.scrap.history')))</attribute>
+        </xpath>
+        <xpath expr="//h2[@t-out='layout_document_title' or @t-esc='layout_document_title'] | //h3[@t-out='layout_document_title' or @t-esc='layout_document_title']" position="attributes">
+            <attribute name="t-if">not ((o and o._name in ('account.move', 'stock.scrap.batch', 'medicine.depot.scrap.history')) or (doc and doc._name in ('account.move', 'stock.scrap.batch', 'medicine.depot.scrap.history')))</attribute>
+        </xpath>
+    </template>
+
+    <!-- ═══════════════════════════════════════════════════════════════════
+         TEMPLATE PRINCIPAL — Orden de bajas individual
+
+         pharma_scrap_batch_layout_header va como PRIMER BLOQUE dentro
+         de div.page — patrón validado por pharma_reports que garantiza
+         que el header pharma aparezca en la posición correcta en Odoo 19.
+    ════════════════════════════════════════════════════════════════════════ -->
+    <template id="report_scrap_batch">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="web.external_layout">
+                    <t t-set="address" t-value="''"/>
+                    <t t-set="information_block" t-value="''"/>
+                    <div class="page pharma-doc-page">
+
+                        <!-- Header pharma: primer bloque en .page -->
+                        <t t-call="medicine_depot_scrap_batch.pharma_scrap_batch_layout_header"/>
+
+                        <!-- ═══ BLOQUE SUCURSAL / UBICACIÓN ══════════════ -->
+                        <div class="pharma-body-address-shell">
+                            <div class="pharma-doc pharma-addr-grid">
+                                <div class="row g-0">
+                                    <div class="col-6 pe-4 pharma-addr-col">
+                                        <span class="pharma-addr-label">Sucursal</span>
+                                        <div class="pharma-addr-name">
+                                            <span t-field="o.location_id"/>
+                                        </div>
+                                        <div class="pharma-addr-lines">Ubicación origen de la orden</div>
+                                    </div>
+                                    <div class="col-6 ps-4 pharma-addr-col pharma-addr-divider">
+                                        <span class="pharma-addr-label">Bajas</span>
+                                        <div class="pharma-addr-name">
+                                            <span t-field="o.scrap_location_id"/>
+                                        </div>
+                                        <div class="pharma-addr-lines">Ubicación virtual de bajas</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="pharma-body-address-shell">
+                            <div class="pharma-doc pharma-addr-grid">
+                                <div class="row g-0">
+                                    <div class="col-12 pharma-addr-col">
+                                        <span class="pharma-addr-label">Motivo de la baja</span>
+                                        <div class="pharma-addr-name">
+                                            <t t-if="o.scrap_reason_tag_ids">
+                                                <span t-esc="', '.join(o.scrap_reason_tag_ids.mapped('name'))"/>
+                                            </t>
+                                            <t t-else="">
+                                                <span class="text-muted">—</span>
+                                            </t>
+                                        </div>
+                                        <div class="pharma-addr-lines">Motivos aplicados a la orden completa</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- ═══ TABLA DE LÍNEAS ═══════════════════════════ -->
+                        <div class="pharma-section-ttl">Líneas de Producto</div>
+                        <table class="table table-sm pharma-lines">
+                            <thead>
+                                <tr>
+                                    <th>Producto</th>
+                                    <th>Lote/Serie</th>
+                                    <th>Caducidad</th>
+                                    <th class="text-end">Cantidad A la mano</th>
+                                    <th>UdM</th>
+                                    <th class="text-end">Costo unitario</th>
+                                    <th class="text-end">Costo total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr t-foreach="o.line_ids" t-as="line">
+                                    <td class="pharma-product-cell">
+                                        <span t-field="line.product_id"/>
+                                    </td>
+                                    <td class="pharma-mono">
+                                        <span t-field="line.lot_id"/>
+                                    </td>
+                                    <td>
+                                        <span t-field="line.expiration_date"
+                                              t-options='{"widget": "date"}'/>
+                                    </td>
+                                    <td class="text-end">
+                                        <span t-field="line.scrap_qty"/>
+                                    </td>
+                                    <td>
+                                        <span t-field="line.product_uom_id"/>
+                                    </td>
+                                    <td class="text-end">
+                                        <span t-field="line.purchase_lot_cost"/>
+                                    </td>
+                                    <td class="text-end">
+                                        <span t-field="line.scrap_total_cost"/>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <!-- ═══ TOTALES ══════════════════════════════════ -->
+                        <div class="pharma-section-ttl">Totales</div>
+                        <div name="total" class="pharma-total-block">
+                            <table>
+                                <tbody>
+                                    <tr>
+                                        <td>Total de líneas</td>
+                                        <td class="text-end">
+                                            <span t-esc="len(o.line_ids)"/>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>Total Cantidad A la mano</td>
+                                        <td class="text-end">
+                                            <span t-esc="'%.2f' % sum(o.line_ids.mapped('scrap_qty'))"/>
+                                        </td>
+                                    </tr>
+                                    <tr class="o_total_row">
+                                        <td>Estado Final</td>
+                                        <td class="text-end">
+                                            <span t-field="o.state"/>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="text-muted mt-3" style="font-size: 0.7rem;">
+                            Registro generado por
+                            <span t-esc="user.name"/> ·
+                            <span t-field="o.date"/>
+                        </div>
+
+                        <div class="pharma-signature-block" style="margin-top: 4rem; padding-top: 0.75rem;">
+                            <div class="row g-5">
+                                <div class="col-6 pharma-signature-col text-center">
+                                    <div class="pharma-signature-line"/>
+                                    <div class="pharma-signature-label">Entrega</div>
+                                </div>
+                                <div class="col-6 pharma-signature-col text-center">
+                                    <div class="pharma-signature-line"/>
+                                    <div class="pharma-signature-label">Recibe</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+</odoo>

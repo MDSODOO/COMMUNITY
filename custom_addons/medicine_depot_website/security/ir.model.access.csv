@@ -1,0 +1,5 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_mdw_crm_lead_portal,mdw crm.lead portal,crm.model_crm_lead,base.group_portal,1,0,0,0
+access_mdw_crm_tag_portal,mdw crm.tag portal,crm.model_crm_tag,base.group_portal,1,0,0,0
+access_mdw_crm_tag_public,mdw crm.tag public,crm.model_crm_tag,base.group_public,1,0,0,0
+access_mdw_ir_attachment_portal,mdw ir.attachment portal,base.model_ir_attachment,base.group_portal,1,0,0,0

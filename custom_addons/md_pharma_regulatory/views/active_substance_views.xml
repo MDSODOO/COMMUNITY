@@ -1,0 +1,55 @@
+<odoo>
+    <record id="view_md_active_substance_list" model="ir.ui.view">
+        <field name="name">md.active.substance.list</field>
+        <field name="model">md.active.substance</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="name"/>
+                <field name="product_count"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_md_active_substance_form" model="ir.ui.view">
+        <field name="name">md.active.substance.form</field>
+        <field name="model">md.active.substance</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="%(product.product_template_action)d" type="action"
+                                class="oe_stat_button" icon="fa-cubes">
+                            <field name="product_count" widget="statinfo" string="Productos"/>
+                        </button>
+                    </div>
+                    <group>
+                        <field name="name"/>
+                        <field name="active"/>
+                    </group>
+                    <notebook>
+                        <page string="Productos">
+                            <field name="product_ids">
+                                <list>
+                                    <field name="name"/>
+                                    <field name="default_code"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_md_active_substance" model="ir.actions.act_window">
+        <field name="name">Sustancias Activas</field>
+        <field name="res_model">md.active.substance</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <menuitem id="menu_md_active_substance"
+              name="Sustancias Activas"
+              action="action_md_active_substance"
+              parent="stock.menu_stock_config_settings"
+              sequence="65"/>
+</odoo>

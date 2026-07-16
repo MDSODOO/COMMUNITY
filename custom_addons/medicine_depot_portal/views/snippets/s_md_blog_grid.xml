@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <template id="s_md_blog_grid" name="MD · Blog Grid">
+        <section class="s_md_blog_grid o_colored_level"
+                 data-snippet="s_md_blog_grid" data-name="MD Blog Grid">
+            <article class="md-tile md-tile--dark md-blog-cta">
+                <span class="md-eyebrow md-eyebrow--quiet">Contenido editorial</span>
+                <h3>Blog para operación, normatividad y ventas en farmacia.</h3>
+                <p>Contenido para mejorar procesos, atención al cliente y cumplimiento en el punto de venta.</p>
+                <a class="md-btn md-btn--primary" href="/blog">Ir al blog</a>
+            </article>
+            <div class="md-blog-list">
+                <t t-if="featured_posts">
+                    <t t-foreach="featured_posts" t-as="post">
+                        <article class="md-blog-card">
+                            <div class="md-blog-thumb" aria-hidden="true">
+                                <i class="fa fa-bookmark-o"/>
+                            </div>
+                            <div>
+                                <span class="md-chip md-chip--inline" t-esc="post['category']"/>
+                                <h3 t-esc="post['name']"/>
+                                <small class="md-blog-meta" t-esc="post['date']"/>
+                                <p t-esc="post['summary']"/>
+                                <a t-att-href="post['url']">Leer más</a>
+                            </div>
+                        </article>
+                    </t>
+                </t>
+                <t t-else="">
+                    <article class="md-blog-card">
+                        <div class="md-blog-thumb" aria-hidden="true">
+                            <i class="fa fa-lightbulb-o"/>
+                        </div>
+                        <div>
+                            <span class="md-chip md-chip--inline">Operación</span>
+                            <h3>Cómo preparar compras recurrentes con menos fricción</h3>
+                            <small class="md-blog-meta">Guía operativa</small>
+                            <p>Una guía breve para ordenar catálogo, documentación y comunicación con proveedores.</p>
+                            <a href="/blog">Ir al blog</a>
+                        </div>
+                    </article>
+                </t>
+            </div>
+        </section>
+    </template>
+
+    <record id="s_md_blog_grid_snippet" model="ir.ui.view">
+        <field name="name">MD · Blog Grid (registro snippet)</field>
+        <field name="type">qweb</field>
+        <field name="mode">extension</field>
+        <field name="inherit_id" ref="website.snippets"/>
+        <field name="arch" type="xml">
+            <xpath expr="//snippets[@id='snippet_structure']" position="inside">
+                <t t-snippet="medicine_depot_portal.s_md_blog_grid"
+                   t-thumbnail="/medicine_depot_portal/static/img/snippets/s_md_blog_grid.svg"/>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

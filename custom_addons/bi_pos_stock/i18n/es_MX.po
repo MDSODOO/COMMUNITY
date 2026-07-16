@@ -1,0 +1,102 @@
+# Spanish (Mexico) translation for bi_pos_stock
+# Copyright (C) 2026 Medicine Depot
+# License: LGPL-3
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 19.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-06-10 00:00+0000\n"
+"PO-Revision-Date: 2026-06-10 00:00+0000\n"
+"Last-Translator: Daniel Cervera <daniel.cervera.2029@gmail.com>\n"
+"Language-Team: Spanish (Mexico) <noreply@medicinedepot.mx>\n"
+"Language: es_MX\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#. module: bi_pos_stock
+msgid "Mostrar A la mano en POS"
+msgstr "Mostrar A la mano en POS"
+
+#. module: bi_pos_stock
+msgid "Permitir pedido POS sin A la mano"
+msgstr "Permitir pedido POS sin A la mano"
+
+#. module: bi_pos_stock
+msgid "Denegar pedido POS cuando A la mano baje hasta"
+msgstr "Denegar pedido POS cuando A la mano baje hasta"
+
+#. module: bi_pos_stock
+msgid "A la mano"
+msgstr "A la mano"
+
+#. module: bi_pos_stock
+msgid "Cajero"
+msgstr "Cajero"
+
+#. module: bi_pos_stock
+msgid "Fecha del inventario"
+msgstr "Fecha del inventario"
+
+#. module: bi_pos_stock
+msgid "Laboratorio"
+msgstr "Laboratorio"
+
+#. module: bi_pos_stock
+msgid "Clave proveedor"
+msgstr "Clave proveedor"
+
+#. module: bi_pos_stock
+msgid "Costo factura"
+msgstr "Costo factura"
+
+#. module: bi_pos_stock
+msgid "Nombre comercial"
+msgstr "Nombre comercial"
+
+#. module: bi_pos_stock
+msgid "Inventario BF"
+msgstr "Inventario BF"
+
+#. module: bi_pos_stock
+msgid "Código BF"
+msgstr "Código BF"
+
+#. module: bi_pos_stock
+msgid "Código de barras"
+msgstr "Código de barras"
+
+#. module: bi_pos_stock
+msgid "Pedido eCommerce"
+msgstr "Pedido eCommerce"
+
+#. module: bi_pos_stock
+msgid "Nuevo pedido de tienda online"
+msgstr "Nuevo pedido de tienda online"
+
+#. module: bi_pos_stock
+msgid "Lote/Serie"
+msgstr "Lote/Serie"
+
+#. module: bi_pos_stock
+msgid "Fecha de caducidad"
+msgstr "Fecha de caducidad"
+
+#. module: bi_pos_stock
+msgid "Cierre de Caja"
+msgstr "Cierre de Caja"
+
+#. module: bi_pos_stock
+msgid "Archivo Excel (.xlsx)"
+msgstr "Archivo Excel (.xlsx)"
+
+#. module: bi_pos_stock
+msgid "Proveedor"
+msgstr "Proveedor"
+
+#. module: bi_pos_stock
+msgid "Nombre del archivo"
+msgstr "Nombre del archivo"
+

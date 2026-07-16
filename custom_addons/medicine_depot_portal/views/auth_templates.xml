@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!--
+        Login UX · jerarquía clara para usuarios nuevos.
+
+        priority="99" garantiza que esta herencia se aplique DESPUÉS de
+        auth_signup.login, de modo que el enlace nativo pequeño
+        "Don't have an account?" ya exista en el arch combinado y podamos
+        reemplazarlo por el panel CTA de registro.
+    -->
+    <template id="md_auth_login_ux"
+              inherit_id="web.login"
+              name="MedicineDepot · Login UX"
+              priority="99">
+
+        <!-- Restituye una clase estable aunque Odoo cambie las clases nativas. -->
+        <xpath expr="//form[@method='post' or @role='form']"
+               position="attributes">
+            <attribute name="class" add="oe_login_form md-auth-login-form" separator=" "/>
+        </xpath>
+
+        <!-- Encabezado del formulario: contexto inmediato de la acción -->
+        <xpath expr="//form[@method='post' or @role='form']/*[not(self::input[@type='hidden'])][1]"
+               position="before">
+            <div class="md-auth-head">
+                <span class="md-auth-eyebrow">Clientes registrados</span>
+                <h1 class="md-auth-title">Inicia sesión</h1>
+                <p class="md-auth-sub">Accede a tus pedidos, cotizaciones y datos de afiliación.</p>
+            </div>
+        </xpath>
+
+        <!-- Botón principal más prominente -->
+        <xpath expr="//form[@method='post' or @role='form']//button[@type='submit']"
+               position="attributes">
+            <attribute name="class" add="btn-lg" separator=" "/>
+        </xpath>
+
+        <!-- Fuera el enlace pequeño nativo de signup: lo sustituye el panel CTA -->
+        <xpath expr="//form[@method='post' or @role='form']//a[contains(@href, '/web/signup') or contains(@t-att-href, '/web/signup') or contains(@t-attf-href, '/web/signup')]"
+               position="replace"/>
+
+        <!--
+            Panel CTA de registro como tarjeta hermana del formulario:
+            en pantallas grandes se acomoda como segunda columna
+            (ver login_custom.scss), en móvil queda debajo del login.
+        -->
+        <xpath expr="//form[@method='post' or @role='form']"
+               position="after">
+            <div t-if="signup_enabled" class="md-auth-cta-panel" data-md-auth-cta="signup">
+                <span class="md-auth-eyebrow md-auth-eyebrow--green">¿Primera vez aquí?</span>
+                <h2 class="md-auth-cta-title">Crea tu cuenta nueva</h2>
+                <ul class="md-auth-benefits">
+                    <li><i class="fa fa-check-circle" aria-hidden="true"/>Compra en línea con precios claros</li>
+                    <li><i class="fa fa-check-circle" aria-hidden="true"/>Da seguimiento a tus pedidos y facturas</li>
+                    <li><i class="fa fa-check-circle" aria-hidden="true"/>Consulta lo que tenemos a la mano en tu sucursal</li>
+                </ul>
+                <a role="button"
+                   t-attf-href="/web/signup?{{ keep_query() }}"
+                   class="btn btn-success btn-lg w-100 md-auth-signup-btn">
+                    <i class="fa fa-user-plus me-2" aria-hidden="true"/>Crear cuenta
+                </a>
+                <p class="md-auth-cta-hint">Te toma menos de un minuto.</p>
+            </div>
+        </xpath>
+    </template>
+
+    <!--
+        Signup UX · misma tarjeta glass del login, con encabezado propio
+        y regreso visible a "Inicia sesión".
+    -->
+    <template id="md_auth_signup_ux"
+              inherit_id="auth_signup.signup"
+              name="MedicineDepot · Signup UX"
+              priority="64">
+
+        <!-- Restituye una clase estable aunque Odoo cambie las clases nativas. -->
+        <xpath expr="//form[@method='post' or @role='form']"
+               position="attributes">
+            <attribute name="class" add="oe_signup_form md-auth-signup-form" separator=" "/>
+        </xpath>
+
+        <xpath expr="//form[@method='post' or @role='form']/*[not(self::input[@type='hidden'])][1]"
+               position="before">
+            <div class="md-auth-head">
+                <span class="md-auth-eyebrow md-auth-eyebrow--green">Cuenta nueva</span>
+                <h1 class="md-auth-title">Crea tu cuenta</h1>
+                <p class="md-auth-sub">Solo necesitamos tu nombre, correo y una contraseña.</p>
+            </div>
+        </xpath>
+
+        <xpath expr="//form[@method='post' or @role='form']//a[@role='button' and (contains(@href, '/web/login') or contains(@t-att-href, '/web/login') or contains(@t-attf-href, '/web/login'))]"
+               position="replace">
+            <div class="md-auth-divider"><span>¿Ya tienes cuenta?</span></div>
+            <a t-attf-href="/web/login?{{ keep_query() }}"
+               class="btn btn-outline-primary md-auth-login-back"
+               role="button">Inicia sesión</a>
+        </xpath>
+    </template>
+
+</odoo>

@@ -1,0 +1,8 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_stock_scrap_batch_user,access.stock.scrap.batch.user,model_stock_scrap_batch,stock.group_stock_user,1,1,1,0
+access_stock_scrap_batch_manager,access.stock.scrap.batch.manager,model_stock_scrap_batch,stock.group_stock_manager,1,1,1,1
+access_stock_scrap_batch_line_user,access.stock.scrap.batch.line.user,model_stock_scrap_batch_line,stock.group_stock_user,1,1,1,0
+access_stock_scrap_batch_line_manager,access.stock.scrap.batch.line.manager,model_stock_scrap_batch_line,stock.group_stock_manager,1,1,1,1
+access_medicine_depot_scrap_history_legacy_user,access.medicine.depot.scrap.history.legacy.user,model_medicine_depot_scrap_history,stock.group_stock_user,1,0,0,0
+access_scrap_summary_2025_user,access.medicine.depot.scrap.summary.2025.user,model_medicine_depot_scrap_summary_2025,stock.group_stock_user,1,0,0,0
+access_scrap_summary_2025_manager,access.medicine.depot.scrap.summary.2025.manager,model_medicine_depot_scrap_summary_2025,stock.group_stock_manager,1,0,0,0

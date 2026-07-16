@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates>
+    <!--
+        ProductCard — stock badge.
+
+        Reads:
+          - props.stockQuantity  : qty passed from ProductScreen.state.stockByProductTmplId
+          - pos.config.*         : display config (via get pos() getter in product_card.js)
+
+        XPath pattern mirrors pos_restaurant (//ActionpadWidget position="attributes")
+        and Odoo core (productCartQty="this.state.quantityByProductTmplId[product.id]").
+    -->
+    <t t-name="bi_pos_stock.ProductCard"
+       t-inherit="point_of_sale.ProductCard"
+       t-inherit-mode="extension"
+       owl="1">
+        <xpath expr="//article" position="inside">
+            <!--
+                Stock badge — shown only for non-lot/non-serial storable products.
+                Lot/serial products: the lot-card-footer (below) handles stock display
+                after a specific lot is selected by the cashier.
+
+                Traffic-light color via stockColorClass getter:
+                  stock-badge-red    → qty ≤ 0 (out of stock)
+                  stock-badge-yellow → 0 < qty ≤ low_stock threshold
+                  stock-badge-green  → qty > threshold
+            -->
+            <t t-if="pos.config.pos_display_stock
+                      and props.product.is_storable
+                      and props.product.type !== 'service'
+                      and props.product.tracking !== 'lot'
+                      and props.product.tracking !== 'serial'">
+
+                <t t-set="stockQty" t-value="props.stockQuantity ?? 0"/>
+
+                <t t-if="pos.config.stock_position === 'top_left'">
+                    <span t-att-class="'qty-left-label ' + stockColorClass">
+                        <t t-esc="stockQty"/>
+                    </span>
+                </t>
+                <t t-if="pos.config.stock_position === 'top_right'">
+                    <span t-att-class="'qty-tright-label ' + stockColorClass">
+                        <t t-esc="stockQty"/>
+                    </span>
+                </t>
+                <t t-if="pos.config.stock_position === 'bottom_right'">
+                    <span t-att-class="'qty-bright-label ' + stockColorClass">
+                        <t t-esc="stockQty"/>
+                    </span>
+                </t>
+
+            </t>
+        </xpath>
+    </t>
+
+    <!--
+        Lot ⓘ button — top-right corner; opens LotDetailPopup on demand.
+        Visible whenever the product has lot/serial tracking with known expiry.
+        The expiry-date badge that was previously here has been moved to the
+        card footer (bi_pos_stock.ProductCardLotFooter below) so it is shown
+        only AFTER the cashier selects a specific lot.
+    -->
+    <t t-name="bi_pos_stock.ProductCardLotExpiry"
+       t-inherit="point_of_sale.ProductCard"
+       t-inherit-mode="extension"
+       owl="1">
+        <xpath expr="//article" position="inside">
+
+            <!-- Guard: only for lot/serial tracked products with known expiry -->
+            <t t-if="lotExpiry">
+                <!-- ── Info button (top-right) — opens LotDetailPopup ── -->
+                <button class="lot-info-btn btn btn-sm btn-warning"
+                        type="button"
+                        title="Ver lotes a la mano (FEFO)"
+                        t-on-click="openLotDetail">
+                    <i class="fa fa-info-circle btn-warning"/>
+                </button>
+            </t>
+        </xpath>
+    </t>
+
+    <!--
+        Selected-lot footer — always rendered inside the card (reserves vertical
+        space so layout never jumps).  Visibility is controlled by CSS:
+          • lot-footer-empty  →  opacity: 0; pointer-events: none  (CSS transition)
+          • (no class)        →  opacity: 1  (lot has been selected)
+
+        Shows the selected lot's expiry date + available qty with FontAwesome icons.
+        Guarded by props.product.tracking so non-lot products get no DOM overhead.
+    -->
+    <t t-name="bi_pos_stock.ProductCardLotFooter"
+       t-inherit="point_of_sale.ProductCard"
+       t-inherit-mode="extension"
+       owl="1">
+        <xpath expr="//article" position="inside">
+            <!--
+                Footer div: always rendered for lot-tracked products so the card
+                height is stable (no layout jump when lot is selected).
+                CSS transitions opacity via .lot-footer-empty → no DOM add/remove.
+            -->
+            <t t-if="props.product.tracking === 'lot' or props.product.tracking === 'serial'">
+                <div t-att-class="'lot-card-footer d-flex align-items-center justify-content-center gap-1 px-1'
+                                  + (props.selectedLotInfo ? '' : ' lot-footer-empty')">
+                    <t t-if="props.selectedLotInfo">
+                        <span t-att-class="'badge bg-' + selectedLotExpiryColor"
+                              style="font-size:0.65rem;">
+                            <i class="fa fa-calendar me-1"/>
+                            <t t-esc="selectedLotDateLabel"/>
+                        </span>
+                        <span class="badge bg-secondary"
+                              style="font-size:0.65rem;">
+                            <i class="fa fa-cubes me-1"/>
+                            <t t-esc="selectedLotQtyLabel"/>
+                        </span>
+                    </t>
+                </div>
+            </t>
+        </xpath>
+    </t>
+
+    <!--
+        ProductScreen template extension — inject stockQuantity into every ProductCard.
+
+        Uses //ProductCard (no parent constraint) as pos_restaurant uses //ActionpadWidget.
+        The expression is evaluated in ProductScreen's template context, where:
+          - this.state.stockByProductTmplId is the qty map populated by product_list.js
+          - product is the loop variable from t-as="product"
+    -->
+    <t t-name="bi_pos_stock.ProductScreen"
+       t-inherit="point_of_sale.ProductScreen"
+       t-inherit-mode="extension"
+       owl="1">
+        <xpath expr="//ProductCard" position="attributes">
+            <attribute name="stockQuantity">
+                this.state.stockByProductTmplId[product.id] ?? 0
+            </attribute>
+            <!--
+                selectedLotInfo: injected here so OWL propagates it as a prop —
+                same pattern as stockQuantity.  ProductScreen.state.selectedLotByProductId
+                is rebuilt by useEffect whenever a lot is assigned/changed on any line.
+            -->
+            <attribute name="selectedLotInfo">
+                this.state.selectedLotByProductId[product.id] ?? null
+            </attribute>
+            <!--
+                isShortExpiry: true when the product has a lot expiring in ≤ 180 days.
+                ProductScreen.state.shortExpiryTmplIds is computed by useEffect in
+                product_list.js whenever lotsExpirySummary changes.
+            -->
+            <attribute name="isShortExpiry">
+                !!(this.state.shortExpiryTmplIds &amp;&amp; this.state.shortExpiryTmplIds.includes(product.id))
+            </attribute>
+        </xpath>
+    </t>
+
+    <!--
+        ProductCard — short-expiry visual ring (< 6 months).
+
+        When props.isShortExpiry is true, renders an absolute-positioned div
+        that creates a purple border around the entire card. Using an overlay
+        div (instead of modifying the article's class attribute) avoids breaking
+        existing t-att-class bindings on the article element.
+
+        Requires:
+          - Parent <article> to be position:relative (guaranteed by Odoo core).
+          - .short-expiry-ring CSS defined in pos_product_card.scss.
+
+        The "Prox. Vencer" pill at the bottom-right serves as an explicit
+        text signal in addition to the color border, making it accessible to
+        users who may not perceive color differences alone.
+    -->
+    <t t-name="bi_pos_stock.ProductCardShortExpiry"
+       t-inherit="point_of_sale.ProductCard"
+       t-inherit-mode="extension"
+       owl="1">
+        <xpath expr="//article" position="inside">
+            <t t-if="props.isShortExpiry">
+                <div class="short-expiry-ring" aria-label="Próximo a vencer" aria-hidden="true">
+                    <span class="short-expiry-pill">Prox. Vencer</span>
+                </div>
+            </t>
+        </xpath>
+    </t>
+</templates>

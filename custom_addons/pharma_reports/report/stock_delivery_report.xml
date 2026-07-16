@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--
+      Patrón "estándar oro" replicado de sale_order_report.xml:
+      mismas clases pharma-*, mismo bloque de dirección, mismos section-ttl.
+
+      Nota crítica Odoo 19: anclar SIEMPRE por @name (th/td con name) y
+      nunca por posición th[N]. product_expiry y otros inheritors envuelven
+      columnas en bloques <t t-if>; insertar entre dos ramas de una cadena
+      t-if/t-elif la rompe (SyntaxError t-elif). Los <td>/<th> con @name
+      (p. ej. move_line_lot_quantity, th_sml_quantity) son anclas estables
+      y NO forman parte de cadenas t-elif, por lo que position="before"
+      sobre ellos es seguro.
+    -->
+    <template id="report_delivery_pharma_columns" inherit_id="stock.report_delivery_document" priority="90">
+        <xpath expr="//div[hasclass('page')]" position="attributes">
+            <attribute name="class" add="pharma-doc-page" separator=" "/>
+        </xpath>
+
+        <xpath expr="//table[@name='stock_move_table']" position="attributes">
+            <attribute name="class" add="pharma-lines table-sm" separator=" "/>
+        </xpath>
+
+        <xpath expr="//table[@name='stock_move_line_table']" position="attributes">
+            <attribute name="class" add="pharma-lines table-sm" separator=" "/>
+        </xpath>
+
+        <!-- colgroup en tabla agregada: descripción wide para no aplastar
+             lotes/caducidades sobre las columnas numéricas de cantidad. -->
+        <xpath expr="//table[@name='stock_move_table']/thead" position="before">
+            <colgroup>
+                <col style="width:50%;"/>
+                <col style="width:16%;"/>
+                <col style="width:16%;"/>
+                <col style="width:18%;"/>
+            </colgroup>
+        </xpath>
+
+        <!-- colgroup en tabla detallada (move lines con lote/serie). -->
+        <xpath expr="//table[@name='stock_move_line_table']/thead" position="before">
+            <colgroup>
+                <col style="width:36%;"/>
+                <col style="width:18%;"/>
+                <col style="width:16%;"/>
+                <col style="width:14%;"/>
+                <col style="width:16%;"/>
+            </colgroup>
+        </xpath>
+
+        <xpath expr="//table[@name='stock_move_table']" position="before">
+            <!--
+              Header pharma como primer bloque del body. Inyectado aquí en vez
+              de vía xpath sobre web.external_layout_* para garantizar orden
+              visual estable y no depender de la estructura del layout standard.
+            -->
+            <t t-call="pharma_reports.pharma_full_header"/>
+            <div class="pharma-body-address-shell">
+                <t t-set="pharma_doc" t-value="o"/>
+                <t t-set="pharma_company" t-value="o.company_id.sudo()"/>
+                <!-- Delivery: ocultar columna Cliente (se duplica con bloque nativo). -->
+                <t t-set="pharma_show_customer" t-value="False"/>
+                <t t-call="pharma_reports.pharma_company_address_block"/>
+            </div>
+            <div class="pharma-section-ttl">Productos a Entregar</div>
+        </xpath>
+
+        <!--
+          NO insertar <div> antes de stock_move_line_table: en Odoo 19
+          esa tabla es <table t-elif="..."> en cadena con stock_move_table
+          (t-if). Cualquier sibling intermedio rompe el t-elif.
+          El title se inyecta como <caption> DENTRO de la tabla, antes
+          del <thead>, preservando la cadena t-if/t-elif a nivel padre.
+        -->
+        <xpath expr="//table[@name='stock_move_line_table']/thead" position="before">
+            <caption class="pharma-section-ttl">Productos Entregados</caption>
+        </xpath>
+
+        <!-- Regla de negocio: dos columnas de cantidad.
+               · "A la mano"  = cantidad pedida / demanda (product_uom_qty)
+               · "Entregado"  = cantidad realmente entregada (quantity)
+             NUNCA "Disponible".
+
+             CRÍTICO: apuntar SIEMPRE por @name, nunca por posición th[N]
+             (th[2] es la columna condicional `th_sml_package`; tocarla por
+             posición borra su t-if e inyecta una columna fantasma que
+             descuadra el cuerpo).
+
+             ── Tabla agregada (stock_move_table): ya tiene Ordered + Delivered ── -->
+        <xpath expr="//table[@name='stock_move_table']/thead/tr/th[@name='th_sm_ordered']" position="replace">
+            <th name="th_sm_ordered" class="text-end"><strong>A la mano</strong></th>
+        </xpath>
+        <xpath expr="//table[@name='stock_move_table']/thead/tr/th[@name='th_sm_quantity']" position="replace">
+            <th name="th_sm_quantity" class="text-end"><strong>Entregado</strong></th>
+        </xpath>
+
+        <!-- ── Tabla detallada (stock_move_line_table) ──
+             No-serie: `th_sml_qty_ordered` (Ordered, t-if not serial) → "A la mano".
+             Serie: esa columna no se renderiza, así que inyectamos una columna
+             "A la mano" propia condicionada a serie, justo antes de la entregada.
+             `th_sml_quantity` (Delivered) → "Entregado" en ambos modos. -->
+        <xpath expr="//table[@name='stock_move_line_table']/thead/tr/th[@name='th_sml_qty_ordered']" position="replace">
+            <th name="th_sml_qty_ordered" class="text-end" t-if="not has_serial_number"><strong>A la mano</strong></th>
+        </xpath>
+        <xpath expr="//table[@name='stock_move_line_table']/thead/tr/th[@name='th_sml_quantity']" position="before">
+            <th name="th_sml_md_ordered" class="text-end" t-if="has_serial_number"><strong>A la mano</strong></th>
+        </xpath>
+        <xpath expr="//table[@name='stock_move_line_table']/thead/tr/th[@name='th_sml_quantity']" position="replace">
+            <th name="th_sml_quantity" class="text-end"><strong>Entregado</strong></th>
+        </xpath>
+
+        <!--
+          NO inyectamos columnas Lote/Caducidad: product_expiry ya provee
+          "Numero de serie/lote" y "Fecha de caducidad" nativas en el
+          delivery. Anadirlas duplica columnas. La columna nativa cubre
+          el requisito farmaceutico.
+        -->
+    </template>
+
+    <!--
+      Filas de detalle (lote/serie). Añadimos la celda "A la mano" (demanda
+      del movimiento) ANTES de la celda de cantidad entregada.
+
+      Seguro frente a t-elif: anclamos por @name="move_line_lot_quantity"
+      (un <td> simple, no parte de ninguna cadena t-if/t-elif) con
+      position="before". product_expiry inyecta la caducidad tras
+      `move_line_lot`, así que el orden final queda:
+        producto · lote · caducidad · A la mano · Entregado
+      independientemente del orden de aplicación de las herencias.
+
+      Solo aplica en modo serie: este sub-template únicamente se invoca
+      cuando has_serial_number es verdadero (en agregado se usa
+      stock_report_delivery_aggregated_move_lines, que ya trae qty_ordered).
+    -->
+    <template id="report_delivery_pharma_serial_ordered"
+              inherit_id="stock.stock_report_delivery_has_serial_move_line"
+              priority="90">
+        <xpath expr="//td[@name='move_line_lot_quantity']" position="before">
+            <td class="text-end" name="md_qty_ordered">
+                <span t-out="format_number(move_line.move_id.product_uom_qty)"/>
+            </td>
+        </xpath>
+    </template>
+</odoo>

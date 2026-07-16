@@ -1,0 +1,140 @@
+{
+  "module": "pharma_reports",
+  "started_at": "2026-05-24T22:15:51.251Z",
+  "completed_phases": [
+    "audit_phase_1",
+    "audit_phase_2",
+    "audit_phase_3",
+    "audit_phase_4"
+  ],
+  "phases": {
+    "audit_phase_1": {
+      "completed_at": "2026-05-24T22:18:23.930Z",
+      "provider": "ollama",
+      "model": "qwen2.5-coder:7b",
+      "tokens": 131,
+      "result": {
+        "scope": [
+          "Python",
+          "XML"
+        ],
+        "audit_areas": [
+          "models",
+          "views",
+          "security"
+        ],
+        "risk_level": "medium",
+        "notes": "El módulo 'pharma_reports' contiene varios archivos Python y XML que definen modelos, vistas y configuraciones. Es importante revisar la seguridad de los datos sensibles, como las caducidades y lotes de productos farmacéuticos. También es necesario verificar que las vistas estén correctamente definidas y que no haya errores en el código Python que puedan afectar la generación de reportes PDF."
+      }
+    },
+    "audit_phase_2": {
+      "completed_at": "2026-05-24T22:18:23.934Z",
+      "provider": "claude",
+      "model": "claude",
+      "tokens": 0,
+      "result": {
+        "files_analyzed": 0,
+        "results": []
+      }
+    },
+    "audit_phase_3": {
+      "completed_at": "2026-05-24T22:21:10.076Z",
+      "provider": "claude",
+      "model": "claude",
+      "tokens": 0,
+      "result": {
+        "bugs": [
+          {
+            "line": 1,
+            "type": "string",
+            "description": "La codificación de caracteres UTF-8 no es necesaria si el código no contiene caracteres fuera del conjunto ASCII.",
+            "fix": "Eliminar la línea `# -*- coding: utf-8 -*-`",
+            "file": "__init__ 2.py"
+          },
+          {
+            "line": 1,
+            "type": "encoding",
+            "description": "The file specifies UTF-8 encoding, but it's not clear if all strings in the file are properly encoded.",
+            "fix": "Ensure that all strings in the file are properly encoded using UTF-8.",
+            "file": "__init__ 3.py"
+          },
+          {
+            "line": 1,
+            "type": "encoding",
+            "description": "The file is encoded in UTF-8, but it's not clear if this encoding is necessary or if it could be simplified.",
+            "fix": "Remove the encoding declaration if it's not necessary.",
+            "file": "__init__ 4.py"
+          }
+        ],
+        "security_issues": [
+          {
+            "type": "access_control",
+            "description": "No se han implementado controles de acceso para asegurar que solo los usuarios autorizados puedan acceder a las funciones y métodos del módulo.",
+            "fix": "Implementar autenticación y autorización adecuados.",
+            "file": "__init__ 2.py"
+          },
+          {
+            "type": "access_control",
+            "description": "The code does not implement proper access control checks, which could lead to unauthorized access.",
+            "fix": "Implement access control checks to ensure that only authorized users can access sensitive data or perform certain actions.",
+            "file": "__init__ 3.py"
+          },
+          {
+            "type": "access_control",
+            "description": "There are no explicit access control checks in the code snippet provided. This could lead to unauthorized access to sensitive data or functionality.",
+            "fix": "Implement proper access control mechanisms, such as role-based access control (RBAC) or permission checks.",
+            "file": "__init__ 4.py"
+          }
+        ],
+        "performance_issues": [
+          {
+            "description": "No se han optimizado las consultas SQL ni el manejo de recursos, lo que podría causar problemas de rendimiento en aplicaciones con alta carga.",
+            "fix": "Optimizar consultas SQL y gestionar los recursos de manera eficiente.",
+            "file": "__init__ 2.py"
+          },
+          {
+            "description": "The code does not use efficient data structures or algorithms, which could lead to performance issues when processing large datasets.",
+            "fix": "Optimize the code by using more efficient data structures and algorithms where possible.",
+            "file": "__init__ 3.py"
+          },
+          {
+            "description": "The code snippet provided does not contain any performance-critical operations. However, if the module is handling large datasets or performing complex calculations, it's important to consider optimization techniques.",
+            "fix": "Profile the application and identify bottlenecks. Optimize algorithms, use efficient data structures, and parallelize tasks where possible.",
+            "file": "__init__ 4.py"
+          }
+        ],
+        "critical_count": 3
+      }
+    },
+    "audit_phase_4": {
+      "completed_at": "2026-05-24T22:24:22.340Z",
+      "provider": "ollama",
+      "model": "qwen2.5-coder:7b",
+      "tokens": 753,
+      "result": {
+        "overall_score": 5,
+        "grade": "F",
+        "executive_summary": "El módulo 'pharma_reports' ha sido auditiado y se han identificado varios problemas críticos que afectan la calidad, seguridad y rendimiento del código. Se recomienda una revisión detallada y correcciones urgentes para mejorar la situación.",
+        "critical_issues": [
+          "La codificación de caracteres UTF-8 no es necesaria si el código no contiene caracteres fuera del conjunto ASCII.",
+          "No se han implementado controles de acceso para asegurar que solo los usuarios autorizados puedan acceder a las funciones y métodos del módulo."
+        ],
+        "recommendations": [
+          "Eliminar la línea `# -*- coding: utf-8 -*-` en los archivos __init__ 2.py, __init__ 3.py y __init__ 4.py.",
+          "Implementar autenticación y autorización adecuados para proteger el acceso a las funciones y métodos del módulo."
+        ],
+        "markdown_report": "# Reporte Final de Auditoría del Módulo 'pharma_reports'\n\n## Datos de Auditoría\n- **Archivos Analizados**: 0\n- **Calificación Promedio de Calidad**: 0\n- **Total de Errores**: 3\n- **Total de Vulnerabilidades de Seguridad**: 3\n- **Total de Problemas de Rendimiento**: 3\n- **Conteo de Incidentes Críticos**: 3\n\n## Resumen Ejecutivo\nEl módulo 'pharma_reports' ha sido auditiado y se han identificado varios problemas críticos que afectan la calidad, seguridad y rendimiento del código. Se recomienda una revisión detallada y correcciones urgentes para mejorar la situación.\n\n## Incidentes Críticos\n1. **Codificación de Caracteres UTF-8 No Necesaria**: La codificación de caracteres UTF-8 no es necesaria si el código no contiene caracteres fuera del conjunto ASCII.\n   - **Línea**: 1\n   - **Tipo**: string\n   - **Descripción**: La codificación de caracteres UTF-8 no es necesaria si el código no contiene caracteres fuera del conjunto ASCII.\n   - **Corrección**: Eliminar la línea `# -*- coding: utf-8 -*-`\n   - **Archivo**: __init__ 2.py, __init__ 3.py, __init__ 4.py\n2. **Controles de Acceso No Implementados**: No se han implementado controles de acceso para asegurar que solo los usuarios autorizados puedan acceder a las funciones y métodos del módulo.\n   - **Tipo**: access_control\n   - **Descripción**: No se han implementado controles de acceso para asegurar que solo los usuarios autorizados puedan acceder a las funciones y métodos del módulo.\n   - **Corrección**: Implementar autenticación y autorización adecuados.\n   - **Archivo**: __init__ 2.py, __init__ 3.py\n\n## Recomendaciones\n1. Eliminar la línea `# -*- coding: utf-8 -*-` en los archivos __init__ 2.py, __init__ 3.py y __init__ 4.py.\n2. Implementar autenticación y autorización adecuados para proteger el acceso a las funciones y métodos del módulo."
+      }
+    }
+  },
+  "meta": {
+    "total_tokens": 884,
+    "total_cost": 0,
+    "providers_used": [
+      "ollama",
+      "claude"
+    ]
+  },
+  "current_version": "audit",
+  "target_version": "audit"
+}

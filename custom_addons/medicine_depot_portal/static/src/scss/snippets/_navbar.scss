@@ -1,0 +1,1023 @@
+// Medicine Depot · Navbar module
+// Unified public navbar: sticky glassmorphism, hamburger animation,
+// active underline, dark mode, skip link, accessibility.
+
+// ── Shell variables ────────────────────────────────────────────────────────────
+.md-bento-public,
+body.md-bento-public {
+    --md-primary: var(--bs-primary, #{$md-blue});
+    --md-primary-900: #{$md-dark};
+    --md-secondary: var(--bs-secondary, #{$md-green});
+    --md-surface: var(--bs-body-bg, #{$md-white});
+    --md-surface-soft: var(--bs-light, #{$md-gray-100});
+    --md-body: var(--bs-body-color, #{$md-ink});
+    --md-muted: var(--bs-secondary-color, #{$md-muted});
+    --md-border: var(--bs-border-color, #{$md-line});
+    --md-radius: var(--bs-border-radius-xl, 1rem);
+    --md-shadow-sm: 0 0.5rem 1.5rem rgba(7, 58, 76, 0.08);
+    --md-shadow-md: 0 1rem 2.5rem rgba(7, 58, 76, 0.14);
+    --md-brand-gradient: linear-gradient(90deg, #{$md-blue} 0%, #42BEE2 58%, #{$md-green} 100%);
+    --md-nav-offset: 0.75rem;
+
+    color: var(--md-body);
+    background: var(--md-surface-soft);
+    font-family: $md-font-body;
+    scroll-padding-top: 76px;
+}
+
+// ── Dark mode overrides ────────────────────────────────────────────────────────
+// Removido auto dark-mode OS (prefers-color-scheme) para evitar choques visuales.
+// El modo oscuro ahora será 100% manual vía .md-color-scheme-dark.
+
+// Dark mode toggle (via data attribute or JS class)
+.md-bento-public[data-color-scheme="dark"],
+.md-color-scheme-dark .md-bento-public {
+    --md-surface: #{$md-ink-900};
+    --md-surface-soft: #{$md-muted-900};
+    --md-body: #{rgba($md-white, 0.92)};
+    --md-muted: #{rgba($md-white, 0.6)};
+    --md-border: #{rgba($md-white, 0.1)};
+
+    .md-bento-nav {
+        background: rgba($md-muted-900, 0.92) !important;
+        border-color: rgba($md-white, 0.1) !important;
+        color: rgba($md-white, 0.92) !important;
+    }
+}
+
+// ── Page wrap ─────────────────────────────────────────────────────────────────
+.md-bento-wrap {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+// ── Skip link ─────────────────────────────────────────────────────────────────
+.md-skip-link {
+    position: fixed;
+    top: 0.75rem;
+    left: 0.75rem;
+    z-index: $z-skiplink;
+    transform: translateY(-160%);
+    padding: 0.75rem 1rem;
+    border-radius: $md-r-card;
+    background: $md-white;
+    color: $md-blue-800;
+    box-shadow: $md-shadow-md;
+    font-size: $md-text-sm;
+    font-weight: 900;
+    text-decoration: none;
+    transition: transform 0.18s ease;
+
+    &:focus {
+        transform: translateY(0);
+        color: $md-blue-800;
+    }
+}
+
+// ── Topbar (sticky wrapper) ───────────────────────────────────────────────────
+.md-bento-topbar {
+    position: sticky;
+    top: 0;
+    z-index: $z-navbar;
+    padding-top: var(--md-nav-offset);
+    pointer-events: none;
+}
+
+// ── Nav pill container ────────────────────────────────────────────────────────
+.md-bento-nav {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 0.5rem 0.75rem 0.5rem 1rem;
+    border-radius: 1rem;
+    background: $md-white;
+    border: 1px solid rgba($md-blue, 0.14);
+    box-shadow: var(--md-shadow-md);
+    color: $md-ink;
+    pointer-events: auto;
+    overflow: hidden;
+    transition: background 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+
+    &::before {
+        content: '';
+        position: absolute;
+        inset: 0 auto 0 0;
+        width: 7px;
+        background: $md-green;
+    }
+}
+
+// ── Glassmorphism on scroll (JS adds .is-scrolled) ────────────────────────────
+.md-bento-topbar.is-scrolled .md-bento-nav {
+    @include md-glass(16px, 0.92, 1.4);
+    border-color: rgba($md-blue, 0.2);
+    box-shadow: 0 14px 34px rgba($md-dark, 0.14);
+}
+
+// ── Brand (logo) ──────────────────────────────────────────────────────────────
+.md-bento-brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+    color: $md-ink;
+    text-decoration: none;
+    font-weight: 700;
+    min-width: 0;
+    order: 1;
+    position: relative;
+    z-index: 1;
+}
+
+.md-bento-brand:hover {
+    color: $md-ink;
+}
+
+.md-bento-brand-lockup {
+    width: unquote("clamp(144px, 18vw, 218px)");
+    min-height: 42px;
+    display: inline-flex;
+    align-items: center;
+    flex: 0 0 auto;
+}
+
+.md-bento-brand-logo {
+    display: block;
+    width: 100%;
+    height: auto;
+    max-height: 46px;
+    object-fit: contain;
+    object-position: left center;
+}
+
+.md-bento-brand-fallback {
+    display: none;
+    color: $md-blue;
+    font-family: $md-font-title;
+    line-height: 1;
+
+    strong {
+        display: block;
+        color: $md-blue;
+        font-size: unquote("clamp(1rem, 2vw, 1.15rem)");
+        font-weight: 900;
+        letter-spacing: 0;
+
+        span { color: $md-green; }
+    }
+
+    small {
+        display: block;
+        margin-top: 3px;
+        color: $md-gray;
+        font-family: $md-font-body;
+        font-size: 0.64rem;
+        font-weight: 700;
+        white-space: nowrap;
+    }
+}
+
+// ── Nav links ─────────────────────────────────────────────────────────────────
+.md-bento-nav-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    order: 2;
+    position: relative;
+    z-index: 1;
+}
+
+.md-bento-cart {
+    flex: 0 0 auto;
+    margin-left: 0.35rem !important;
+    order: 3;
+    position: relative;
+    z-index: 1;
+}
+
+.md-bento-cart .divider {
+    display: none !important;
+}
+
+.md-bento-cart .o_wsale_my_cart {
+    display: inline-flex;
+    margin: 0;
+}
+
+.md-bento-cart-link {
+    align-items: center !important;
+    background: rgba($md-blue, 0.06) !important;
+    border: 1px solid rgba($md-blue, 0.16) !important;
+    box-shadow: none !important;
+    color: $md-blue-800 !important;
+    display: inline-flex !important;
+    height: 40px !important;
+    justify-content: center !important;
+    min-height: 40px !important;
+    text-decoration: none !important;
+    transition: background 0.18s ease, border-color 0.18s ease, color 0.18s ease, transform 0.18s ease;
+    width: 40px !important;
+
+    &:hover,
+    &:focus-visible {
+        background: rgba($md-blue, 0.12) !important;
+        border-color: rgba($md-blue, 0.3) !important;
+        color: $md-blue-900 !important;
+        transform: translateY(-1px);
+    }
+
+    &:focus-visible {
+        outline: 3px solid rgba($md-green, 0.55);
+        outline-offset: 3px;
+    }
+}
+
+.md-bento-cart-link .fa-shopping-cart {
+    font-size: 0.92rem;
+    height: auto;
+    line-height: 1;
+    width: auto;
+}
+
+.md-bento-cart .my_cart_quantity {
+    align-items: center;
+    display: inline-flex;
+    font-size: 0.64rem;
+    font-weight: 800;
+    justify-content: center;
+    min-height: 1.05rem;
+    min-width: 1.05rem;
+    padding: 0 0.28rem;
+}
+
+// ── Hamburger toggler ─────────────────────────────────────────────────────────
+.md-bento-toggler {
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 5px;
+    width: 36px;
+    height: 36px;
+    padding: 0 8px;
+    background: $md-blue;
+    border: 0;
+    border-radius: 999px;
+    cursor: pointer;
+    flex: 0 0 auto;
+    order: 4;
+    position: relative;
+    z-index: 1;
+    transition: background 0.2s ease;
+
+    &:hover { background: $md-blue-700; }
+
+    .md-bento-toggler-bar {
+        transition: transform 0.22s ease, opacity 0.18s ease;
+    }
+}
+
+.md-bento-toggler-bar {
+    display: block;
+    width: 100%;
+    height: 2px;
+    background: $md-white;
+    border-radius: 2px;
+    transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+// Hamburger → X (0.4s easing per spec)
+.md-bento-toggler[aria-expanded="true"] {
+    .md-bento-toggler-bar:nth-child(1) {
+        transform: translateY(7px) rotate(45deg);
+        transition-duration: 0.4s;
+        transition-timing-function: cubic-bezier(0.22, 0.61, 0.36, 1);
+    }
+
+    .md-bento-toggler-bar:nth-child(2) {
+        opacity: 0;
+        transform: scaleX(0);
+        transition-duration: 0.4s;
+    }
+
+    .md-bento-toggler-bar:nth-child(3) {
+        transform: translateY(-7px) rotate(-45deg);
+        transition-duration: 0.4s;
+        transition-timing-function: cubic-bezier(0.22, 0.61, 0.36, 1);
+    }
+}
+
+// ── Nav pills ─────────────────────────────────────────────────────────────────
+.md-bento-pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 38px;
+    border-radius: 999px;
+    padding: 0.5rem 0.8rem;
+    font-weight: 600;
+    font-size: 0.82rem;
+    color: $md-ink;
+    text-decoration: none;
+    background: transparent;
+    position: relative;
+    overflow: hidden;
+    transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease;
+
+    // Underline slide-in animation for active state
+    &::after {
+        content: '';
+        position: absolute;
+        bottom: 6px;
+        left: 50%;
+        width: 0;
+        height: 2px;
+        background: $md-blue;
+        border-radius: $md-r-pill;
+        transform: translateX(-50%);
+        transition: width 0.3s ease-out;
+    }
+}
+
+.md-dark-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.3rem;
+    min-height: 38px;
+    border: 1px solid rgba($md-blue, 0.18);
+    border-radius: 999px;
+    padding: 0.5rem 0.75rem;
+    background: rgba($md-blue, 0.05);
+    color: $md-blue-800;
+    font-size: 0.82rem;
+    font-weight: 700;
+    line-height: 1;
+    cursor: pointer;
+    transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
+
+    &:hover {
+        background: rgba($md-blue, 0.12);
+        border-color: rgba($md-blue, 0.3);
+        transform: translateY(-1px);
+    }
+}
+
+.md-dark-toggle > span:first-child {
+    font-size: 0.95rem;
+}
+
+.md-bento-public[data-color-scheme="dark"] .md-dark-toggle {
+    background: rgba($md-white, 0.08);
+    border-color: rgba($md-white, 0.16);
+    color: rgba($md-white, 0.88);
+}
+
+.md-color-scheme-dark .md-bento-cart-link,
+.md-bento-public[data-color-scheme="dark"] .md-bento-cart-link {
+    background: rgba($md-white, 0.08) !important;
+    border-color: rgba($md-white, 0.16) !important;
+    color: rgba($md-white, 0.9) !important;
+
+    &:hover,
+    &:focus-visible {
+        background: rgba($md-white, 0.14) !important;
+        border-color: rgba($md-white, 0.24) !important;
+        color: $md-white !important;
+    }
+}
+
+.md-bento-pill:focus-visible,
+.md-bento-toggler:focus-visible,
+.md-bento-brand:focus-visible,
+.md-dark-toggle:focus-visible {
+    outline: 3px solid rgba($md-green, 0.55);
+    outline-offset: 3px;
+}
+
+.md-bento-pill:hover {
+    color: $md-blue-800;
+    background: $md-blue-100;
+    transform: translateY(-1px);
+}
+
+.md-bento-pill.is-active {
+    background: rgba($md-blue, 0.1);
+    color: $md-blue-800;
+    font-weight: 700;
+
+    &::after {
+        width: calc(100% - 1.6rem);
+    }
+}
+
+// CTA pill (Contacto)
+.md-bento-pill.is-cta {
+    background: $md-brand-gradient;
+    color: $md-white;
+    box-shadow: 0 6px 16px rgba($md-blue, 0.20);
+
+    &::after { display: none; }
+}
+
+.md-bento-pill.is-cta:hover {
+    color: $md-white;
+    filter: saturate(1.1);
+    transform: translateY(-1px);
+}
+
+.md-bento-pill--account {
+    gap: 0.42rem;
+    border: 1px solid rgba($md-blue, 0.18);
+    background: rgba($md-blue, 0.08);
+    color: $md-blue-800;
+    font-weight: 900;
+    box-shadow: inset 0 1px 0 rgba($md-white, 0.75);
+
+    &::after {
+        display: none;
+    }
+
+    i {
+        color: $md-blue;
+        font-size: 0.95rem;
+    }
+
+    &:hover {
+        background: rgba($md-blue, 0.14);
+        border-color: rgba($md-blue, 0.28);
+        color: $md-blue-800;
+    }
+}
+
+#top .md-bento-native-account-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    border-radius: $md-r-pill;
+    padding: 0.5rem 0.85rem;
+    background: rgba($md-blue, 0.08);
+    color: $md-blue-800 !important;
+
+    &:hover {
+        background: rgba($md-blue, 0.14);
+        color: $md-blue-800 !important;
+    }
+}
+
+// ── Main content area ─────────────────────────────────────────────────────────
+.md-bento-main {
+    flex: 1 1 auto;
+    padding: 1.2rem 0 2rem;
+}
+
+.md-bento-section {
+    margin-bottom: 1rem;
+}
+
+// ── Footer ─────────────────────────────────────────────────────────────────────
+// Fuerza la misma tipografía del Home (Source Sans Pro / $md-font-title)
+// y escala fluida basada en tokens de _tokens.scss.
+// Diseño Glassmorphism Bento: contenedor TRANSPARENTE para exponer el fondo
+// degradado de la página. Cada columna lleva su propia .bento-glass-card.
+.md-bento-footer {
+    position: relative;
+    overflow: visible;
+    margin: unquote("clamp(24px, 4vw, 48px)") auto 0;
+    width: var(--md-floating-nav-width, #{unquote("min(1180px, calc(100vw - 32px))")});
+    max-width: 100%;
+    padding: unquote("clamp(24px, 3vw, 40px)") 0 unquote("clamp(18px, 2vw, 30px)");
+    background: transparent !important;
+    color: $md-ink;
+    font-family: $md-font-title;
+    font-size: $md-text-sm;
+    line-height: 1.5;
+}
+
+// Remove the topography ::after pseudo-element (dark-only decoration)
+.md-bento-footer::after {
+    display: none;
+}
+
+#footer.md-bento-footer {
+    display: block !important;
+}
+
+// Refuerzo explícito: impide que el tema base o clases utilitarias
+// sobreescriban la fuente corporativa dentro del footer.
+.md-bento-footer,
+.md-bento-footer h5,
+.md-bento-footer h6,
+.md-bento-footer p,
+.md-bento-footer a,
+.md-bento-footer span,
+.md-bento-footer li {
+    font-family: $md-font-title;
+}
+
+// ── Footer accent line (gradient brand bar) ──────────────────────────
+.md-bento-footer-accent {
+    height: 3px;
+    border-radius: 999px;
+    background: $md-brand-gradient;
+    margin: 0 unquote("clamp(20px, 4vw, 40px)") unquote("clamp(16px, 2vw, 24px)");
+}
+
+.md-bento-footer .md-bento-container {
+    padding-left: unquote("clamp(20px, 4vw, 40px)");
+    padding-right: unquote("clamp(20px, 4vw, 40px)");
+}
+
+// ── Footer grid: 4 columnas — cada hijo lleva .bento-glass-card ──────
+// El gap reducido (vs el anterior clamp(20px,3.5vw,32px)) da la
+// sensación de cuadrícula Bento apretada.
+.md-bento-footer-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.4fr) minmax(0, 0.8fr) minmax(0, 1.1fr) minmax(0, 1fr);
+    gap: unquote("clamp(12px, 2vw, 20px)");
+    margin-bottom: unquote("clamp(12px, 2vw, 20px)");
+}
+
+// ── Footer logo ──────────────────────────────────────────────────────
+.md-bento-footer-brand-col {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.md-bento-footer-logo {
+    display: inline-block;
+    text-decoration: none;
+    transition: opacity 0.18s ease;
+
+    &:hover { opacity: 0.82; }
+}
+
+.md-bento-footer-logo-img {
+    display: block;
+    width: auto;
+    max-width: 170px;
+    height: auto;
+    max-height: 48px;
+    object-fit: contain;
+    object-position: left center;
+}
+
+.md-bento-footer-tagline {
+    margin: 0;
+    color: rgba($md-ink, 0.7);
+    font-family: $md-font-title;
+    font-size: $md-text-sm;
+    font-style: italic;
+    line-height: 1.45;
+    max-width: 20rem;
+}
+
+// ── Footer titles ────────────────────────────────────────────────────
+.md-bento-footer-title {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    margin: 0 0 0.6rem;
+    color: $md-blue-800;
+    font-weight: 850;
+    font-family: $md-font-title;
+    font-size: $md-text-sm;
+    line-height: 1.1;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.md-bento-footer-brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    margin-bottom: 0.6rem;
+    color: $md-ink;
+    text-decoration: none;
+
+    &:hover { color: $md-ink; }
+}
+
+.md-bento-footer p {
+    margin: 0;
+    color: rgba($md-ink, 0.75);
+    font-family: $md-font-title;
+    font-size: $md-text-sm;
+    line-height: 1.55;
+    max-width: 42rem;
+}
+
+.md-bento-footer-list {
+    display: grid;
+    gap: 0.25rem;
+    margin: 0;
+}
+
+.md-bento-footer a,
+.md-bento-footer-list a,
+.md-bento-footer li a,
+.md-bento-footer-list li a,
+#footer.md-bento-footer a,
+#footer.md-bento-footer .md-bento-footer-list a {
+    display: inline-flex !important;
+    align-items: center !important;
+    width: fit-content !important;
+    color: rgba($md-ink, 0.82) !important;
+    text-decoration: none !important;
+    font-family: $md-font-title !important;
+    font-size: $md-text-sm !important;
+    line-height: 1.45 !important;
+    transition: color 0.18s ease !important;
+
+    &:hover,
+    &:focus,
+    &:active,
+    &.active {
+        color: $md-blue-800 !important;
+        text-decoration: none !important;
+    }
+}
+
+.md-bento-footer li {
+    color: rgba($md-ink, 0.82);
+    font-family: $md-font-title;
+    font-size: $md-text-sm;
+    line-height: 1.45;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.md-bento-footer li i {
+    color: $md-blue-800;
+    font-size: 1.1rem;
+    line-height: 1;
+}
+
+.md-bento-footer .s_social_media {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.55rem;
+    margin-top: 0.25rem;
+}
+
+.md-bento-footer .s_social_media a {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.15rem;
+    height: 2.15rem;
+    border-radius: 999px;
+    background: rgba($md-blue-800, 0.08);
+    border: 1.5px solid rgba($md-blue-800, 0.18);
+    color: $md-blue-800;
+    transition: background 0.18s ease, color 0.18s ease, transform 0.18s ease;
+
+    &:hover {
+        background: $md-blue-800;
+        color: $md-white;
+        transform: translateY(-2px);
+    }
+}
+
+.md-bento-footer a.md-bento-footer-brand {
+    display: inline-flex;
+    color: $md-ink;
+    font-family: $md-font-title;
+    font-size: $md-text-base;
+    line-height: 1;
+}
+
+.md-bento-footer-bottom {
+    margin-top: unquote("clamp(16px, 2.5vw, 24px)");
+    padding-top: unquote("clamp(12px, 2vw, 18px)");
+    border-top: 1px solid rgba($md-blue, 0.12);
+    font-family: $md-font-title;
+    font-size: $md-text-xs;
+    color: rgba($md-ink, 0.6);
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+// ── Suppress native Odoo theme header/footer ──────────────────────────────────
+.md-bento-public {
+    #top,
+    #wrapwrap > header:not(.md-bento-topbar),
+    #wrapwrap > .o_header_affixed,
+    #wrapwrap > .o_top_fixed_element,
+    header#top_header,
+    header.o_header_standard:not(.md-bento-topbar),
+    .o_header_overlay:not(.md-bento-topbar),
+    .o_header_affixed:not(.md-bento-topbar),
+    .o_top_fixed_element:not(.md-bento-topbar),
+    .o_header_standard:not(.md-bento-topbar),
+    .tp-header,
+    .tp_header,
+    .tp-header-wrapper,
+    .theme_bewise_header {
+        display: none !important;
+    }
+
+    footer#footer:not(.md-bento-footer),
+    #footer:not(.md-bento-footer),
+    #wrapwrap > footer:not(.md-bento-footer),
+    .o_footer:not(.md-bento-footer) {
+        display: none !important;
+    }
+}
+
+// ── Desktop: keep nav-links visible (override Bootstrap collapse) ─────────────
+@media (min-width: $bp-md) {
+    .md-bento-nav-links.collapse {
+        display: flex !important;
+    }
+}
+
+// ── Mobile nav ────────────────────────────────────────────────────────────────
+@media (max-width: 767.98px) {
+    .md-bento-container {
+        padding-left: 0.75rem;
+        padding-right: 0.75rem;
+    }
+
+    .md-bento-nav {
+        border-radius: 1rem;
+        flex-wrap: wrap;
+        padding: 0.55rem;
+    }
+
+    .md-bento-brand-lockup {
+        width: unquote("min(170px, 54vw)");
+    }
+
+    .md-bento-toggler {
+        display: flex;
+    }
+
+    .md-bento-cart {
+        margin-left: auto !important;
+    }
+
+    .md-bento-nav-links {
+        order: 5;
+        width: 100%;
+    }
+
+    .md-bento-nav-links.collapse:not(.show) {
+        display: none;
+    }
+
+    .md-bento-nav-links.show {
+        display: grid !important;
+        grid-template-columns: 1fr;
+        gap: 0.35rem;
+        padding-top: 0.35rem;
+    }
+
+    .md-bento-pill {
+        width: 100%;
+        justify-content: flex-start;
+        min-height: 44px;
+        padding: 0.65rem 0.8rem;
+
+        &::after { display: none; }
+    }
+
+    .md-dark-toggle {
+        width: 100%;
+        justify-content: flex-start;
+        min-height: 44px;
+    }
+
+    .md-bento-footer-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+
+    // Padding reducido en mobile para las tarjetas del footer
+    .md-bento-footer-grid > .bento-glass-card {
+        padding: 1.25rem;
+    }
+
+    .md-bento-footer-bottom {
+        flex-direction: column;
+        gap: 0.4rem;
+    }
+}
+
+// ── prefers-reduced-motion ────────────────────────────────────────────────────
+@media (prefers-reduced-motion: reduce) {
+    .md-bento-public *,
+    .md-bento-public *::before,
+    .md-bento-public *::after {
+        animation-duration: 0.001ms !important;
+        animation-iteration-count: 1 !important;
+        scroll-behavior: auto !important;
+        transition-duration: 0.001ms !important;
+    }
+}
+
+// ── 2026 floating pill navbar refinement ─────────────────────────────────────
+// Los tokens de geometria del navbar flotante se definen sobre .md-bento-topbar
+// (que siempre existe donde se renderiza el navbar) en lugar de sobre el body.
+// Asi el diseno pill centrado de /afiliacion es identico en TODAS las rutas,
+// incluidas las paginas nativas de Odoo (/shop, /contactus, ...) cuyo body NO
+// lleva la clase .md-bento-public y antes quedaban con la barra plana full-width.
+.md-bento-topbar {
+    --md-floating-nav-width: #{unquote("min(1180px, calc(100vw - 32px))")};
+    --md-floating-nav-radius: 999px;
+    --md-floating-nav-top: clamp(10px, 1.7vw, 24px);
+}
+
+.md-bento-public,
+body.md-bento-public,
+body.md-route-shop,
+body.md-bento-site {
+    scroll-padding-top: 104px;
+}
+
+.md-bento-topbar {
+    top: 0;
+    padding-top: clamp(10px, 1.7vw, 24px);
+    padding-bottom: 0.35rem;
+}
+
+.md-bento-topbar .md-bento-container {
+    width: var(--md-floating-nav-width);
+    max-width: var(--md-floating-nav-width);
+    padding-left: 0;
+    padding-right: 0;
+    margin-inline: auto;
+}
+
+.md-bento-nav {
+    min-height: 68px;
+    padding: 0.58rem 0.72rem 0.58rem 1.24rem;
+    border-radius: var(--md-floating-nav-radius);
+    border-color: rgba($md-blue-900, 0.11);
+    background: rgba($md-white, 0.88);
+    box-shadow:
+        var(--md-shadow-glass),
+        0 1px 0 rgba($md-white, 0.82) inset;
+    backdrop-filter: blur(12px) saturate(1.14);
+    -webkit-backdrop-filter: blur(12px) saturate(1.14);
+
+    &::before {
+        display: none;
+    }
+}
+
+.md-bento-topbar.is-scrolled .md-bento-nav {
+    background: rgba($md-white, 0.78) !important;
+    border-color: rgba($md-blue, 0.16);
+    backdrop-filter: blur(16px) saturate(1.45) !important;
+    -webkit-backdrop-filter: blur(16px) saturate(1.45) !important;
+    box-shadow:
+        var(--md-shadow-glass),
+        0 1px 0 rgba($md-white, 0.85) inset;
+}
+
+.md-bento-brand-lockup {
+    width: unquote("clamp(152px, 15vw, 204px)");
+    min-height: 44px;
+}
+
+.md-bento-nav-links {
+    align-items: center;
+    gap: 0.24rem;
+}
+
+.md-bento-pill,
+.md-dark-toggle {
+    min-height: 40px;
+    white-space: nowrap;
+}
+
+.md-bento-pill {
+    padding-inline: 0.86rem;
+}
+
+.md-bento-pill.is-cta {
+    padding-inline: 1rem;
+    box-shadow: 0 10px 24px rgba($md-blue, 0.22);
+}
+
+.md-dark-toggle {
+    min-width: 40px;
+    padding: 0.5rem 0.72rem;
+}
+
+.md-color-scheme-dark .md-bento-nav,
+.md-bento-public[data-color-scheme="dark"] .md-bento-nav {
+    background: rgba($md-ink-900, 0.82) !important;
+    border-color: rgba($md-white, 0.12) !important;
+    box-shadow:
+        0 18px 46px rgba(0, 0, 0, 0.28),
+        0 1px 0 rgba($md-white, 0.08) inset;
+}
+
+@media (max-width: 1120px) and (min-width: $bp-md) {
+    .md-bento-nav {
+        gap: 0.45rem;
+        padding-left: 1rem;
+    }
+
+    .md-bento-brand-lockup {
+        width: 154px;
+    }
+
+    .md-bento-pill {
+        padding-inline: 0.62rem;
+        font-size: 0.8rem;
+    }
+
+    .md-dark-toggle span:last-child {
+        display: none;
+    }
+}
+
+@media (max-width: 767.98px) {
+    .md-bento-topbar {
+        --md-floating-nav-width: calc(100vw - 20px);
+        --md-floating-nav-radius: 26px;
+    }
+
+    .md-bento-public,
+    body.md-bento-public,
+    body.md-route-shop,
+    body.md-bento-site {
+        scroll-padding-top: 92px;
+    }
+
+    .md-bento-topbar {
+        padding-top: 10px;
+    }
+
+    .md-bento-nav {
+        min-height: 58px;
+        padding: 0.52rem;
+        border-radius: var(--md-floating-nav-radius);
+    }
+
+    .md-bento-brand-lockup {
+        width: unquote("min(168px, 52vw)");
+        min-height: 38px;
+    }
+
+    .md-bento-toggler {
+        width: 42px;
+        height: 42px;
+        border-radius: 999px;
+        background: $md-brand-gradient;
+        box-shadow: 0 10px 22px rgba($md-blue, 0.18);
+    }
+
+    .md-bento-nav-links.show {
+        padding: 0.42rem 0.08rem 0.08rem;
+    }
+}
+
+// ── Botón de cuenta en el topbar público (login / registro / portal) ─
+.md-bento-nav-account {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    min-height: 42px;
+    padding: 0.45rem 1rem;
+    border-radius: $md-r-pill;
+    font-size: 0.88rem;
+    font-weight: 700;
+    white-space: nowrap;
+    --bs-btn-color: #{$md-blue-800};
+    --bs-btn-border-color: #{rgba($md-blue, 0.45)};
+    --bs-btn-hover-bg: #{$md-blue};
+    --bs-btn-hover-border-color: #{$md-blue};
+    --bs-btn-hover-color: #{$md-white};
+    background: rgba($md-white, 0.55);
+    box-shadow: inset 0 1px 0 rgba($md-white, 0.8);
+    backdrop-filter: blur(10px) saturate(1.3);
+    -webkit-backdrop-filter: blur(10px) saturate(1.3);
+
+    i {
+        font-size: 1.15rem;
+    }
+
+    &:hover {
+        background: $md-blue;
+    }
+
+    // En pantallas medianas/chicas queda solo el ícono (el aria-label
+    // conserva el nombre accesible).
+    @media (max-width: 1199.98px) {
+        padding: 0.45rem 0.65rem;
+
+        .md-bento-nav-account-label {
+            display: none;
+        }
+    }
+}

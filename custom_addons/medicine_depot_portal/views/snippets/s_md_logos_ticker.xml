@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <template id="s_md_logos_ticker_content" name="MD · Logos Ticker Content">
+        <t t-set="md_lab_logos" t-value="[
+            {'name': 'Bruluagsa', 'slug': 'bruluagsa', 'url': '/medicine_depot_portal/static/src/img/logos/bruluagsa.png'},
+            {'name': 'Bruluart', 'slug': 'bruluart', 'url': '/medicine_depot_portal/static/src/img/logos/bruluart.svg'},
+            {'name': 'Ambiderm', 'slug': 'ambiderm', 'url': '/medicine_depot_portal/static/src/img/logos/ambiderm.svg'},
+            {'name': 'Degasa', 'slug': 'degasa', 'url': '/medicine_depot_portal/static/src/img/logos/degasa.png'},
+            {'name': 'PiSA Farmacéutica', 'slug': 'pisa', 'url': '/medicine_depot_portal/static/src/img/logos/pisa.png'},
+            {'name': 'Maver', 'slug': 'maver', 'url': '/medicine_depot_portal/static/src/img/logos/maver.png'},
+            {'name': 'Jaloma', 'slug': 'jaloma', 'url': '/medicine_depot_portal/static/src/img/logos/jaloma.png'},
+            {'name': 'Galia', 'slug': 'galia', 'url': '/medicine_depot_portal/static/src/img/logos/galia.svg'},
+            {'name': 'AMSA Laboratorios', 'slug': 'amsa', 'url': '/medicine_depot_portal/static/src/img/logos/amsa.png'},
+            {'name': 'DGH', 'slug': 'dgh', 'url': '/medicine_depot_portal/static/src/img/logos/dgh.svg'},
+            {'name': 'BIOMEP', 'slug': 'biomep', 'url': '/medicine_depot_portal/static/src/img/logos/biomep.png'},
+            {'name': 'Serral', 'slug': 'serral', 'url': '/medicine_depot_portal/static/src/img/logos/serral.png'},
+            {'name': 'Kendrick', 'slug': 'kendrick', 'url': '/medicine_depot_portal/static/src/img/logos/kendrick.png'},
+            {'name': 'Quimpharma', 'slug': 'quimpharma', 'url': '/medicine_depot_portal/static/src/img/logos/quimpharma.png'},
+            {'name': 'Senosiain', 'slug': 'senosiain', 'url': '/medicine_depot_portal/static/src/img/logos/senosiain.png'},
+            {'name': 'Liomont', 'slug': 'liomont', 'url': '/medicine_depot_portal/static/src/img/logos/liomont.svg'},
+        ]"/>
+        <t t-set="md_visible_logos" t-value="md_lab_logos"/>
+
+        <div class="container">
+            <div class="md-socios-bento-card">
+                <div class="md-socios-heading text-center mx-auto">
+                    <h2>Laboratorios y marcas que respaldan nuestro catálogo.</h2>
+                </div>
+                <div class="bento-overlap-box">
+                    <div id="sociosCarousel"
+                         class="s_md_socios-marquee"
+                         aria-label="Laboratorios y marcas que respaldan nuestro catalogo">
+                        <div class="s_md_socios-track">
+                            <t t-foreach="[0, 1]" t-as="carousel_pass">
+                                <t t-foreach="md_visible_logos" t-as="logo">
+                                    <span t-attf-class="s_md_socios-logo s_md_socios-logo--#{logo.get('slug', '')}">
+                                        <img t-att-src="logo.get('url', '')"
+                                             t-att-alt="logo.get('name', '')"
+                                             width="172"
+                                             height="64"
+                                             loading="lazy"/>
+                                        <strong t-out="logo.get('name', '')"/>
+                                    </span>
+                                </t>
+                            </t>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <template id="s_md_logos_ticker" name="MD · Logos Ticker">
+        <section class="s_md_logos_ticker md-bento-section md-socios-bento-section"
+                 data-snippet="s_md_logos_ticker"
+                 data-name="MD Logos Ticker"
+                 aria-label="Laboratorios asociados">
+            <t t-call="medicine_depot_portal.s_md_logos_ticker_content"/>
+        </section>
+    </template>
+
+    <template id="s_md_logos_ticker_static" name="MD · Logos Ticker (estatico)">
+        <section class="s_md_logos_ticker md-bento-section md-socios-bento-section"
+                 data-snippet="s_md_logos_ticker_static"
+                 data-name="MD Logos Ticker"
+                 aria-label="Laboratorios asociados">
+            <t t-call="medicine_depot_portal.s_md_logos_ticker_content"/>
+        </section>
+    </template>
+
+</odoo>

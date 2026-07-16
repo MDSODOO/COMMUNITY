@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="stock_lot_search_inherit" model="ir.ui.view">
+        <field name="name">stock.lot.inherit.search</field>
+        <field name="model">stock.lot</field>
+        <field name="inherit_id" ref="stock.search_product_lot_filter"/>
+        <field name="arch" type="xml">
+            <!-- Fuerza el orden: Producto primero, Número de lote/serie después -->
+            <field name="product_id" position="replace">
+                <field name="name" string="Número de lote/serie"
+                       filter_domain="['|', ('name', 'ilike', self), ('ref', 'ilike', self)]"/>
+            </field>
+
+            <field name="name" position="replace">
+                <field name="product_id" string="Producto"/>
+            </field>
+
+            <xpath expr="//search" position="inside">
+                <searchpanel>
+                    <field name="product_id" icon="fa-cubes" enable_counters="1"/>
+                </searchpanel>
+            </xpath>
+        </field>
+    </record>
+</odoo>

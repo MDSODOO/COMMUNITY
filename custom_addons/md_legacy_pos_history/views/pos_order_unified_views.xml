@@ -1,0 +1,60 @@
+<odoo>
+    <record id="view_md_pos_order_unified_list" model="ir.ui.view">
+        <field name="name">md.pos.order.unified.list</field>
+        <field name="model">md.pos.order.unified</field>
+        <field name="arch" type="xml">
+            <list create="false" edit="false" delete="false" default_order="order_date desc">
+                <field name="folio"/>
+                <field name="order_date"/>
+                <field name="partner_id"/>
+                <field name="company_id"/>
+                <field name="source" widget="badge" decoration-info="source == 'legacy'" decoration-success="source == 'real'"/>
+                <field name="state"/>
+                <field name="amount_total" sum="Total"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_md_pos_order_unified_pivot" model="ir.ui.view">
+        <field name="name">md.pos.order.unified.pivot</field>
+        <field name="model">md.pos.order.unified</field>
+        <field name="arch" type="xml">
+            <pivot>
+                <field name="company_id" type="row"/>
+                <field name="source" type="col"/>
+                <field name="amount_total" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <record id="view_md_pos_order_unified_search" model="ir.ui.view">
+        <field name="name">md.pos.order.unified.search</field>
+        <field name="model">md.pos.order.unified</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="folio" string="Folio"/>
+                <field name="partner_id" string="Cliente"/>
+                <field name="company_id" string="Sucursal"/>
+                <separator/>
+                <filter string="Actual" name="filter_real" domain="[('source','=','real')]"/>
+                <filter string="Histórico" name="filter_legacy" domain="[('source','=','legacy')]"/>
+                <separator/>
+                <filter string="Sucursal" name="group_company" context="{'group_by':'company_id'}"/>
+                <filter string="Origen" name="group_source" context="{'group_by':'source'}"/>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_md_pos_order_unified" model="ir.actions.act_window">
+        <field name="name">Historial PoS Unificado</field>
+        <field name="res_model">md.pos.order.unified</field>
+        <field name="view_mode">list,pivot</field>
+        <field name="search_view_id" ref="view_md_pos_order_unified_search"/>
+    </record>
+
+    <menuitem id="menu_md_pos_order_unified"
+              name="Historial PoS Unificado"
+              action="action_md_pos_order_unified"
+              parent="point_of_sale.menu_point_of_sale"
+              sequence="25"/>
+</odoo>

@@ -1,0 +1,817 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ═══════════════════════════════════════════════════════════════
+         FACTURA — Adopta el Layout Maestro pharma (sale_lot_report).
+         Conserva los bloques CFDI 4.0 MX-específicos.
+    ════════════════════════════════════════════════════════════════════ -->
+
+    <!--
+      Compatibilidad de upgrade: este XMLID existía en versiones previas y
+      reemplazaba el bloque address nativo. Debe cargarse antes de cualquier
+      otra herencia de invoice para neutralizar la vista vieja persistida en
+      ir.ui.view antes de que Odoo recompile la cadena QWeb.
+    -->
+    <template id="report_invoice_pharma_addresses"
+              inherit_id="account.report_invoice_document"
+              priority="100">
+        <xpath expr="//div[hasclass('page')]" position="attributes">
+            <attribute name="class" add="inv-native-address-preserved" separator=" "/>
+        </xpath>
+    </template>
+
+    <template
+        id="custom_report_invoice_document"
+        inherit_id="account.report_invoice_document"
+        name="Custom Invoice Format — Medicine Depot"
+        priority="200">
+
+        <!--
+          Suprimir el título nativo que web.external_layout imprime como h2/h3.
+          Ancla más robusta que los guards de external_layout_*: elimina el valor
+          de layout_document_title ANTES de que se pase al external_layout,
+          sin depender del tag exacto (h2 vs h3) ni del atributo (t-out vs t-esc)
+          que use el layout activo.
+        -->
+        <xpath expr="//t[@t-call='web.external_layout']" position="before">
+            <t t-set="layout_document_title" t-value="''"/>
+        </xpath>
+
+        <xpath expr="//div[hasclass('page')]" position="attributes">
+            <attribute name="class" add="pharma-doc-page inv-active" separator=" "/>
+        </xpath>
+
+        <!--
+          Marca el flow (supplier/customer) en el div.page para que CSS
+          posicional pueda ocultar columnas SAT inyectadas por l10n_mx_edi
+          (ClaveProdServ, ClaveUnidad) — el módulo no expone @name en sus
+          TH/TD por lo que la única vía estable es nth-child por flow.
+        -->
+        <xpath expr="//div[hasclass('page')]" position="attributes">
+            <attribute name="t-att-data-inv-flow">'supplier' if o.move_type in ('in_invoice', 'in_refund') else 'customer'</attribute>
+        </xpath>
+
+        <xpath expr="//t[@t-set='display_discount']" position="attributes">
+            <attribute name="t-value">o.move_type in ('in_invoice', 'in_refund') or any(l.discount for l in o.invoice_line_ids)</attribute>
+        </xpath>
+
+        <!--
+          Ocultar bloques nativos. NO se eliminan: l10n_mx_edi
+          (primary) tiene XPaths dependientes de #informations y
+          #right-elements. El diseño pharma imprime sus propios totales,
+          comunicación de pago y complemento fiscal para evitar duplicados.
+        -->
+        <!--
+          wkhtmltopdf bug: display:none en un elemento con float:left deja el
+          footprint del float en el layout, empujando el contenido siguiente a la
+          derecha en vez de debajo. position:absolute saca el elemento del flow
+          y del contexto de floats completamente — float:none es redundante pero
+          defensivo contra el mismo bug aplicado al valor de float.
+        -->
+        <xpath expr="//div[@id='informations']" position="attributes">
+            <attribute name="style">position:absolute;left:-9999px;top:0;width:0;height:0;overflow:hidden;visibility:hidden;float:none;</attribute>
+        </xpath>
+        <xpath expr="//div[@id='right-elements']" position="attributes">
+            <attribute name="style">position:absolute;left:-9999px;top:0;width:0;height:0;overflow:hidden;visibility:hidden;float:none;</attribute>
+        </xpath>
+
+        <!--
+          Suprimir bloque address.row duplicado. web.external_layout llama
+          web.address_layout justo encima de <div class="page">, leyendo la
+          variable 'address' que account.report_invoice_document setea
+          internamente. Reemplazar la variable por '' impide ese render sin
+          tocar la vista web.address_layout. Ancla estable: div.page
+          (también usado por líneas 29 y 46).
+        -->
+        <xpath expr="//div[hasclass('page')]" position="before">
+            <t t-set="address" t-value="''"/>
+            <t t-set="information_block" t-value="''"/>
+        </xpath>
+
+        <xpath expr="//table[@name='invoice_line_table']" position="before">
+            <t t-set="md_line_lots" t-value="o.md_get_invoice_line_lot_values()"/>
+            <!--
+              Header pharma como primer bloque del body. Antes vivía vía
+              xpath en web.external_layout_* pero el selector
+              //div[hasclass('row') and .//*[@name='company_address']]
+              no matchea en Odoo 19 (mismo problema documentado y resuelto
+              en pharma_reports commit 7b0274d). Aquí garantizamos orden
+              visual estable: logo+doc-info → stripe → meta-band → addr.
+            -->
+            <t t-call="custom_invoice_format.pharma_invoice_full_header"/>
+
+            <!--
+              Trazabilidad de Reembolso a proveedor (in_refund): Orden de Compra de
+              origen (id propio del sistema) y factura a la que pertenece el reembolso.
+              Exclusivo del reporte de Reembolsos — no aplica a Factura ni a los flujos
+              de cliente. Ubicado arriba del bloque Sucursal/Proveedor (reubicado 2026-07-02,
+              vivía originalmente debajo de los totales).
+            -->
+            <t t-if="o.move_type == 'in_refund'">
+                <t t-set="_ref_po" t-value="o.invoice_line_ids.purchase_line_id.order_id"/>
+                <t t-set="_ref_bill" t-value="o.reversed_entry_id"/>
+                <t t-if="not _ref_bill and _ref_po">
+                    <t t-set="_ref_bill" t-value="_ref_po.invoice_ids.filtered(lambda inv: inv.move_type == 'in_invoice' and inv.state == 'posted')"/>
+                </t>
+                <div class="row g-0 pharma-meta-band">
+                    <div class="col-6 pharma-meta-cell">
+                        <span class="pharma-meta-label">Orden de Compra</span>
+                        <span class="pharma-meta-val" t-esc="', '.join(_ref_po.mapped('name')) or '—'"/>
+                    </div>
+                    <div class="col-6 pharma-meta-cell">
+                        <span class="pharma-meta-label">Factura</span>
+                        <span class="pharma-meta-val" t-esc="', '.join(_ref_bill.mapped('name')) or '—'"/>
+                    </div>
+                </div>
+            </t>
+
+            <div class="pharma-body-address-shell">
+                <t t-set="pharma_doc" t-value="o"/>
+                <t t-set="pharma_company" t-value="o.company_id.sudo()"/>
+                <t t-set="pharma_show_customer" t-value="True"/>
+                <t t-call="custom_invoice_format.pharma_invoice_address_block"/>
+            </div>
+
+            <div class="pharma-section-ttl">Líneas de Producto</div>
+        </xpath>
+
+        <xpath expr="//table[@name='invoice_line_table']" position="attributes">
+            <attribute name="class" add="pharma-lines" separator=" "/>
+            <!--
+              data-flow directo sobre la tabla para hacer el targeting CSS
+              robusto (independiente de si data-inv-flow se aplica o no en
+              el .page wrapper). Lo usan las reglas que ocultan la columna
+              "Codigo de la unidad" (ClaveUnidad / H87).
+            -->
+            <attribute name="t-att-data-flow">'supplier' if o.move_type in ('in_invoice', 'in_refund') else 'customer'</attribute>
+        </xpath>
+
+        <!--
+          Suprimir las columnas SAT inyectadas por l10n_mx_edi
+          (ClaveProdServ "Código del producto" y ClaveUnidad "Código de
+          la unidad"). l10n_mx_edi no expone @name estable en sus TH/TD,
+          y los XPath text-based fallaban con ParseError cuando el texto
+          no coincidía exactamente (textos varían entre comunidades de
+          la localización). Estrategia robusta: ocultar tanto TH como TD
+          por POSICIÓN vía CSS nth-child usando data-inv-flow, que sí
+          es controlado por nosotros (ver CSS .pharma-lines).
+        -->
+
+        <!--
+          Tabla de líneas: CLAVE | DESCRIPCIÓN | CÓDIGO PRODUCTO | CANTIDAD | PRECIO UNITARIO | CÓDIGO UNIDAD | DESCUENTO | IMPUESTOS | IMPORTE
+        -->
+
+        <!-- Paso 1: eliminar th_priceunit de su posición nativa antes de reinsertarlo -->
+        <xpath expr="//th[@name='th_priceunit']" position="replace"/>
+
+        <!-- Paso 2: eliminar td_price_unit de su posición nativa antes de reinsertarlo -->
+        <xpath expr="//td[@name='td_price_unit']" position="replace"/>
+
+        <!--
+          Paso 4.5: Para vendor bills (in_invoice / in_refund), l10n_mx_edi
+          NO inyecta las columnas "Código del producto" (ClaveProdServ) ni
+          "Código de la unidad" (ClaveUnidad) porque esas columnas existen
+          únicamente en su override para CFDI emitidos (out_invoice). Las
+          reproducimos manualmente acotadas con t-if al move_type de
+          proveedor para no duplicarlas en el flow de cliente. El guard
+          ` 'unspsc_code_id' in ..._fields ` evita errores si el módulo
+          product_unspsc no está instalado.
+        -->
+        <xpath expr="//th[@name='th_quantity']" position="before">
+            <th name="th_md_claveprodserv"
+                class="text-start text-nowrap inv-th-claveprodserv"
+                t-if="o.move_type in ('in_invoice', 'in_refund')">
+                Código del producto
+            </th>
+        </xpath>
+        <xpath expr="//td[@name='td_quantity']" position="before">
+            <td name="td_md_claveprodserv"
+                class="text-start inv-td-claveprodserv"
+                t-if="o.move_type in ('in_invoice', 'in_refund') and line.display_type == 'product'">
+                <t t-if="line.product_id and 'unspsc_code_id' in line.product_id._fields and line.product_id.unspsc_code_id">
+                    <span t-esc="line.product_id.unspsc_code_id.code"/>
+                </t>
+                <t t-else=""><span>—</span></t>
+            </td>
+        </xpath>
+
+        <xpath expr="//th[@name='th_discount']" position="before">
+            <th name="th_md_claveunidad"
+                class="text-start text-nowrap inv-th-claveunidad"
+                t-if="o.move_type in ('in_invoice', 'in_refund')">
+                Código de la unidad
+            </th>
+        </xpath>
+        <xpath expr="//td[@name='td_discount']" position="before">
+            <td name="td_md_claveunidad"
+                class="text-start inv-td-claveunidad"
+                t-if="o.move_type in ('in_invoice', 'in_refund') and line.display_type == 'product'">
+                <t t-if="line.product_uom_id and 'unspsc_code_id' in line.product_uom_id._fields and line.product_uom_id.unspsc_code_id">
+                    <span t-esc="line.product_uom_id.unspsc_code_id.code"/>
+                </t>
+                <t t-else=""><span>—</span></t>
+            </td>
+        </xpath>
+
+
+        <xpath expr="//td[@name='account_invoice_line_name']" position="replace">
+            <td name="account_invoice_line_name" t-att-class="padding_class">
+                <t t-set="line_lots"
+                   t-value="md_line_lots.get(line.id, []) if line.display_type == 'product' else []"/>
+                <!--
+                  Replicar formato OC: [clave_barcode] Nombre del producto
+                  Para secciones/notas se conserva line.name sin prefijo.
+                -->
+                <t t-if="line.display_type == 'product' and line.product_id">
+                    <t t-set="_inv_bc" t-value="line.product_id.barcode or ''"/>
+                    <span t-if="_inv_bc" class="inv-product-code">[<t t-esc="_inv_bc"/>]</span>
+                    <span t-esc="line.product_id.name"/>
+                </t>
+                <span t-if="line.display_type != 'product'" t-esc="line.name"/>
+                <t t-call="custom_invoice_format.pharma_invoice_lot_block"/>
+            </td>
+        </xpath>
+
+        <xpath expr="//th[@name='th_discount']" position="replace">
+            <th name="th_discount"
+                class="text-end text-nowrap inv-th-discount"
+                t-if="o.move_type in ('in_invoice', 'in_refund') or display_discount">
+                Descuento
+            </th>
+        </xpath>
+
+        <xpath expr="//td[@name='td_discount']" position="replace">
+            <td name="td_discount"
+                class="text-end text-nowrap inv-td-discount"
+                t-if="o.move_type in ('in_invoice', 'in_refund') or display_discount">
+                <t t-if="line.display_type == 'product' and line.discount">
+                    <t t-out="str(line.discount) + '%'"/>
+                </t>
+            </td>
+        </xpath>
+
+        <!--
+          Suprimir la unidad de medida nativa al lado de la cantidad.
+          La UoM se mostraba como segundo span en la misma TD y consumía
+          espacio horizontal en wkhtmltopdf, fragmentando el layout del
+          bloque de totales y del complemento CFDI.
+        -->
+        <xpath expr="//td[@name='td_quantity']" position="replace">
+            <td name="td_quantity" class="o_td_quantity text-end">
+                <span t-field="line.quantity" class="text-nowrap"/>
+            </td>
+        </xpath>
+
+        <!-- Paso 5: Precio Unitario después de Cantidad (thead) -->
+        <xpath expr="//th[@name='th_quantity']" position="after">
+            <th name="th_priceunit" class="text-end text-nowrap">Precio Unitario</th>
+        </xpath>
+
+        <!-- Paso 6: td_price_unit después de td_quantity (tbody) -->
+        <xpath expr="//td[@name='td_quantity']" position="after">
+            <td name="td_price_unit"
+                class="text-end text-nowrap"
+                t-if="line.display_type == 'product'">
+                <span t-field="line.price_unit"
+                      t-options='{"widget": "monetary", "display_currency": o.currency_id}'/>
+            </td>
+        </xpath>
+
+        <!--
+          Totales: anclados como último bloque directo del div.page para que
+          no hereden el contenedor angosto/float del bloque nativo de totales.
+          Orden visual:
+            1. Tabla de productos
+            2. Tabla de totales (nuestra)
+            3. Bloque CFDI 4.0 custom
+
+          El bloque nativo de l10n_mx_edi se mantiene oculto por CSS/vistas
+          inactivas. Anclar aquí evita que wkhtmltopdf calcule el 100% contra
+          la columna derecha del reporte nativo.
+        -->
+        <xpath expr="//div[hasclass('page')]" position="inside">
+            <t t-set="md_cfdi" t-value="o.md_get_cfdi_report_values()"/>
+            <!--
+              Wrapper con clear:both para escapar cualquier contexto de
+              float residual de l10n_mx_edi (right-elements, overflow-hidden).
+              Calcula descuentos totales de líneas.
+            -->
+            <t t-set="total_discount" t-value="sum(line.quantity * line.price_unit * (line.discount / 100.0) for line in o.invoice_line_ids if line.display_type == 'product')"/>
+            <!-- Obtener política de pago (l10n_mx_metodo_pago, md_cfdi_stamping — reemplazo Community de l10n_mx_edi_payment_policy) -->
+            <t t-set="_politica_pago" t-value="o.l10n_mx_metodo_pago or '—'"/>
+            <!-- Obtener forma de pago (l10n_mx_forma_pago, md_cfdi_stamping — reemplazo Community de l10n_mx_edi_payment_method_id) -->
+            <t t-set="_forma_pago" t-value="'—'"/>
+            <t t-if="o.l10n_mx_forma_pago">
+                <t t-set="_forma_pago" t-value="dict(o._fields['l10n_mx_forma_pago'].selection).get(o.l10n_mx_forma_pago, o.l10n_mx_forma_pago)"/>
+            </t>
+
+            <div class="inv-totals-wrapper"
+                 style="clear: both; display: block; width: 100%; margin-top: 20px; margin-bottom: 30px; page-break-inside: avoid; font-size: 0.9rem;">
+                <div class="pharma-section-ttl">TOTALES</div>
+
+                <table class="inv-total-table inv-total-fullwidth" style="table-layout: auto;">
+                    <thead>
+                        <tr>
+                            <th class="text-start">Concepto</th>
+                            <th class="text-end">Detalle / Importe</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!--
+                          Datos fiscales del complemento CFDI: solo aplican al flujo
+                          cliente (out_invoice/out_refund), donde Medicine Depot es el
+                          emisor y debe imprimir su propio Uso de CFDI/Política/Forma de
+                          pago. En facturas y reembolsos de proveedor (in_invoice/in_refund)
+                          esos datos pertenecen al CFDI del proveedor y no se reproducen aquí.
+                        -->
+                        <t t-if="o.move_type not in ('in_invoice', 'in_refund')">
+                            <tr>
+                                <td>Uso del CFDI</td>
+                                <td class="text-end">
+                                    <t t-if="o.partner_id.l10n_mx_uso_cfdi"><span t-field="o.partner_id.l10n_mx_uso_cfdi"/></t>
+                                    <t t-else="">—</t>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Política de pago</td>
+                                <td class="text-end"><span t-esc="_politica_pago"/></td>
+                            </tr>
+                            <tr>
+                                <td>Forma de pago</td>
+                                <td class="text-end"><span t-esc="_forma_pago"/></td>
+                            </tr>
+                        </t>
+
+                        <!-- Subtotal -->
+                        <tr>
+                            <td>Subtotal</td>
+                            <td class="text-end">
+                                <span t-out="o.amount_untaxed" t-options='{"widget": "monetary", "display_currency": o.currency_id}'/>
+                            </td>
+                        </tr>
+
+                        <!-- Descuentos -->
+                        <t t-if="total_discount > 0">
+                            <tr>
+                                <td>Descuentos</td>
+                                <td class="text-end">
+                                    <span t-out="total_discount" t-options='{"widget": "monetary", "display_currency": o.currency_id}'/>
+                                </td>
+                            </tr>
+                        </t>
+
+                        <!-- Impuestos -->
+                        <t t-if="o.tax_totals">
+                            <t t-set="_same_base" t-value="o.tax_totals.get('same_tax_base')"/>
+                            <t t-foreach="o.tax_totals.get('subtotals') or []" t-as="subtotal">
+                                <t t-set="_tax_groups"
+                                   t-value="subtotal.get('tax_groups') or o.tax_totals.get('groups_by_subtotal', {}).get(subtotal.get('name', ''), [])"/>
+                                <t t-foreach="_tax_groups" t-as="tax_group">
+                                    <tr class="o_tax_row">
+                                        <td>
+                                            <t t-esc="tax_group.get('group_name') or tax_group.get('tax_group_name') or ''"/>
+                                            <t t-if="not _same_base and tax_group.get('display_base_amount_currency') is not False and tax_group.get('display_base_amount_currency') is not None">
+                                                <span> en </span>
+                                                <span t-out="tax_group.get('display_base_amount_currency')"
+                                                      t-options='{"widget": "monetary", "display_currency": o.currency_id}'/>
+                                            </t>
+                                        </td>
+                                        <td class="text-end">
+                                            <t t-if="'tax_amount_currency' in tax_group">
+                                                <span t-out="tax_group.get('tax_amount_currency') or 0.0"
+                                                      t-options='{"widget": "monetary", "display_currency": o.currency_id}'/>
+                                            </t>
+                                            <t t-else="">
+                                                <t t-esc="tax_group.get('formatted_tax_group_amount') or ''"/>
+                                            </t>
+                                        </td>
+                                    </tr>
+                                </t>
+                            </t>
+                        </t>
+
+                        <!-- Total -->
+                        <tr class="o_total_row">
+                            <td>Total</td>
+                            <td class="text-end">
+                                <span t-out="o.amount_total" t-options='{"widget": "monetary", "display_currency": o.currency_id}'/>
+                            </td>
+                        </tr>
+
+                        <!-- Son: cantidad en letras -->
+                        <tr class="inv-amount-words-row">
+                            <td colspan="2">
+                                <span class="inv-amount-words">
+                                    <em>Son:</em>
+                                    <t t-esc="' ' + o.currency_id.amount_to_text(o.amount_total)"/>
+                                </span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <!-- Espacio para el QR -->
+                <div style="margin-top: 20px; clear: both;"></div>
+            </div>
+
+            <!--
+              Complemento fiscal CFDI 4.0 — solo flujo cliente (out_invoice/out_refund).
+              Las facturas y reembolsos de proveedor (in_invoice/in_refund) no reproducen
+              el complemento fiscal, que pertenece al CFDI ya timbrado del proveedor.
+            -->
+            <t t-if="o.move_type not in ('in_invoice', 'in_refund')">
+                <t t-call="custom_invoice_format.pharma_invoice_sat_footer"/>
+            </t>
+        </xpath>
+
+    </template>
+
+    <!-- Header pharma para account.move, inyectado en el external_layout como
+         los reportes de venta/compra/entrega. Esto elimina el header nativo
+         duplicado sin volver a depender del XPath frágil a web.external_layout. -->
+    <template id="pharma_invoice_full_header">
+        <t t-set="_inv" t-value="o if o and o._name == 'account.move' else (doc if doc and doc._name == 'account.move' else None)"/>
+        <t t-set="_inv_company" t-value="_inv.company_id.sudo() if _inv else None"/>
+        <t t-set="_inv_cfdi" t-value="_inv.md_get_cfdi_report_values() if _inv else {}"/>
+        <div t-if="_inv" class="pharma-full-header">
+            <div class="d-flex align-items-start justify-content-between pharma-doc-header">
+                <div class="pharma-logo-shell">
+                    <img t-if="_inv_company and _inv_company.logo"
+                         class="md-logo"
+                         t-att-src="image_data_uri(_inv_company.logo)"
+                         alt="Logo"/>
+                    <div t-if="_inv_company and _inv_company.report_header"
+                         t-field="_inv_company.report_header"
+                         class="o_company_tagline fw-bold mt-1"/>
+                </div>
+                <div class="pharma-doc-info text-end">
+                    <span class="pharma-doc-type">
+                        <t t-if="_inv.move_type in ('out_invoice', 'in_invoice')">Factura</t>
+                        <t t-if="_inv.move_type in ('out_refund', 'in_refund')">Nota de Crédito</t>
+                        <t t-if="_inv.move_type in ('out_receipt', 'in_receipt')">Recibo</t>
+                    </span>
+                    <span class="pharma-doc-num" t-esc="_inv.name or ''"/>
+                    <span class="pharma-doc-date">
+                        <span t-if="_inv.invoice_date"
+                              t-field="_inv.invoice_date"
+                              t-options='{"widget": "date"}'/>
+                    </span>
+                </div>
+            </div>
+            <div class="pharma-stripe">
+                <span class="pharma-stripe-band pharma-stripe-band-brand"/>
+                <span class="pharma-stripe-band pharma-stripe-band-teal"/>
+                <span class="pharma-stripe-band pharma-stripe-band-lime"/>
+            </div>
+            <div class="row g-0 pharma-meta-band">
+                <div class="col-4 pharma-meta-cell">
+                    <span class="pharma-meta-label">
+                        <t t-if="_inv.move_type in ('in_invoice', 'in_refund')">Comprador</t>
+                        <t t-if="_inv.move_type not in ('in_invoice', 'in_refund')">Vendedor</t>
+                    </span>
+                    <span class="pharma-meta-val">
+                        <t t-esc="(_inv.invoice_user_id.name if _inv.invoice_user_id else False) or (_inv.user_id.name if _inv.user_id else False) or '—'"/>
+                    </span>
+                </div>
+                <div class="col-4 pharma-meta-cell">
+                    <span class="pharma-meta-label">RFC Emisor</span>
+                    <span class="pharma-meta-val">
+                        <t t-esc="_inv_cfdi.get('emisor_rfc') or _inv_company.vat or _inv_company.partner_id.vat or '—'"/>
+                    </span>
+                </div>
+                <div class="col-4 pharma-meta-cell">
+                    <span class="pharma-meta-label">Contacto</span>
+                    <span class="pharma-meta-val pharma-meta-val-sm">
+                        <t t-esc="_inv_company.email or _inv_company.partner_id.email or '—'"/>
+                    </span>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <!--
+      NOTA arquitectura (2026-05-25):
+      pharma_invoice_full_header se invoca como PRIMER BLOQUE del body en
+      custom_report_invoice_document (xpath antes de invoice_line_table).
+      Anteriormente se inyectaba vía xpath sobre web.external_layout_*
+      (//div[hasclass('row') and .//*[@name='company_address']]) pero ese
+      selector NO matchea en Odoo 19 → el header pharma se perdía y el
+      layout nativo de la caja CLIENTE+FACTURA quedaba visible. Mismo
+      patrón aplicado a pharma_reports en commit 7b0274d.
+
+      Estos overrides de external_layout_* sólo se conservan para OCULTAR
+      los elementos nativos del header (logo, company_address, h2 título)
+      cuando el documento es account.move. NO inyectan nada.
+
+      Los layouts externos de Odoo 19 declaran el wrapper del encabezado con
+      @t-attf-class. Ocultamos ese contenedor completo para evitar que el
+      logo/direccion nativos queden superpuestos al header pharma.
+    -->
+    <!--
+      Guards de external_layout para account.move (priority 1000 > pharma_reports 999).
+      Cada layout suprime: logo/company_address div + título h2/h3 (Odoo 19 usa
+      h2 con @t-out en standard y h3 con @t-esc en algunos variantes — se capturan
+      ambas formas para que el guard sobreviva actualizaciones menores del core).
+    -->
+    <template id="pharma_invoice_layout_standard_hide"
+              inherit_id="web.external_layout_standard"
+              priority="1000">
+        <xpath expr="//div[hasclass('d-flex') and (.//img[hasclass('o_company_logo_small')] or .//img[hasclass('o_company_logo')])]" position="attributes">
+            <attribute name="t-if">not ((o and o._name in ('sale.order', 'stock.picking', 'purchase.order', 'account.move', 'stock.scrap.batch')) or (doc and doc._name in ('sale.order', 'stock.picking', 'purchase.order', 'account.move', 'stock.scrap.batch')))</attribute>
+        </xpath>
+        <xpath expr="//div[hasclass('row') and .//*[@name='company_address']]" position="attributes">
+            <attribute name="t-if">not ((o and o._name in ('sale.order', 'stock.picking', 'purchase.order', 'account.move', 'stock.scrap.batch')) or (doc and doc._name in ('sale.order', 'stock.picking', 'purchase.order', 'account.move', 'stock.scrap.batch')))</attribute>
+        </xpath>
+        <xpath expr="//h2[@t-out='layout_document_title' or @t-esc='layout_document_title'] | //h3[@t-out='layout_document_title' or @t-esc='layout_document_title']" position="attributes">
+            <attribute name="t-if">not ((o and o._name in ('sale.order', 'stock.picking', 'purchase.order', 'account.move', 'stock.scrap.batch')) or (doc and doc._name in ('sale.order', 'stock.picking', 'purchase.order', 'account.move', 'stock.scrap.batch')))</attribute>
+        </xpath>
+    </template>
+
+    <template id="pharma_invoice_layout_bold_hide"
+              inherit_id="web.external_layout_bold"
+              priority="1000">
+        <xpath expr="//div[hasclass('row') and .//*[@name='company_address']]" position="attributes">
+            <attribute name="t-if">not ((o and o._name in ('sale.order', 'stock.picking', 'purchase.order', 'account.move', 'stock.scrap.batch')) or (doc and doc._name in ('sale.order', 'stock.picking', 'purchase.order', 'account.move', 'stock.scrap.batch')))</attribute>
+        </xpath>
+        <xpath expr="//h2[@t-out='layout_document_title' or @t-esc='layout_document_title'] | //h3[@t-out='layout_document_title' or @t-esc='layout_document_title']" position="attributes">
+            <attribute name="t-if">not ((o and o._name in ('sale.order', 'stock.picking', 'purchase.order', 'account.move', 'stock.scrap.batch')) or (doc and doc._name in ('sale.order', 'stock.picking', 'purchase.order', 'account.move', 'stock.scrap.batch')))</attribute>
+        </xpath>
+    </template>
+
+    <template id="pharma_invoice_layout_boxed_hide"
+              inherit_id="web.external_layout_boxed"
+              priority="1000">
+        <xpath expr="//div[hasclass('row') and .//*[@name='company_address']]" position="attributes">
+            <attribute name="t-if">not ((o and o._name in ('sale.order', 'stock.picking', 'purchase.order', 'account.move', 'stock.scrap.batch')) or (doc and doc._name in ('sale.order', 'stock.picking', 'purchase.order', 'account.move', 'stock.scrap.batch')))</attribute>
+        </xpath>
+        <xpath expr="//h2[@t-out='layout_document_title' or @t-esc='layout_document_title'] | //h3[@t-out='layout_document_title' or @t-esc='layout_document_title']" position="attributes">
+            <attribute name="t-if">not ((o and o._name in ('sale.order', 'stock.picking', 'purchase.order', 'account.move', 'stock.scrap.batch')) or (doc and doc._name in ('sale.order', 'stock.picking', 'purchase.order', 'account.move', 'stock.scrap.batch')))</attribute>
+        </xpath>
+    </template>
+
+    <template id="pharma_invoice_layout_striped_hide"
+              inherit_id="web.external_layout_striped"
+              priority="1000">
+        <xpath expr="//div[hasclass('d-flex') and .//*[@name='company_address']]" position="attributes">
+            <attribute name="t-if">not ((o and o._name in ('sale.order', 'stock.picking', 'purchase.order', 'account.move', 'stock.scrap.batch')) or (doc and doc._name in ('sale.order', 'stock.picking', 'purchase.order', 'account.move', 'stock.scrap.batch')))</attribute>
+        </xpath>
+        <xpath expr="//h2[@t-out='layout_document_title' or @t-esc='layout_document_title'] | //h3[@t-out='layout_document_title' or @t-esc='layout_document_title']" position="attributes">
+            <attribute name="t-if">not ((o and o._name in ('sale.order', 'stock.picking', 'purchase.order', 'account.move', 'stock.scrap.batch')) or (doc and doc._name in ('sale.order', 'stock.picking', 'purchase.order', 'account.move', 'stock.scrap.batch')))</attribute>
+        </xpath>
+    </template>
+
+    <template id="pharma_invoice_layout_folder_hide"
+              inherit_id="web.external_layout_folder"
+              priority="1000">
+        <xpath expr="//div[contains(concat(' ', normalize-space(@class), ' '), ' header ') or contains(concat(' ', normalize-space(@t-attf-class), ' '), ' header ')]" position="attributes">
+            <attribute name="t-if">not ((o and o._name in ('account.move', 'stock.scrap.batch')) or (doc and doc._name in ('account.move', 'stock.scrap.batch')))</attribute>
+        </xpath>
+        <xpath expr="//h2[@t-out='layout_document_title' or @t-esc='layout_document_title'] | //h3[@t-out='layout_document_title' or @t-esc='layout_document_title']" position="attributes">
+            <attribute name="t-if">not ((o and o._name in ('account.move', 'stock.scrap.batch')) or (doc and doc._name in ('account.move', 'stock.scrap.batch')))</attribute>
+        </xpath>
+    </template>
+
+    <template id="pharma_invoice_layout_wave_hide"
+              inherit_id="web.external_layout_wave"
+              priority="1000">
+        <xpath expr="//div[contains(concat(' ', normalize-space(@class), ' '), ' header ') or contains(concat(' ', normalize-space(@t-attf-class), ' '), ' header ')]" position="attributes">
+            <attribute name="t-if">not ((o and o._name in ('account.move', 'stock.scrap.batch')) or (doc and doc._name in ('account.move', 'stock.scrap.batch')))</attribute>
+        </xpath>
+        <xpath expr="//h2[@t-out='layout_document_title' or @t-esc='layout_document_title'] | //h3[@t-out='layout_document_title' or @t-esc='layout_document_title']" position="attributes">
+            <attribute name="t-if">not ((o and o._name in ('account.move', 'stock.scrap.batch')) or (doc and doc._name in ('account.move', 'stock.scrap.batch')))</attribute>
+        </xpath>
+    </template>
+
+    <template id="pharma_invoice_layout_bubble_hide"
+              inherit_id="web.external_layout_bubble"
+              priority="1000">
+        <xpath expr="//div[contains(concat(' ', normalize-space(@class), ' '), ' header ') or contains(concat(' ', normalize-space(@t-attf-class), ' '), ' header ')]" position="attributes">
+            <attribute name="t-if">not ((o and o._name in ('account.move', 'stock.scrap.batch')) or (doc and doc._name in ('account.move', 'stock.scrap.batch')))</attribute>
+        </xpath>
+        <xpath expr="//h2[@t-out='layout_document_title' or @t-esc='layout_document_title'] | //h3[@t-out='layout_document_title' or @t-esc='layout_document_title']" position="attributes">
+            <attribute name="t-if">not ((o and o._name in ('account.move', 'stock.scrap.batch')) or (doc and doc._name in ('account.move', 'stock.scrap.batch')))</attribute>
+        </xpath>
+    </template>
+
+    <record id="paperformat_invoice_pharma" model="report.paperformat">
+        <field name="name">Factura — Medicine Depot (A4)</field>
+        <field name="default" eval="False"/>
+        <field name="format">A4</field>
+        <field name="page_height" eval="False"/>
+        <field name="page_width" eval="False"/>
+        <field name="orientation">Portrait</field>
+        <field name="margin_top">10</field>
+        <field name="margin_bottom">10</field>
+        <field name="margin_left">7</field>
+        <field name="margin_right">7</field>
+        <field name="header_line" eval="False"/>
+        <field name="header_spacing">0</field>
+        <field name="dpi">90</field>
+    </record>
+
+    <record id="account.account_invoices" model="ir.actions.report">
+        <field name="paperformat_id" ref="paperformat_invoice_pharma"/>
+    </record>
+
+    <template id="pharma_invoice_sat_footer">
+        <!--
+          Complemento CFDI 4.0 — paleta pharma (navy #234759, cyan #3aa5c9).
+          Diseño inspirado en guía visual, adaptado a tabla HTML pura para
+          compatibilidad con wkhtmltopdf (sin CSS grid ni flex).
+          Solo se muestra cuando la factura está timbrada (tiene UUID).
+        -->
+        <t t-set="_cfdi_uuid" t-value="md_cfdi.get('uuid') or (o.l10n_mx_edi_cfdi_uuid if o and 'l10n_mx_edi_cfdi_uuid' in o._fields else '') or ''"/>
+        <table class="inv-sat-footer inv-sat-table"
+               width="100%"
+               style="width:100% !important; font-size:8px; page-break-inside:avoid; table-layout:fixed; border-collapse:collapse; margin-top:16px; border:1px solid #e2e8f0;"
+               t-if="_cfdi_uuid">
+            <colgroup>
+                <col style="width:22%;"/>
+                <col style="width:78%;"/>
+            </colgroup>
+
+            <!-- ── TÍTULO ─────────────────────────────────────────── -->
+            <tr>
+                <td colspan="2" class="inv-sat-title"
+                    style="background-color:#234759 !important; color:#ffffff !important; font-size:9pt; font-weight:700; letter-spacing:0.5px; text-transform:uppercase; padding:8px 12px; -webkit-print-color-adjust:exact; print-color-adjust:exact;">
+                    Complemento Fiscal CFDI 4.0
+                </td>
+            </tr>
+
+            <!-- ── QR (22%) | METADATOS (78%) ─────────────────────── -->
+            <tr>
+                <td class="inv-sat-qr"
+                    style="width:22%; vertical-align:middle; text-align:center; padding:12px 8px; background-color:#f8fafc !important; border-right:1px solid #e2e8f0; -webkit-print-color-adjust:exact; print-color-adjust:exact;">
+                    <t t-if="md_cfdi.get('qr_url')">
+                        <div style="border:1px solid #e2e8f0; background-color:#ffffff !important; padding:4px; display:inline-block; -webkit-print-color-adjust:exact; print-color-adjust:exact;">
+                            <img class="inv-cfdi-qr-img"
+                                 style="display:block; width:100%; max-width:105px; height:auto;"
+                                 t-att-src="md_cfdi.get('qr_url')"
+                                 alt="QR CFDI"/>
+                        </div>
+                    </t>
+                    <div style="color:#475569; font-size:6pt; font-weight:600; line-height:1.3; text-transform:uppercase; letter-spacing:0.3px; margin-top:6px;">
+                        Código de<br/>verificación
+                    </div>
+                </td>
+
+                <td class="inv-sat-meta"
+                    style="width:78%; vertical-align:top; padding:10px 12px;">
+
+                    <!-- Folio Fiscal (UUID) -->
+                    <div style="border-left:3px solid #3aa5c9; background-color:#f1f5f9 !important; padding:5px 8px; margin-bottom:8px; -webkit-print-color-adjust:exact; print-color-adjust:exact;">
+                        <strong style="display:block; color:#3aa5c9; font-size:6pt; font-weight:700; text-transform:uppercase; letter-spacing:0.3px; margin-bottom:2px;">Folio Fiscal (UUID)</strong>
+                        <span style="font-family:'Courier New',monospace; font-size:8.5pt; font-weight:700; color:#0f172a; word-break:break-all; overflow-wrap:break-word;"
+                              t-esc="_cfdi_uuid"/>
+                    </div>
+
+                    <!-- Grid 2×2: fecha/RFC · certSAT/certEmisor -->
+                    <table width="100%" style="table-layout:fixed; border-collapse:separate; border-spacing:4px 4px; width:100%; margin:0;">
+                        <colgroup>
+                            <col style="width:50%;"/>
+                            <col style="width:50%;"/>
+                        </colgroup>
+                        <tr>
+                            <td style="vertical-align:top; padding:5px 8px; background-color:#f8fafc !important; border-left:3px solid #3aa5c9; -webkit-print-color-adjust:exact; print-color-adjust:exact;">
+                                <strong style="display:block; color:#3aa5c9; font-size:6pt; font-weight:700; text-transform:uppercase; letter-spacing:0.3px; margin-bottom:2px;">Fecha y hora de certificación</strong>
+                                <span style="color:#0f172a; font-size:7pt; font-weight:600;"
+                                      t-esc="md_cfdi.get('fecha_timbrado') or '—'"/>
+                            </td>
+                            <td style="vertical-align:top; padding:5px 8px; background-color:#f8fafc !important; border-left:3px solid #3aa5c9; -webkit-print-color-adjust:exact; print-color-adjust:exact;">
+                                <strong style="display:block; color:#3aa5c9; font-size:6pt; font-weight:700; text-transform:uppercase; letter-spacing:0.3px; margin-bottom:2px;">RFC Prov. Certif.</strong>
+                                <span style="color:#0f172a; font-size:7pt; font-weight:600; word-break:break-all;"
+                                      t-esc="md_cfdi.get('rfc_prov_certif') or '—'"/>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="vertical-align:top; padding:5px 8px; background-color:#f8fafc !important; border-left:3px solid #3aa5c9; -webkit-print-color-adjust:exact; print-color-adjust:exact;">
+                                <strong style="display:block; color:#3aa5c9; font-size:6pt; font-weight:700; text-transform:uppercase; letter-spacing:0.3px; margin-bottom:2px;">No. Certificado SAT</strong>
+                                <span style="color:#0f172a; font-size:7pt; font-weight:600; font-family:'Courier New',monospace; word-break:break-all;"
+                                      t-esc="md_cfdi.get('no_certificado_sat') or '—'"/>
+                            </td>
+                            <td style="vertical-align:top; padding:5px 8px; background-color:#f8fafc !important; border-left:3px solid #3aa5c9; -webkit-print-color-adjust:exact; print-color-adjust:exact;">
+                                <strong style="display:block; color:#3aa5c9; font-size:6pt; font-weight:700; text-transform:uppercase; letter-spacing:0.3px; margin-bottom:2px;">No. Certificado Emisor</strong>
+                                <span style="color:#0f172a; font-size:7pt; font-weight:600; font-family:'Courier New',monospace; word-break:break-all;"
+                                      t-esc="md_cfdi.get('no_certificado') or '—'"/>
+                            </td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+
+            <!-- ── SELLO CFDI ──────────────────────────────────────── -->
+            <tr>
+                <td colspan="2"
+                    style="background-color:#eef2f5 !important; color:#234759; font-size:6.5pt; font-weight:700; text-transform:uppercase; letter-spacing:0.3px; padding:4px 12px; border-top:1px solid #e2e8f0; border-left:3px solid #3aa5c9; -webkit-print-color-adjust:exact; print-color-adjust:exact;">
+                    Sello Digital del CFDI (Emisor)
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2" style="padding:6px 12px 8px; background-color:#ffffff !important; -webkit-print-color-adjust:exact; print-color-adjust:exact;">
+                    <span style="display:block; font-family:'Courier New',monospace; font-size:6.5pt; color:#1e293b; line-height:1.35; word-break:break-all; overflow-wrap:break-word; white-space:normal;"
+                          t-esc="md_cfdi.get('sello_cfdi') or '—'"/>
+                </td>
+            </tr>
+
+            <!-- ── SELLO SAT ───────────────────────────────────────── -->
+            <tr>
+                <td colspan="2"
+                    style="background-color:#eef2f5 !important; color:#234759; font-size:6.5pt; font-weight:700; text-transform:uppercase; letter-spacing:0.3px; padding:4px 12px; border-top:1px solid #e2e8f0; border-left:3px solid #3aa5c9; -webkit-print-color-adjust:exact; print-color-adjust:exact;">
+                    Sello Digital del SAT
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2" style="padding:6px 12px 8px; background-color:#ffffff !important; -webkit-print-color-adjust:exact; print-color-adjust:exact;">
+                    <span style="display:block; font-family:'Courier New',monospace; font-size:6.5pt; color:#1e293b; line-height:1.35; word-break:break-all; overflow-wrap:break-word; white-space:normal;"
+                          t-esc="md_cfdi.get('sello_sat') or '—'"/>
+                </td>
+            </tr>
+
+            <!-- ── CADENA ORIGINAL ─────────────────────────────────── -->
+            <tr>
+                <td colspan="2"
+                    style="background-color:#eef2f5 !important; color:#234759; font-size:6.5pt; font-weight:700; text-transform:uppercase; letter-spacing:0.3px; padding:4px 12px; border-top:1px solid #e2e8f0; border-left:3px solid #3aa5c9; -webkit-print-color-adjust:exact; print-color-adjust:exact;">
+                    Cadena Original del Complemento de Certificación Digital del SAT
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2" style="padding:6px 12px 8px; background-color:#ffffff !important; -webkit-print-color-adjust:exact; print-color-adjust:exact;">
+                    <span style="display:block; font-family:'Courier New',monospace; font-size:6.5pt; color:#1e293b; line-height:1.35; word-break:break-all; overflow-wrap:break-word; white-space:normal;"
+                          t-esc="md_cfdi.get('cadena_original') or '—'"/>
+                </td>
+            </tr>
+
+        </table>
+    </template>
+
+    <!-- ═══════════════════════════════════════════════════════════════
+         Variante del address-block para account.move (el partial de
+         sale_lot_report sólo acepta sale.order/stock.picking/purchase.order).
+         Añade Régimen fiscal del receptor (requerimiento CFDI 4.0).
+    ════════════════════════════════════════════════════════════════════ -->
+    <!-- ════════════════════════════════════════════════════════════════
+         SUB-TEMPLATE: Lotes farmacéuticos inline en línea de Factura / Nota de Crédito.
+         Aislado para que sea testeable y reutilizable sin duplicar la lógica en el xpath.
+
+         Variables requeridas (deben setearse antes del t-call):
+           line_lots — lista de dicts: [{lot_name: str, expiration_date: str}, ...]
+                       producida por md_get_invoice_line_lot_values()[line.id]
+                       puede ser [] para líneas sin lote (el sub-template no renderiza nada)
+
+         Salida: div.inv-line-lots con un div.pharma-lot-inline por cada lote.
+         Estilos: inv-line-lots (report_invoice.css) + pharma-lot-inline (pharma_report.scss)
+    ════════════════════════════════════════════════════════════════════ -->
+    <template id="pharma_invoice_lot_block">
+        <div t-if="line_lots" class="inv-line-lots">
+            <t t-foreach="line_lots" t-as="lot_info">
+                <div class="pharma-lot-inline">
+                    <span>Lote: <strong t-esc="lot_info.get('lot_name') or '—'"/></span>
+                    <t t-if="lot_info.get('expiration_date')">
+                        <span> | Caducidad: <strong t-esc="lot_info.get('expiration_date')"/></span>
+                    </t>
+                </div>
+            </t>
+        </div>
+    </template>
+
+    <template id="pharma_invoice_address_block">
+        <t t-set="_addr_partner" t-value="pharma_doc.partner_id"/>
+        <t t-set="_is_in" t-value="pharma_doc.move_type in ('in_invoice', 'in_refund', 'in_receipt')"/>
+        <t t-set="_partner_label" t-value="'Proveedor' if _is_in else 'Cliente'"/>
+        <div class="pharma-doc pharma-addr-grid" style="font-size: 0.9rem;">
+            <div class="row g-0">
+                <div class="col-6 pe-4 pharma-addr-col">
+                    <span class="pharma-addr-label" style="font-size: 0.85rem; font-weight: 600;">Sucursal</span>
+                    <div class="pharma-addr-name">
+                        <span t-field="pharma_company.partner_id.name"/>
+                    </div>
+                    <div class="pharma-addr-lines"
+                         t-field="pharma_company.partner_id"
+                         t-options='{"widget": "contact", "fields": ["address"], "no_marker": True}'/>
+                    <span class="pharma-addr-rfc">
+                        RFC: <span t-esc="pharma_company.vat or pharma_company.partner_id.vat or '—'"/>
+                    </span>
+                </div>
+                <div class="col-6 ps-4 pharma-addr-col pharma-addr-divider">
+                    <span class="pharma-addr-label" t-esc="_partner_label"/>
+                    <div class="pharma-addr-name">
+                        <span t-esc="_addr_partner.name if _addr_partner else '—'"/>
+                    </div>
+                    <div t-if="_addr_partner"
+                         class="pharma-addr-lines"
+                         t-field="pharma_doc.partner_id"
+                         t-options='{"widget": "contact", "fields": ["address"], "no_marker": True}'/>
+                    <span class="pharma-addr-rfc">
+                        RFC: <span t-esc="_addr_partner.vat if _addr_partner and _addr_partner.vat else '—'"/>
+                    </span>
+                    <t t-if="_addr_partner and 'l10n_mx_edi_fiscal_regime' in _addr_partner._fields and _addr_partner.l10n_mx_edi_fiscal_regime">
+                        <span class="pharma-addr-rfc inv-addr-regime">
+                            Régimen: <span t-field="_addr_partner.l10n_mx_edi_fiscal_regime"/>
+                        </span>
+                    </t>
+                </div>
+            </div>
+        </div>
+    </template>
+
+</odoo>

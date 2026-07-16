@@ -1,0 +1,494 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--
+        Corte Z · Ventas por movimiento (A4 Horizontal).
+        Traducción del diseño "Bento/Glass" aprobado a QWeb-PDF. Se usa layout
+        basado en <table> en lugar de CSS grid/flex porque wkhtmltopdf (WebKit)
+        no renderiza CSS Grid de forma fiable. Los colores de marca y los
+        encabezados con degradado se conservan vía print-color-adjust: exact.
+    -->
+    <template id="report_corte_z_document">
+        <t t-call="web.html_container">
+            <!--
+                Re-declara el charset al inicio del cuerpo. Este reporte entra
+                directo a web.html_container (sin web.external_layout), por lo que
+                el <meta charset> del head queda tras los bundles CSS y wkhtmltopdf
+                (WebKit) no lo olfatea → decodifica UTF-8 como Latin-1 (mojibake:
+                "$Â ", "â€"", "Ã³"). Reinyectarlo aquí fuerza el re-decode correcto.
+            -->
+            <meta charset="utf-8"/>
+            <t t-foreach="docs" t-as="session">
+                <t t-set="r" t-value="report_by_session[session.id]"/>
+                <div class="cz-page">
+                    <style>
+                        .cz-page {
+                            font-family: "Lato", Arial, Helvetica, sans-serif;
+                            color: #2c3e50;
+                            font-size: 0.9487rem;
+                            line-height: 1.45;
+                            -webkit-print-color-adjust: exact;
+                            print-color-adjust: exact;
+                            page-break-after: always;
+                        }
+                        .cz-page:last-child { page-break-after: auto; }
+                        .cz-page table { border-collapse: collapse; }
+                        .cz-num { text-align: right; white-space: nowrap; }
+                        .cz-mono { font-variant-numeric: tabular-nums; }
+
+                        /* ---- Header ---- */
+                        .cz-head { width: 100%; }
+                        .cz-head td { vertical-align: top; }
+                        .cz-logo { height: 44px; width: auto; }
+                        .cz-id { text-align: right; }
+                        .cz-id .kicker { font-size: 0.8625rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #6c7a82; }
+                        .cz-id .big { font-size: 1.8975rem; font-weight: 900; color: #234759; line-height: 1.05; }
+                        .cz-id .date { font-size: 1.1212rem; font-weight: 700; color: #61bba7; }
+                        .cz-sig { width: 100%; border-collapse: collapse; margin: 10px 0 12px; }
+                        .cz-sig tr, .cz-sig td { height: 6px; padding: 0; }
+                        .cz-sig-s1 { width: 34%; background: #234759; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+                        .cz-sig-s2 { width: 33%; background: #4db39c; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+                        .cz-sig-s3 { width: 33%; background: #8dc63f; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+
+                        /* ---- Meta strip ---- */
+                        .cz-meta { width: 100%; background: #f3f3f3; border: 1px solid #e3e3e3; }
+                        .cz-meta td { padding: 12px 16px; border-left: 1px solid #e3e3e3; }
+                        .cz-meta td:first-child { border-left: none; }
+                        .cz-meta .ml { font-size: 0.7762rem; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; color: #6c7a82; }
+                        .cz-meta .mv { font-size: 1.1212rem; font-weight: 700; color: #2c3e50; margin-top: 3px; }
+                        .cz-meta .mv.sm { font-size: 0.9487rem; }
+
+                        /* ---- Dual (dirección + KPIs) ---- */
+                        .cz-dual { width: 100%; margin: 14px 0 8px; }
+                        .cz-dual > td { vertical-align: top; }
+                        .cz-dual .cz-dual-l { width: 32%; padding-right: 22px; }
+                        .blk-top { height: 2px; width: 100%; margin-bottom: 7px; }
+                        .blk-top.navy { background: #234759; }
+                        .blk-top.teal { background: #4db39c; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+                        .blk-label { font-size: 0.7762rem; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; color: #6c7a82; }
+                        .blk .addr { font-size: 0.9920rem; color: #5a6b75; line-height: 1.5; margin-top: 5px; }
+                        .blk .addr b { color: #2c3e50; font-size: 1.0780rem; }
+
+                        .cz-kpis { width: 100%; margin-top: 6px; }
+                        .cz-kpis td { width: 25%; padding: 5px; vertical-align: top; }
+                        .kpi { border: 1px solid #e3e3e3; padding: 11px 14px; background: #fff; }
+                        .kpi.lead { background: #234759; border-color: #234759; }
+                        .kpi .kl { font-size: 0.7330rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; color: #6c7a82; }
+                        .kpi.lead .kl { color: rgba(255,255,255,0.62); }
+                        .kpi .kv { font-size: 1.5525rem; font-weight: 900; color: #234759; margin-top: 2px; }
+                        .kpi.lead .kv { color: #fff; }
+                        .kpi .kv small { font-size: 0.8625rem; font-weight: 700; color: #6c7a82; }
+                        .kpi .kv.coral { color: #1b75bc; }
+
+                        .cz-sec { font-size: 0.8625rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #6c7a82; margin: 20px 0 10px; }
+
+                        /* ---- Ledger ---- */
+                        .cz-ledger { width: 100%; table-layout: fixed; font-variant-numeric: tabular-nums; }
+                        .cz-col-header { page-break-after: avoid; }
+                        .cz-col-header td {
+                            background: #1b6b82;
+                            color: #fff; font-size: 0.8195rem; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase;
+                            padding: 10px 12px; text-align: left;
+                            -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+                        .cz-col-header td.cz-num { text-align: right; }
+                        .cz-grp { page-break-after: avoid; }
+                        .cz-grp td { background: #f3f3f3; border-left: 3px solid #234759; padding: 8px 12px; border-top: 1px solid #e3e3e3; }
+                        .cz-grp-line { width: 100%; }
+                        .cz-grp-line td { border: 0; padding: 0; vertical-align: middle; }
+                        .cz-grp-main { white-space: normal; line-height: 1.25; }
+                        .cz-badge { display: inline-block; font-size: 0.9055rem; font-weight: 700; color: #fff; background: #234759; padding: 2px 8px; border-radius: 3px; }
+                        .cz-client { font-size: 0.9487rem; font-weight: 900; color: #234759; text-transform: uppercase; margin-left: 8px; overflow-wrap: break-word; word-wrap: break-word; }
+                        .cz-time { display: inline-block; font-size: 0.9055rem; font-weight: 700; color: #5a6b75; margin-left: 8px; }
+                        .cz-sum { text-align: right; font-size: 0.9487rem; color: #5a6b75; font-weight: 700; }
+                        .cz-sum b { color: #234759; font-weight: 900; }
+                        .cz-sum .cnt { color: #6c7a82; }
+                        .cz-line td { padding: 7px 12px; font-size: 0.9143rem; border-top: 1px solid #e3e3e3; vertical-align: top; line-height: 1.4; }
+                        .cz-line:nth-child(even) td { background: #f9f9f9; }
+                        td.prod { font-weight: 700; line-height: 1.3; white-space: normal; overflow-wrap: break-word; word-wrap: break-word; }
+                        td.lote, td.cad { color: #5a6b75; white-space: normal; overflow-wrap: break-word; word-wrap: break-word; font-size: 0.8625rem; }
+                        td.qty { font-weight: 700; color: #5a6b75; }
+                        td.qty .u { color: #6c7a82; font-weight: 400; font-size: 0.8195rem; }
+                        td.imp { font-weight: 900; color: #234759; }
+                        td.dpc, td.dto { color: #1b75bc; font-weight: 700; font-size: 0.9055rem; }
+                        td.muted { color: #c2cad0; }
+                        .cz-grand td { background: #234759; color: #fff; padding: 10px; font-size: 1.0780rem; font-weight: 900; }
+                        .cz-grand .gt-label { font-size: 0.9055rem; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; color: #61bba7; }
+
+                        /* ---- Summary cards ---- */
+                        .cz-summary { width: 100%; margin-top: 14px; }
+                        .cz-summary > tbody > tr { page-break-inside: avoid; }
+                        .cz-summary > tbody > tr > td { vertical-align: top; padding: 8px; }
+                        .card { border: 1px solid #e3e3e3; background: #fff; }
+                        .card-head { background: #1b6b82; padding: 10px 14px; border-bottom: 1px solid #155a6e; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+                        .card-head .bar { display: inline-block; width: 14px; height: 3px; background: rgba(255,255,255,0.40); vertical-align: middle; margin-right: 8px; }
+                        .card-head .bar.teal { background: #8dc63f; }
+                        .card-head .bar.green { background: #61bba7; }
+                        .card-head .bar.blue { background: rgba(255,255,255,0.85); }
+                        .card-title { font-size: 0.8625rem; font-weight: 900; letter-spacing: 0.05em; text-transform: uppercase; color: #fff; }
+                        .card-note { float: right; font-size: 0.8195rem; font-weight: 700; color: rgba(255,255,255,0.72); }
+                        .card-body { padding: 8px 14px 12px; }
+                        .cz-meta-note { color: #6c7a82; font-size: 0.8625rem; word-break: break-word; overflow-wrap: break-word; }
+                        .cz-note-line { font-size: 0.9056rem; line-height: 1.5; margin-bottom: 0.3125rem; }
+                        table.mini { width: 100%; font-variant-numeric: tabular-nums; }
+                        table.mini th { font-size: 0.7330rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; color: #6c7a82; text-align: left; padding: 8px 0 6px; border-bottom: 1px solid #e3e3e3; }
+                        table.mini th.cz-num { text-align: right; padding-left: 14px; }
+                        table.mini td { font-size: 0.9487rem; padding: 6px 0; border-top: 1px solid #e3e3e3; }
+                        table.mini td.cz-num { padding-left: 14px; }
+                        table.mini .lbl { font-weight: 700; text-transform: uppercase; }
+                        table.mini tr.tot td { border-top: 2px solid #234759; font-weight: 900; color: #234759; padding-top: 6px; text-transform: uppercase; }
+                        table.mini tr.totbar td { background: #234759; color: #fff; font-weight: 900; padding: 10px 12px; border: none; text-transform: uppercase; }
+                        .diff-ok { color: #4db39c; font-weight: 900; }
+                        .diff-alert { color: #1b75bc; font-weight: 900; }
+
+                        .shero { background: #234759; padding: 18px 20px; }
+                        .shero .hk { font-size: 0.7762rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: rgba(255,255,255,0.6); }
+                        .shero .ht { font-size: 2.5875rem; font-weight: 900; color: #fff; line-height: 1; margin-top: 4px; }
+                        .shero .hsub { margin-top: 16px; }
+                        .shero .hsub td { padding-right: 28px; }
+                        .shero .hsk { font-size: 0.6900rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: rgba(255,255,255,0.55); }
+                        .shero .hsv { font-size: 1.2937rem; font-weight: 900; color: #fff; margin-top: 2px; }
+                        .shero .hdiff { margin-top: 14px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.14); font-size: 0.9055rem; font-weight: 700; color: rgba(255,255,255,0.85); text-transform: uppercase; }
+
+                        /* ---- Footer ---- */
+                        .cz-foot { margin-top: 22px; padding-top: 12px; border-top: 1px solid #e3e3e3; text-align: center; }
+                        .cz-foot .links { font-size: 0.9920rem; font-weight: 700; color: #1b75bc; }
+                        .cz-foot .rfc { font-size: 0.8625rem; color: #6c7a82; margin-top: 3px; font-weight: 700; text-transform: uppercase; }
+                        .cz-foot .meta { font-size: 0.7762rem; color: #6c7a82; margin-top: 5px; text-transform: uppercase; }
+
+                        .card, .kpi, .cz-grp, .cz-grand { page-break-inside: avoid; }
+                        /* El resumen siempre abre en página nueva para no mezclarse con el ledger */
+                        .cz-summary-first { page-break-before: always; }
+
+                        /* ─── Responsivo para pantalla ─ wkhtmltopdf ignora @media screen ─── */
+                        @media screen and (max-width: 768px) {
+                            .cz-page { font-size: 1.1212rem; line-height: 1.5; }
+                            .cz-scroll-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+                            .cz-ledger { min-width: 580px; }
+                            .table-responsive > table.mini { min-width: 420px; }
+                            .cz-id .big { font-size: 1.5525rem; }
+                            .kpi .kv { font-size: 1.2075rem; }
+                            .cz-kpis td { width: 50%; }
+                            .cz-summary > tbody > tr > td {
+                                display: block;
+                                width: 100% !important;
+                                padding: 4px 0;
+                            }
+                            .shero .ht { font-size: 1.8975rem; }
+                            .cz-sig-s1, .cz-sig-s2, .cz-sig-s3 { height: 6px; }
+                        }
+                    </style>
+
+                    <!-- HEADER -->
+                    <table class="cz-head">
+                        <tr>
+                            <td>
+                                <img t-if="r['company_logo']" class="cz-logo"
+                                     t-att-src="image_data_uri(r['company_logo'])" alt="Logo"/>
+                                <span t-else="" class="cz-id big" t-out="r['company_name']"/>
+                            </td>
+                            <td class="cz-id">
+                                <div class="kicker">Medicine Depot · Reporte de Cierre de Caja</div>
+                                <div class="big">Cierre de Caja</div>
+                                <div class="date">Turno · <t t-out="r['start_at']"/></div>
+                            </td>
+                        </tr>
+                    </table>
+                    <table class="cz-sig"><tr>
+                        <td class="cz-sig-s1"/>
+                        <td class="cz-sig-s2"/>
+                        <td class="cz-sig-s3"/>
+                    </tr></table>
+
+                    <!-- META STRIP -->
+                    <table class="cz-meta">
+                        <tr>
+                            <td style="width: 28%;"><div class="ml">Sucursal</div><div class="mv" t-out="r['config_name']"/></td>
+                            <td style="width: 22%;"><div class="ml">ID de la sesión</div><div class="mv cz-mono" t-out="r['session_name']"/></td>
+                            <td style="width: 30%;"><div class="ml">Rango del turno</div><div class="mv sm cz-mono"><t t-out="r['start_at']"/> — <t t-out="r['stop_at']"/></div></td>
+                            <td style="width: 20%;"><div class="ml">A partir de</div><div class="mv cz-mono" t-out="r['start_at']"/></td>
+                        </tr>
+                    </table>
+
+                    <!-- DUAL: dirección + KPIs -->
+                    <table class="cz-dual">
+                        <tr>
+                            <td class="cz-dual-l blk">
+                                <div class="blk-top navy"/>
+                                <div class="blk-label">Dirección de la sucursal</div>
+                                <div class="addr"><b t-out="r['company_name']"/><br/><t t-out="r['company_address']"/></div>
+                            </td>
+                            <td class="blk">
+                                <div class="blk-top teal"/>
+                                <div class="blk-label">Resumen del turno</div>
+                                <table class="cz-kpis">
+                                    <tr>
+                                        <td><div class="kpi lead"><div class="kl">Total de ventas</div><div class="kv" t-out="r['total']"/></div></td>
+                                        <td><div class="kpi"><div class="kl">Transacciones</div><div class="kv"><t t-out="r['transaction_count']"/> <small>órd.</small></div></div></td>
+                                        <td><div class="kpi"><div class="kl">Unidades</div><div class="kv"><t t-out="r['total_qty']"/> <small>u.</small></div></div></td>
+                                        <td><div class="kpi"><div class="kl">Descuentos (<t t-out="r['discount_count']"/>)</div><div class="kv coral" t-out="r['discount_amount']"/></div></td>
+                                    </tr>
+                                </table>
+                            </td>
+                        </tr>
+                    </table>
+
+                    <div class="cz-sec">Ventas por movimiento — detalle agrupado por orden POS</div>
+
+                    <!-- LEDGER -->
+                    <div class="table-responsive cz-scroll-wrap">
+                    <table class="cz-ledger">
+                        <colgroup>
+                            <col width="42%"/>
+                            <col width="11%"/>
+                            <col width="10%"/>
+                            <col width="10%"/>
+                            <col width="11%"/>
+                            <col width="7%"/>
+                            <col width="9%"/>
+                        </colgroup>
+                        <tbody>
+                            <tr class="cz-col-header">
+                                <td>Producto</td>
+                                <td>Lote</td>
+                                <td>Caducidad</td>
+                                <td class="cz-num">Cantidad</td>
+                                <td class="cz-num">Importe</td>
+                                <td class="cz-num">Dto. %</td>
+                                <td class="cz-num">Importe Dto.</td>
+                            </tr>
+                            <t t-foreach="r['order_groups']" t-as="grp">
+                                <tr class="cz-grp">
+                                    <td colspan="7">
+                                        <table class="cz-grp-line">
+                                            <tr>
+                                                <td class="cz-grp-main">
+                                                    <span class="cz-badge" t-out="grp['order_name']"/>
+                                                    <span class="cz-client" t-out="grp['customer_name']"/>
+                                                    <span class="cz-time" t-out="grp['time']"/>
+                                                </td>
+                                                <td class="cz-sum">
+                                                    <span class="cnt"><t t-out="grp['line_count']"/> productos · </span>Subtotal orden <b t-out="grp['total']"/>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                                <tr class="cz-line" t-foreach="grp['lines']" t-as="l">
+                                    <td class="prod" t-out="l['product_name']"/>
+                                    <td class="lote" t-out="l['lot_name']"/>
+                                    <td class="cad" t-out="l['expiration_date']"/>
+                                    <td class="cz-num qty"><t t-out="l['qty']"/> <span class="u">u.</span></td>
+                                    <td class="cz-num imp" t-out="l['amount']"/>
+                                    <td class="cz-num dpc">
+                                        <t t-if="l['discount_pct']"><t t-out="'%.1f' % l['discount_pct']"/>%</t>
+                                        <span t-else="" class="muted">—</span>
+                                    </td>
+                                    <td class="cz-num dto">
+                                        <t t-if="l['discount_amount']" t-out="l['discount_amount']"/>
+                                        <span t-else="" class="muted">—</span>
+                                    </td>
+                                </tr>
+                            </t>
+                            <tr class="cz-grand">
+                                <td colspan="3"><span class="gt-label">Total general del turno</span></td>
+                                <td class="cz-num"><t t-out="r['total_qty']"/> u.</td>
+                                <td class="cz-num" t-out="r['ledger_total']"/>
+                                <td class="cz-num">—</td>
+                                <td class="cz-num" t-out="r['discount_amount']"/>
+                            </tr>
+                        </tbody>
+                    </table>
+                    </div><!-- /.table-responsive.cz-scroll-wrap -->
+
+                    <!-- SUMMARY: Impuestos + Pagos -->
+                    <table class="cz-summary cz-summary-first">
+                        <tr>
+                            <td style="width: 50%;">
+                                <div class="card">
+                                    <div class="card-head"><span class="bar"/><span class="card-title">Impuestos sobre ventas</span></div>
+                                    <div class="card-body">
+                                        <table class="mini">
+                                            <thead><tr><th>Tasa</th><th class="cz-num">Base gravable</th><th class="cz-num">Impuesto</th></tr></thead>
+                                            <tbody>
+                                                <tr t-foreach="r['taxes']['rows']" t-as="tax">
+                                                    <td class="lbl" t-out="tax['name']"/>
+                                                    <td class="cz-num" t-out="tax['base']"/>
+                                                    <td class="cz-num" t-out="tax['amount']"/>
+                                                </tr>
+                                                <tr class="tot">
+                                                    <td>Total</td>
+                                                    <td class="cz-num" t-out="r['taxes']['base_total']"/>
+                                                    <td class="cz-num" t-out="r['taxes']['amount_total']"/>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </td>
+                            <td style="width: 50%;">
+                                <div class="card">
+                                    <div class="card-head"><span class="bar teal"/><span class="card-title">Pagos recibidos</span></div>
+                                    <div class="card-body">
+                                        <table class="mini">
+                                            <thead><tr><th>Método de pago</th><th class="cz-num">Monto</th></tr></thead>
+                                            <tbody>
+                                                <tr t-foreach="r['payments']" t-as="pay">
+                                                    <td class="lbl" t-out="pay['name']"/>
+                                                    <td class="cz-num" t-out="pay['amount']"/>
+                                                </tr>
+                                            </tbody>
+                                            <tbody><tr class="totbar"><td>Total recaudado</td><td class="cz-num" t-out="r['payments_total']"/></tr></tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                    </table>
+
+                    <!-- SUMMARY: Facturas (ancho completo para evitar desbordamiento con muchas órdenes) -->
+                    <table class="cz-summary">
+                        <tr>
+                            <td>
+                                <div class="card">
+                                    <div class="card-head"><span class="bar green"/><span class="card-title">Facturas emitidas</span><span class="card-note"><t t-out="r['invoice_count']"/> CFDI</span></div>
+                                    <div class="card-body">
+                                        <table class="mini">
+                                            <thead><tr><th style="width: 22%;">Factura</th><th>Órdenes</th><th class="cz-num" style="width: 18%;">Monto</th></tr></thead>
+                                            <tbody>
+                                                <tr t-if="not r['invoices']"><td colspan="3" class="muted">Sin facturas emitidas.</td></tr>
+                                                <tr t-foreach="r['invoices']" t-as="inv">
+                                                    <td class="lbl cz-mono" t-out="inv['invoice_name']"/>
+                                                    <td class="cz-meta-note" t-out="inv['order_names']"/>
+                                                    <td class="cz-num" t-out="inv['amount']"/>
+                                                </tr>
+                                                <tr class="tot"><td colspan="2">Total facturado</td><td class="cz-num" t-out="r['invoices_total']"/></tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                    </table>
+
+                    <!-- SUMMARY: Control + Shero -->
+                    <table class="cz-summary">
+                        <tr>
+                            <td style="width: 58%;">
+                                <div class="card">
+                                    <div class="card-head"><span class="bar blue"/><span class="card-title">Control de la sesión</span>
+                                        <span class="card-note">Apertura de caja <t t-out="r['cash_control']['opening']"/> · <t t-out="r['transaction_count']"/> transacciones</span></div>
+                                    <div class="card-body">
+                                        <div class="table-responsive">
+                                        <table class="mini">
+                                            <thead><tr><th>Medio de pago</th><th class="cz-num">Esperado</th><th class="cz-num">Contado</th><th class="cz-num">Diferencia</th></tr></thead>
+                                            <tbody>
+                                                <tr t-if="not r['cash_control']['rows']"><td colspan="4" class="muted">Sin movimientos de caja.</td></tr>
+                                                <tr t-foreach="r['cash_control']['rows']" t-as="ctrl">
+                                                    <td class="lbl" t-out="ctrl['name']"/>
+                                                    <td class="cz-num" t-out="ctrl['expected']"/>
+                                                    <td class="cz-num" t-out="ctrl['counted']"/>
+                                                    <td t-att-class="ctrl['difference_class']" t-out="ctrl['difference']"/>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td style="width: 42%;">
+                                <div class="card shero">
+                                    <div class="hk">Total de la sesión</div>
+                                    <div class="ht" t-out="r['total']"/>
+                                    <table class="hsub">
+                                        <tr>
+                                            <td><div class="hsk">Transacciones</div><div class="hsv" t-out="r['transaction_count']"/></td>
+                                            <td><div class="hsk">Base gravable</div><div class="hsv" t-out="r['taxes']['base_total']"/></td>
+                                        </tr>
+                                    </table>
+                                    <div class="hdiff">
+                                        <t t-if="not r['cash_control']['total_difference_value']">Caja cuadrada · </t>
+                                        Diferencia total <t t-out="r['cash_control']['total_difference']"/>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                    </table>
+
+                    <!-- SUMMARY: Devoluciones + Movimientos -->
+                    <table class="cz-summary">
+                        <tr>
+                            <td style="width: 58%;">
+                                <div class="card">
+                                    <div class="card-head"><span class="bar"/><span class="card-title">Devoluciones</span>
+                                        <span class="card-note"><t t-out="len(r['refunds'])"/> dev.</span></div>
+                                    <div class="card-body">
+                                        <div class="table-responsive">
+                                        <table class="mini">
+                                            <thead><tr><th>Orden / Cliente</th><th class="cz-num">Cant.</th><th class="cz-num">Monto</th></tr></thead>
+                                            <tbody>
+                                                <tr t-if="not r['refunds']"><td colspan="3" class="muted">Sin devoluciones en el turno.</td></tr>
+                                                <tr t-foreach="r['refunds']" t-as="ref">
+                                                    <td>
+                                                        <div class="lbl cz-mono" t-out="ref['order_name']"/>
+                                                        <div class="cz-meta-note" t-out="ref['customer_name']"/>
+                                                    </td>
+                                                    <td class="cz-num" t-out="ref['qty']"/>
+                                                    <td class="cz-num diff-alert" t-out="ref['amount']"/>
+                                                </tr>
+                                                <tr t-if="r['refunds']" class="tot"><td colspan="2">Total devuelto</td><td class="cz-num" t-out="r['refunds_total']"/></tr>
+                                            </tbody>
+                                        </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td style="width: 42%;">
+                                <div class="card">
+                                    <div class="card-head"><span class="bar blue"/><span class="card-title">Movimientos de caja</span>
+                                        <span class="card-note">Apertura de caja <t t-out="r['cash_control']['opening']"/></span></div>
+                                    <div class="card-body">
+                                        <table class="mini">
+                                            <thead><tr><th>Concepto / referencia</th><th class="cz-num">Monto</th></tr></thead>
+                                            <tbody>
+                                                <tr t-if="not r['cash_lines']"><td colspan="2" class="muted">Sin movimientos de efectivo.</td></tr>
+                                                <tr t-foreach="r['cash_lines']" t-as="mv">
+                                                    <td class="lbl" t-out="mv['name']"/>
+                                                    <td class="cz-num" t-out="mv['amount']"/>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                    </table>
+
+                    <!-- NOTAS DE CAJA -->
+                    <table t-if="r['notes']" class="cz-summary">
+                        <tr>
+                            <td>
+                                <div class="card">
+                                    <div class="card-head"><span class="bar teal"/><span class="card-title">Notas de apertura / cierre</span></div>
+                                    <div class="card-body">
+                                        <t t-foreach="r['notes']" t-as="note">
+                                            <div class="cz-note-line">
+                                                <b class="cz-mono" t-out="note['session_name']"/>
+                                                <span t-if="note['opening_note']"> · Apertura: <t t-out="note['opening_note']"/></span>
+                                                <span t-if="note['closing_note']"> · Cierre: <t t-out="note['closing_note']"/></span>
+                                            </div>
+                                        </t>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                    </table>
+
+                    <!-- FOOTER -->
+                    <div class="cz-foot">
+                        <div class="rfc"><t t-out="r['company_name']"/> · <t t-out="r['config_name']"/></div>
+                        <div class="meta">Cierre de Caja · Sesión <t t-out="r['session_name']"/> · Orientación horizontal</div>
+                    </div>
+                </div>
+            </t>
+        </t>
+    </template>
+</odoo>

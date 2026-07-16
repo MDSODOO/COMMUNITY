@@ -1,0 +1,480 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ═══════════════════════════════════════════════════════════════════
+         TRANSFERENCIAS — Reporte PDF nativo para stock.picking
+
+         Diseño propio (no hereda stock.report_delivery_document).
+         Cubre: recepciones, entregas y transferencias internas.
+         Secciones: header pharma · datos del documento · movimientos ·
+                    Carta Porte (guarded) · sellos CFDI (guarded) · firmas.
+
+         Regla de negocio: las cantidades del movimiento se etiquetan
+         "Pedida" (product_uom_qty) y "Entregada" (quantity).
+         Nunca "Disponible", "Stock" ni "Existencias".
+    ════════════════════════════════════════════════════════════════════════ -->
+
+    <!-- ── FORMATO DE PAPEL PERSONALIZADO ────────────────────────────── -->
+    <record id="paperformat_stock_transfer_pharma" model="report.paperformat">
+        <field name="name">Transferencias — Medicine Depot</field>
+        <field name="default" eval="False"/>
+        <field name="format">A4</field>
+        <field name="page_height" eval="False"/>
+        <field name="page_width" eval="False"/>
+        <field name="orientation">Portrait</field>
+        <field name="margin_top">15</field>
+        <field name="margin_bottom">10</field>
+        <field name="margin_left">7</field>
+        <field name="margin_right">7</field>
+        <field name="header_line" eval="False"/>
+        <field name="header_spacing">0</field>
+        <field name="dpi">90</field>
+    </record>
+
+    <!-- ── ACCIÓN DEL REPORTE ────────────────────────────────────────── -->
+    <record id="action_report_transferencias" model="ir.actions.report">
+        <field name="name">Transferencias</field>
+        <field name="model">stock.picking</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">pharma_reports.report_transferencias</field>
+        <field name="report_file">pharma_reports.report_transferencias</field>
+        <field name="print_report_name">'Transferencia - %s' % (object.name)</field>
+        <field name="binding_model_id" ref="stock.model_stock_picking"/>
+        <field name="binding_type">report</field>
+        <field name="paperformat_id" ref="pharma_reports.paperformat_stock_transfer_pharma"/>
+    </record>
+
+    <!-- ── DOC-INFO AISLADO: tipo de documento por picking_type_code ─── -->
+    <template id="pharma_doc_info_transfer">
+        <t t-set="_rec" t-value="o"/>
+        <div class="pharma-doc-info text-end" t-if="_rec">
+            <span class="pharma-doc-type">
+                <t t-if="_rec.picking_type_code == 'outgoing' and _rec.state == 'done'">Reporte de Bajas</t>
+                <t t-elif="_rec.picking_type_code == 'outgoing'">Orden de Bajas</t>
+                <t t-elif="_rec.picking_type_code == 'incoming'">Recepción de Mercancía</t>
+                <t t-elif="_rec.picking_type_code == 'internal'">Transferencia Interna</t>
+                <t t-else="">Transferencia</t>
+            </span>
+            <span class="pharma-doc-num" t-esc="_rec.name or ''"/>
+            <span class="pharma-doc-date">
+                <span t-if="_rec.scheduled_date"
+                      t-field="_rec.scheduled_date"
+                      t-options='{"widget": "date"}'/>
+            </span>
+        </div>
+    </template>
+
+    <!-- ── META-BAND AISLADA: Responsable · RFC Emisor · Contacto ────── -->
+    <template id="pharma_meta_band_transfer">
+        <t t-set="_rec" t-value="o"/>
+        <t t-set="_company" t-value="_rec.company_id.sudo()"/>
+        <div class="row g-0 pharma-meta-band" t-if="_rec">
+            <div class="col-4 pharma-meta-cell">
+                <span class="pharma-meta-label">Responsable</span>
+                <span class="pharma-meta-val">
+                    <t t-esc="(_rec.sale_id.user_id.name if _rec.sale_id else False) or _rec.create_uid.name or '—'"/>
+                </span>
+            </div>
+            <div class="col-4 pharma-meta-cell">
+                <span class="pharma-meta-label">RFC Emisor</span>
+                <span class="pharma-meta-val">
+                    <t t-esc="(_company and _company.vat) or (_company and _company.partner_id.vat) or '—'"/>
+                </span>
+            </div>
+            <div class="col-4 pharma-meta-cell">
+                <span class="pharma-meta-label">Contacto</span>
+                <span class="pharma-meta-val pharma-meta-val-sm">
+                    <t t-esc="(_company and _company.email) or (_company and _company.partner_id.email) or '—'"/>
+                </span>
+            </div>
+        </div>
+    </template>
+
+    <!-- ── HEADER COMPLETO AISLADO: logo · stripe · meta-band ────────── -->
+    <template id="pharma_full_header_transfer">
+        <t t-set="_rec" t-value="o"/>
+        <t t-set="_company" t-value="_rec.company_id.sudo() if _rec else False"/>
+        <div t-if="_rec" class="pharma-full-header">
+            <div class="d-flex align-items-start justify-content-between pharma-doc-header">
+                <div class="pharma-logo-shell">
+                    <img t-if="_company and _company.logo"
+                         class="md-logo"
+                         t-att-src="image_data_uri(_company.logo)"
+                         alt="Logo"/>
+                    <div t-if="_company and _company.report_header"
+                         t-field="_company.report_header"
+                         class="o_company_tagline fw-bold mt-1"/>
+                </div>
+                <t t-call="pharma_reports.pharma_doc_info_transfer"/>
+            </div>
+            <div class="pharma-stripe">
+                <span class="pharma-stripe-band pharma-stripe-band-brand"/>
+                <span class="pharma-stripe-band pharma-stripe-band-teal"/>
+                <span class="pharma-stripe-band pharma-stripe-band-lime"/>
+            </div>
+            <t t-call="pharma_reports.pharma_meta_band_transfer"/>
+        </div>
+    </template>
+
+    <!-- ── WRAPPER: itera sobre múltiples pickings ────────────────────── -->
+    <template id="report_transferencias">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="pharma_reports.report_transferencias_document"
+                   t-lang="o.partner_id.lang"/>
+            </t>
+        </t>
+    </template>
+
+    <!-- ── DOCUMENTO POR PICKING ──────────────────────────────────────── -->
+    <template id="report_transferencias_document">
+        <t t-call="web.external_layout">
+            <div class="page pharma-doc-page">
+
+                <!-- ── HEADER ─────────────────────────────────────────── -->
+                <t t-call="pharma_reports.pharma_full_header_transfer"/>
+
+                <!-- ── DIRECCIÓN: Sucursal / Cliente-Proveedor ─────────── -->
+                <div class="pharma-body-address-shell">
+                    <t t-set="pharma_doc"           t-value="o"/>
+                    <t t-set="pharma_company"        t-value="o.company_id.sudo()"/>
+                    <t t-set="pharma_show_customer"  t-value="bool(o.partner_id)"/>
+                    <t t-call="pharma_reports.pharma_company_address_block"/>
+                </div>
+
+                <!-- ── DATOS GENERALES ─────────────────────────────────── -->
+                <!--
+                  Dos row g-0 independientes dentro de un wrapper con borde.
+                  Se evitan las utility classes border-end / border-top de
+                  Bootstrap 5 (usan logical properties CSS no soportadas por
+                  el WebKit antiguo de wkhtmltopdf) — se usa border-right /
+                  border-top inline en su lugar.
+                -->
+                <div class="pharma-section-ttl">Datos del Documento</div>
+                <div class="mb-3" style="border:1px solid #d3d3d3; border-radius:3px;">
+                    <div class="row g-0">
+                        <div class="col-4"
+                             style="padding:0.35rem 0.5rem; border-right:1px solid #d3d3d3;">
+                            <span class="pharma-meta-label">Documento Origen</span>
+                            <span class="pharma-meta-val" t-esc="o.origin or '—'"/>
+                        </div>
+                        <div class="col-4"
+                             style="padding:0.35rem 0.5rem; border-right:1px solid #d3d3d3;">
+                            <span class="pharma-meta-label">Fecha Programada</span>
+                            <span class="pharma-meta-val">
+                                <span t-if="o.scheduled_date"
+                                      t-field="o.scheduled_date"
+                                      t-options='{"widget": "datetime"}'/>
+                                <t t-if="not o.scheduled_date">—</t>
+                            </span>
+                        </div>
+                        <div class="col-4" style="padding:0.35rem 0.5rem;">
+                            <span class="pharma-meta-label">Fecha de Entrega</span>
+                            <span class="pharma-meta-val">
+                                <span t-if="o.date_done"
+                                      t-field="o.date_done"
+                                      t-options='{"widget": "datetime"}'/>
+                                <t t-if="not o.date_done">—</t>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="row g-0" style="border-top:1px solid #d3d3d3;">
+                        <div class="col-4"
+                             style="padding:0.35rem 0.5rem; border-right:1px solid #d3d3d3;">
+                            <span class="pharma-meta-label">Ubicación Origen</span>
+                            <span class="pharma-meta-val"
+                                  t-esc="o.location_id.complete_name or o.location_id.name or '—'"/>
+                        </div>
+                        <div class="col-4"
+                             style="padding:0.35rem 0.5rem; border-right:1px solid #d3d3d3;">
+                            <span class="pharma-meta-label">Ubicación Destino</span>
+                            <span class="pharma-meta-val"
+                                  t-esc="o.location_dest_id.complete_name or o.location_dest_id.name or '—'"/>
+                        </div>
+                        <div class="col-4" style="padding:0.35rem 0.5rem;">
+                            <span class="pharma-meta-label">
+                                <t t-if="o.picking_type_code == 'incoming'">Recibió</t>
+                                <t t-else="">Entregó</t>
+                            </span>
+                            <span class="pharma-meta-val">
+                                <t t-esc="(o.sale_id.user_id.name if o.sale_id else False) or o.create_uid.name or '—'"/>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ── TRAZABILIDAD: Factura(s) de Proveedor vinculada(s) a la OC origen (guarded) ── -->
+                <!--
+                  Aplica tanto a la recepción como a su devolución (ambas
+                  resuelven o.purchase_id vía move_ids.purchase_line_id).
+                -->
+                <t t-if="o.purchase_id">
+                    <t t-set="_related_bills" t-value="o.purchase_id.invoice_ids.filtered(lambda inv: inv.state == 'posted')"/>
+                    <t t-if="_related_bills">
+                        <div class="pharma-section-ttl">Trazabilidad</div>
+                        <div class="mb-3" style="border:1px solid #d3d3d3; border-radius:3px; padding:0.35rem 0.5rem;">
+                            <span class="pharma-meta-label">Factura(s) de Proveedor</span>
+                            <span class="pharma-meta-val" t-esc="', '.join(_related_bills.mapped('name'))"/>
+                        </div>
+                    </t>
+                </t>
+
+                <!-- ── TABLA DE MOVIMIENTOS ────────────────────────────── -->
+                <!--
+                  Columnas de cantidad:
+                    · Pedida   = stock.move.product_uom_qty (demanda original)
+                    · Entregada = stock.move.quantity       (hecho / done, Odoo 19)
+                  Nunca "Disponible", "Stock" ni "Existencias".
+                -->
+                <t t-set="has_sat_code_field"
+                   t-value="'l10n_mx_edi_code_sat_id' in o.env['product.product']._fields"/>
+
+                <div class="pharma-section-ttl">Movimientos de Producto</div>
+                <table class="table table-sm pharma-lines" name="transfer_move_table">
+                    <colgroup>
+                        <col style="width:50%;"/>
+                        <col style="width:11%;"/>
+                        <col style="width:11%;"/>
+                        <col style="width:11%;"/>
+                        <col style="width:17%;"/>
+                    </colgroup>
+                    <thead>
+                        <tr>
+                            <th name="th_tr_product"   class="text-start">Producto</th>
+                            <th name="th_tr_pedida"    class="text-end text-nowrap"><strong>Pedida</strong></th>
+                            <th name="th_tr_entregada" class="text-end text-nowrap"><strong>Entregada</strong></th>
+                            <th name="th_tr_uom"       class="text-end text-nowrap">Unidad</th>
+                            <th name="th_tr_sat"       class="text-end text-nowrap"
+                                t-if="has_sat_code_field">Código SAT</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <t t-foreach="o.move_ids" t-as="move">
+                            <tr>
+                                <td name="td_tr_product" class="pharma-product-cell">
+                                    <span t-esc="move.product_id.display_name"/>
+                                    <!-- Lotes con cantidad individual por línea -->
+                                    <t t-if="move.move_line_ids">
+                                        <t t-foreach="move.move_line_ids.sorted(lambda ml: ml.lot_id.name or '')" t-as="ml">
+                                            <t t-if="ml.lot_id">
+                                                <div class="pharma-lot-inline">
+                                                    Lote: <span t-esc="ml.lot_id.name"/>
+                                                    <t t-if="ml.lot_id.expiration_date">
+                                                        | Caducidad: <span t-field="ml.lot_id.expiration_date"
+                                                                           t-options='{"widget": "date"}'/>
+                                                    </t>
+                                                    | Cant: <span t-esc="'%.2f' % ml.quantity"/>
+                                                </div>
+                                            </t>
+                                        </t>
+                                    </t>
+                                </td>
+                                <td name="td_tr_pedida"    class="text-end">
+                                    <span t-esc="'%.2f' % move.product_uom_qty"/>
+                                </td>
+                                <td name="td_tr_entregada" class="text-end">
+                                    <span t-esc="'%.2f' % move.quantity"/>
+                                </td>
+                                <td name="td_tr_uom"       class="text-end">
+                                    <span t-esc="move.product_uom.name or ''"/>
+                                </td>
+                                <td name="td_tr_sat" class="text-end" t-if="has_sat_code_field">
+                                    <span t-esc="move.product_id.l10n_mx_edi_code_sat_id.code or '—'"/>
+                                </td>
+                            </tr>
+                        </t>
+                        <tr t-if="not o.move_ids">
+                            <td colspan="5" class="text-center text-muted fst-italic"
+                                style="padding:0.5rem;">
+                                Sin movimientos registrados.
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <!-- ── TRANSPORTE / CARTA PORTE (guarded) ─────────────── -->
+                <!--
+                  Solo se renderiza si el módulo l10n_mx_edi_stock está instalado
+                  y el picking tiene vehículo asignado.
+                -->
+                <t t-set="has_carta_porte"
+                   t-value="'l10n_mx_edi_vehicle_id' in o._fields and bool(o.l10n_mx_edi_vehicle_id)"/>
+                <t t-if="has_carta_porte">
+                    <t t-set="_vehicle" t-value="o.l10n_mx_edi_vehicle_id"/>
+                    <div class="pharma-section-ttl">Transporte — Carta Porte</div>
+                    <div class="mb-2" style="border:1px solid #d3d3d3; border-radius:3px;">
+                        <div class="row g-0">
+                            <div class="col-3"
+                                 style="padding:0.35rem 0.5rem; border-right:1px solid #d3d3d3;">
+                                <span class="pharma-meta-label">Vehículo / Modelo</span>
+                                <span class="pharma-meta-val" t-esc="_vehicle.name or '—'"/>
+                            </div>
+                            <div class="col-3"
+                                 style="padding:0.35rem 0.5rem; border-right:1px solid #d3d3d3;">
+                                <span class="pharma-meta-label">Placas</span>
+                                <span class="pharma-meta-val"
+                                      t-esc="(_vehicle.license_plate if 'license_plate' in _vehicle._fields else False) or '—'"/>
+                            </div>
+                            <div class="col-3"
+                                 style="padding:0.35rem 0.5rem; border-right:1px solid #d3d3d3;">
+                                <span class="pharma-meta-label">Tipo Permiso SCT</span>
+                                <span class="pharma-meta-val"
+                                      t-esc="(_vehicle.transport_federal_motor_transport if 'transport_federal_motor_transport' in _vehicle._fields else False) or '—'"/>
+                            </div>
+                            <div class="col-3" style="padding:0.35rem 0.5rem;">
+                                <span class="pharma-meta-label">Config. Vehículo</span>
+                                <span class="pharma-meta-val"
+                                      t-esc="(_vehicle.vehicle_config_id.name if 'vehicle_config_id' in _vehicle._fields and _vehicle.vehicle_config_id else False) or '—'"/>
+                            </div>
+                        </div>
+                        <div class="row g-0" style="border-top:1px solid #d3d3d3;">
+                            <div class="col-3"
+                                 style="padding:0.35rem 0.5rem; border-right:1px solid #d3d3d3;">
+                                <span class="pharma-meta-label">Aseguradora</span>
+                                <span class="pharma-meta-val"
+                                      t-esc="(_vehicle.transport_insurer if 'transport_insurer' in _vehicle._fields else False) or '—'"/>
+                            </div>
+                            <div class="col-3"
+                                 style="padding:0.35rem 0.5rem; border-right:1px solid #d3d3d3;">
+                                <span class="pharma-meta-label">No. Póliza Seguro</span>
+                                <span class="pharma-meta-val"
+                                      t-esc="(_vehicle.transport_insurance_policy if 'transport_insurance_policy' in _vehicle._fields else False) or '—'"/>
+                            </div>
+                            <div class="col-3"
+                                 style="padding:0.35rem 0.5rem; border-right:1px solid #d3d3d3;">
+                                <span class="pharma-meta-label">Distancia (km)</span>
+                                <span class="pharma-meta-val"
+                                      t-esc="(str(o.l10n_mx_edi_distance) if 'l10n_mx_edi_distance' in o._fields and o.l10n_mx_edi_distance else False) or '—'"/>
+                            </div>
+                            <div class="col-3" style="padding:0.35rem 0.5rem;">
+                                <span class="pharma-meta-label">Tipo de Transporte</span>
+                                <span class="pharma-meta-val"
+                                      t-esc="(dict(o._fields['l10n_mx_edi_transport_type'].selection).get(o.l10n_mx_edi_transport_type) if 'l10n_mx_edi_transport_type' in o._fields and o.l10n_mx_edi_transport_type else False) or '—'"/>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Remolques -->
+                    <t t-if="'l10n_mx_edi_trailer_ids' in o._fields and o.l10n_mx_edi_trailer_ids">
+                        <div class="pharma-section-ttl" style="font-size:0.6rem; letter-spacing:0.06em;">
+                            Remolques
+                        </div>
+                        <table class="table pharma-lines" style="margin-bottom:0.5rem;">
+                            <thead>
+                                <tr>
+                                    <th class="text-start">Subtipo</th>
+                                    <th class="text-start">Placa</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <t t-foreach="o.l10n_mx_edi_trailer_ids" t-as="trailer">
+                                    <tr>
+                                        <td t-esc="(trailer.sub_type_id.name if 'sub_type_id' in trailer._fields and trailer.sub_type_id else None) or '—'"/>
+                                        <td t-esc="(trailer.license_plate if 'license_plate' in trailer._fields else None) or '—'"/>
+                                    </tr>
+                                </t>
+                            </tbody>
+                        </table>
+                    </t>
+
+                    <!-- Operadores -->
+                    <t t-if="'l10n_mx_edi_operator_ids' in o._fields and o.l10n_mx_edi_operator_ids">
+                        <div class="pharma-section-ttl" style="font-size:0.6rem; letter-spacing:0.06em;">
+                            Operadores
+                        </div>
+                        <table class="table pharma-lines" style="margin-bottom:0.5rem;">
+                            <thead>
+                                <tr>
+                                    <th class="text-start">Nombre</th>
+                                    <th class="text-start">RFC</th>
+                                    <th class="text-start">No. Licencia</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <t t-foreach="o.l10n_mx_edi_operator_ids" t-as="op">
+                                    <tr>
+                                        <td t-esc="(op.partner_id.name if 'partner_id' in op._fields and op.partner_id else None) or '—'"/>
+                                        <td t-esc="(op.partner_id.vat if 'partner_id' in op._fields and op.partner_id else None) or '—'"/>
+                                        <td t-esc="(op.license_number if 'license_number' in op._fields else None) or '—'"/>
+                                    </tr>
+                                </t>
+                            </tbody>
+                        </table>
+                    </t>
+                </t>
+
+                <!-- ── SELLOS DIGITALES CFDI (guarded) ────────────────── -->
+                <!--
+                  Las devoluciones a proveedor NO llevan complemento CFDI en
+                  su representación impresa: salen del almacén (outgoing)
+                  pero están ligadas a una OC (purchase_id), a diferencia de
+                  una entrega a cliente (outgoing sin purchase_id).
+                -->
+                <t t-set="_is_vendor_return" t-value="o.picking_type_code == 'outgoing' and bool(o.purchase_id)"/>
+                <t t-if="'l10n_mx_edi_cfdi_uuid' in o._fields and o.l10n_mx_edi_cfdi_uuid and not _is_vendor_return">
+                    <div class="pharma-section-ttl">Sellos Digitales CFDI</div>
+                    <div style="border:1px solid #d3d3d3; border-radius:3px; padding:0.4rem 0.6rem; margin-bottom:0.75rem;">
+                        <div class="row g-0">
+                            <div class="col-12 mb-1">
+                                <span class="pharma-meta-label">UUID / Folio Fiscal</span>
+                                <div class="pharma-mono"
+                                     t-esc="o.l10n_mx_edi_cfdi_uuid or '—'"/>
+                            </div>
+                            <div class="col-6 mb-1"
+                                 t-if="'l10n_mx_edi_cfdi_supplier_rfc' in o._fields">
+                                <span class="pharma-meta-label">RFC Emisor (CFDI)</span>
+                                <div class="pharma-mono"
+                                     t-esc="o.l10n_mx_edi_cfdi_supplier_rfc or '—'"/>
+                            </div>
+                            <div class="col-6 mb-1"
+                                 t-if="'l10n_mx_edi_cfdi_customer_rfc' in o._fields">
+                                <span class="pharma-meta-label">RFC Receptor (CFDI)</span>
+                                <div class="pharma-mono"
+                                     t-esc="o.l10n_mx_edi_cfdi_customer_rfc or '—'"/>
+                            </div>
+                            <div class="col-6"
+                                 t-if="'l10n_mx_edi_cfdi_stamp_date' in o._fields">
+                                <span class="pharma-meta-label">Fecha Sellado</span>
+                                <div class="pharma-mono">
+                                    <span t-if="o.l10n_mx_edi_cfdi_stamp_date"
+                                          t-field="o.l10n_mx_edi_cfdi_stamp_date"
+                                          t-options='{"widget": "datetime"}'/>
+                                    <t t-if="not o.l10n_mx_edi_cfdi_stamp_date">—</t>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </t>
+
+                <!-- ── BLOQUE DE FIRMAS ────────────────────────────────── -->
+                <div class="pharma-signature-block">
+                    <div class="row g-0">
+                        <div class="col-5 text-center pharma-signature-col">
+                            <div class="pharma-signature-line"/>
+                            <span class="pharma-signature-label">
+                                <t t-if="o.picking_type_code == 'incoming'">Recibió</t>
+                                <t t-else="">Entregó</t>
+                            </span>
+                            <div style="font-size:0.65rem; color:#6b7280; margin-top:0.2rem;">
+                                <t t-esc="(o.sale_id.user_id.name if o.sale_id else False) or o.create_uid.name or ''"/>
+                            </div>
+                        </div>
+                        <div class="col-2"/>
+                        <div class="col-5 text-center pharma-signature-col">
+                            <div class="pharma-signature-line"/>
+                            <span class="pharma-signature-label">
+                                <t t-if="o.picking_type_code == 'incoming'">Entregó</t>
+                                <t t-else="">Recibió</t>
+                            </span>
+                            <div style="font-size:0.65rem; color:#6b7280; margin-top:0.2rem;">
+                                <t t-esc="o.partner_id.name if o.partner_id else ''"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </t>
+    </template>
+
+</odoo>

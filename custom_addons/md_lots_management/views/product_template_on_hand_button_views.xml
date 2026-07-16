@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+        <!-- En Odoo 19 la cantidad a la mano de product.template NO es un oe_stat_button
+             en button_box: stock.view_template_property_form (inherit_id=
+             product.product_template_form_view) agrega un <label for="qty_available">
+             + <a name="action_open_quants"> inline justo después de product_tooltip.
+             Aquí solo se sobrescribe el string del label — es el único elemento que
+             cubre las 3 variantes de <field name="qty_available"> (manager/no-manager/
+             no-editable) y siempre está visible para productos storable, sin depender
+             de flags de forecast. Texto fijo "A la mano" (nunca "Stock"/"Disponible")
+             — ver docs/modules/md_lots_management.md -->
+        <record id="view_product_template_form_on_hand_button_fix" model="ir.ui.view">
+            <field name="name">product.template.form.on.hand.button.fix</field>
+            <field name="model">product.template</field>
+            <field name="inherit_id" ref="product.product_template_form_view"/>
+            <field name="arch" type="xml">
+                <xpath expr="//label[@for='qty_available'][1]" position="attributes">
+                    <attribute name="string">A la mano</attribute>
+                </xpath>
+            </field>
+        </record>
+
+        <!-- Corrige el layout roto del stat button "action_product_tmpl_forecast_report"
+             (ícono fa-area-chart, en stock.product_template_form_view_procurement_button).
+             Causa raíz real: una vista huérfana en la BD (ir.ui.view id=4383, sin
+             model_data_id → no pertenece a ningún módulo, creada fuera de git probablemente
+             vía Odoo Studio) usa el xpath ambiguo //span[hasclass("o_stat_value")], que cae
+             sobre el PRIMER .o_stat_value del documento — el valor de qty_available en la
+             columna izquierda — e inyecta ahí un <span class="o_stat_text">A la mano</span>,
+             apilando 3 líneas a la izquierda contra 2 a la derecha (overlap/desalineación).
+             Este fix reemplaza, de forma escopada al botón (sin ambigüedad), el label de la
+             COLUMNA DERECHA fila 1 (que nativamente muestra uom_name o "On Hand") por el
+             texto fijo "A la mano" — la posición correcta según la convención nativa de
+             2 columnas o_stat_info/o_stat_value/o_stat_text. La vista huérfana debe
+             desactivarse por separado (ver docs/audits/) para eliminar la duplicidad. -->
+        <record id="view_product_template_form_forecast_button_fix" model="ir.ui.view">
+            <field name="name">product.template.form.forecast.button.fix</field>
+            <field name="model">product.template</field>
+            <field name="inherit_id" ref="stock.product_template_form_view_procurement_button"/>
+            <field name="arch" type="xml">
+                <xpath expr="//button[@name='action_product_tmpl_forecast_report']//div[contains(concat(' ', normalize-space(@class), ' '), ' align-items-start ')]//span[hasclass('o_stat_value')][1]" position="replace">
+                    <span class="o_stat_value">A la mano</span>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>

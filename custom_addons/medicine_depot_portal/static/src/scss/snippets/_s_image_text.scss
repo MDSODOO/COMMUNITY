@@ -1,0 +1,39 @@
+// Medicine Depot · Variante `md-card--cta` aplicable sobre `s_image_text`.
+
+.s_image_text.md-card--cta,
+.s_md_two_col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: $md-gap;
+    align-items: stretch;
+
+    @media (max-width: 767px) { grid-template-columns: 1fr; }
+
+    .md-tile { @include md-tile(); }
+    .md-tile--dark { background: $md-dark; color: $md-white; }
+    .md-tile--blue { background: $md-blue; color: $md-white; }
+    .md-tile--lime { background: $md-green-100; color: $md-green-900; }
+    .md-tile--surface { background: $md-white; }
+
+    .md-btn-row {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .md-step-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+        .md-step-card {
+            background: rgba($md-blue, .08);
+            border-radius: $md-r-sm;
+            padding: 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            strong { font-size: 22px; color: $md-blue-900; }
+            p { margin: 0; color: $md-muted; }
+        }
+    }
+}

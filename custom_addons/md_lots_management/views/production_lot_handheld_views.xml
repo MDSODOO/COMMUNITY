@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+        <!-- Vista Kanban: Consulta Handheld (móvil/CT58) -->
+        <record id="view_production_lot_kanban_handheld" model="ir.ui.view">
+            <field name="name">Lotes - Kanban Handheld</field>
+            <field name="model">stock.lot</field>
+            <field name="type">kanban</field>
+            <field name="arch" type="xml">
+                <kanban js_class="md_handheld_kanban" class="o_md_handheld_kanban" records_draggable="false" create="false" group_create="false" group_edit="false" group_delete="false" archivable="false">
+                    <field name="name"/>
+                    <field name="product_id"/>
+                    <field name="public_sale_price"/>
+                    <field name="public_sale_price_total"/>
+                    <field name="has_public_sale_tax"/>
+                    <field name="public_sale_price_tax_label"/>
+                    <field name="expiration_date"/>
+                    <field name="qty_a_la_mano"/>
+                    <templates>
+                        <t t-name="card">
+                            <!-- Sin oe_kanban_global_click: es tarjeta de solo consulta, no navega al formulario.
+                                 user-select/touch-callout en none: evita que un toque largo dispare el menú nativo
+                                 de selección de texto del dispositivo (se confundía con "seleccionar el registro"). -->
+                            <div class="p-3" style="user-select: none; -webkit-user-select: none; -webkit-touch-callout: none;">
+                                <!-- Fila 1: Producto + Precio / Row 1: Product + Price -->
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <strong class="fs-5 me-2"><field name="product_id"/></strong>
+                                    <span class="text-end flex-shrink-0">
+                                        <span class="d-block text-muted small">Precio de venta</span>
+                                        <span class="fs-4 fw-bold text-success">$<field name="public_sale_price"/></span>
+                                        <span t-if="record.has_public_sale_tax.raw_value" class="d-block fs-4 fw-bold" style="color: #fd7e14;">
+                                            + <field name="public_sale_price_tax_label"/> = $<field name="public_sale_price_total"/>
+                                        </span>
+                                    </span>
+                                </div>
+                                <!-- Fila 2: Lote + Vencimiento / Row 2: Lot + Expiration -->
+                                <div class="d-flex justify-content-between text-muted mt-1 fs-6">
+                                    <span>Lote: <field name="name"/></span>
+                                    <span>Vence: <field name="expiration_date"/></span>
+                                </div>
+                                <!-- Fila 3: Cantidad A la mano / Row 3: On Hand quantity -->
+                                <div class="mt-2">
+                                    <span class="badge rounded-pill fs-6 px-3 py-2"
+                                          t-attf-class="{{record.qty_a_la_mano.raw_value &gt; 0 ? 'text-bg-success' : 'text-bg-danger'}}">
+                                        A la mano: <field name="qty_a_la_mano"/>
+                                    </span>
+                                </div>
+                            </div>
+                        </t>
+                    </templates>
+                </kanban>
+            </field>
+        </record>
+
+        <!-- Vista de Búsqueda: optimizada para escáner de código de barras -->
+        <record id="view_production_lot_search_handheld" model="ir.ui.view">
+            <field name="name">Lotes - Búsqueda Handheld</field>
+            <field name="model">stock.lot</field>
+            <field name="type">search</field>
+            <field name="arch" type="xml">
+                <search string="Consulta Handheld">
+                    <field name="name" string="Lote / Código de Barras"
+                           filter_domain="['|', ('name', 'ilike', self), ('product_id.barcode', '=', self)]"/>
+                    <filter name="on_hand_handheld" string="A la mano"
+                            domain="[('qty_a_la_mano', '&gt;', 0)]"/>
+                </search>
+            </field>
+        </record>
+
+        <!-- Acción: Consulta Handheld -->
+        <record id="action_production_lot_handheld" model="ir.actions.act_window">
+            <field name="name">Consulta Handheld</field>
+            <field name="res_model">stock.lot</field>
+            <!-- Solo kanban: no se debe poder entrar a la ficha del lote desde aquí -->
+            <field name="view_mode">kanban</field>
+            <field name="search_view_id" ref="view_production_lot_search_handheld"/>
+            <!-- Vista de solo consulta: el operador no debe crear, editar, eliminar
+                 ni duplicar lotes desde aquí (riesgo de alterar registros por error). -->
+            <field name="context">{
+                'search_default_on_hand_handheld': 1,
+                'create': False,
+                'edit': False,
+                'delete': False,
+                'duplicate': False,
+            }</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    No hay lotes con existencia A la mano.
+                </p>
+            </field>
+        </record>
+
+        <record id="action_production_lot_handheld_view_kanban" model="ir.actions.act_window.view">
+            <field name="sequence" eval="1"/>
+            <field name="view_mode">kanban</field>
+            <field name="view_id" ref="view_production_lot_kanban_handheld"/>
+            <field name="act_window_id" ref="action_production_lot_handheld"/>
+        </record>
+
+        <!-- Menú: Consulta Handheld -->
+        <menuitem
+            id="menu_production_lot_handheld"
+            parent="stock.menu_stock_root"
+            name="Consulta Handheld"
+            action="action_production_lot_handheld"
+            groups="md_lots_management.group_lots_handheld_user"
+            sequence="11"
+        />
+    </data>
+</odoo>

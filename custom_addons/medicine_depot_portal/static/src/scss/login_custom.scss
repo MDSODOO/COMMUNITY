@@ -1,0 +1,475 @@
+// Medicine Depot · Login — identidad corporativa teal/verde.
+// Glassmorphism sobre el formulario nativo web.login de Odoo 19.
+// Estrategia de layout:
+//   #wrapwrap  → flex-column, min-height 100vh + gradiente de fondo
+//   main       → flex:1 (crece para llenar el espacio entre nav y footer)
+//   .container → sin max-width fija aquí; lo controla la tarjeta y el grid
+
+// ── Gradiente compartido con la landing restringida del shop ─────────────────
+// Mismo triple radial + linear que md_restricted_page_wrap en _forms.scss.
+$md-login-bg:
+    radial-gradient(70rem 45rem at 95% -8%,  rgba($md-green, 0.22),   transparent 58%),
+    radial-gradient(55rem 38rem at -8% 108%, rgba($md-blue, 0.2),    transparent 55%),
+    radial-gradient(40rem 28rem at 50% 75%,  rgba($md-blue-200, 0.18), transparent 65%),
+    linear-gradient(168deg, #f2fbfe 0%, #e8f6fc 45%, #f5fde8 100%);
+
+// ── Salvaguarda: visibilidad garantizada independientemente de clases de ruta ─
+html:has(:is(.oe_login_form, .oe_signup_form)) #wrapwrap,
+html:has(:is(.oe_login_form, .oe_signup_form)) .o_website,
+html:has(:is(.oe_login_form, .oe_signup_form)) main.o_home_menu_background {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+// ── Layout raíz: columna flex que llena siempre el viewport ─────────────────
+html:has(:is(.oe_login_form, .oe_signup_form)) #wrapwrap {
+    display: flex !important;
+    flex-direction: column !important;
+    min-height: 100vh !important;
+    background: $md-login-bg !important;
+}
+
+// Oculta el header nativo (usamos el bento unificado)
+html:has(:is(.oe_login_form, .oe_signup_form)) #wrapwrap > header#top {
+    display: none !important;
+}
+
+// ── Main crece para llenar el espacio entre nav y footer ────────────────────
+html:has(:is(.oe_login_form, .oe_signup_form)) main {
+    flex: 1 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: clamp(3rem, 7vw, 5rem) clamp(1rem, 3vw, 2.5rem) !important;
+    background: transparent !important; // el gradiente vive en #wrapwrap
+    overflow: visible !important;
+}
+
+html:has(:is(.oe_login_form, .oe_signup_form)) main::before,
+html:has(:is(.oe_login_form, .oe_signup_form)) main::after {
+    content: none !important;
+}
+
+// ── Contenedor: ancho libre; la tarjeta se encarga de su propio max-width ───
+html:has(:is(.oe_login_form, .oe_signup_form)) main > .container {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    max-width: 900px; // permite el grid dos-columnas (form + CTA)
+    margin: 0 auto !important;
+    padding: 0 !important;
+}
+
+// ── Tarjeta glass ────────────────────────────────────────────────────────────
+@keyframes md-login-fade-in {
+    from { opacity: 0; transform: translateY(14px) scale(0.982); }
+    to   { opacity: 1; transform: translateY(0)    scale(1); }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+    html:has(:is(.oe_login_form, .oe_signup_form)) :is(.card, .glass-login-island) {
+        animation: md-login-fade-in 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+    }
+}
+
+html:has(:is(.oe_login_form, .oe_signup_form)) :is(.card, .glass-login-island) {
+    width: 100%;
+    max-width: 440px;
+    margin: 0 auto !important;
+    border-radius: 1.5rem !important;
+    backdrop-filter: blur(22px) saturate(1.5) !important;
+    -webkit-backdrop-filter: blur(22px) saturate(1.5) !important;
+    background:
+        linear-gradient(165deg,
+            rgba($md-white, 0.78) 0%,
+            rgba($md-white, 0.42) 48%,
+            rgba($md-white, 0.20) 100%),
+        rgba($md-white, 0.64) !important;
+    border: 1px solid rgba($md-white, 0.80) !important;
+    box-shadow:
+        0 0  0  1px rgba($md-ink, 0.04),
+        0 32px 64px rgba($md-blue-900, 0.11),
+        0 8px  22px rgba($md-blue, 0.08),
+        inset 0 1px 0 rgba($md-white, 0.95) !important;
+}
+
+html:has(:is(.oe_login_form, .oe_signup_form)) .glass-login-frame {
+    border: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+}
+
+// ── Logo en ::before del card-body ──────────────────────────────────────────
+html:has(:is(.oe_login_form, .oe_signup_form)) :is(.card-body, .glass-login-island)::before {
+    content: "";
+    display: block;
+    width: 100%;
+    height: 80px;
+    margin: 0 auto 1.25rem;
+    background-image: url("/logo.png");
+    background-repeat: no-repeat;
+    background-position: center center;
+    background-size: contain;
+    filter: drop-shadow(0 6px 18px rgba(7, 51, 74, 0.28));
+}
+
+// Suprime logo nativo de Odoo (duplicaría con el ::before)
+html:has(:is(.oe_login_form, .oe_signup_form)) .card-body > .text-center:first-child,
+html:has(:is(.oe_login_form, .oe_signup_form)) :is(.card-body, .glass-login-island) > .text-center:first-child,
+html:has(:is(.oe_login_form, .oe_signup_form)) :is(.card-body, .glass-login-island) .o_login_auth_title,
+html:has(:is(.oe_login_form, .oe_signup_form)) :is(.card-body, .glass-login-island) .o_login_header {
+    display: none !important;
+}
+
+html:has(:is(.oe_login_form, .oe_signup_form)) .card {
+    max-width: 440px !important;
+    margin: 0 auto !important;
+}
+
+html:has(:is(.oe_login_form, .oe_signup_form)) .card-body,
+html:has(:is(.oe_login_form, .oe_signup_form)) :is(.card-body, .glass-login-island) {
+    padding: 2.5rem 2.25rem !important;
+    background: transparent !important;
+    border: 0 !important;
+    box-shadow: none !important;
+}
+
+// ── Formulario ───────────────────────────────────────────────────────────────
+html:has(:is(.oe_login_form, .oe_signup_form)) :is(.oe_login_form, .oe_signup_form) {
+    display: flex;
+    flex-direction: column;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+
+    &::before,
+    &::after { display: none !important; content: none; }
+}
+
+// Labels: visually hidden (accesibles para lectores de pantalla)
+html:has(:is(.oe_login_form, .oe_signup_form)) :is(.oe_login_form, .oe_signup_form) .form-label,
+html:has(:is(.oe_login_form, .oe_signup_form)) :is(.oe_login_form, .oe_signup_form) .col-form-label {
+    position: absolute !important;
+    width: 1px !important; height: 1px !important;
+    margin: -1px !important; padding: 0 !important;
+    overflow: hidden !important;
+    clip: rect(0, 0, 0, 0) !important;
+    white-space: nowrap !important;
+    border: 0 !important;
+}
+
+// Inputs
+html:has(:is(.oe_login_form, .oe_signup_form)) :is(.oe_login_form, .oe_signup_form) .form-control {
+    min-height: 46px;
+    border-radius: 0.8rem;
+    border: 1px solid rgba($md-blue, 0.18);
+    background: rgba($md-white, 0.72);
+    color: $md-ink;
+    font-weight: 600;
+    transition: border-color 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+
+    &::placeholder { color: rgba($md-ink, 0.45); font-weight: 500; }
+
+    &:focus {
+        border-color: rgba($md-blue, 0.55);
+        background: rgba($md-white, 0.94);
+        box-shadow: 0 0 0 3px rgba($md-blue, 0.14);
+        outline: 0;
+    }
+}
+
+html:has(:is(.oe_login_form, .oe_signup_form)) :is(.oe_login_form, .oe_signup_form) .input-group .form-control {
+    border-radius: 0.8rem 0 0 0.8rem;
+}
+html:has(:is(.oe_login_form, .oe_signup_form)) :is(.oe_login_form, .oe_signup_form) .input-group .btn {
+    min-height: 46px;
+    border-radius: 0 0.8rem 0.8rem 0;
+    border: 1px solid rgba($md-blue, 0.18) !important;
+    background: rgba($md-white, 0.72);
+    color: rgba($md-ink, 0.6);
+    &:hover { background: rgba($md-white, 0.94); color: $md-blue; }
+}
+
+// Botón principal: degradado de marca
+html:has(:is(.oe_login_form, .oe_signup_form)) :is(.oe_login_form, .oe_signup_form) .btn-primary {
+    min-height: 48px;
+    border: 0;
+    border-radius: 999px;
+    background: $md-brand-gradient;
+    color: #ffffff;
+    font-weight: 800;
+    letter-spacing: 0.01em;
+    box-shadow: 0 12px 28px rgba($md-blue, 0.28), 0 4px 10px rgba($md-green, 0.18);
+    transition: transform 0.18s ease, box-shadow 0.18s ease, filter 0.18s ease;
+
+    &:hover, &:focus {
+        color: #ffffff;
+        filter: saturate(1.08) brightness(1.04);
+        transform: translateY(-2px);
+        box-shadow: 0 18px 36px rgba($md-blue, 0.32), 0 6px 14px rgba($md-green, 0.22);
+    }
+    &:active { transform: translateY(0); }
+}
+
+// Links y btn-link
+html:has(:is(.oe_login_form, .oe_signup_form)) :is(.oe_login_form, .oe_signup_form) .btn-link,
+html:has(:is(.oe_login_form, .oe_signup_form)) .card-body a {
+    color: $md-blue-700;
+    font-weight: 700;
+    text-decoration: none;
+    &:hover { color: $md-blue-800; }
+}
+
+// Alertas de error/éxito
+html:has(:is(.oe_login_form, .oe_signup_form)) :is(.oe_login_form, .oe_signup_form) .alert {
+    border: 1px solid rgba($md-blue, 0.18);
+    border-radius: 0.85rem;
+    font-weight: 600;
+    color: $md-ink;
+    background: rgba($md-white, 0.86);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    box-shadow: 0 4px 14px rgba($md-ink, 0.08);
+}
+html:has(:is(.oe_login_form, .oe_signup_form)) :is(.oe_login_form, .oe_signup_form) .alert-danger,
+html:has(:is(.oe_login_form, .oe_signup_form)) :is(.oe_login_form, .oe_signup_form) .alert-error {
+    border-left: 3px solid #d6145f;
+}
+html:has(:is(.oe_login_form, .oe_signup_form)) :is(.oe_login_form, .oe_signup_form) .alert-success {
+    border-left: 3px solid $md-green;
+}
+
+// Spinner al enviar
+html:has(:is(.oe_login_form, .oe_signup_form)) :is(.oe_login_form, .oe_signup_form) .btn-primary.is-submitting {
+    position: relative;
+    color: transparent !important;
+    pointer-events: none;
+    &::after {
+        content: "";
+        position: absolute; top: 50%; left: 50%;
+        width: 1.15rem; height: 1.15rem;
+        margin: -0.575rem 0 0 -0.575rem;
+        border: 2px solid rgba(255, 255, 255, 0.4);
+        border-top-color: #fff;
+        border-radius: 50%;
+        animation: md-login-spin 0.6s linear infinite;
+    }
+}
+@keyframes md-login-spin { to { transform: rotate(360deg); } }
+
+// Oculta links de gestión de base de datos de Odoo
+html:has(:is(.oe_login_form, .oe_signup_form)) a[href*="/web/database"],
+html:has(:is(.oe_login_form, .oe_signup_form)) a[href*="superuser"],
+html:has(:is(.oe_login_form, .oe_signup_form)) a[href*="/web/become"],
+html:has(:is(.oe_login_form, .oe_signup_form)) .o_database_list,
+html:has(:is(.oe_login_form, .oe_signup_form)) .o_login_database_manager,
+html:has(:is(.oe_login_form, .oe_signup_form)) .oe_login_buttons + a,
+html:has(:is(.oe_login_form, .oe_signup_form)) .oe_login_buttons + div a {
+    display: none !important;
+}
+
+// ── Contenedor .md-login-container ───────────────────────────────────────────
+html:has(:is(.oe_login_form, .oe_signup_form)) .md-login-container {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    background: transparent;
+    &::before, &::after { content: none; }
+    > * { position: relative; z-index: 1; }
+}
+
+// ── Modo oscuro ───────────────────────────────────────────────────────────────
+// /web/login es una página sin sesión: no hay preferencia de usuario ni
+// toggle de Odoo disponible ahí (ni .o_dark_mode ni [data-bs-theme] llegan a
+// existir en el DOM real — ver docs/audits/2026-07-01_backend_dark_mode_audit.md).
+// La única señal plausible pre-login es la preferencia del SO (mismo criterio
+// que bi_pos_stock para superficies sin toggle interno de Odoo disponible).
+@media (prefers-color-scheme: dark) {
+    html:has(:is(.oe_login_form, .oe_signup_form)) :is(.card, .glass-login-island) {
+        border-color: rgba(255, 255, 255, 0.10) !important;
+        background-color: rgba(7, 28, 34, 0.65) !important;
+    }
+}
+
+// ── Responsive ───────────────────────────────────────────────────────────────
+@media (max-width: 768px) {
+    html:has(:is(.oe_login_form, .oe_signup_form)) main {
+        padding: 2rem 1rem !important;
+    }
+    html:has(:is(.oe_login_form, .oe_signup_form)) main > .container {
+        max-width: 100%;
+    }
+    html:has(:is(.oe_login_form, .oe_signup_form)) :is(.card, .glass-login-island) {
+        border-radius: 1.25rem !important;
+    }
+    html:has(:is(.oe_login_form, .oe_signup_form)) .card-body,
+    html:has(:is(.oe_login_form, .oe_signup_form)) :is(.card-body, .glass-login-island) {
+        padding: 2rem 1.5rem !important;
+    }
+    html:has(:is(.oe_login_form, .oe_signup_form)) :is(.card-body, .glass-login-island)::before {
+        height: 64px;
+        margin-bottom: 1rem;
+    }
+}
+
+// ════════════════════════════════════════════════════════════════════
+// UX login/registro · encabezado, CTA y divisores (ver auth_templates.xml)
+// ════════════════════════════════════════════════════════════════════
+
+.md-auth-head {
+    display: grid;
+    gap: 0.35rem;
+    margin-bottom: 1.1rem;
+    text-align: left;
+}
+
+.md-auth-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    width: fit-content;
+    padding: 5px 10px;
+    border-radius: $md-r-pill;
+    font-size: 0.68rem;
+    font-weight: 900;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: $md-blue-800;
+    background: rgba($md-blue, 0.12);
+    border: 1px solid rgba($md-blue, 0.22);
+
+    &--green {
+        color: $md-green-900;
+        background: rgba($md-green, 0.16);
+        border-color: rgba($md-green, 0.3);
+    }
+}
+
+.md-auth-title {
+    margin: 0;
+    font-family: $md-font-title;
+    font-size: 1.55rem;
+    font-weight: 900;
+    line-height: 1.15;
+    color: $md-dark;
+}
+
+.md-auth-sub {
+    margin: 0;
+    font-size: 0.88rem;
+    line-height: 1.5;
+    color: $md-muted;
+}
+
+// ── Panel CTA "Crea tu cuenta" ───────────────────────────────────────────────
+.md-auth-cta-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+    margin-top: 1.25rem;
+    padding: clamp(1.1rem, 2.5vw, 1.5rem);
+    border-radius: 1.25rem;
+    background:
+        linear-gradient(165deg, rgba($md-green, 0.18), rgba($md-green, 0.06) 55%, transparent),
+        rgba($md-white, 0.55);
+    border: 1px solid rgba($md-green, 0.32);
+    box-shadow:
+        inset 0 1px 0 rgba($md-white, 0.75),
+        0 14px 34px rgba($md-blue-900, 0.08);
+}
+
+.md-auth-cta-title {
+    margin: 0;
+    font-family: $md-font-title;
+    font-size: 1.25rem;
+    font-weight: 900;
+    color: $md-green-900;
+}
+
+.md-auth-benefits {
+    list-style: none;
+    margin: 0; padding: 0;
+    display: grid;
+    gap: 0.5rem;
+
+    li {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.55rem;
+        font-size: 0.86rem;
+        line-height: 1.45;
+        color: $md-ink;
+    }
+    i { margin-top: 2px; color: $md-green-600; flex: 0 0 auto; }
+}
+
+.md-auth-signup-btn {
+    min-height: 3rem;
+    border-radius: 999px;
+    font-weight: 800;
+}
+
+.md-auth-cta-hint {
+    margin: 0;
+    font-size: 0.78rem;
+    text-align: center;
+    color: $md-muted;
+}
+
+// ── Divisor (página de registro) ─────────────────────────────────────────────
+.md-auth-divider {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin: 0.9rem 0 0.6rem;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: $md-muted;
+
+    &::before, &::after {
+        content: '';
+        flex: 1;
+        height: 1px;
+        background: rgba($md-ink, 0.12);
+    }
+}
+
+.md-auth-login-back {
+    min-height: 2.75rem;
+    border-radius: 999px;
+    font-weight: 700;
+}
+
+// ── Dos columnas en escritorio: formulario | panel CTA ───────────────────────
+@media (min-width: 992px) {
+    body .oe_website_login_container.md-login-container:has(.md-auth-cta-panel) {
+        display: grid !important;
+        grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+        column-gap: clamp(1.25rem, 3vw, 2.25rem);
+        align-items: start;
+        max-width: 52rem !important;
+        width: unquote("min(100%, 52rem)") !important;
+
+        &::before,
+        > .oe_structure,
+        > owl-component { grid-column: 1 / -1; }
+
+        .md-auth-cta-panel {
+            margin-top: 0;
+            height: 100%;
+            justify-content: center;
+        }
+    }
+}
+
+// ── Oculta botón de acceso duplicado cuando ya estamos en login/registro ─────
+html:has(:is(.oe_login_form, .oe_signup_form)) {
+    .md-bento-nav-account,
+    .md-bento-header-account,
+    a[href*="/web/login"] { display: none !important; }
+}
+.nav-item:not(.md-bento-nav-cta) a[href*="/web/login"]:not(.md-bento-header-account):not(.md-bento-nav-account) {
+    display: none !important;
+}

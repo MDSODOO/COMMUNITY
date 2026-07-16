@@ -1,0 +1,226 @@
+{
+  "module": "custom_invoice_format",
+  "started_at": "2026-05-21T06:13:01.886Z",
+  "completed_phases": [
+    "audit_phase_1",
+    "audit_phase_2",
+    "audit_phase_3",
+    "audit_phase_4"
+  ],
+  "phases": {
+    "audit_phase_1": {
+      "completed_at": "2026-05-21T06:15:42.321Z",
+      "provider": "ollama",
+      "model": "qwen2.5-coder:7b",
+      "tokens": 119,
+      "result": {
+        "scope": [
+          "python",
+          "xml",
+          "csv"
+        ],
+        "audit_areas": [
+          "models",
+          "views",
+          "security"
+        ],
+        "risk_level": "medium",
+        "notes": "El módulo 'custom_invoice_format' para Odoo parece estar enfocado en la personalización del formato de facturas, lo que podría implicar riesgos si no se maneja correctamente. Es importante revisar los archivos de migración y asegurarse de que las actualizaciones sean seguras y no interfieran con otras funcionalidades."
+      }
+    },
+    "audit_phase_2": {
+      "completed_at": "2026-05-21T06:22:05.833Z",
+      "provider": "ollama",
+      "model": "ollama",
+      "tokens": 0,
+      "result": {
+        "files_analyzed": 4,
+        "results": [
+          {
+            "file": "migrations/19.0.1.1.0/post-migrate.py",
+            "quality_score": 2,
+            "issues": [
+              {
+                "line": 0,
+                "severity": "info",
+                "category": "style",
+                "description": "The SQL queries are not parameterized, which can lead to SQL injection vulnerabilities.",
+                "suggestion": "Use parameterized queries to prevent SQL injection."
+              }
+            ],
+            "patterns_found": [
+              "WITH stale_pdf AS ( ... )",
+              "UPDATE account_move move SET message_main_attachment_id = NULL WHERE move.message_main_attachment_id IN (SELECT id FROM stale_pdf)",
+              "DELETE FROM ir_attachment att USING account_move move WHERE move.id = att.res_id AND att.res_model = 'account.move' AND att.res_field = 'invoice_pdf_report_file' AND move.move_type IN ('out_invoice', 'out_refund')"
+            ],
+            "summary": "The script is designed to clean up stale invoice PDFs in Odoo. It uses raw SQL queries which could be improved for security and readability."
+          },
+          {
+            "file": "migrations/19.0.1.8.0/post-migrate.py",
+            "quality_score": 2,
+            "issues": [
+              {
+                "line": 0,
+                "severity": "error",
+                "category": "logic",
+                "description": "La línea 34 tiene un error de sintaxis. Falta una coma antes del 'and' en la expresión lambda.",
+                "suggestion": "Añadir una coma antes del 'and' en la expresión lambda."
+              }
+            ],
+            "patterns_found": [
+              "migrate",
+              "odoo",
+              "api",
+              "SUPERUSER_ID",
+              "logging",
+              "ir.ui.view"
+            ],
+            "summary": "El archivo contiene un error de sintaxis y no se han encontrado patrones específicos que requieran atención adicional."
+          },
+          {
+            "file": "migrations/19.0.1.9.0/post-migrate.py",
+            "quality_score": 2,
+            "issues": [
+              {
+                "line": 0,
+                "severity": "warning",
+                "category": "style",
+                "description": "The code is not properly indented, which can lead to syntax errors.",
+                "suggestion": "Ensure that the code follows Python's PEP 8 style guide for indentation."
+              },
+              {
+                "line": 0,
+                "severity": "info",
+                "category": "logic",
+                "description": "The migration script is designed to re-activate views, but it does not handle potential errors or exceptions that may occur during the process.",
+                "suggestion": "Add error handling and logging to ensure the migration script can gracefully handle any issues that arise."
+              }
+            ],
+            "patterns_found": [
+              "odoo",
+              "migration",
+              "re-activa vistas l10n_mx_edi heredadas"
+            ],
+            "summary": "The provided Python code snippet appears to be a migration script for an Odoo module. It is designed to re-activate certain views, but it lacks proper indentation and error handling."
+          },
+          {
+            "file": "models/account_move.py",
+            "quality_score": 2,
+            "issues": [
+              {
+                "line": 14,
+                "severity": "warning",
+                "category": "logic",
+                "description": "El método `_md_prepare_invoice_lot_values()` no está definido en el código proporcionado.",
+                "suggestion": "Asegúrate de que este método esté definido o eliminar la llamada a él si no es necesario."
+              },
+              {
+                "line": 15,
+                "severity": "warning",
+                "category": "logic",
+                "description": "La variable `lot_value` no está definida en el bucle for.",
+                "suggestion": "Asegúrate de que la variable `lot_value` esté correctamente definida antes del bucle for."
+              }
+            ],
+            "patterns_found": [
+              "inheritance",
+              "method_overriding"
+            ],
+            "summary": "El código contiene dos advertencias potenciales: una sobre el método `_md_prepare_invoice_lot_values()` no está definido y otra sobre la variable `lot_value` no está definida. Además, se utiliza la herencia de modelos y sobrescritura de métodos."
+          }
+        ]
+      }
+    },
+    "audit_phase_3": {
+      "completed_at": "2026-05-21T06:27:22.557Z",
+      "provider": "ollama",
+      "model": "ollama",
+      "tokens": 0,
+      "result": {
+        "bugs": [
+          {
+            "line": 5,
+            "type": "string",
+            "description": "La versión del módulo tiene un formato incorrecto. Debería seguir el patrón mayor.menor.patch.",
+            "fix": "Cambiar '19.0.1.9.9' a '19.0.1.9'",
+            "file": "__manifest__.py"
+          },
+          {
+            "line": 17,
+            "type": "string",
+            "description": "The SQL query is not parameterized, which can lead to SQL injection vulnerabilities.",
+            "fix": "Use parameterized queries or ORM methods to avoid SQL injection.",
+            "file": "migrations/19.0.1.1.0/post-migrate.py"
+          },
+          {
+            "line": 45,
+            "type": "syntax",
+            "description": "Missing closing parenthesis in the lambda function.",
+            "fix": "Add a closing parenthesis to the lambda function.",
+            "file": "migrations/19.0.1.8.0/post-migrate.py"
+          },
+          {
+            "line": 13,
+            "type": "string",
+            "description": "La etiqueta de cierre del comentario está incompleta.",
+            "fix": "Asegúrate de que la etiqueta de cierre del comentario esté completa.",
+            "file": "views/report_invoice.xml"
+          }
+        ],
+        "security_issues": [
+          {
+            "type": "access_control",
+            "description": "No se especifica cómo se controla el acceso a los datos de las facturas en el módulo.",
+            "fix": "Añadir reglas de acceso específicas en 'security/ir.model.access.csv' para controlar quién puede ver y modificar las facturas.",
+            "file": "__manifest__.py"
+          },
+          {
+            "type": "sql_injection",
+            "description": "The SQL query is vulnerable to SQL injection because it uses string formatting without proper sanitization.",
+            "fix": "Replace the raw SQL with a parameterized query or use Odoo's ORM methods.",
+            "file": "migrations/19.0.1.1.0/post-migrate.py"
+          }
+        ],
+        "performance_issues": [
+          {
+            "description": "No se especifica cómo se manejan los grandes volúmenes de datos. Puede haber problemas de rendimiento si no se optimizan las consultas SQL o la carga de datos.",
+            "fix": "Optimizar las consultas SQL y considerar el uso de índices en tablas importantes. Implementar paginación en vistas que puedan mostrar grandes conjuntos de datos.",
+            "file": "__manifest__.py"
+          }
+        ],
+        "critical_count": 3
+      }
+    },
+    "audit_phase_4": {
+      "completed_at": "2026-05-21T06:30:14.393Z",
+      "provider": "ollama",
+      "model": "qwen2.5-coder:7b",
+      "tokens": 618,
+      "result": {
+        "overall_score": 2,
+        "grade": "F",
+        "executive_summary": "El módulo 'custom_invoice_format' ha sido auditado y se han identificado varios problemas críticos que afectan la calidad, seguridad y rendimiento del sistema. El módulo tiene un formato de versión incorrecto, vulnerabilidades SQL injection, errores de sintaxis y falta de control de acceso a los datos.",
+        "critical_issues": [
+          "La versión del módulo tiene un formato incorrecto. Debería seguir el patrón mayor.menor.patch.",
+          "The SQL query is not parameterized, which can lead to SQL injection vulnerabilities.",
+          "No se especifica cómo se controla el acceso a los datos de las facturas en el módulo."
+        ],
+        "recommendations": [
+          "Cambiar '19.0.1.9.9' a '19.0.1.9' en __manifest__.py.",
+          "Use parameterized queries or ORM methods to avoid SQL injection in migrations/19.0.1.1.0/post-migrate.py y migrations/19.0.1.1.0/post-migrate.py.",
+          "Añadir reglas de acceso específicas en 'security/ir.model.access.csv' para controlar quién puede ver y modificar las facturas."
+        ],
+        "markdown_report": "# Auditoría del Módulo custom_invoice_format\n## Resumen Ejecutivo\nEl módulo 'custom_invoice_format' ha sido auditado y se han identificado varios problemas críticos que afectan la calidad, seguridad y rendimiento del sistema. El módulo tiene un formato de versión incorrecto, vulnerabilidades SQL injection, errores de sintaxis y falta de control de acceso a los datos.\n## Problemas Críticos\n1. **Formato Incorrecto de Versión**: La versión del módulo tiene un formato incorrecto. Debería seguir el patrón mayor.menor.patch.\n2. **Vulnerabilidad SQL Injection**: The SQL query is not parameterized, which can lead to SQL injection vulnerabilities.\n3. **Falta de Control de Acceso a Datos**: No se especifica cómo se controla el acceso a los datos de las facturas en el módulo.\n## Recomendaciones\n1. Cambiar '19.0.1.9.9' a '19.0.1.9' en __manifest__.py.\n2. Use parameterized queries or ORM methods to avoid SQL injection in migrations/19.0.1.1.0/post-migrate.py y migrations/19.0.1.1.0/post-migrate.py.\n3. Añadir reglas de acceso específicas en 'security/ir.model.access.csv' para controlar quién puede ver y modificar las facturas."
+      }
+    }
+  },
+  "meta": {
+    "total_tokens": 737,
+    "total_cost": 0,
+    "providers_used": [
+      "ollama"
+    ]
+  },
+  "current_version": "audit",
+  "target_version": "audit"
+}

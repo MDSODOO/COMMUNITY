@@ -1,0 +1,57 @@
+// =============================================================================
+// pos_reports_web.scss — Responsive overrides for POS reports in browser.
+// Registered in web.assets_backend; Bootstrap 5 utilities are available.
+// PDF export is not affected — wkhtmltopdf uses @media print, not screen.
+//
+// SCOPE: todas las reglas viven bajo .o_report_pos (clase aplicada a la raíz
+// del reporte "Detalles de ventas"). Sin este scope las reglas sangraban a
+// TODAS las tablas y cards del backend de Odoo (.table-responsive, .card-body,
+// .box-body), sobrescribiendo padding nativo en todo el cliente web.
+// =============================================================================
+
+.o_report_pos {
+
+    @media (max-width: 768px) {
+        // Session sales details report — 11-column movement table.
+        // Bootstrap .table-responsive wrapper (added in QWeb) handles horizontal
+        // scroll; these rules tighten cell padding and font for small viewports.
+        .table-responsive > .table {
+            font-size: 0.75rem;
+        }
+
+        .table-responsive > table.mini,
+        .table-responsive > table.user-grid {
+            font-size: 0.8125rem;
+        }
+
+        .table-responsive > .table td,
+        .table-responsive > .table th,
+        .table-responsive > table.mini td,
+        .table-responsive > table.mini th {
+            padding: 0.2rem 0.3rem;
+        }
+
+        // Report cards / summary blocks switch to one-column stacking on mobile.
+        .cz-summary > tbody > tr > td,
+        .bento > tbody > tr > td {
+            display: block;
+            width: 100%;
+            padding: 0.35rem 0;
+        }
+
+        // Sin !important: el scope .o_report_pos ya garantiza especificidad
+        // suficiente sobre las cards nativas de Bootstrap.
+        .box-body,
+        .card-body,
+        .user-body {
+            padding: 0.75rem;
+            line-height: 1.6;
+        }
+
+        .user-grid > tbody > tr > td {
+            display: block;
+            width: 100%;
+            margin-bottom: 0.4rem;
+        }
+    }
+}

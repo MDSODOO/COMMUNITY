@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <!--
+        Self-Order ProductCard Stock Badge
+        ===================================
+        REFACTORED vs. original:
+          1. Reads from env.services.self_order.branchStock (server-computed, branch-scoped).
+             Original read props.product.qty_available and virtual_available — global values.
+          2. Collapsed the 4-deep nested t-if tree into a clean, flat structure.
+             Original had 40+ t-if/t-else for position × stock_type × image combinations.
+          3. Stock type branching removed: branchStock already contains the correct
+             qty for the configured stock_type (resolved server-side).
+    -->
+    <t t-inherit="pos_self_order.ProductCard" t-inherit-mode="extension" owl="1">
+        <xpath expr="//article" position="inside">
+            <t t-if="env.services.self_order.config.pos_display_stock">
+                <t t-set="selfOrder" t-value="env.services.self_order"/>
+                <t t-set="productData"
+                   t-value="selfOrder.models['product.product'].getBy('id', props.product.id)"/>
+
+                <t t-if="productData and productData.is_storable and productData.type !== 'service'">
+                    <!-- Read branch stock: server already filtered by warehouse/branch -->
+                    <t t-set="branchQty"
+                       t-value="selfOrder.branchStock and selfOrder.branchStock[String(productData.id)] or 0"/>
+                    <t t-set="stockClass" t-value="branchQty > 0 ? '' : 'out-of-stock-qty'"/>
+
+                    <t t-if="selfOrder.config.stock_position == 'top_left'">
+                        <t t-if="productData.image_128">
+                            <span t-att-class="'qty-left-label ' + stockClass">
+                                <t t-esc="branchQty"/>
+                            </span>
+                        </t>
+                        <t t-else="">
+                            <span t-att-class="'qty-image-label ' + stockClass">
+                                <t t-esc="branchQty"/>
+                            </span>
+                        </t>
+                    </t>
+                    <t t-if="selfOrder.config.stock_position == 'top_right'">
+                        <span t-att-class="'qty-tright-label ' + stockClass">
+                            <t t-esc="branchQty"/>
+                        </span>
+                    </t>
+                    <t t-if="selfOrder.config.stock_position == 'bottom_right'">
+                        <span t-att-class="'qty-bright-label ' + stockClass">
+                            <t t-esc="branchQty"/>
+                        </span>
+                    </t>
+                </t>
+            </t>
+        </xpath>
+    </t>
+</templates>

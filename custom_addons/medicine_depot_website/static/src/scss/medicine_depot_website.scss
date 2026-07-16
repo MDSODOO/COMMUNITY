@@ -1,0 +1,891 @@
+// Medicine Depot Website · Main SCSS
+// Tokens ($md-*) y mixins disponibles via web.assets_frontend bundle order.
+
+// ── Bento grid (Misión / Visión / Valores) ──────────────────────────────────
+
+.s_md_bento_grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr;
+    gap: $md-gap;
+
+    @media (max-width: $bp-lg) {
+        grid-template-columns: repeat(2, 1fr);
+
+        .md-tile--blue {
+            grid-column: span 2;
+        }
+    }
+
+    @media (max-width: $bp-sm) {
+        grid-template-columns: 1fr;
+
+        .md-tile--blue {
+            grid-column: span 1;
+        }
+    }
+}
+
+.md-tile {
+    @include md-tile;
+    border-radius: $md-r-card;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.38s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.38s cubic-bezier(0.22, 1, 0.36, 1);
+    will-change: transform, box-shadow;
+
+    &::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        border-radius: inherit;
+        background: radial-gradient(350px circle at var(--mouse-x, 0px) var(--mouse-y, 0px), rgba(255, 255, 255, 0.08), transparent 80%);
+        z-index: 0;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        pointer-events: none;
+    }
+
+    &:hover::before {
+        opacity: 1;
+    }
+
+    &:hover {
+        transform: translate3d(0, -4px, 0);
+        box-shadow: $md-shadow-md;
+    }
+}
+
+.md-tile--blue {
+    background: $md-manual-blue-panel;
+    color: $md-white;
+
+    &:hover { box-shadow: 0 24px 48px rgba(22, 166, 217, 0.28); }
+}
+
+.md-tile--surface {
+    background: rgba(var(--bs-body-bg-rgb), 0.94);
+    color: var(--bs-body-color);
+
+    &::before {
+        background: radial-gradient(350px circle at var(--mouse-x, 0px) var(--mouse-y, 0px), rgba(22, 166, 217, 0.06), transparent 80%);
+    }
+
+    &:hover { box-shadow: 0 24px 48px rgba(var(--bs-emphasis-color-rgb, 12, 42, 62), 0.14); }
+}
+
+.md-tile--lime {
+    background: linear-gradient(135deg, $md-green-100, $md-green-200);
+    color: $md-green-900;
+
+    &:hover { box-shadow: 0 24px 48px rgba(151, 215, 0, 0.22); }
+}
+
+// ── Podcast tile ─────────────────────────────────────────────────────────────
+
+.s_md_podcast {
+    @include md-tile($md-gray, $md-white);
+    border-radius: $md-r-card;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: $md-gap;
+    align-items: center;
+    position: relative;
+    overflow: hidden;
+    @include md-brand-topography(0.13);
+    transition: transform 0.38s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.38s cubic-bezier(0.22, 1, 0.36, 1);
+    will-change: transform, box-shadow;
+
+    &:hover {
+        transform: translate3d(0, -4px, 0);
+        box-shadow: 0 24px 48px rgba(7, 58, 76, 0.28);
+    }
+
+    h3 {
+        font-family: $md-font-title;
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: $md-white;
+        margin: 0 0 8px;
+    }
+
+    .md-lead { color: rgba($md-white, 0.78); }
+
+.s_md_podcast-link {
+    margin-top: 1rem;
+    padding: 0.85rem 1.35rem;
+    display: inline-flex;
+    align-items: center;
+    width: fit-content;
+    text-decoration: none;
+}
+
+.s_md_podcast-player {
+    background: rgba($md-white, 0.08);
+    border: 1px solid rgba($md-white, 0.12);
+    border-radius: $md-r-card;
+    padding: 1.25rem;
+    display: grid;
+    gap: 1rem;
+}
+
+.s_md_podcast-art {
+    width: 88px;
+    height: 88px;
+    border-radius: $md-r-card;
+    background: $md-brand-gradient;
+    color: $md-white;
+    display: grid;
+    place-items: center;
+    font-family: $md-font-title;
+    font-size: 2rem;
+    font-weight: 900;
+}
+
+.s_md_podcast-track {
+    display: grid;
+    gap: 0.3rem;
+
+    span {
+        color: rgba($md-white, 0.56);
+        font-size: $md-text-xs;
+        font-weight: 900;
+        text-transform: uppercase;
+    }
+
+    strong {
+        color: $md-white;
+        font-size: 1.05rem;
+        line-height: 1.25;
+    }
+
+    p {
+        color: rgba($md-white, 0.64);
+        font-size: $md-text-sm;
+        margin: 0;
+    }
+}
+
+.s_md_podcast-meter {
+    height: 6px;
+    border-radius: $md-r-pill;
+    background: rgba($md-white, 0.16);
+    overflow: hidden;
+
+    span {
+        display: block;
+        width: 42%;
+        height: 100%;
+        border-radius: inherit;
+        background: $md-green;
+        transition: background-color 0.3s ease, box-shadow 0.3s ease;
+    }
+}
+
+.s_md_podcast:hover {
+    .s_md_podcast-meter span {
+        background: #a9ee00;
+        box-shadow: 0 0 8px rgba(151, 215, 0, 0.8);
+        animation: md-podcast-pulse-glow 1.5s infinite alternate;
+    }
+}
+
+@keyframes md-podcast-pulse-glow {
+    0% { filter: brightness(1); }
+    100% { filter: brightness(1.2); }
+}
+
+    @media (max-width: $bp-md) {
+        grid-template-columns: 1fr;
+    }
+}
+
+.s_md_home_cta {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 2rem;
+    align-items: center;
+    padding: unquote("clamp(24px, 4vw, 38px)");
+    border: 1px solid rgba($md-blue-900, 0.1);
+    border-radius: $md-r-card;
+    position: relative;
+    overflow: hidden;
+    background:
+        radial-gradient(circle at 92% 12%, rgba($md-green, 0.2) 0 52px, transparent 53px),
+        radial-gradient(circle at 92% 12%, transparent 0 78px, rgba($md-blue, 0.16) 79px 84px, transparent 85px),
+        linear-gradient(135deg, rgba($md-white, 0.94), rgba($md-blue-100, 0.74)),
+        $md-white;
+    box-shadow: $md-shadow-soft;
+
+    &::before {
+        content: '';
+        position: absolute;
+        inset: 0 auto 0 0;
+        width: 7px;
+        background: $md-green;
+    }
+
+    > * {
+        position: relative;
+        z-index: 1;
+    }
+
+    h2 {
+        margin: 0.6rem 0 0.9rem;
+        color: $md-ink;
+        font-family: $md-font-title;
+        font-size: 2.25rem;
+        line-height: 1.12;
+        letter-spacing: 0;
+    }
+}
+
+.s_md_home_cta-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 0.75rem;
+}
+
+@media (max-width: $bp-md) {
+    .s_md_home_cta {
+        grid-template-columns: 1fr;
+    }
+
+    .s_md_home_cta h2 {
+        font-size: 1.9rem;
+    }
+
+    .s_md_home_cta-actions {
+        justify-content: flex-start;
+    }
+}
+
+// ── MedicD form ──────────────────────────────────────────────────────────────
+
+.md_pv_form {
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.md_pv_fields {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: unquote("clamp(16px, 2vw, 24px)");
+    margin-bottom: unquote("clamp(24px, 3vw, 32px)");
+}
+
+.md_pv_field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+
+    label {
+        font-size: $md-text-sm;
+        font-weight: 600;
+        color: var(--bs-body-color);
+        display: block;
+    }
+}
+
+.md_pv_field--radio {
+    grid-column: 1 / -1;
+    margin-bottom: unquote("clamp(16px, 2vw, 24px)");
+
+    .md_pv_hint {
+        font-size: $md-text-sm;
+        font-weight: 600;
+        color: var(--bs-body-color);
+        margin: 0 0 12px;
+    }
+}
+
+.md_pv_input {
+    width: 100%;
+    padding: unquote("clamp(10px, 1vw, 14px)");
+    border: 1.5px solid var(--bs-border-color);
+    border-radius: $md-r-sm;
+    font-size: $md-text-base;
+    font-family: $md-font-body;
+    color: var(--bs-body-color);
+    background: var(--bs-control-bg, var(--bs-body-bg));
+    transition: border-color 0.18s ease, box-shadow 0.18s ease;
+
+    &:focus {
+        outline: none;
+        border-color: $md-blue;
+        box-shadow: 0 0 0 3px rgba($md-blue, 0.14);
+    }
+
+    &::placeholder { color: var(--bs-secondary-color); }
+}
+
+.md_pv_radio-label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    font-size: $md-text-base;
+    color: var(--bs-body-color);
+    padding: 8px 0;
+
+    input[type='radio'] {
+        accent-color: $md-blue;
+        width: 18px;
+        height: 18px;
+        cursor: pointer;
+        flex: 0 0 auto;
+    }
+
+    &:hover {
+        color: $md-blue;
+    }
+}
+
+.md_pv_form-action {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    margin-top: unquote("clamp(28px, 4vw, 40px)");
+
+    button,
+    input[type='submit'] {
+        @include md-btn-primary;
+        padding: unquote("clamp(12px, 1vw, 16px)") unquote("clamp(24px, 3vw, 40px)");
+        font-size: $md-text-base;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+    }
+}
+
+#medicd-msg {
+    padding: unquote("clamp(12px, 1.5vw, 16px)") unquote("clamp(14px, 2vw, 20px)");
+    border-radius: $md-r-sm;
+    font-size: $md-text-sm;
+    font-weight: 600;
+    margin-bottom: unquote("clamp(16px, 2vw, 24px)");
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    &.is-success {
+        background: $md-green-100;
+        color: $md-green-900;
+        border: 1px solid $md-green-300;
+    }
+
+    &.is-error {
+        background: rgba(239, 68, 68, 0.1);
+        color: #7f1d1d;
+        border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+}
+
+// ── Dark mode: Bento tiles adaptadas ────────────────────────────────────────
+// .o_dark_mode es un selector de backend, nunca presente en el frontend — ver
+// docs/audits/2026-07-01_backend_dark_mode_audit.md. El toggle real del
+// frontend escribe data-color-scheme="dark" en <body>.
+body[data-color-scheme="dark"] .s_md_bento_grid .md-tile--surface {
+    background: rgba(30, 41, 59, 0.85);
+    color: var(--bs-body-color);
+}
+
+// ── Página de Detalle del Producto (PDP) Bento + Liquid Glass ─────────────────
+
+.md-product-page {
+    @include md-liquid-ambient;
+    padding-block: clamp(2rem, 5vw, 5rem);
+    
+    #product_detail_main {
+        row-gap: clamp(1.5rem, 4vw, 3rem);
+    }
+    
+    .md-product-gallery {
+        padding: clamp(1rem, 2.4vw, 2rem) !important;
+        border-radius: 1.5rem !important;
+        backdrop-filter: blur(18px) saturate(1.45);
+        -webkit-backdrop-filter: blur(18px) saturate(1.45);
+        
+        #o-carousel-product .carousel-inner {
+            border-radius: 1rem;
+            overflow: hidden;
+            aspect-ratio: 1 / 1;
+        }
+    }
+    
+    .md-product-info {
+        display: grid;
+        gap: 1.5rem;
+        padding: clamp(1.5rem, 3vw, 2.5rem) !important;
+        border-radius: 1.5rem !important;
+        align-self: flex-start;
+        backdrop-filter: blur(18px) saturate(1.45);
+        -webkit-backdrop-filter: blur(18px) saturate(1.45);
+        
+        @media (min-width: 992px) {
+            position: sticky;
+            top: calc(var(--md-nav-height, 96px) + 2rem);
+        }
+        
+        h1, .product_price {
+            margin-bottom: 0 !important;
+        }
+    }
+    
+    // Selector de Cantidad Premium (Liquid Glass)
+    .css_quantity {
+        background: rgba(255, 255, 255, 0.4) !important;
+        border: 1px solid rgba(255, 255, 255, 0.6) !important;
+        backdrop-filter: blur(10px);
+        border-radius: 999px !important;
+        overflow: hidden;
+        height: 3.5rem;
+        min-height: 3.5rem;
+        display: inline-flex !important;
+        align-items: center;
+        padding: 0 !important;
+        
+        .btn {
+            min-width: 3.5rem;
+            height: 100% !important;
+            border: 0 !important;
+            background: transparent !important;
+            color: var(--md-blue-800) !important;
+            font-size: 1.25rem !important;
+            transition: background 0.2s, transform 0.1s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            
+            &:hover {
+                background: rgba(255, 255, 255, 0.6) !important;
+                transform: scale(1.05);
+            }
+            &:active {
+                transform: scale(0.95);
+            }
+        }
+        
+        input.form-control {
+            border: 0 !important;
+            background: transparent !important;
+            color: var(--md-blue-900) !important;
+            font-weight: 700 !important;
+            font-size: 1.1rem !important;
+            text-align: center;
+            height: 100% !important;
+            padding: 0 !important;
+            box-shadow: none !important;
+            -moz-appearance: textfield;
+            appearance: textfield;
+
+            &::-webkit-outer-spin-button,
+            &::-webkit-inner-spin-button {
+                -webkit-appearance: none;
+                margin: 0;
+            }
+        }
+    }
+    
+    // Botón Agregar al Carrito (Brand Gradient + Hover animado)
+    #add_to_cart {
+        @include md-btn-primary;
+        min-height: 3.5rem;
+        font-size: 1.1rem;
+        letter-spacing: 0.5px;
+        border-radius: 999px !important;
+        border: 0 !important;
+        display: inline-flex !important;
+        align-items: center;
+        justify-content: center;
+        width: auto;
+        
+        &:hover:not(:disabled) {
+            transform: translateY(-2px) scale(1.02);
+            filter: saturate(1.1);
+        }
+    }
+    
+    // Pills de variantes rediseñadas
+    .md-variant-pills {
+        .btn-check + label.btn-outline-primary {
+            border: 1.5px solid color-mix(in srgb, var(--md-blue), transparent 60%) !important;
+            color: var(--md-blue-800) !important;
+            background: rgba(255, 255, 255, 0.4) !important;
+            backdrop-filter: blur(5px);
+            transition: all 0.22s cubic-bezier(0.25, 0.8, 0.25, 1);
+            
+            &:hover {
+                border-color: var(--md-blue) !important;
+                background: rgba(255, 255, 255, 0.8) !important;
+                transform: translateY(-1px);
+                box-shadow: 0 4px 10px rgba(22, 166, 217, 0.12);
+            }
+        }
+        
+        .btn-check:checked + label.btn-outline-primary {
+            border-color: var(--md-blue) !important;
+            background: color-mix(in srgb, var(--md-blue), transparent 88%) !important;
+            color: var(--md-blue-800) !important;
+            box-shadow: 0 4px 12px rgba(22, 166, 217, 0.18);
+            font-weight: 700;
+            transform: translateY(-1px) scale(1.02);
+        }
+    }
+    
+    // Tarjeta de Confianza Bento
+    .md-trust-card {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
+        margin-top: 1.5rem;
+        
+        & > div {
+            background: rgba(255, 255, 255, 0.4) !important;
+            border: 1px solid rgba(255, 255, 255, 0.6) !important;
+            border-radius: 1rem;
+            padding: 1rem;
+            backdrop-filter: blur(8px);
+            transition: transform 0.2s, box-shadow 0.2s;
+            
+            &:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 8px 20px rgba(0, 0, 0, 0.04);
+            }
+        }
+    }
+}
+
+// Mobile responsive override for full-width components
+@media (max-width: 575.98px) {
+    .md-product-page {
+        .css_quantity,
+        #add_to_cart,
+        .btn_add_to_cart,
+        .o_we_buy_now {
+            width: 100% !important;
+        }
+        
+        #add_to_cart_wrap,
+        .o_md_product_detail_actions {
+            flex-direction: column !important;
+            align-items: stretch !important;
+            gap: 1rem;
+        }
+    }
+}
+
+// Dark Mode adaptations for Bento Cards
+// .o_dark_mode/[data-bs-theme] son selectores de backend, nunca presentes en
+// el frontend — ver docs/audits/2026-07-01_backend_dark_mode_audit.md. El
+// toggle real del frontend escribe data-color-scheme="dark" en <body>.
+body[data-color-scheme="dark"] {
+    .md-product-page {
+        .md-product-gallery,
+        .md-product-info,
+        .md-trust-card > div {
+            background: rgba(30, 41, 59, 0.5) !important;
+            border-color: rgba(255, 255, 255, 0.08) !important;
+            box-shadow: 0 18px 60px rgba(0, 0, 0, 0.25) !important;
+        }
+
+        .css_quantity {
+            background: rgba(15, 23, 42, 0.4) !important;
+            border-color: rgba(255, 255, 255, 0.1) !important;
+
+            .btn {
+                color: var(--md-blue-300) !important;
+                &:hover {
+                    background: rgba(255, 255, 255, 0.1) !important;
+                }
+            }
+
+            input.form-control {
+                color: #fff !important;
+            }
+        }
+
+        .md-variant-pills {
+            .btn-check + label.btn-outline-primary {
+                background: rgba(15, 23, 42, 0.3) !important;
+                border-color: rgba(255, 255, 255, 0.15) !important;
+                color: var(--md-blue-300) !important;
+
+                &:hover {
+                    background: rgba(255, 255, 255, 0.05) !important;
+                }
+            }
+            .btn-check:checked + label.btn-outline-primary {
+                background: rgba(22, 166, 217, 0.15) !important;
+                border-color: var(--md-blue) !important;
+                color: #fff !important;
+            }
+        }
+    }
+}
+
+// ── Similar Products Marquee · PDP (sin stock) ───────────────────────────────
+
+.md-similar-section {
+    overflow: hidden;
+}
+
+.md-sim-header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 1.25rem;
+    flex-wrap: wrap;
+}
+
+.md-similar-eyebrow {
+    font-size: $md-text-sm;
+    font-weight: 900;
+    color: $md-green-600;
+    text-transform: uppercase;
+    letter-spacing: 0;
+    margin-bottom: 0.3rem;
+}
+
+.md-sim-categ-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 10px 22px;
+    border-radius: $md-r-pill;
+    background: $md-brand-gradient;
+    color: $md-white !important;
+    font-family: $md-font-title;
+    font-size: $md-text-sm;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    text-decoration: none !important;
+    white-space: nowrap;
+    box-shadow: 0 8px 22px rgba($md-blue, 0.24), 0 4px 10px rgba($md-green, 0.16);
+    transition: transform 0.22s ease, box-shadow 0.22s ease, filter 0.22s ease;
+    position: relative;
+    overflow: hidden;
+
+    &::after {
+        content: '→';
+        font-size: 1rem;
+        line-height: 1;
+    }
+
+    &:hover {
+        transform: translateY(-2px);
+        filter: saturate(1.1);
+        box-shadow: 0 14px 32px rgba($md-blue, 0.32), 0 6px 14px rgba($md-green, 0.22);
+    }
+
+    &:active { transform: translateY(0); }
+}
+
+.md-similar-marquee {
+    position: relative;
+    overflow: hidden;
+    width: 100%;
+    padding: 8px 0;
+    mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent);
+    -webkit-mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent);
+}
+
+.md-similar-track {
+    --md-similar-gap: #{unquote("clamp(12px, 1.4vw, 18px)")};
+    display: flex;
+    width: max-content;
+    gap: var(--md-similar-gap);
+    align-items: stretch;
+    animation: md-similar-marquee 44s linear infinite;
+    will-change: transform;
+}
+
+.md-similar-marquee:hover .md-similar-track,
+.md-similar-marquee:focus-within .md-similar-track {
+    animation-play-state: paused;
+}
+
+// ── Card individual (hereda lenguaje de .md-product-card) ────────────────────
+
+.md-sim-card {
+    flex: 0 0 auto;
+    width: unquote("clamp(198px, 17vw, 232px)");
+    border-radius: $md-r-card;
+    border: 1px solid rgba($md-white, 0.72);
+    @include md-liquid-glass(0.72, 18px);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    color: $md-ink;
+    transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1),
+                box-shadow 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+
+    &:hover {
+        transform: translateY(-5px) perspective(600px) rotateY(1deg);
+        box-shadow: $md-shadow-xl;
+        color: $md-ink;
+        text-decoration: none;
+    }
+
+    &:focus-visible {
+        outline: 3px solid rgba($md-green, 0.55);
+        outline-offset: 3px;
+    }
+}
+
+// Área de imagen (1:1, contain — mismo comportamiento que shop)
+.md-sim-card__img {
+    position: relative;
+    aspect-ratio: 1 / 1;
+    overflow: hidden;
+    background: linear-gradient(135deg, $md-blue-100, $md-green-100);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        padding: 0.625rem;
+        transition: transform 0.38s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+}
+
+.md-sim-card:hover .md-sim-card__img img {
+    transform: scale(1.07);
+}
+
+// Badge de categoría (esquina superior izquierda sobre la imagen)
+.md-sim-badge-categ {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    z-index: 2;
+    padding: 3px 8px;
+    border-radius: $md-r-pill;
+    font-size: 10px;
+    font-weight: 900;
+    letter-spacing: 0;
+    text-transform: uppercase;
+    line-height: 1;
+    background: rgba($md-white, 0.88);
+    color: $md-blue-800;
+    border: 1px solid rgba($md-blue, 0.18);
+    backdrop-filter: blur(6px);
+    white-space: nowrap;
+    max-width: calc(100% - 16px);
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+// Cuerpo de la card
+.md-sim-card__body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    padding: 0.875rem;
+    flex: 1;
+    border-top: 1px solid rgba($md-blue, 0.07);
+}
+
+.md-sim-card__name {
+    margin: 0;
+    font-family: $md-font-title;
+    font-size: 14px;
+    font-weight: 700;
+    color: $md-ink;
+    line-height: 1.3;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.md-sim-card__price {
+    font-size: 17px;
+    font-weight: 900;
+    color: $md-blue-800;
+    font-family: $md-font-title;
+    line-height: 1;
+}
+
+// Footer: stock + CTA en la misma fila
+.md-sim-card__footer {
+    margin-top: auto;
+    padding-top: 0.5rem;
+    border-top: 1px solid rgba($md-blue-900, 0.07);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.4rem;
+}
+
+// Indicador de disponibilidad (punto verde + texto)
+.md-sim-stock {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: $md-text-xs;
+    font-weight: 700;
+    color: $md-success;
+
+    &::before {
+        content: '';
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: $md-success;
+        flex: 0 0 auto;
+        box-shadow: 0 0 0 2px rgba($md-success, 0.22);
+    }
+}
+
+.md-sim-card__cta {
+    font-size: $md-text-xs;
+    font-weight: 700;
+    color: $md-blue;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    white-space: nowrap;
+}
+
+@keyframes md-similar-marquee {
+    from { transform: translate3d(0, 0, 0); }
+    to   { transform: translate3d(calc(-50% - (var(--md-similar-gap) / 2)), 0, 0); }
+}
+
+// Dark mode
+// .o_dark_mode/[data-bs-theme] son selectores de backend, nunca presentes en
+// el frontend — ver docs/audits/2026-07-01_backend_dark_mode_audit.md. El
+// toggle real del frontend escribe data-color-scheme="dark" en <body>.
+body[data-color-scheme="dark"] {
+    .md-sim-card {
+        background: rgba(30, 41, 59, 0.72) !important;
+        border-color: rgba(255, 255, 255, 0.09) !important;
+        color: var(--bs-body-color) !important;
+    }
+
+    .md-sim-card__name { color: var(--bs-body-color) !important; }
+    .md-sim-card__price { color: var(--md-blue-300, #{$md-blue-300}) !important; }
+    .md-sim-badge-categ {
+        background: rgba(30, 41, 59, 0.82) !important;
+        color: $md-blue-300 !important;
+        border-color: rgba($md-blue, 0.22) !important;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .md-similar-track {
+        width: auto;
+        flex-wrap: wrap;
+        justify-content: flex-start;
+        animation: none;
+        padding: 0 unquote("clamp(16px, 4vw, 32px)");
+        gap: 1rem;
+    }
+
+    .md-similar-track .md-sim-card:nth-child(n + 13) { display: none; }
+}
+

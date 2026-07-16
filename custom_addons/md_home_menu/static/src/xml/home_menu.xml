@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="web.NavBar.AppsMenu" t-inherit="web.NavBar.AppsMenu" t-inherit-mode="extension">
+        <xpath expr="//div[hasclass('o_navbar_apps_menu')]" position="attributes">
+            <attribute name="class" add="o_md_home_menu" separator=" "/>
+        </xpath>
+        <xpath expr="//div[hasclass('o_navbar_apps_menu')]//DropdownItem[@t-foreach='apps']" position="replace">
+            <DropdownItem
+                t-foreach="apps"
+                t-as="app"
+                t-key="app.id"
+                class="{ 'o_app': true, 'o_md_app_tile': true, focus: menuService.getCurrentApp() === app }"
+                onSelected="() => this.onNavBarDropdownItemSelection(app)"
+                attrs="{ href: getMenuItemHref(app), 'data-menu-xmlid': app.xmlid, 'data-section': app.id }"
+            >
+                <img t-if="app.webIconData" class="o_md_app_icon" t-attf-src="{{app.webIconData}}"/>
+                <div t-else="" class="o_md_app_icon o_md_app_icon_fallback">
+                    <i class="oi oi-apps"/>
+                </div>
+                <span class="o_md_app_label" t-esc="app.name"/>
+            </DropdownItem>
+        </xpath>
+    </t>
+
+</templates>

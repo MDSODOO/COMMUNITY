@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+
+    <!-- ═══════════════════════════════════════════════════════════════════
+         REGLAS MULTI-COMPAÑÍA (ir.rule)
+         Aíslan las órdenes de bajas y su historial por empresa: un usuario
+         de la Empresa A no puede ver ni interactuar con registros de la
+         Empresa B. Reglas globales (sin grupo) → aplican a todos los roles.
+    ═══════════════════════════════════════════════════════════════════════ -->
+
+    <!-- Cabecera: órdenes de bajas -->
+    <record id="stock_scrap_batch_comp_rule" model="ir.rule">
+        <field name="name">Órdenes de Bajas Multi-Compañía</field>
+        <field name="model_id" ref="model_stock_scrap_batch"/>
+        <field name="domain_force">['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]</field>
+        <field name="global" eval="True"/>
+    </record>
+
+    <!-- Líneas: dependen de la compañía heredada de la cabecera -->
+    <record id="stock_scrap_batch_line_comp_rule" model="ir.rule">
+        <field name="name">Líneas de Bajas Multi-Compañía</field>
+        <field name="model_id" ref="model_stock_scrap_batch_line"/>
+        <field name="domain_force">['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]</field>
+        <field name="global" eval="True"/>
+    </record>
+
+    <!-- Historial legado de bajas -->
+    <record id="medicine_depot_scrap_history_comp_rule" model="ir.rule">
+        <field name="name">Historial de Bajas Multi-Compañía</field>
+        <field name="model_id" ref="model_medicine_depot_scrap_history"/>
+        <field name="domain_force">['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]</field>
+        <field name="global" eval="True"/>
+    </record>
+
+    <!-- Resumen analítico 2025 -->
+    <record id="medicine_depot_scrap_summary_2025_comp_rule" model="ir.rule">
+        <field name="name">Resumen de Bajas 2025 Multi-Compañía</field>
+        <field name="model_id" ref="model_medicine_depot_scrap_summary_2025"/>
+        <field name="domain_force">['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]</field>
+        <field name="global" eval="True"/>
+    </record>
+
+</odoo>

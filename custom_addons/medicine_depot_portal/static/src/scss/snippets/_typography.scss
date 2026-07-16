@@ -1,0 +1,230 @@
+// Medicine Depot · Typography module
+// Section headings, eyebrows, leads, text helpers.
+
+.md-section {
+    position: relative;
+    overflow: hidden;
+    padding: 4rem 0;
+
+    @media (min-width: $bp-lg) {
+        padding: 5rem 0;
+    }
+}
+
+.md-section--cream,
+.md-section--white,
+.md-section--blue-light,
+.md-section--gray,
+.md-section--dark {
+    > .md-bento-container {
+        position: relative;
+        z-index: 1;
+    }
+}
+
+.md-section--blue-light {
+    background:
+        linear-gradient(180deg, rgba($md-white, 0.9), rgba($md-blue-100, 0.94)),
+        $md-blue-100;
+}
+
+.md-section--dark,
+.md-section--gray {
+    @include md-brand-topography(0.12);
+}
+
+.md-section--dark {
+    background: $md-manual-blue-panel;
+}
+
+.md-section--dark-stack:nth-of-type(even) {
+    background: $md-manual-green-panel;
+}
+
+.md-section--compact {
+    padding-top: 0;
+}
+
+.md-section--dark-stack {
+    border-bottom: 1px solid rgba($md-white, 0.08);
+}
+
+.md-section--dark-final {
+    border-bottom: 0;
+}
+
+.md-section-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: end;
+    gap: unquote("clamp(18px, 3vw, 34px)");
+    margin-bottom: unquote("clamp(24px, 4vw, 44px)");
+
+    h1,
+    h2 {
+        font-family: $md-font-title;
+        color: $md-ink;
+        letter-spacing: 0;
+        line-height: 1.08;
+        font-weight: 900;
+    }
+
+    h1 {
+        font-size: $md-type-hero-title;
+        margin: 0.1rem 0 0;
+    }
+
+    h2 {
+        font-size: $md-type-section-title;
+        margin: 0.1rem 0 0;
+        max-width: 22ch;
+    }
+}
+
+.md-section-head::before {
+    content: '';
+    width: 54px;
+    height: 6px;
+    align-self: flex-end;
+    border-radius: $md-r-pill;
+    background: $md-brand-gradient;
+    order: 3;
+}
+
+.md-section-head--page {
+    align-items: flex-start;
+    margin-bottom: unquote("clamp(32px, 4vw, 48px)");
+    text-align: left;
+
+    .md-lead {
+        margin-top: 0.35rem;
+    }
+}
+
+.md-section--dark .md-section-head h1,
+.md-section--dark .md-section-head h2 {
+    color: $md-white;
+}
+
+.md-page-title {
+    font-family: $md-font-title;
+    font-weight: 900;
+    max-width: 12ch;
+}
+
+.md-page-title--wide {
+    font-family: $md-font-title;
+    max-width: 16ch;
+    font-size: $md-type-page-title !important;
+    font-weight: 900;
+    margin: 12px 0 0;
+    color: $md-white;
+}
+
+.md-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    width: fit-content;
+    font-size: $md-type-eyebrow;
+    font-weight: 900;
+    letter-spacing: 0;
+    text-transform: uppercase;
+    color: $md-green-900;
+    background: rgba($md-green, 0.16);
+    border: 1px solid rgba($md-green, 0.24);
+    padding: 8px 12px;
+    border-radius: $md-r-pill;
+
+    &::before {
+        content: '';
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: $md-green;
+        box-shadow: 0 0 0 5px rgba($md-green, 0.18);
+    }
+}
+
+.md-eyebrow--light,
+.md-tile--blue .md-eyebrow,
+.md-tile--dark .md-eyebrow {
+    color: rgba($md-white, 0.78);
+    background: rgba($md-white, 0.1);
+    border-color: rgba($md-white, 0.16);
+}
+
+.md-eyebrow--dark {
+    color: $md-green-900;
+    background: rgba($md-green, 0.2);
+    border-color: rgba($md-green, 0.24);
+}
+
+.md-eyebrow--quiet {
+    color: rgba($md-white, 0.74);
+    background: rgba($md-white, 0.1);
+    border-color: rgba($md-white, 0.16);
+}
+
+.md-section--dark .md-eyebrow:not(.md-eyebrow--quiet) {
+    color: $md-white;
+    background: rgba($md-white, 0.12);
+    border-color: rgba($md-white, 0.2);
+}
+
+.md-lead {
+    font-size: $md-type-lead;
+    max-width: 690px;
+    color: $md-muted;
+    line-height: 1.7;
+}
+
+.md-section--dark .md-lead {
+    color: rgba($md-white, 0.78);
+}
+
+.md-small-note {
+    font-size: $md-type-small;
+    color: $md-muted;
+    line-height: 1.6;
+    margin-top: 12px;
+}
+
+.md-hero-copy {
+    display: grid;
+    gap: 18px;
+}
+
+.md-hero-copy h1 {
+    margin-top: 18px;
+    font-family: $md-font-title;
+    font-size: $md-type-hero-title;
+    line-height: 0.98;
+    font-weight: 900;
+    letter-spacing: 0;
+    color: $md-white;
+}
+
+.md-hero-copy em {
+    color: $md-green;
+    font-style: normal;
+}
+
+.md-hero-copy .md-lead,
+.md-tile--blue p,
+.md-tile--dark p {
+    color: rgba($md-white, 0.78);
+}
+
+.md-tile--lime p {
+    color: rgba($md-green-900, 0.72);
+}
+
+.md-visually-hidden {
+    position: absolute;
+    left: -10000px;
+    top: auto;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+}

@@ -1,0 +1,50 @@
+# Spanish (Mexico) translation for lab_inventory_report
+# Copyright (C) 2026 Medicine Depot
+# License: LGPL-3
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 19.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-06-10 00:00+0000\n"
+"PO-Revision-Date: 2026-06-10 00:00+0000\n"
+"Last-Translator: Daniel Cervera <daniel.cervera.2029@gmail.com>\n"
+"Language-Team: Spanish (Mexico) <noreply@medicinedepot.mx>\n"
+"Language: es_MX\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#. module: lab_inventory_report
+msgid "Laboratorios A la mano"
+msgstr "Laboratorios A la mano"
+
+#. module: lab_inventory_report
+msgid "Reporte mensual A la mano por laboratorio y sucursal"
+msgstr "Reporte mensual A la mano por laboratorio y sucursal"
+
+#. module: lab_inventory_report
+msgid "A la mano"
+msgstr "A la mano"
+
+#. module: lab_inventory_report
+msgid "Laboratorio"
+msgstr "Laboratorio"
+
+#. module: lab_inventory_report
+msgid "Sucursal"
+msgstr "Sucursal"
+
+#. module: lab_inventory_report
+msgid "Fecha de Corte"
+msgstr "Fecha de Corte"
+
+#. module: lab_inventory_report
+msgid "Generar PDF"
+msgstr "Generar PDF"
+
+#. module: lab_inventory_report
+msgid "Unidades"
+msgstr "Unidades"
+

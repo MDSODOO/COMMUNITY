@@ -1,0 +1,282 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ═══════════════════════════════════════════════════════════════════
+         SEARCH
+    ═══════════════════════════════════════════════════════════════════════ -->
+    <record id="view_stock_scrap_batch_search" model="ir.ui.view">
+        <field name="name">stock.scrap.batch.search</field>
+        <field name="model">stock.scrap.batch</field>
+        <field name="arch" type="xml">
+            <search string="Órdenes de bajas">
+                <field name="name" string="Referencia"/>
+                <field name="company_id"/>
+                <field name="location_id"/>
+                <separator/>
+                <filter name="filter_draft" string="Borradores"
+                        domain="[('state', '=', 'draft')]"/>
+                <filter name="filter_waiting" string="En validación"
+                        domain="[('state', '=', 'waiting')]"/>
+                <filter name="filter_done" string="Validados"
+                        domain="[('state', '=', 'done')]"/>
+                <separator/>
+                <filter name="group_by_state" string="Estado"
+                        context="{'group_by': 'state'}"/>
+                <filter name="group_by_company" string="Sucursal"
+                        context="{'group_by': 'company_id'}"
+                        groups="base.group_multi_company"/>
+                <filter name="group_by_date" string="Fecha"
+                        context="{'group_by': 'date:month'}"/>
+            </search>
+        </field>
+    </record>
+
+    <!-- ═══════════════════════════════════════════════════════════════════
+         KANBAN — agrupado por estado, quick_create desactivado
+    ═══════════════════════════════════════════════════════════════════════ -->
+    <record id="view_stock_scrap_batch_kanban" model="ir.ui.view">
+        <field name="name">stock.scrap.batch.kanban</field>
+        <field name="model">stock.scrap.batch</field>
+        <field name="arch" type="xml">
+            <kanban default_group_by="state" quick_create="false">
+                <field name="name"/>
+                <field name="state"/>
+                <field name="company_id"/>
+                <field name="date"/>
+                <field name="line_count"/>
+                <field name="scrap_count"/>
+                <field name="total_cost"/>
+                <field name="currency_id"/>
+                <templates>
+                    <t t-name="card">
+                        <div class="o_scrap_batch_module p-2">
+                            <!-- encabezado: referencia + badge de estado -->
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <strong class="o_kanban_record_title">
+                                    <field name="name"/>
+                                </strong>
+                                <span t-if="record.state.raw_value == 'done'"
+                                      class="md-badge posted">Validado</span>
+                                <span t-if="record.state.raw_value == 'waiting'"
+                                      class="md-badge review">En validación</span>
+                                <span t-if="record.state.raw_value == 'draft'"
+                                      class="md-badge draft">Borrador</span>
+                            </div>
+                            <!-- compañía -->
+                            <div class="muted mb-2">
+                                <field name="company_id"/>
+                            </div>
+                            <!-- costo total destacado -->
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <span class="muted">
+                                    <field name="line_count"/>&#160;líneas ·
+                                    <field name="scrap_count"/>&#160;bajas
+                                </span>
+                                <strong class="md-kanban-cost">
+                                    <field name="total_cost" widget="monetary"/>
+                                </strong>
+                            </div>
+                            <!-- fecha -->
+                            <div class="muted md-kanban-date">
+                                <field name="date"/>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <!-- ═══════════════════════════════════════════════════════════════════
+         LIST
+    ═══════════════════════════════════════════════════════════════════════ -->
+    <record id="view_stock_scrap_batch_tree" model="ir.ui.view">
+        <field name="name">stock.scrap.batch.tree</field>
+        <field name="model">stock.scrap.batch</field>
+        <field name="arch" type="xml">
+            <list class="o_scrap_batch_module"
+                  decoration-info="state == 'draft'"
+                  decoration-warning="state == 'waiting'"
+                  decoration-success="state == 'done'"
+                  multi_edit="1">
+                <field name="name" string="Referencia" decoration-bf="1"/>
+                <field name="date" string="Fecha" optional="show"/>
+                <field name="company_id" string="Sucursal" optional="show"/>
+                <field name="location_id" string="Ubicación" decoration-warning="not location_id"/>
+                <field name="line_count" string="Líneas" optional="show"/>
+                <field name="scrap_count" string="Bajas" optional="show"/>
+                <field name="currency_id" column_invisible="1"/>
+                <field name="total_cost" widget="monetary" string="Costo total" sum="Total" decoration-danger="total_cost == 0"/>
+                <field name="state" widget="badge"
+                       decoration-info="state == 'draft'"
+                       decoration-warning="state == 'waiting'"
+                       decoration-success="state == 'done'"
+                       string="Estado"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- ═══════════════════════════════════════════════════════════════════
+         FORM
+    ═══════════════════════════════════════════════════════════════════════ -->
+    <record id="view_stock_scrap_batch_form" model="ir.ui.view">
+        <field name="name">stock.scrap.batch.form</field>
+        <field name="model">stock.scrap.batch</field>
+        <field name="arch" type="xml">
+            <form string="Orden de bajas múltiple" class="o_scrap_batch_form">
+                <header>
+                    <button name="action_request_validation"
+                            string="Solicitar Validación"
+                            type="object"
+                            class="btn-primary"
+                            invisible="state != 'draft'"/>
+                    <button name="action_validate_batch"
+                            string="Validar"
+                            type="object"
+                            class="btn-success"
+                            groups="stock.group_stock_manager"
+                            invisible="state != 'waiting'"/>
+                    <button name="action_set_draft"
+                            string="Regresar a Borrador"
+                            type="object"
+                            invisible="state != 'waiting'"/>
+                    <button name="%(action_report_stock_scrap_batch)d"
+                            type="action"
+                            icon="fa-file-pdf-o"
+                            title="Orden de Bajas"
+                            class="btn-secondary"
+                            invisible="id == False"/>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="draft,waiting,done"/>
+                </header>
+                <sheet class="o_scrap_batch_module">
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_scraps"
+                                type="object"
+                                class="oe_stat_button"
+                                icon="fa-trash"
+                                invisible="scrap_count == 0">
+                            <div class="o_stat_info">
+                                <field name="scrap_count" class="o_stat_value"/>
+                                <span class="o_stat_text">Desechos</span>
+                            </div>
+                        </button>
+                    </div>
+
+                    <!-- ── Bento 1: identidad del lote (ancla visual) ── -->
+                    <div class="oe_title">
+                        <span class="o_form_label text-muted">Lote de bajas</span>
+                        <h1><field name="name" readonly="1"/></h1>
+                    </div>
+
+                    <!-- ── Bento 2: resumen ejecutivo (oculto en draft) ── -->
+                    <div class="md-kpi-strip md-kpi-strip-4"
+                         invisible="state == 'draft'">
+                        <div class="md-kpi">
+                            <div class="md-kpi-label">Líneas</div>
+                            <div class="md-kpi-value">
+                                <field name="line_count" readonly="1"/>
+                            </div>
+                        </div>
+                        <div class="md-kpi">
+                            <div class="md-kpi-label">Bajas generadas</div>
+                            <div class="md-kpi-value">
+                                <field name="scrap_count" readonly="1"/>
+                            </div>
+                        </div>
+                        <div class="md-kpi danger">
+                            <div class="md-kpi-label">Costo total</div>
+                            <div class="md-kpi-value">
+                                <field name="total_cost" widget="monetary" readonly="1"/>
+                            </div>
+                            <div class="md-kpi-sub">
+                                <field name="currency_id" readonly="1"/>
+                                ·
+                                <field name="date" readonly="1"/>
+                            </div>
+                        </div>
+                        <div class="md-kpi">
+                            <div class="md-kpi-label">Compañía</div>
+                            <div class="md-kpi-value md-kpi-value-text">
+                                <field name="company_id" readonly="1"/>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ── Bento 3: datos del lote en dos columnas titulares ── -->
+                    <group>
+                        <group string="Periodo y origen">
+                            <field name="date" readonly="state == 'done'"/>
+                            <field name="company_id"
+                                   readonly="state != 'draft'"/>
+                            <field name="location_id" readonly="state != 'draft'"/>
+                        </group>
+                        <group string="Destino y clasificación">
+                            <field name="scrap_location_id" readonly="1" force_save="1"/>
+                            <field name="scrap_reason_tag_ids"
+                                   widget="many2many_tags"
+                                   options="{'no_create_edit': True}"
+                                   readonly="state == 'done'"/>
+                        </group>
+                    </group>
+
+                    <!-- ── Bento 4: tabla operativa (sin notebook redundante) ── -->
+                    <separator string="Líneas de baja"/>
+                    <field name="line_ids"
+                           readonly="state == 'done'"
+                           nolabel="1">
+                        <list editable="bottom" class="o_scrap_batch_lines" multi_edit="1">
+                            <field name="product_id" required="1" decoration-bf="1"/>
+                            <field name="lot_id" decoration-warning="not lot_id"/>
+                            <field name="company_id" string="Sucursal" readonly="1" optional="show"/>
+                            <field name="lot_qty_available" string="A la mano" readonly="1" optional="show" decoration-danger="lot_qty_available == 0"/>
+                            <field name="expiration_date"
+                                   decoration-danger="expiration_date and expiration_date &lt; current_date"
+                                   optional="show"/>
+                            <field name="scrap_qty" required="1" sum="Total piezas" decoration-warning="scrap_qty &lt;= 0"/>
+                            <field name="product_uom_id" readonly="1" optional="hide"/>
+                            <field name="scrap_reason_tag_ids"
+                                   widget="many2many_tags"
+                                   optional="show"/>
+                            <field name="purchase_lot_cost"
+                                   widget="monetary"
+                                   readonly="1"
+                                   optional="hide"/>
+                            <field name="currency_id" column_invisible="1"/>
+                            <field name="scrap_total_cost"
+                                   widget="monetary"
+                                   readonly="1"
+                                   sum="Total"
+                                   decoration-danger="scrap_total_cost == 0"/>
+                            <field name="scrap_id" readonly="1" optional="hide"/>
+                        </list>
+                    </field>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- ═══════════════════════════════════════════════════════════════════
+         ACTION + MENÚ
+    ═══════════════════════════════════════════════════════════════════════ -->
+    <record id="action_stock_scrap_batch" model="ir.actions.act_window">
+        <field name="name">Bajas de caducidad</field>
+        <field name="res_model">stock.scrap.batch</field>
+        <field name="view_mode">kanban,list,form</field>
+        <field name="search_view_id" ref="view_stock_scrap_batch_search"/>
+        <field name="context">{'group_by': 'state'}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Crea una orden para gestionar bajas múltiples.
+            </p>
+        </field>
+    </record>
+
+    <menuitem id="menu_stock_scrap_batch"
+              name="Bajas de caducidad"
+              parent="stock.menu_stock_scrap"
+              action="action_stock_scrap_batch"
+              sequence="40"
+              groups="stock.group_stock_user"/>
+
+</odoo>

@@ -1,0 +1,2 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_product_template_custom_shop_qty_selector,access_product_template_custom_shop_qty_selector,product.model_product_template,,1,0,0,0

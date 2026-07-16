@@ -1,0 +1,27 @@
+<odoo>
+    <record id="view_md_name_abbreviation_list" model="ir.ui.view">
+        <field name="name">md.name.abbreviation.list</field>
+        <field name="model">md.name.abbreviation</field>
+        <field name="arch" type="xml">
+            <list editable="bottom">
+                <field name="category"/>
+                <field name="abbreviation"/>
+                <field name="full_name"/>
+                <field name="notes"/>
+                <field name="active" widget="boolean_toggle"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="action_md_name_abbreviation" model="ir.actions.act_window">
+        <field name="name">Diccionario de Abreviaturas</field>
+        <field name="res_model">md.name.abbreviation</field>
+        <field name="view_mode">list</field>
+    </record>
+
+    <menuitem id="menu_md_name_abbreviation"
+              name="Diccionario de Abreviaturas"
+              action="action_md_name_abbreviation"
+              parent="stock.menu_stock_config_settings"
+              sequence="66"/>
+</odoo>

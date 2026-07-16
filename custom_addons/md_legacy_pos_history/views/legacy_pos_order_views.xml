@@ -1,0 +1,60 @@
+<odoo>
+    <record id="view_md_legacy_pos_order_list" model="ir.ui.view">
+        <field name="name">md.legacy.pos.order.list</field>
+        <field name="model">md.legacy.pos.order</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="folio"/>
+                <field name="date"/>
+                <field name="company_id"/>
+                <field name="partner_id"/>
+                <field name="state"/>
+                <field name="amount_total" sum="Total"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_md_legacy_pos_order_form" model="ir.ui.view">
+        <field name="name">md.legacy.pos.order.form</field>
+        <field name="model">md.legacy.pos.order</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <field name="folio"/>
+                        <field name="date"/>
+                        <field name="company_id"/>
+                        <field name="partner_id"/>
+                        <field name="state"/>
+                        <field name="amount_total"/>
+                        <field name="legacy_ref" readonly="1"/>
+                    </group>
+                    <notebook>
+                        <page string="Líneas">
+                            <field name="line_ids" readonly="1">
+                                <list>
+                                    <field name="product_id"/>
+                                    <field name="quantity"/>
+                                    <field name="price_unit"/>
+                                    <field name="price_subtotal"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_md_legacy_pos_order" model="ir.actions.act_window">
+        <field name="name">Historial PoS Legacy</field>
+        <field name="res_model">md.legacy.pos.order</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <menuitem id="menu_md_legacy_pos_order"
+              name="Historial PoS Legacy"
+              action="action_md_legacy_pos_order"
+              parent="point_of_sale.menu_point_of_sale"
+              sequence="90"/>
+</odoo>

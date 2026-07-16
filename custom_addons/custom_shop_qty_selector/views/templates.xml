@@ -1,0 +1,677 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <template id="active_ingredient_tags" name="Active Ingredient Tags">
+        <t t-set="md_active_ingredients" t-value="product.sudo()._md_get_active_ingredients()"/>
+        <div t-if="md_active_ingredients" class="o_md_active_ingredient_tags">
+            <t t-foreach="md_active_ingredients" t-as="ingredient">
+                <t t-set="ingredient_name" t-value="product._md_active_ingredient_name(ingredient)"/>
+                <a class="o_md_active_ingredient_tag"
+                   t-att-href="product._md_active_ingredient_shop_url(ingredient)"
+                   t-att-title="'Ver medicamentos con %s' % ingredient_name">
+                    <span t-out="ingredient_name"/>
+                </a>
+            </t>
+        </div>
+    </template>
+
+    <template id="active_ingredient_compact_tags" name="Compact Active Ingredient Tags">
+        <t t-set="md_active_ingredients" t-value="product.sudo()._md_get_active_ingredients()"/>
+        <div t-if="md_active_ingredients" class="o_md_active_ingredient_tags o_md_active_ingredient_tags_compact">
+            <t t-foreach="md_active_ingredients[:2]" t-as="ingredient">
+                <t t-set="ingredient_name" t-value="product._md_active_ingredient_name(ingredient)"/>
+                <a class="o_md_active_ingredient_tag"
+                   t-att-href="product._md_active_ingredient_shop_url(ingredient)"
+                   t-att-title="'Ver medicamentos con %s' % ingredient_name">
+                    <span t-out="ingredient_name"/>
+                </a>
+            </t>
+            <span t-if="len(md_active_ingredients) &gt; 2"
+                  class="o_md_active_ingredient_more"
+                  t-att-title="'%s ingredientes adicionales' % (len(md_active_ingredients) - 2)">
+                +<t t-out="len(md_active_ingredients) - 2"/>
+            </span>
+        </div>
+    </template>
+
+    <template id="product_line_tags" name="Product Line Tags">
+        <t t-set="md_product_lines" t-value="product.sudo()._md_get_product_lines()"/>
+        <div t-if="md_product_lines" class="o_md_product_line_tags">
+            <span class="o_md_product_meta_label">Línea</span>
+            <t t-foreach="md_product_lines" t-as="line">
+                <t t-set="line_name" t-value="product._md_product_line_name(line)"/>
+                <a class="o_md_product_line_tag"
+                   t-att-href="product._md_product_line_shop_url(line)"
+                   t-att-title="'Ver medicamentos de la línea %s' % line_name">
+                    <span t-out="line_name"/>
+                </a>
+            </t>
+        </div>
+    </template>
+
+    <!-- Eyebrow compacto de Línea: una sola línea (la primera) en
+         tipografía pequeña/uppercase encima del título. Estilo
+         "category tag" sin pastilla, para no competir visualmente
+         con los tags de Ingrediente Activo bajo el título. -->
+    <template id="product_line_eyebrow" name="Product Line Eyebrow">
+        <t t-set="md_product_lines" t-value="product.sudo()._md_get_product_lines()"/>
+        <a t-if="md_product_lines"
+           class="o_md_product_line_eyebrow"
+           t-att-href="product._md_product_line_shop_url(md_product_lines[0])"
+           t-att-title="'Ver medicamentos de la línea %s' % product._md_product_line_name(md_product_lines[0])">
+            <span t-out="product._md_product_line_name(md_product_lines[0])"/>
+        </a>
+    </template>
+
+    <!-- Colibri en tienda llama querySelector('.my_wish_quantity').textContent
+         sobre el enlace de wishlist. Algunos headers de tema conservan
+         .o_wsale_my_wish pero eliminan el badge. Este <sup> oculto evita
+         el TypeError sin modificar el layout visible. -->
+    <template
+        id="wishlist_quantity_colibri_decoy"
+        inherit_id="website_sale_wishlist.header_wishlist_link"
+        name="Wishlist Quantity Colibri Decoy"
+        priority="200"
+    >
+        <xpath expr="//a[contains(@href, '/shop/wishlist')]" position="inside">
+            <sup class="my_wish_quantity o_animate_blink badge bg-primary d-none">0</sup>
+        </xpath>
+    </template>
+
+    <!-- ════════════════════════════════════════════════════════════════
+         SHOP GRID  —  website_sale.products_item
+         ─────────────────────────────────────────────────────────────
+         Reemplaza el bloque de botón nativo para inyectar:
+           1. Badge A la mano (productos simples almacenables)
+           2. Contenedor CTA: widget qty + botón Agregar
+              — siempre en el DOM (reserva espacio → cards uniformes)
+              — se revela con transición al hacer hover sobre la card
+    ════════════════════════════════════════════════════════════════ -->
+    <template
+        id="products_item_qty_selector"
+        inherit_id="website_sale.products_item"
+        name="Qty Selector on Product Card"
+        priority="99"
+    >
+        <xpath expr="//div[hasclass('o_wsale_product_btn')]" position="replace">
+
+            <div class="o_sqty_card_footer">
+                <!-- Badge A la mano (cargado vía JS/AJAX) -->
+                <div t-if="product.product_variant_count == 1
+                            and product.product_variant_id.is_storable"
+                     class="o_sqty_stock js_sqty_stock o_sqty_loading"
+                     t-att-data-product-id="product.product_variant_id.id"/>
+
+                <!-- CTA: qty widget + botón — siempre presente, reveal en hover.
+                     Las utilidades BS5 (d-flex / justify-content-center /
+                     align-items-center / w-100) garantizan el centrado del
+                     par [pill | boton] incluso en breakpoints donde el grid
+                     definido en SCSS (media query desktop) no aplica. -->
+                <div class="o_sqty_cta_reveal d-flex justify-content-center align-items-center w-100">
+
+                    <!-- Qty widget (sólo productos de variante única) -->
+                    <div t-if="product.product_variant_count == 1"
+                         class="o_shop_qty_selector js_shop_qty_selector"
+                         t-att-data-product-id="product.product_variant_id.id"
+                         t-att-data-template-id="product.id"/>
+
+                    <!-- Botón Agregar al carrito -->
+                    <div class="o_wsale_product_btn">
+                        <t t-if="product_actions" t-out="product_actions"/>
+                        <t t-else="" t-call="website_sale.shop_product_buttons"/>
+                    </div>
+
+                </div>
+            </div>
+
+        </xpath>
+    </template>
+
+    <!-- ════════════════════════════════════════════════════════════════
+         SHOP GRID  —  Badge de % de descuento
+         ─────────────────────────────────────────────────────────────
+         ANCLAJE VERIFICADO contra el código fuente real de Odoo 19.0
+         (github.com/odoo/odoo, addons/website_sale/views/
+         product_tile_templates.xml): el grid NO usa combination_info
+         (eso es exclusivo del endpoint AJAX de la PDP). Usa
+         template_price_vals = get_product_prices(product), con claves
+         'base_price' (precio original) y 'price_reduce' (precio con
+         pricelist). Se ancla al mismo criterio que el core usa para
+         decidir el tachado (base_price > price_reduce), así el badge
+         nunca se desincroniza del precio que Odoo ya muestra.
+    ════════════════════════════════════════════════════════════════ -->
+    <template
+        id="products_item_discount_badge"
+        inherit_id="website_sale.products_item"
+        name="Discount Badge on Product Card"
+        priority="150"
+    >
+        <xpath expr="//div[contains(@t-attf-class, 'oe_product_image')]" position="inside">
+            <t t-if="'base_price' in template_price_vals and template_price_vals['base_price'] and template_price_vals['base_price'] &gt; template_price_vals['price_reduce']">
+                <t t-set="_md_discount_pct" t-value="round(100 - (100.0 * template_price_vals['price_reduce'] / template_price_vals['base_price']))"/>
+                <span t-if="_md_discount_pct &gt; 0" class="o_md_discount_badge">
+                    -<t t-esc="int(_md_discount_pct)"/>%
+                </span>
+            </t>
+        </xpath>
+    </template>
+
+    <!-- ════════════════════════════════════════════════════════════════
+         PDP  —  Badge de % de descuento (mismo pill que el grid)
+         ─────────────────────────────────────────────────────────────
+         A diferencia del grid, la PDP sí usa combination_info (el
+         endpoint AJAX /website_sale/get_combination_info, confirmado en
+         vivo en docs/audits/2026-07-02_pricelist_discount_architecture.md
+         — 'price', 'list_price', 'has_discounted_price'). Ancla verificada:
+         o_wsale_product_images ya se usa como anclaje real en
+         medicine_depot_website/views/pages/product_templates.xml.
+    ════════════════════════════════════════════════════════════════ -->
+    <template
+        id="product_detail_discount_badge"
+        inherit_id="website_sale.product"
+        name="Discount Badge on Product Detail Page"
+        priority="150"
+    >
+        <xpath expr="//div[contains(@t-attf-class, 'o_wsale_product_images')]" position="inside">
+            <t t-if="combination_info.get('has_discounted_price') and combination_info.get('list_price')">
+                <t t-set="_md_pdp_discount_pct" t-value="round(100 - (100.0 * combination_info['price'] / combination_info['list_price']))"/>
+                <span t-if="_md_pdp_discount_pct &gt; 0" class="o_md_discount_badge">
+                    -<t t-esc="int(_md_pdp_discount_pct)"/>%
+                </span>
+            </t>
+        </xpath>
+    </template>
+
+    <!-- ════════════════════════════════════════════════════════════════
+         SHOP GRID  —  Precio original tachado en rojo semántico
+         ─────────────────────────────────────────────────────────────
+         ANCLAJE VERIFICADO: <t name="product_base_price"> envuelve el
+         <del> del precio original en website_sale.products_item. Por
+         defecto trae class="text-muted" (gris); lo cambiamos a
+         text-danger para que el descuento destaque, sin tocar el resto
+         del layout (mismo <small> interno, mismo t-esc).
+    ════════════════════════════════════════════════════════════════ -->
+    <template
+        id="products_item_discount_price_red"
+        inherit_id="website_sale.products_item"
+        name="Red Strikethrough Price on Product Card"
+        priority="151"
+    >
+        <xpath expr="//t[@name='product_base_price']/del" position="attributes">
+            <attribute name="t-attf-class">text-danger me-1 mb-0</attribute>
+        </xpath>
+    </template>
+
+    <!-- ANCLAJE VERIFICADO en Odoo 19 (addons/website_sale/views/
+         product_tile_templates.xml): el nombre del producto se renderiza
+         en <h2 class="o_wsale_products_item_title text-break">, NO en <h6>.
+         El template original lleva un comentario "TODO: rename products_item
+         to product_tile". El <span t-field="product.name"/> está dentro
+         del <a> hijo del <h2>. Anclamos los tags justo después del <h2>. -->
+    <template
+        id="products_item_active_ingredient_tags"
+        inherit_id="website_sale.products_item"
+        name="Active Ingredient Tags on Product Card"
+        priority="100"
+    >
+        <xpath expr="//h2[hasclass('o_wsale_products_item_title')]" position="after">
+            <t t-call="custom_shop_qty_selector.active_ingredient_compact_tags"/>
+        </xpath>
+    </template>
+
+    <!-- Línea como eyebrow: se inyecta ANTES del <h2 title> para que
+         aparezca arriba del nombre del producto, estilo "category". -->
+    <template
+        id="products_item_product_line_eyebrow"
+        inherit_id="website_sale.products_item"
+        name="Product Line Eyebrow on Product Card"
+        priority="101"
+    >
+        <xpath expr="//h2[hasclass('o_wsale_products_item_title')]" position="before">
+            <t t-call="custom_shop_qty_selector.product_line_eyebrow"/>
+        </xpath>
+    </template>
+
+
+    <template
+        id="product_detail_line_tags"
+        inherit_id="website_sale.product_title"
+        name="Product Line Tags on Product Detail"
+        priority="98"
+    >
+        <xpath expr="//h1" position="after">
+            <t t-call="custom_shop_qty_selector.product_line_tags"/>
+        </xpath>
+    </template>
+
+    <template
+        id="product_detail_active_ingredient_tags"
+        inherit_id="website_sale.product_title"
+        name="Active Ingredient Tags on Product Detail"
+        priority="99"
+    >
+        <xpath expr="//h1" position="after">
+            <t t-call="custom_shop_qty_selector.active_ingredient_tags"/>
+        </xpath>
+    </template>
+
+    <template
+        id="product_detail_panel_class"
+        inherit_id="website_sale.product"
+        name="Medicine Depot Product Detail Panel"
+        priority="99"
+    >
+        <xpath expr="//div[@id='product_details']" position="attributes">
+            <attribute name="class" add="o_md_product_detail_panel" separator=" "/>
+        </xpath>
+    </template>
+
+    <template
+        id="product_detail_actions_class"
+        inherit_id="website_sale.cta_wrapper"
+        name="Medicine Depot Product Detail Actions"
+        priority="100"
+    >
+        <xpath expr="//div[@id='add_to_cart_wrap']" position="attributes">
+            <attribute name="class" add="o_md_product_detail_actions" separator=" "/>
+        </xpath>
+    </template>
+
+
+    <!-- ════════════════════════════════════════════════════════════════
+         PRODUCT DETAIL PAGE  —  website_sale.cta_wrapper
+         ─────────────────────────────────────────────────────────────
+         Inserta badge A la mano antes del área CTA nativa.
+         El layout vertical de #add_to_cart_wrap se maneja vía CSS.
+    ════════════════════════════════════════════════════════════════ -->
+    <template
+        id="product_detail_availability"
+        inherit_id="website_sale.cta_wrapper"
+        name="A la mano on Product Detail"
+        priority="99"
+    >
+        <xpath expr="//div[@id='add_to_cart_wrap']" position="before">
+            <t t-if="product_variant and product_variant.is_storable">
+                <div
+                    class="o_sqty_stock o_sqty_detail js_sqty_detail_stock o_sqty_loading mb-3"
+                    t-att-data-product-id="product_variant.id"
+                />
+            </t>
+        </xpath>
+    </template>
+
+    <template
+        id="product_detail_native_stock_notification_style"
+        inherit_id="website_sale_stock.website_sale_stock_product"
+        name="Medicine Depot Native A la mano Notification Style"
+        priority="110"
+    >
+        <xpath expr="//div[hasclass('availability_messages')]" position="attributes">
+            <attribute name="class" add="o_md_stock_notify_wrap mb-3" separator=" "/>
+        </xpath>
+    </template>
+
+
+    <!-- ════════════════════════════════════════════════════════════════
+         CARRITO  —  Ahorro por línea (% + monto)
+         ─────────────────────────────────────────────────────────────
+         ANCLAJE VERIFICADO contra el código fuente real de Odoo 19.0:
+         website_sale.cart_lines_price es un sub-template dedicado al
+         precio de cada línea, con ancla estable h6[@name=
+         'website_sale_cart_line_price']. Se usan los métodos oficiales
+         de sale.order.line (_should_show_strikethrough_price,
+         _get_displayed_unit_price, _get_cart_display_price) en vez de
+         recalcular a mano, para no desincronizarse nunca del precio que
+         el core ya calculó.
+    ════════════════════════════════════════════════════════════════ -->
+    <template
+        id="cart_line_savings"
+        inherit_id="website_sale.cart_lines_price"
+        name="Medicine Depot Cart Line Savings"
+        priority="99"
+    >
+        <xpath expr="//h6[@name='website_sale_cart_line_price']" position="after">
+            <t t-if="line._should_show_strikethrough_price()">
+                <t t-set="_md_line_before" t-value="line._get_displayed_unit_price() * line.product_uom_qty"/>
+                <t t-set="_md_line_after" t-value="line._get_cart_display_price()"/>
+                <t t-set="_md_saved" t-value="_md_line_before - _md_line_after"/>
+                <t t-set="_md_saved_pct" t-value="round(100 - (100.0 * _md_line_after / _md_line_before)) if _md_line_before else 0"/>
+                <div t-if="_md_saved &gt; 0" class="o_md_cart_savings text-muted small text-md-end">
+                    Ahorras <t t-esc="_md_saved_pct"/>% ·
+                    <span t-out="_md_saved" t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/>
+                </div>
+            </t>
+        </xpath>
+    </template>
+
+    <!-- ════════════════════════════════════════════════════════════════
+         PDP  —  Precio original tachado en rojo semántico
+         ─────────────────────────────────────────────────────────────
+         ANCLAJE VERIFICADO: website_sale.product_price es el template
+         compartido que renderiza el precio en la PDP. El mecanismo que
+         SÍ dispara para descuentos por pricelist (nuestro caso real,
+         has_discounted_price) es <span name="product_list_price">, NO
+         el <del name="product_price_strikethrough"> — ese depende de
+         compare_list_price, que la auditoría 2026-07-02 confirmó que no
+         aplica cuando hay pricelists activos. Recoloreamos ambos por
+         consistencia si algún día se usa compare_list_price.
+    ════════════════════════════════════════════════════════════════ -->
+    <template
+        id="product_price_red_strikethrough"
+        inherit_id="website_sale.product_price"
+        name="Red Strikethrough Price on PDP"
+        priority="99"
+    >
+        <xpath expr="//span[@name='product_list_price']" position="attributes">
+            <attribute name="t-attf-class">text-danger oe_default_price mb-0 h6 {{'' if combination_info['has_discounted_price'] else 'd-none'}}</attribute>
+        </xpath>
+        <xpath expr="//del[@name='product_price_strikethrough']" position="attributes">
+            <attribute name="class">text-danger ms-1 h6 oe_compare_list_price</attribute>
+        </xpath>
+    </template>
+
+    <!-- ════════════════════════════════════════════════════════════════
+         SHOP GRID  —  Filtro lateral "Descuentos Especiales"
+         ─────────────────────────────────────────────────────────────
+         Mismo patrón visual/estructural que active_ingredient_filter_form
+         y product_line_filter_form (accordion offcanvas en móvil, nav-item
+         en desktop). El negocio nunca otorga más de 10% de descuento
+         (confirmado por el usuario), por eso los tiers están acotados a
+         0-5% / 5-10% en vez de bandas más altas.
+    ════════════════════════════════════════════════════════════════ -->
+    <template
+        id="discount_tier_filter_form"
+        inherit_id="website_sale.product_attribute_filters_form"
+        name="Special Discounts Filter"
+        priority="101"
+    >
+        <xpath expr="//t[@t-foreach='attributes']" position="after">
+            <t t-if="discount_tiers">
+                <t t-set="_md_discount_status" t-value="'active' if discount_tier_ids else 'inactive'"/>
+                <div t-attf-class="accordion-item o_md_discount_filter {{('border-top-0 ' + ('order-1' if _md_discount_status == 'active' else 'order-2')) if isMobile else 'nav-item mb-1 rounded-0'}}">
+                    <h2 t-if="isMobile"
+                        class="accordion-header mb-0"
+                        id="o_wsale_offcanvas_discount_header">
+                        <button class="o_wsale_offcanvas_title accordion-button rounded-0 collapsed"
+                                type="button"
+                                t-att-data-status="_md_discount_status"
+                                data-bs-toggle="collapse"
+                                data-bs-target="#o_wsale_offcanvas_discount"
+                                aria-expanded="false"
+                                aria-controls="o_wsale_offcanvas_discount">
+                            <b>Descuentos Especiales</b>
+                        </button>
+                    </h2>
+                    <div t-else="" class="accordion-header h6 mb-0">
+                        <button class="accordion-button px-0 bg-transparent shadow-none collapsed"
+                                type="button"
+                                data-bs-toggle="collapse"
+                                data-bs-target="#o_wsale_discount_tier"
+                                aria-controls="o_wsale_discount_tier"
+                                aria-expanded="false">
+                            <b>Descuentos Especiales</b>
+                        </button>
+                    </div>
+                    <div t-attf-id="{{'o_wsale_offcanvas_discount' if isMobile else 'o_wsale_discount_tier'}}"
+                         class="accordion-collapse collapse">
+                        <div t-attf-class="{{'accordion-body pt-0' if isMobile else 'o_md_discount_filter_body mb-3'}}">
+                            <div t-attf-class="{{'list-group list-group-flush' if isMobile else 'flex-column'}}">
+                                <div t-foreach="discount_tiers"
+                                     t-as="tier"
+                                     t-attf-class="form-check mb-1 {{'list-group-item border-0 ps-0 pb-0' if isMobile else 'ms-1'}}">
+                                    <input type="checkbox"
+                                           name="discount_tier"
+                                           class="form-check-input"
+                                           t-att-id="'md-discount-tier-%s-%s' % ('mobile' if isMobile else 'desktop', tier[0])"
+                                           t-att-value="tier[0]"
+                                           t-att-checked="tier[0] in discount_tier_ids"/>
+                                    <label class="form-check-label fw-normal"
+                                           t-att-for="'md-discount-tier-%s-%s' % ('mobile' if isMobile else 'desktop', tier[0])"
+                                           t-out="tier[3]"/>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </t>
+        </xpath>
+    </template>
+
+    <template
+        id="products_attributes_active_ingredient_visibility"
+        inherit_id="website_sale.products_attributes"
+        name="Show Active Ingredient Filters"
+        priority="99"
+    >
+        <xpath expr="//div[@id='wsale_products_attributes_collapse']" position="attributes">
+            <attribute name="t-if">attributes or all_tags or active_ingredients or product_lines or discount_tiers</attribute>
+            <attribute name="class" add="o_md_filters_panel" separator=" "/>
+        </xpath>
+    </template>
+
+    <template
+        id="products_sidebar_premium_hooks"
+        inherit_id="website_sale.products"
+        name="Premium Shop Filters Rail Hooks"
+        priority="99"
+    >
+        <xpath expr="//div[hasclass('o_wsale_products_grid_before_rail')]" position="attributes">
+            <attribute name="class" add="o_md_shop_filters_rail" separator=" "/>
+        </xpath>
+    </template>
+
+    <template
+        id="product_line_desktop_clear_filters"
+        inherit_id="website_sale.products"
+        name="Product Line Desktop Clear Filters"
+        priority="99"
+    >
+        <xpath expr="//div[hasclass('py-3') and hasclass('border-bottom')]" position="attributes">
+            <attribute name="t-if">attrib_values or tags or active_ingredient_ids or product_line_ids or discount_tier_ids or (show_price_filter and isFilteringByPrice)</attribute>
+        </xpath>
+
+        <xpath expr="//div[hasclass('py-3') and hasclass('border-bottom')]/a" position="attributes">
+            <attribute name="t-att-href">keep('/shop'+ ('/category/'+slug(category)) if category else '', attribute_values=0, tags=0, active_ingredient=0, product_line=0, discount_tier=0, min_price=0, max_price=0)</attribute>
+        </xpath>
+    </template>
+
+    <template
+        id="products_categories_premium_hooks"
+        inherit_id="website_sale.products_categories_list"
+        name="Premium Categories Filter Hooks"
+        priority="99"
+    >
+        <xpath expr="//div[h6[contains(@t-attf-class, 'o_categories_collapse_title')]]" position="attributes">
+            <attribute name="t-attf-class" add="o_md_filters_panel o_md_categories_panel" separator=" "/>
+        </xpath>
+
+        <xpath expr="//div[@name='wsale_products_categories_list']" position="attributes">
+            <attribute name="t-attf-class" add="o_md_filter_list" separator=" "/>
+        </xpath>
+    </template>
+
+    <template
+        id="products_categories_collapsed_by_default"
+        inherit_id="website_sale.products_categories_list_collapsible"
+        name="Categories Collapsed by Default"
+        priority="110"
+    >
+        <xpath expr="//button[@t-attf-data-bs-target='#o_wsale_categories']" position="attributes">
+            <attribute name="class" add="collapsed" separator=" "/>
+            <attribute name="aria-expanded">false</attribute>
+        </xpath>
+
+        <xpath expr="//div[@name='wsale_products_categories_list']" position="attributes">
+            <attribute name="t-attf-class">wsale_products_categories_list {{not isOffcanvas and 'accordion-collapse collapse'}}</attribute>
+        </xpath>
+    </template>
+
+    <!-- ANCLAJE VERIFICADO en Odoo 19 (addons/website_sale/views/
+         templates.xml, líneas 1196-1323): el template
+         product_attribute_filters_form contiene UN único <form> y la
+         clase "js_attributes" se asigna mediante t-attf-class (dinámico),
+         NO mediante class estático. Por eso hasclass('js_attributes')
+         no resuelve (hasclass solo evalúa @class). Anclamos al único
+         <form> del template. El <t t-foreach='attributes'> sí existe
+         como atributo estático en la línea 1209. -->
+    <template
+        id="active_ingredient_filter_form"
+        inherit_id="website_sale.product_attribute_filters_form"
+        name="Active Ingredient Filter"
+        priority="99"
+    >
+        <xpath expr="//form" position="attributes">
+            <attribute name="t-att-action">keep('/shop'+ ('/category/'+slug(category)) if category else '', search=search, attrib=0, active_ingredient=0, product_line=0, discount_tier=0)</attribute>
+        </xpath>
+
+        <xpath expr="//t[@t-foreach='attributes']" position="after">
+            <t t-if="active_ingredients">
+                <t t-set="_md_ai_status" t-value="'active' if active_ingredient_ids else 'inactive'"/>
+                <t t-set="_md_ai_expand" t-value="False"/>
+                <div t-attf-class="accordion-item o_md_active_ingredient_filter {{('border-top-0 ' + ('order-1' if _md_ai_status == 'active' else 'order-2')) if isMobile else 'nav-item mb-1 rounded-0'}}">
+                    <h2 t-if="isMobile"
+                        class="accordion-header mb-0"
+                        id="o_wsale_offcanvas_active_ingredient_header">
+                        <button class="o_wsale_offcanvas_title accordion-button rounded-0 collapsed"
+                                type="button"
+                                t-att-data-status="_md_ai_status"
+                                data-bs-toggle="collapse"
+                                data-bs-target="#o_wsale_offcanvas_active_ingredient"
+                                aria-expanded="false"
+                                aria-controls="o_wsale_offcanvas_active_ingredient">
+                            <b>Ingrediente Activo</b>
+                        </button>
+                    </h2>
+                    <div t-else="" class="accordion-header h6 mb-0">
+                        <button class="accordion-button px-0 bg-transparent shadow-none collapsed"
+                                type="button"
+                                data-bs-toggle="collapse"
+                                data-bs-target="#o_wsale_active_ingredient"
+                                aria-controls="o_wsale_active_ingredient"
+                                aria-expanded="false">
+                            <b>Ingrediente Activo</b>
+                        </button>
+                    </div>
+                    <div t-attf-id="{{'o_wsale_offcanvas_active_ingredient' if isMobile else 'o_wsale_active_ingredient'}}"
+                         class="accordion-collapse collapse">
+                        <div t-attf-class="{{'accordion-body pt-0' if isMobile else 'o_md_active_ingredient_filter_body mb-3'}}">
+                            <div t-attf-class="{{'list-group list-group-flush' if isMobile else 'flex-column'}}">
+                                <div t-foreach="active_ingredients"
+                                     t-as="ingredient"
+                                     t-attf-class="form-check mb-1 {{'list-group-item border-0 ps-0 pb-0' if isMobile else 'ms-1'}}">
+                                    <input type="checkbox"
+                                           name="active_ingredient"
+                                           class="form-check-input"
+                                           t-att-id="'md-active-ingredient-%s-%s' % ('mobile' if isMobile else 'desktop', ingredient.id)"
+                                           t-att-value="ingredient.id"
+                                           t-att-checked="ingredient.id in active_ingredient_ids"/>
+                                    <label class="form-check-label fw-normal"
+                                           t-att-for="'md-active-ingredient-%s-%s' % ('mobile' if isMobile else 'desktop', ingredient.id)"
+                                           t-out="request.env['product.template']._md_active_ingredient_name(ingredient)"/>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </t>
+        </xpath>
+    </template>
+
+    <!-- IMPORTANTE: heredamos DIRECTAMENTE de website_sale.product_attribute_filters_form
+         (NO en cadena desde active_ingredient_filter_form). La cadena anidaba el bloque
+         de Línea dentro del <t t-if="active_ingredients"> del filtro AI, dejando los
+         <input name="product_line"> fuera del <form class="js_attributes"> en escenarios
+         donde active_ingredients estaba vacío. Como hijo directo del form, los inputs
+         son detectados por el listener nativo de Odoo que dispara el submit al
+         cambiar cualquier checkbox dentro de .js_attributes. -->
+    <template
+        id="product_line_filter_form"
+        inherit_id="website_sale.product_attribute_filters_form"
+        name="Product Line Filter"
+        priority="100"
+    >
+        <xpath expr="//t[@t-foreach='attributes']" position="after">
+            <t t-if="product_lines">
+                <t t-set="_md_line_status" t-value="'active' if product_line_ids else 'inactive'"/>
+                <div t-attf-class="accordion-item o_md_product_line_filter {{('border-top-0 ' + ('order-1' if _md_line_status == 'active' else 'order-2')) if isMobile else 'nav-item mb-1 rounded-0'}}">
+                    <h2 t-if="isMobile"
+                        class="accordion-header mb-0"
+                        id="o_wsale_offcanvas_product_line_header">
+                        <button class="o_wsale_offcanvas_title accordion-button rounded-0 collapsed"
+                                type="button"
+                                t-att-data-status="_md_line_status"
+                                data-bs-toggle="collapse"
+                                data-bs-target="#o_wsale_offcanvas_product_line"
+                                aria-expanded="false"
+                                aria-controls="o_wsale_offcanvas_product_line">
+                            <b>Línea</b>
+                        </button>
+                    </h2>
+                    <div t-else="" class="accordion-header h6 mb-0">
+                        <button class="accordion-button px-0 bg-transparent shadow-none collapsed"
+                                type="button"
+                                data-bs-toggle="collapse"
+                                data-bs-target="#o_wsale_product_line"
+                                aria-controls="o_wsale_product_line"
+                                aria-expanded="false">
+                            <b>Línea</b>
+                        </button>
+                    </div>
+                    <div t-attf-id="{{'o_wsale_offcanvas_product_line' if isMobile else 'o_wsale_product_line'}}"
+                         class="accordion-collapse collapse">
+                        <div t-attf-class="{{'accordion-body pt-0' if isMobile else 'o_md_product_line_filter_body mb-3'}}">
+                            <div t-attf-class="{{'list-group list-group-flush' if isMobile else 'flex-column'}}">
+                                <div t-foreach="product_lines"
+                                     t-as="line"
+                                     t-attf-class="form-check mb-1 {{'list-group-item border-0 ps-0 pb-0' if isMobile else 'ms-1'}}">
+                                    <input type="checkbox"
+                                           name="product_line"
+                                           class="form-check-input"
+                                           t-att-id="'md-product-line-%s-%s' % ('mobile' if isMobile else 'desktop', line.id)"
+                                           t-att-value="line.id"
+                                           t-att-checked="line.id in product_line_ids"/>
+                                    <label class="form-check-label fw-normal"
+                                           t-att-for="'md-product-line-%s-%s' % ('mobile' if isMobile else 'desktop', line.id)"
+                                           t-out="request.env['product.template']._md_product_line_name(line)"/>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </t>
+        </xpath>
+    </template>
+
+
+    <!-- ANCLAJE VERIFICADO en Odoo 19 (addons/website_sale/views/
+         templates.xml, líneas 1425-1432). El validador de vistas
+         prohíbe @title/@alt como anclajes (atributos i18n, no
+         estructurales). El template padre o_wsale_offcanvas contiene
+         dos <div class="offcanvas-body ...">: el segundo (líneas 1425+)
+         es el único que también tiene la clase "border-top" y envuelve
+         un único <a> con t-att-href="keep(attribute_values=0, tags=0,
+         min_price=0, max_price=0)". Anclamos vía cadena de clases
+         estáticas — el <a> no tiene class ni id propios.
+
+         Estructura padre relevante:
+            <div class="offcanvas-body ... border-top overflow-hidden">
+                <a t-attf-class="btn ..."
+                   t-att-aria-disabled="..."
+                   t-att-href="keep(...)"
+                   title="Clear Filters">Clear Filters</a>
+            </div>
+    -->
+    <template
+        id="active_ingredient_offcanvas_clear_filters"
+        inherit_id="website_sale.o_wsale_offcanvas"
+        name="Active Ingredient Clear Filters"
+        priority="99"
+    >
+        <xpath expr="//div[hasclass('offcanvas-body') and hasclass('border-top')]/a" position="attributes">
+            <attribute name="t-attf-class">btn btn-{{navClass}} d-flex py-1 mb-2 {{(not attrib_values and not isFilteringByPrice and not tags and not active_ingredient_ids and not product_line_ids and not discount_tier_ids) and 'disabled' }}</attribute>
+            <attribute name="t-att-aria-disabled">(not attrib_values and not isFilteringByPrice and not tags and not active_ingredient_ids and not product_line_ids and not discount_tier_ids) and 'true' or 'false'</attribute>
+            <attribute name="t-att-href">keep('/shop'+ ('/category/'+slug(category)) if category else '', attribute_values=0, tags=0, active_ingredient=0, product_line=0, discount_tier=0, min_price=0, max_price=0)</attribute>
+        </xpath>
+    </template>
+
+</odoo>

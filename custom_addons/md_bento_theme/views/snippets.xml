@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <template id="md_bento_link_card" name="Medicine Depot Bento Link Card">
+        <a t-att-href="card_url or '#'" class="md-bento-card md-service-tile">
+            <span t-out="card_number or '01'"/>
+            <h3 t-out="card_title or 'Medicine Depot'"/>
+            <p t-out="card_text or 'Confianza y bienestar en un solo lugar.'"/>
+        </a>
+    </template>
+
+    <template id="md_bento_logo_tile" name="Medicine Depot Bento Logo Tile">
+        <div class="md-logo-tile" t-out="logo_label or 'MD'"/>
+    </template>
+
+</odoo>

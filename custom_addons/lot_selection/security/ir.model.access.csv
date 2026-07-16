@@ -1,0 +1,7 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_sale_order_line_lot_selection,access_sale_order_line_lot_selection,sale.model_sale_order_line,,1,0,0,0
+access_sale_order_lot_selection,access_sale_order_lot_selection,sale.model_sale_order,,1,0,0,0
+access_stock_picking_lot_selection,access_stock_picking_lot_selection,stock.model_stock_picking,base.group_user,1,0,0,0
+access_purchase_order_lot_selection,access_purchase_order_lot_selection,purchase.model_purchase_order,base.group_user,1,0,0,0
+access_purchase_order_line_lot_selection,access_purchase_order_line_lot_selection,purchase.model_purchase_order_line,base.group_user,1,0,0,0
+access_stock_move_lot_selection,access_stock_move_lot_selection,stock.model_stock_move,base.group_user,1,0,0,0

@@ -1,0 +1,659 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <template id="md_brand_identity" name="MedicineDepot · Brand identity">
+        <t t-set="md_website_id" t-value="request.website.id if request.website else False"/>
+        <t t-set="md_company_id"
+           t-value="(request.website.company_id.id if request.website and request.website.company_id else request.env.company.id)"/>
+        <span class="md-bento-brand-lockup" aria-hidden="true">
+            <img t-if="md_website_id"
+                 class="md-bento-brand-logo"
+                 t-att-src="'/web/image/website/%s/logo' % md_website_id"
+                 alt="Medicine Depot"
+                 width="238"
+                 height="74"
+                 loading="eager"/>
+            <img t-else=""
+                 class="md-bento-brand-logo"
+                 t-att-src="'/logo.png?company=%s' % md_company_id"
+                 alt="Medicine Depot"
+                 width="238"
+                 height="74"
+                 loading="eager"/>
+        </span>
+        <span class="md-bento-brand-fallback">
+            <strong>Medicine<span>Depot</span></strong>
+            <small>Confianza y bienestar en un solo lugar</small>
+        </span>
+    </template>
+
+    <template id="md_brand_identity_light" name="MedicineDepot · Brand identity light">
+        <t t-set="md_website_id" t-value="request.website.id if request.website else False"/>
+        <t t-set="md_company_id"
+           t-value="(request.website.company_id.id if request.website and request.website.company_id else request.env.company.id)"/>
+        <span class="md-bento-brand-lockup" aria-hidden="true">
+            <img t-if="md_website_id"
+                 class="md-bento-brand-logo md-bento-brand-logo--light"
+                 t-att-src="'/web/image/website/%s/logo' % md_website_id"
+                 alt="Medicine Depot"
+                 width="238"
+                 height="74"
+                 loading="lazy"/>
+            <img t-else=""
+                 class="md-bento-brand-logo md-bento-brand-logo--light"
+                 t-att-src="'/logo.png?company=%s' % md_company_id"
+                 alt="Medicine Depot"
+                 width="238"
+                 height="74"
+                 loading="lazy"/>
+        </span>
+        <span class="md-bento-brand-fallback">
+            <strong>Medicine<span>Depot</span></strong>
+            <small>Confianza y bienestar en un solo lugar</small>
+        </span>
+    </template>
+
+    <!-- ── Navbar fragments ────────────────────────────────────────────── -->
+
+    <!-- Fragment: logo link -->
+    <template id="md_nav_logo" name="MedicineDepot · Nav logo">
+        <a href="/" class="md-bento-brand" aria-label="MedicineDepot inicio">
+            <t t-call="medicine_depot_portal.md_brand_identity"/>
+        </a>
+    </template>
+
+    <!-- Fragment: native eCommerce cart -->
+    <template id="md_nav_cart" name="MedicineDepot · Nav cart">
+        <ul class="md-bento-cart list-unstyled d-inline-flex align-items-center m-0 p-0"
+            aria-label="Carrito de compras">
+            <t t-call="website_sale.header_cart_link">
+                <t t-set="_icon" t-value="True"/>
+                <t t-set="_text" t-value="False"/>
+                <t t-set="_item_class" t-value="'md-bento-cart-item'"/>
+                <t t-set="_link_class"
+                   t-value="'o_navlink_background btn position-relative rounded-circle p-0 text-reset md-bento-cart-link'"/>
+                <t t-set="_icon_wrap_class"
+                   t-value="'position-relative d-inline-flex align-items-center justify-content-center'"/>
+                <t t-set="_badge_class"
+                   t-value="'position-absolute top-0 end-0 translate-middle rounded-pill'"/>
+                <t t-set="_text_class" t-value="''"/>
+            </t>
+        </ul>
+    </template>
+
+    <!-- Fragment: acceso a cuenta (login/registro o portal) -->
+    <template id="md_nav_account" name="MedicineDepot · Nav account">
+        <t t-if="request.env.user._is_public()">
+            <!-- Visitante anónimo: mostrar acceso -->
+            <a href="/web/login"
+               class="btn btn-outline-primary md-bento-nav-account"
+               aria-label="Iniciar sesión o crear cuenta">
+                <i class="fa fa-user-circle-o" aria-hidden="true"/>
+                <span class="md-bento-nav-account-label">Iniciar Sesión</span>
+            </a>
+        </t>
+        <t t-else="">
+            <!-- Usuario autenticado: mostrar cierre de sesión -->
+            <a href="/web/session/logout?redirect=/"
+               class="btn btn-outline-primary md-bento-nav-account"
+               aria-label="Cerrar sesión">
+                <i class="fa fa-sign-out" aria-hidden="true"/>
+                <span class="md-bento-nav-account-label">Cerrar Sesión</span>
+            </a>
+        </t>
+    </template>
+
+    <!-- Fragment: hamburger toggle -->
+    <template id="md_nav_toggle" name="MedicineDepot · Nav toggle">
+        <button class="md-bento-toggler"
+                type="button"
+                data-bs-toggle="collapse"
+                data-bs-target="#md-bento-nav-links"
+                aria-controls="md-bento-nav-links"
+                aria-expanded="false"
+                aria-label="Abrir navegación">
+            <span class="md-bento-toggler-bar" aria-hidden="true"/>
+            <span class="md-bento-toggler-bar" aria-hidden="true"/>
+            <span class="md-bento-toggler-bar" aria-hidden="true"/>
+        </button>
+    </template>
+
+    <!-- Fragment: nav items list -->
+    <template id="md_nav_items" name="MedicineDepot · Nav items">
+        <nav id="md-bento-nav-links"
+             class="md-bento-nav-links collapse"
+             aria-label="Navegación principal"
+             role="navigation">
+            <t t-foreach="md_nav_items" t-as="item">
+                <a t-att-href="item['url']"
+                   t-attf-class="md-bento-pill {{'is-cta' if item.get('cta') else ''}}">
+                    <t t-esc="item['label']"/>
+                </a>
+            </t>
+            <t t-if="not user_id._is_public()">
+                <a href="/my/dashboard"
+                   class="md-bento-pill md-bento-pill--account"
+                   aria-label="Ir a mi cuenta">
+                    <i class="fa fa-th-large" aria-hidden="true"/> Mi cuenta
+                </a>
+            </t>
+        </nav>
+    </template>
+
+    <!-- Base pública unificada (Fase 1) -->
+    <template id="public_shell">
+        <t t-set="no_header" t-value="True"/>
+        <t t-set="body_classname" t-value="'md-bento-public'"/>
+        <t t-set="md_path" t-value="request.httprequest.path or '/'"/>
+        <!-- Fallbacks SEO -->
+        <t t-set="title" t-value="title or 'Medicine Depot | Confianza y bienestar'"/>
+        <t t-set="meta_description" t-value="meta_description or 'Confianza y bienestar en un solo lugar: medicamentos, insumos y acompañamiento para farmacias y profesionales de salud.'"/>
+        <t t-set="meta_image" t-value="meta_image or '/medicine_depot_portal/static/src/img/md_social_share.jpg'"/>
+        <t t-set="md_nav_items"
+           t-value="[
+               {'label': 'Inicio', 'url': '/', 'active': md_path in ('/', '/home')},
+               {'label': 'Tienda', 'url': '/shop', 'active': md_path.startswith('/shop')},
+               {'label': 'Afiliación', 'url': '/afiliacion', 'active': md_path.startswith('/afiliacion')},
+               {'label': 'MedicD', 'url': '/medicd', 'active': md_path.startswith('/medicd')},
+               {'label': 'Sucursales', 'url': '/sucursales', 'active': md_path.startswith('/sucursales')},
+               {'label': 'Farmacovigilancia', 'url': '/farmacovigilancia', 'active': md_path.startswith('/farmacovigilancia')},
+               {'label': 'Contacto', 'url': '/contactus', 'active': md_path.startswith('/contactanos') or md_path.startswith('/contactus') or md_path.startswith('/contacto-quejas'), 'cta': True},
+           ]"/>
+        <t t-call="website.layout">
+            <div id="wrap" class="md-bento-wrap">
+                <a class="md-skip-link" href="#md_public_main_structure">Saltar al contenido</a>
+                <header class="md-bento-topbar" role="banner">
+                    <div class="md-bento-container">
+                        <div class="md-bento-nav">
+                            <t t-call="medicine_depot_portal.md_nav_logo"/>
+                            <t t-call="medicine_depot_portal.md_nav_items"/>
+                            <t t-call="medicine_depot_portal.md_nav_cart"/>
+                            <t t-call="medicine_depot_portal.md_nav_account"/>
+                            <t t-call="medicine_depot_portal.md_nav_toggle"/>
+                        </div>
+                    </div>
+                </header>
+
+                <main class="md-bento-main">
+                    <!-- oe_structure sin container: cada sección maneja su propio md-bento-container -->
+                    <div class="oe_structure" id="md_public_main_structure" tabindex="-1">
+                        <t t-out="0"/>
+                    </div>
+                </main>
+
+            </div>
+        </t>
+    </template>
+
+    <!--
+        public_home_page · Compone snippets bento mediante t-call.
+        Cada sección es ya un snippet registrado en views/snippets/.
+        Ciclo cromático: dark hero → cream "somos" → blue-light "mercados" → dark "socios/podcast"
+    -->
+    <template id="public_home_page">
+        <t t-call="medicine_depot_portal.public_shell">
+            <t t-call="medicine_depot_portal.s_md_hero_bento"/>
+
+            <section class="md-section md-section--glass">
+                <div class="md-bento-container">
+                    <div class="md-section-head">
+                        <span class="md-eyebrow">Quiénes somos</span>
+                        <h2>Distribuidor farmacéutico de confianza.</h2>
+                        <p class="md-lead">
+                            Más de una década conectando laboratorios, distribuidores y farmacias
+                            con los productos que la salud mexicana necesita.
+                        </p>
+                    </div>
+                    <t t-call="medicine_depot_portal.s_md_audit_grid"/>
+                </div>
+            </section>
+
+            <section class="md-section md-section--glass">
+                <div class="md-bento-container">
+                    <div class="md-section-head">
+                        <span class="md-eyebrow">Mercados</span>
+                        <h2>Sectores que atendemos.</h2>
+                        <p class="md-lead">
+                            Desde farmacias independientes hasta cadenas y hospitales privados.
+                        </p>
+                    </div>
+                    <t t-call="medicine_depot_portal.s_md_service_grid"/>
+                </div>
+            </section>
+
+            <section class="md-section md-section--glass">
+                <div class="md-bento-container">
+                    <div class="md-section-head">
+                        <span class="md-eyebrow">Blog y podcast</span>
+                        <h2>Contenido educativo como motor de confianza.</h2>
+                    </div>
+                    <t t-call="medicine_depot_portal.s_md_blog_grid"/>
+                </div>
+            </section>
+        </t>
+    </template>
+
+
+    <!--
+        public_branches_page · Mapa SVG + tarjetas de sucursales.
+    -->
+    <template id="public_branches_page">
+        <t t-call="medicine_depot_portal.public_shell">
+            <section class="md-section md-section--glass md-section--branches">
+                <div class="md-bento-container">
+                    <!-- Hero bento: bloque visual + facts, equivalente al mockup de Sucursales. -->
+                    <div class="md-branches-hero d-grid gap-3">
+                        <article class="md-branches-hero-art d-flex flex-column">
+                            <span class="md-eyebrow">Sucursales</span>
+                            <h1 class="md-page-title md-page-title--wide">
+                                Presencia local,<br/>atención de mostrador.
+                            </h1>
+                            <p class="md-lead">
+                                Seis tiendas en el sureste con espacios claros, producto surtido y atención personalizada para farmacias y profesionales de salud.
+                            </p>
+                        </article>
+                        <div class="md-branches-hero-facts d-grid gap-3">
+                            <article class="md-branches-fact md-branches-fact--mint d-flex flex-column">
+                                <span class="md-branches-fact-kicker">Cobertura</span>
+                                <div class="md-branches-fact-metrics">
+                                    <div class="md-branches-metric">
+                                        <strong><t t-esc="len(branch_cards) if branch_cards else 6"/></strong>
+                                        <span>sucursales activas</span>
+                                    </div>
+                                    <div class="md-branches-metric">
+                                        <strong>3</strong>
+                                        <span>estados del sureste</span>
+                                    </div>
+                                </div>
+                            </article>
+                            <article class="md-branches-fact d-flex flex-column">
+                                <span class="md-branches-fact-kicker">Formato</span>
+                                <div class="md-branches-fact-pills">
+                                    <span class="md-branches-pill"><i></i> Retail y mostrador</span>
+                                    <span class="md-branches-pill md-branches-pill--green"><i></i> Ruta directa</span>
+                                </div>
+                                <p class="md-branches-fact-note">
+                                    Visita cualquier sucursal o escríbenos por WhatsApp para confirmar lo que tenemos a la mano.
+                                </p>
+                            </article>
+                        </div>
+                    </div>
+
+                    <t t-call="medicine_depot_portal.s_md_branches"/>
+                </div>
+            </section>
+        </t>
+    </template>
+
+    <!--
+        public_pharmacovigilance_page · El wizard real permanece (necesita server logic).
+        El hero del wizard y su stepper ya están encapsulados en s_md_wizard_hero.
+    -->
+    <template id="public_pharmacovigilance_page">
+        <t t-call="medicine_depot_portal.public_shell">
+            <section class="md-section md-section--glass md-section--compact md-bento-section md_pv_page_wrap">
+                <div class="md_bento_portal md_pv_portal">
+                    <div class="md-section-head">
+                        <div>
+                            <span class="md-eyebrow">Farmacovigilancia</span>
+                            <h1 class="md-page-title">Reporte seguro, guiado y trazable.</h1>
+                        </div>
+                        <p class="md-lead">
+                            Flujo dividido en 6 pasos para evitar formularios interminables
+                            y mantener la captura lista para revisión interna en Odoo.
+                        </p>
+                    </div>
+
+                    <form class="md_pv_form" id="pharmacovigilance_form" method="POST">
+                    <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                    <div class="md_pv_hp md-visually-hidden" aria-hidden="true">
+                        <label for="md_hp_field">No completar este campo.</label>
+                        <input id="md_hp_field" type="text" name="md_hp_field" tabindex="-1" autocomplete="off"/>
+                    </div>
+
+                    <t t-call="medicine_depot_portal.s_md_wizard_hero">
+                        <t t-set="wizard_eyebrow" t-value="'Nuevo flujo'"/>
+                        <t t-set="wizard_title" t-value="'Guía de reporte con lenguaje claro y pasos cortos.'"/>
+                        <t t-set="wizard_summary_left" t-value="('Tiempo estimado', '6-8 min', 'Sin recargar al usuario con una sola pantalla.')"/>
+                        <t t-set="wizard_summary_right" t-value="('Resultado', 'Registro interno', 'Se crea un reporte trazable en Odoo para revisión.')"/>
+                        <t t-set="wizard_steps" t-value="pharmacovigilance_steps"/>
+                        <t t-set="wizard_step_attr" t-value="'data-pv-step-jump'"/>
+                    </t>
+
+                    <div class="md_pv_layout">
+                        <div class="md_pv_body md_pv_wizard" data-pv-wizard="true">
+                        <section class="md_pv_section is-active" data-pv-step="1" id="pv-step-1">
+                            <div class="md_pv_section_head">
+                                <div><h3>Datos del paciente</h3><p>Identificación básica.</p></div>
+                                <span>Paso 1 de 6</span>
+                            </div>
+                            <div class="md_pv_fields">
+                                <div class="md_pv_field md_pv_field--span2">
+                                    <label for="patient_name">Nombre del paciente</label>
+                                    <input id="patient_name" name="patient_name" class="form-control" required="required" type="text"/>
+                                </div>
+                                <div class="md_pv_field">
+                                    <label for="patient_age">Edad</label>
+                                    <input id="patient_age" name="patient_age" class="form-control" type="number" min="0" step="1"/>
+                                </div>
+                                <div class="md_pv_field">
+                                    <label for="patient_sex">Sexo</label>
+                                    <select id="patient_sex" name="patient_sex" class="form-control">
+                                        <option value="">Selecciona una opción</option>
+                                        <t t-foreach="pharmacovigilance_options['patient_sex_options']" t-as="opt">
+                                            <option t-att-value="opt[0]"><t t-esc="opt[1]"/></option>
+                                        </t>
+                                    </select>
+                                </div>
+                                <div class="md_pv_field md_pv_field--span2">
+                                    <label for="patient_city">Ciudad / estado</label>
+                                    <input id="patient_city" name="patient_city" class="form-control" type="text"/>
+                                </div>
+                            </div>
+                            <div class="md_pv_actions">
+                                <p class="md_pv_hint">Paso inicial para ubicar el caso.</p>
+                                <button type="button" class="md_pv_btn md_pv_btn--primary" data-pv-next="true">Continuar</button>
+                            </div>
+                        </section>
+
+                        <section class="md_pv_section" data-pv-step="2" id="pv-step-2">
+                            <div class="md_pv_section_head">
+                                <div><h3>Evento adverso</h3><p>Qué ocurrió, cuándo y con qué severidad.</p></div>
+                                <span>Paso 2 de 6</span>
+                            </div>
+                            <div class="md_pv_fields">
+                                <div class="md_pv_field">
+                                    <label for="event_date">Fecha del evento</label>
+                                    <input id="event_date" name="event_date" class="form-control" type="date"/>
+                                </div>
+                                <div class="md_pv_field">
+                                    <label for="event_severity">Gravedad</label>
+                                    <select id="event_severity" name="event_severity" class="form-control" required="required">
+                                        <option value="">Selecciona una opción</option>
+                                        <t t-foreach="pharmacovigilance_options['severity_options']" t-as="opt">
+                                            <option t-att-value="opt[0]"><t t-esc="opt[1]"/></option>
+                                        </t>
+                                    </select>
+                                </div>
+                                <div class="md_pv_field">
+                                    <label for="event_outcome">Evolución</label>
+                                    <select id="event_outcome" name="event_outcome" class="form-control">
+                                        <option value="">Selecciona una opción</option>
+                                        <t t-foreach="pharmacovigilance_options['outcome_options']" t-as="opt">
+                                            <option t-att-value="opt[0]"><t t-esc="opt[1]"/></option>
+                                        </t>
+                                    </select>
+                                </div>
+                                <div class="md_pv_field md_pv_field--span2">
+                                    <label for="event_description">Descripción del evento</label>
+                                    <textarea id="event_description" name="event_description" class="form-control" rows="5" required="required"></textarea>
+                                </div>
+                            </div>
+                            <div class="md_pv_actions">
+                                <button type="button" class="md_pv_btn md_pv_btn--ghost" data-pv-back="true">Anterior</button>
+                                <button type="button" class="md_pv_btn md_pv_btn--primary" data-pv-next="true">Continuar</button>
+                            </div>
+                        </section>
+
+                        <section class="md_pv_section" data-pv-step="3" id="pv-step-3">
+                            <div class="md_pv_section_head">
+                                <div><h3>Medicamento sospechoso</h3><p>Datos del producto relacionado.</p></div>
+                                <span>Paso 3 de 6</span>
+                            </div>
+                            <div class="md_pv_fields">
+                                <div class="md_pv_field md_pv_field--span2">
+                                    <label for="suspected_product_name">Producto sospechoso</label>
+                                    <input id="suspected_product_name" name="suspected_product_name" class="form-control" type="text" required="required"/>
+                                </div>
+                                <div class="md_pv_field">
+                                    <label for="suspected_product_presentation">Presentación</label>
+                                    <input id="suspected_product_presentation" name="suspected_product_presentation" class="form-control" type="text"/>
+                                </div>
+                                <div class="md_pv_field">
+                                    <label for="suspected_batch">Lote / serie</label>
+                                    <input id="suspected_batch" name="suspected_batch" class="form-control" type="text"/>
+                                </div>
+                                <div class="md_pv_field md_pv_field--span2">
+                                    <label for="suspected_dose">Dosis / frecuencia</label>
+                                    <input id="suspected_dose" name="suspected_dose" class="form-control" type="text"/>
+                                </div>
+                            </div>
+                            <div class="md_pv_actions">
+                                <button type="button" class="md_pv_btn md_pv_btn--ghost" data-pv-back="true">Anterior</button>
+                                <button type="button" class="md_pv_btn md_pv_btn--primary" data-pv-next="true">Continuar</button>
+                            </div>
+                        </section>
+
+                        <section class="md_pv_section" data-pv-step="4" id="pv-step-4">
+                            <div class="md_pv_section_head">
+                                <div><h3>Estado de salud</h3><p>Antecedentes y condición actual.</p></div>
+                                <span>Paso 4 de 6</span>
+                            </div>
+                            <div class="md_pv_fields">
+                                <div class="md_pv_field md_pv_field--span2">
+                                    <label for="medical_history">Antecedentes médicos</label>
+                                    <textarea id="medical_history" name="medical_history" class="form-control" rows="4"></textarea>
+                                </div>
+                                <div class="md_pv_field md_pv_field--span2">
+                                    <label for="current_condition">Estado de salud actual</label>
+                                    <textarea id="current_condition" name="current_condition" class="form-control" rows="4"></textarea>
+                                </div>
+                            </div>
+                            <div class="md_pv_actions">
+                                <button type="button" class="md_pv_btn md_pv_btn--ghost" data-pv-back="true">Anterior</button>
+                                <button type="button" class="md_pv_btn md_pv_btn--primary" data-pv-next="true">Continuar</button>
+                            </div>
+                        </section>
+
+                        <section class="md_pv_section" data-pv-step="5" id="pv-step-5">
+                            <div class="md_pv_section_head">
+                                <div><h3>Medicamentos concomitantes</h3><p>Tratamientos simultáneos y observaciones.</p></div>
+                                <span>Paso 5 de 6</span>
+                            </div>
+                            <div class="md_pv_fields">
+                                <div class="md_pv_field md_pv_field--span2">
+                                    <label for="concomitant_medication">Medicamentos concomitantes</label>
+                                    <textarea id="concomitant_medication" name="concomitant_medication" class="form-control" rows="4"></textarea>
+                                </div>
+                                <div class="md_pv_field md_pv_field--span2">
+                                    <label for="notes">Observaciones</label>
+                                    <textarea id="notes" name="notes" class="form-control" rows="4"></textarea>
+                                </div>
+                            </div>
+                            <div class="md_pv_actions">
+                                <button type="button" class="md_pv_btn md_pv_btn--ghost" data-pv-back="true">Anterior</button>
+                                <button type="button" class="md_pv_btn md_pv_btn--primary" data-pv-next="true">Continuar</button>
+                            </div>
+                        </section>
+
+                        <section class="md_pv_section" data-pv-step="6" id="pv-step-6">
+                            <div class="md_pv_section_head">
+                                <div><h3>Datos del notificador</h3><p>Confirma quién reporta y acepta el aviso.</p></div>
+                                <span>Paso 6 de 6</span>
+                            </div>
+                            <div class="md_pv_review_grid">
+                                <article class="md_pv_review_card">
+                                    <strong>Antes de enviar</strong>
+                                    <p>Revisa que la gravedad, el producto y la descripción del evento sean claros.</p>
+                                </article>
+                                <article class="md_pv_review_card md_pv_review_card--soft">
+                                    <strong>Qué ocurrirá</strong>
+                                    <p>Odoo guardará el reporte con folio propio para seguimiento interno.</p>
+                                </article>
+                            </div>
+                            <div class="md_pv_fields">
+                                <div class="md_pv_field">
+                                    <label for="reporter_name">Nombre del notificador</label>
+                                    <input id="reporter_name" name="reporter_name" class="form-control" type="text" required="required" t-att-value="pharmacovigilance_defaults['reporter_name']"/>
+                                </div>
+                                <div class="md_pv_field">
+                                    <label for="reporter_role">Perfil del notificador</label>
+                                    <select id="reporter_role" name="reporter_role" class="form-control" required="required">
+                                        <option value="">Selecciona una opción</option>
+                                        <t t-foreach="pharmacovigilance_options['reporter_role_options']" t-as="opt">
+                                            <option t-att-value="opt[0]"><t t-esc="opt[1]"/></option>
+                                        </t>
+                                    </select>
+                                </div>
+                                <div class="md_pv_field">
+                                    <label for="reporter_relationship">Relación con el paciente</label>
+                                    <select id="reporter_relationship" name="reporter_relationship" class="form-control" required="required">
+                                        <option value="">Selecciona una opción</option>
+                                        <t t-foreach="pharmacovigilance_options['relationship_options']" t-as="opt">
+                                            <option t-att-value="opt[0]"><t t-esc="opt[1]"/></option>
+                                        </t>
+                                    </select>
+                                </div>
+                                <div class="md_pv_field">
+                                    <label for="reporter_email">Correo electrónico</label>
+                                    <input id="reporter_email" name="reporter_email" class="form-control" type="email" required="required" t-att-value="pharmacovigilance_defaults['reporter_email']"/>
+                                </div>
+                                <div class="md_pv_field md_pv_field--span2">
+                                    <label for="reporter_phone">Teléfono</label>
+                                    <input id="reporter_phone" name="reporter_phone" class="form-control" type="tel" t-att-value="pharmacovigilance_defaults['reporter_phone']"/>
+                                </div>
+                            </div>
+
+                            <label class="md_pv_privacy">
+                                <input type="checkbox" name="consent" required="required"/>
+                                <span>
+                                    Acepto el <a href="/aviso-de-privacidad">aviso de privacidad</a>
+                                    y autorizo el tratamiento de mis datos para fines de farmacovigilancia.
+                                </span>
+                            </label>
+
+                            <div class="md_pv_actions md_pv_actions--final">
+                                <button type="button" class="md_pv_btn md_pv_btn--ghost" data-pv-back="true">Anterior</button>
+                                <div class="md_pv_submit_stack">
+                                    <p class="md_pv_hint">El reporte se registrará en Odoo con un folio único.</p>
+                                    <button type="submit" class="md_pv_btn md_pv_btn--primary" id="pv_submit_btn" disabled="disabled">Enviar reporte</button>
+                                </div>
+                            </div>
+                            <div class="alert alert-danger d-none mt-3" id="pharmacovigilance_error_box" role="alert"/>
+                            <div class="md_pv_success d-none" id="pharmacovigilance_success_screen">
+                                <div class="md_pv_success_icon">
+                                    <svg width="34" height="34" viewBox="0 0 24 24" fill="none">
+                                        <path d="M5 12l5 5L20 7" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                    </svg>
+                                </div>
+                                <strong>Reporte enviado</strong>
+                                <span>Tu caso fue registrado correctamente.</span>
+                            </div>
+                        </section>
+                        </div>
+                        <aside class="md_pv_aside d-flex flex-column gap-3" aria-label="Información de soporte">
+                            <div class="md_pv_checklist_card d-flex flex-column gap-3">
+                                <span class="md_pv_aside_kicker">Checklist de reporte</span>
+                                <div class="md_pv_checklist" id="md_pv_checklist">
+                                    <div class="md_pv_check_item is-active"><span class="md_pv_check_box"><i class="fa fa-check"/></span>Paciente</div>
+                                    <div class="md_pv_check_item"><span class="md_pv_check_box"><i class="fa fa-check"/></span>Evento</div>
+                                    <div class="md_pv_check_item"><span class="md_pv_check_box"><i class="fa fa-check"/></span>Medicamento</div>
+                                    <div class="md_pv_check_item"><span class="md_pv_check_box"><i class="fa fa-check"/></span>Salud</div>
+                                    <div class="md_pv_check_item"><span class="md_pv_check_box"><i class="fa fa-check"/></span>Simultáneos</div>
+                                    <div class="md_pv_check_item"><span class="md_pv_check_box"><i class="fa fa-check"/></span>Notificador</div>
+                                </div>
+                            </div>
+                            <div class="md_pv_help_card d-flex flex-column gap-2">
+                                <span class="md_pv_aside_kicker md_pv_aside_kicker--green">Aviso de Privacidad</span>
+                                <p>Toda la información es estrictamente confidencial y se procesa conforme a la normativa oficial de farmacovigilancia.</p>
+                                <a class="md_pv_help_btn" href="/aviso-de-privacidad" target="_blank" rel="noopener">
+                                    <i class="fa fa-lock me-2"/> Leer aviso completo
+                                </a>
+                            </div>
+                        </aside>
+                    </div>
+                </form>
+                </div>
+            </section>
+        </t>
+    </template>
+
+    <!--
+        md_login_layout_override · Centra el contenedor nativo de autenticación
+        (oe_website_login_container) para que la tarjeta Glassmorphism flote
+        verticalmente. La clase .md-login-container habilita los fondos
+        difuminados definidos en login_custom.scss; el diseño se aplica sin
+        tocar el <form class="oe_login_form"> nativo de Odoo.
+    -->
+    <template id="md_login_layout_override"
+              inherit_id="website.login_layout"
+              name="MedicineDepot · Login layout centered"
+              priority="10">
+        <xpath expr="//div[hasclass('oe_website_login_container')]" position="attributes">
+            <attribute name="class" add="md-login-container d-flex flex-column align-items-center justify-content-center" separator=" "/>
+        </xpath>
+    </template>
+
+    <template id="md_shop_access_restricted">
+        <t t-call="medicine_depot_portal.public_shell">
+            <t t-set="title">Acceso Restringido | Medicine Depot</t>
+            <section class="md_restricted_page_wrap">
+                <div class="md-bento-container">
+
+                    <!-- Hero -->
+                    <div class="md_restricted_hero text-center">
+                        <div class="md_restricted_lock_wrap mx-auto mb-4">
+                            <span class="md_lock_icon"><i class="fa fa-lock" aria-hidden="true"/></span>
+                        </div>
+                        <p class="md_restricted_eyebrow mb-2">Catálogo Exclusivo</p>
+                        <h1 class="md_restricted_title mb-3">
+                            Acceso para clientes<br/>activos de Medicine Depot
+                        </h1>
+                        <p class="md_restricted_lead mx-auto mb-5">
+                            Para ver precios y productos <strong>a la mano</strong>, necesitas una cuenta de cliente activa.
+                        </p>
+                        <div class="d-flex justify-content-center gap-3 flex-wrap">
+                            <a href="/web/login" class="btn btn-primary rounded-pill px-5 py-2 md_restricted_btn_login">
+                                <i class="fa fa-sign-in me-2" aria-hidden="true"/>Iniciar Sesión
+                            </a>
+                            <a href="/afiliacion" class="btn btn-outline-primary rounded-pill px-5 py-2">
+                                Iniciar Afiliación <i class="fa fa-arrow-right ms-2" aria-hidden="true"/>
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Divider -->
+                    <div class="md_restricted_divider">
+                        <span>¿Cómo afiliarse?</span>
+                    </div>
+
+                    <!-- Steps -->
+                    <div class="row g-4 justify-content-center pb-5">
+                        <div class="col-12 col-sm-6 col-md-4">
+                            <article class="md_restricted_step_card md_restricted_step_card--green h-100">
+                                <div class="md_step_num">01</div>
+                                <div class="md_step_icon_wrap md_step_icon_wrap--green mb-3">
+                                    <i class="fa fa-file-text-o" aria-hidden="true"/>
+                                </div>
+                                <h3 class="md_step_title">Completa tus datos</h3>
+                                <p class="md_step_desc">Llena el formulario digital con la información de tu establecimiento.</p>
+                            </article>
+                        </div>
+                        <div class="col-12 col-sm-6 col-md-4">
+                            <article class="md_restricted_step_card md_restricted_step_card--blue h-100">
+                                <div class="md_step_num">02</div>
+                                <div class="md_step_icon_wrap md_step_icon_wrap--blue mb-3">
+                                    <i class="fa fa-cloud-upload" aria-hidden="true"/>
+                                </div>
+                                <h3 class="md_step_title">Sube tus documentos</h3>
+                                <p class="md_step_desc">Adjunta tus permisos sanitarios (COFEPRIS) y cédula profesional.</p>
+                            </article>
+                        </div>
+                        <div class="col-12 col-sm-6 col-md-4">
+                            <article class="md_restricted_step_card md_restricted_step_card--teal h-100">
+                                <div class="md_step_num">03</div>
+                                <div class="md_step_icon_wrap md_step_icon_wrap--teal mb-3">
+                                    <i class="fa fa-check-circle-o" aria-hidden="true"/>
+                                </div>
+                                <h3 class="md_step_title">¡Listo! Compra a la mano</h3>
+                                <p class="md_step_desc">Validamos tu expediente en 24-48 horas hábiles para ver el catálogo a la mano.</p>
+                            </article>
+                        </div>
+                    </div>
+
+                </div>
+            </section>
+        </t>
+    </template>
+
+</odoo>

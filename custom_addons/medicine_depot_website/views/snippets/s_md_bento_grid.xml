@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <template id="s_md_bento_grid" name="MD · Bento Grid (Misión / Visión / Valores)">
+        <div class="s_md_bento_grid gap-4">
+            <div class="md-tile md-tile--blue bento-glass-card">
+                <span class="md-eyebrow md-eyebrow--light">Misión</span>
+                <p class="mb-0 mt-3">
+                    Facilitar oportunidades de negocio, incrementar la utilidad y bienestar,
+                    mediante el surtido eficiente de medicamentos, materiales de curación,
+                    insumos para la salud y asesoría a farmacéuticos con calidad humana.
+                </p>
+            </div>
+            <div class="md-tile md-tile--surface bento-glass-card">
+                <span class="md-eyebrow">Visión</span>
+                <p class="mb-0 mt-3">
+                    Ser el primer aliado estratégico de los farmacéuticos
+                    e incrementar juntos el bienestar de las familias mexicanas.
+                </p>
+            </div>
+            <div class="md-tile md-tile--lime bento-glass-card">
+                <span class="md-eyebrow md-eyebrow--dark">Valores</span>
+                <p class="mb-0 mt-3">
+                    Respeto, calidad, responsabilidad, servicio y lealtad.
+                </p>
+            </div>
+        </div>
+    </template>
+
+</odoo>

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <t t-name="bi_pos_stock.ClosePosPopup"
+       t-inherit="point_of_sale.ClosePosPopup"
+       t-inherit-mode="extension"
+       owl="1">
+        <xpath expr="//button[@t-on-click='downloadSalesReport']" position="replace">
+            <button class="button icon btn btn-secondary"
+                    t-on-click="downloadCloseCashReport"
+                    t-att-class="this.ui.isSmall ? 'w-100' : 'btn-lg ms-auto'"
+                    title="Descargar el PDF de cierre de caja de la sesion actual">
+                Cierre de caja
+                <i t-if="!this.ui.isSmall" class="fa fa-download" role="img"/>
+            </button>
+        </xpath>
+    </t>
+</templates>

@@ -1,0 +1,129 @@
+{
+  "$schema": "https://design-tokens.github.io/community-group/format/",
+  "description": "Medicine Depot Design Tokens — Phase 1 export",
+  "version": "1.0.0",
+  "colors": {
+    "brand": {
+      "blue":       { "value": "#16A6D9", "comment": "Pantone 2995 C · primary" },
+      "green":      { "value": "#97D700", "comment": "Pantone 375 C · secondary" },
+      "gray":       { "value": "#898D8D", "comment": "Pantone 423 C" },
+      "dark":       { "value": "#073A4C" },
+      "ink":        { "value": "#152330" },
+      "muted":      { "value": "#667481" },
+      "white":      { "value": "#FFFFFF" }
+    },
+    "blue": {
+      "900": { "value": "#073A4C" },
+      "800": { "value": "#0B5E7A" },
+      "700": { "value": "#0D7FA8" },
+      "300": { "value": "#59CBE8" },
+      "200": { "value": "#A4DBE8", "comment": "Pantone 635 C" },
+      "100": { "value": "#E7F7FB" }
+    },
+    "green": {
+      "900": { "value": "#1F3200" },
+      "600": { "value": "#72A800" },
+      "300": { "value": "#B9EA43" },
+      "200": { "value": "#D9EA9A", "comment": "Pantone 2281 C" },
+      "150": { "value": "#C5D97A", "comment": "Pantone 2289 C" },
+      "100": { "value": "#F2F9D9" }
+    },
+    "gray": {
+      "500": { "value": "#9EA2A2" },
+      "400": { "value": "#C7C9C7", "comment": "Pantone 420 C" },
+      "300": { "value": "#9CA3AF" },
+      "200": { "value": "#D9DFE2" },
+      "100": { "value": "#F2F5F7" },
+      "50":  { "value": "#F8F9FA" }
+    },
+    "surface": {
+      "line":   { "value": "#E5E7EB" },
+      "paper":  { "value": "#F3F4F6" },
+      "cream":  { "value": "#FAF9F7" }
+    }
+  },
+  "typography": {
+    "fontFamily": {
+      "title": { "value": "'Source Sans Pro', 'Source Sans 3', sans-serif" },
+      "body":  { "value": "'Lato', sans-serif" },
+      "mono":  { "value": "'IBM Plex Mono', 'Courier New', monospace" }
+    },
+    "scale": {
+      "xs":   { "value": "0.72rem" },
+      "sm":   { "value": "0.82rem" },
+      "md":   { "value": "0.9rem" },
+      "base": { "value": "1rem" },
+      "lg":   { "value": "1.1rem" }
+    }
+  },
+  "spacing": {
+    "gap":    { "value": "clamp(12px, 1.4vw, 18px)" },
+    "gapXs":  { "value": "6px" },
+    "gapSm":  { "value": "10px" },
+    "gapMd":  { "value": "clamp(14px, 1.8vw, 22px)" },
+    "gapLg":  { "value": "clamp(24px, 3vw, 36px)" },
+    "gapXl":  { "value": "clamp(36px, 5vw, 56px)" },
+    "gap2xl": { "value": "clamp(56px, 8vw, 88px)" }
+  },
+  "borderRadius": {
+    "xs":   { "value": "6px" },
+    "sm":   { "value": "16px" },
+    "base": { "value": "24px" },
+    "xl":   { "value": "32px" },
+    "2xl":  { "value": "48px" },
+    "pill": { "value": "999px" },
+    "card": { "value": "12px" }
+  },
+  "shadows": {
+    "soft": { "value": "0 12px 34px rgba(12, 42, 62, 0.08)" },
+    "base": { "value": "0 24px 70px rgba(12, 42, 62, 0.12)" },
+    "sm":   { "value": "0 4px 14px rgba(20, 30, 60, 0.05)" },
+    "md":   { "value": "0 14px 30px rgba(20, 30, 60, 0.10)" },
+    "lg":   { "value": "0 20px 25px -5px rgba(0,0,0,0.10), 0 10px 10px -5px rgba(0,0,0,0.04)" },
+    "xl":   { "value": "0 32px 60px -8px rgba(7,58,76,0.22), 0 18px 28px -8px rgba(7,58,76,0.12)" }
+  },
+  "gradients": {
+    "brand":     { "value": "linear-gradient(90deg, #16A6D9 0%, #35BADF 46%, #97D700 100%)" },
+    "brandV":    { "value": "linear-gradient(180deg, #16A6D9 0%, #97D700 100%)" },
+    "dark":      { "value": "linear-gradient(135deg, #073A4C 0%, #152330 58%, #0B5E7A 100%)" },
+    "ambient":   { "value": "linear-gradient(135deg, #FFFFFF 0%, #F8F9FA 52%, #F2F5F7 100%)" },
+    "blue":      { "value": "linear-gradient(135deg, #16A6D9 0%, #4FC2E5 100%)" },
+    "green":     { "value": "linear-gradient(135deg, #97D700 0%, #C5E75A 100%)" },
+    "overlay":   { "value": "linear-gradient(180deg, transparent 0%, rgba(21,35,48,0.72) 100%)" },
+    "glow":      { "value": "radial-gradient(ellipse at 50% 0%, rgba(22,166,217,0.22) 0%, transparent 70%)" }
+  },
+  "zIndex": {
+    "backdrop": { "value": -1 },
+    "base":     { "value": 0 },
+    "raised":   { "value": 10 },
+    "sticky":   { "value": 40 },
+    "dropdown": { "value": 50 },
+    "navbar":   { "value": 50 },
+    "overlay":  { "value": 60 },
+    "modal":    { "value": 70 },
+    "skiplink": { "value": 80 },
+    "toast":    { "value": 90 }
+  },
+  "breakpoints": {
+    "xs":  { "value": "400px" },
+    "sm":  { "value": "576px" },
+    "md":  { "value": "768px" },
+    "lg":  { "value": "992px" },
+    "xl":  { "value": "1200px" },
+    "2xl": { "value": "1400px" }
+  },
+  "animation": {
+    "easing": {
+      "out":    { "value": "cubic-bezier(0.22, 0.61, 0.36, 1)" },
+      "in":     { "value": "cubic-bezier(0.55, 0, 1, 0.45)" },
+      "inout":  { "value": "cubic-bezier(0.65, 0, 0.35, 1)" },
+      "spring": { "value": "cubic-bezier(0.34, 1.56, 0.64, 1)" }
+    },
+    "duration": {
+      "fast":   { "value": "150ms" },
+      "base":   { "value": "200ms" },
+      "slow":   { "value": "400ms" },
+      "counter":{ "value": "2000ms" }
+    }
+  }
+}
