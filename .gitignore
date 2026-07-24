@@ -8,6 +8,7 @@ __pycache__/
 *.pyc
 ._*
 *.bak.*
+.DS_Store
 oca_addons/*/
 custom_addons/.graphify/
 backups/*.dump
