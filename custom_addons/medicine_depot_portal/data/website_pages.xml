@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+
+    <!--
+        website.page editables (sin lógica de controlador). El editor
+        del Website Builder puede insertar/quitar snippets dentro del
+        oe_structure de cada vista.
+
+        Páginas que SIGUEN en controlador (lógica server):
+          - /                  (controllers/public.py:home)
+          - /sucursales        (necesita branch_cards dinámicos)
+          - /farmacovigilancia (POST + persistencia)
+    -->
+
+    <!-- Desactiva páginas estándar que este módulo reemplaza. -->
+    <record id="website.homepage" model="ir.ui.view">
+        <field name="active" eval="False"/>
+    </record>
+
+    <record id="website.contactus" model="ir.ui.view">
+        <field name="active" eval="False"/>
+    </record>
+
+    <!-- MedicD -->
+    <record id="medicd_page_view" model="ir.ui.view">
+        <field name="name">MedicD · Bento</field>
+        <field name="type">qweb</field>
+        <field name="key">medicine_depot_portal.medicd_page_view</field>
+        <field name="arch" type="xml">
+            <t name="MedicD" t-name="medicine_depot_portal.medicd_page_view">
+                <t t-set="title">MedicD | Asesoría y Normatividad para Farmacias</t>
+                <t t-set="meta_description">Te acompañamos a cumplir la normativa de tu farmacia. Descubre MedicD de Medicine Depot.</t>
+                <t t-call="medicine_depot_portal.public_shell">
+                    <div class="oe_structure oe_empty" data-page-key="medicd_page_structure">
+                        <section class="md-section md-section--compact md-bento-section">
+                            <div class="md-section-head">
+                                <div>
+                                    <span class="md-eyebrow">MedicD</span>
+                                    <h1 class="md-page-title">Te acompañamos a cumplir la normativa de tu farmacia.</h1>
+                                </div>
+                            </div>
+                            <t t-call="medicine_depot_portal.s_md_two_col"/>
+                        </section>
+                    </div>
+                </t>
+            </t>
+        </field>
+    </record>
+
+    <record id="medicd_page" model="website.page">
+        <field name="url">/medicd</field>
+        <field name="website_id" ref="website.default_website"/>
+        <field name="website_indexed" eval="True"/>
+        <field name="is_published" eval="True"/>
+        <field name="key">medicine_depot_portal.medicd_page_view</field>
+        <field name="view_id" ref="medicd_page_view"/>
+    </record>
+
+    <!-- Contacto general -->
+    <record id="contact_page_view" model="ir.ui.view">
+        <field name="name">Contacto · Bento</field>
+        <field name="type">qweb</field>
+        <field name="key">medicine_depot_portal.contact_page_view</field>
+        <field name="arch" type="xml">
+            <t name="Contacto" t-name="medicine_depot_portal.contact_page_view">
+                <t t-set="title">Contacto | Medicine Depot</t>
+                <t t-set="meta_description">Ponte en contacto con Medicine Depot para resolver tus dudas o potenciar las ventas de tu farmacia.</t>
+                <t t-call="medicine_depot_portal.public_shell">
+                    <div class="oe_structure oe_empty" data-page-key="contact_page_structure">
+                        <section class="md-section md-section--compact md-bento-section">
+                            <div class="md-section-head">
+                                <div>
+                                    <span class="md-eyebrow">Contacto</span>
+                                    <h1 class="md-page-title">Separar dudas, quejas y ventas.</h1>
+                                </div>
+                                <p class="md-lead">Formulario corto. Para quejas de producto, flujo independiente.</p>
+                            </div>
+                            <t t-call="medicine_depot_portal.s_md_two_col"/>
+                        </section>
+                    </div>
+                </t>
+            </t>
+        </field>
+    </record>
+
+    <record id="contact_page" model="website.page">
+        <field name="url">/contactus</field>
+        <field name="website_id" ref="website.default_website"/>
+        <field name="website_indexed" eval="True"/>
+        <field name="is_published" eval="True"/>
+        <field name="key">medicine_depot_portal.contact_page_view</field>
+        <field name="view_id" ref="contact_page_view"/>
+    </record>
+
+    <!-- Quejas de producto -->
+    <record id="complaint_page_view" model="ir.ui.view">
+        <field name="name">Quejas · Bento</field>
+        <field name="type">qweb</field>
+        <field name="key">medicine_depot_portal.complaint_page_view</field>
+        <field name="arch" type="xml">
+            <t name="Quejas" t-name="medicine_depot_portal.complaint_page_view">
+                <t t-set="title">Atención y Quejas de Producto | Medicine Depot</t>
+                <t t-set="meta_description">Formulario especializado para la gestión y seguimiento de incidencias o quejas de producto con Medicine Depot.</t>
+                <t t-call="medicine_depot_portal.public_shell">
+                    <div class="oe_structure oe_empty" data-page-key="complaint_page_structure">
+                        <section class="md-section md-section--compact md-bento-section">
+                            <div class="md-section-head">
+                                <div>
+                                    <span class="md-eyebrow">Quejas de producto</span>
+                                    <h1 class="md-page-title">Ingreso de incidencias con más contexto.</h1>
+                                </div>
+                                <p class="md-lead">Separar quejas mejora la trazabilidad.</p>
+                            </div>
+                            <t t-call="medicine_depot_portal.s_md_two_col"/>
+                        </section>
+                    </div>
+                </t>
+            </t>
+        </field>
+    </record>
+
+    <record id="complaint_page" model="website.page">
+        <field name="url">/contacto-quejas</field>
+        <field name="website_id" ref="website.default_website"/>
+        <field name="website_indexed" eval="True"/>
+        <field name="is_published" eval="True"/>
+        <field name="key">medicine_depot_portal.complaint_page_view</field>
+        <field name="view_id" ref="complaint_page_view"/>
+    </record>
+
+</odoo>

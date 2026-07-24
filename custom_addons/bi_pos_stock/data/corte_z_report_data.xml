@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- A4 Horizontal con márgenes de 8mm (según el CSS @page del diseño aprobado) -->
+    <record id="paperformat_corte_z" model="report.paperformat">
+        <field name="name">Corte Z — A4 Horizontal 8mm</field>
+        <field name="default" eval="False"/>
+        <field name="format">A4</field>
+        <field name="orientation">Landscape</field>
+        <field name="margin_top">8</field>
+        <field name="margin_bottom">8</field>
+        <field name="margin_left">8</field>
+        <field name="margin_right">8</field>
+        <field name="header_line" eval="False"/>
+        <field name="header_spacing">0</field>
+        <field name="dpi">96</field>
+    </record>
+
+    <record id="action_report_corte_z" model="ir.actions.report">
+        <field name="name">Cierre de Caja</field>
+        <field name="model">pos.session</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">bi_pos_stock.report_corte_z_document</field>
+        <field name="report_file">bi_pos_stock.report_corte_z_document</field>
+        <field name="paperformat_id" ref="paperformat_corte_z"/>
+        <field name="binding_model_id" ref="point_of_sale.model_pos_session"/>
+        <field name="binding_type">report</field>
+    </record>
+</odoo>

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <t t-name="md_pharma_regulatory.MdLotDetailButton">
+        <button type="button" class="md-lot-detail-btn" title="Ver detalle de lotes (FEFO)"
+                aria-label="Ver detalle de lotes A la mano (FEFO) / View On Hand lot detail (FEFO)"
+                t-on-click="openPopup">
+            <i class="fa fa-list-ol" aria-hidden="true"/>
+        </button>
+    </t>
+</templates>

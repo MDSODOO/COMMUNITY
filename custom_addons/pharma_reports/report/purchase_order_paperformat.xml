@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!--
+      Paperformat personalizado para OC y RFQ de Medicine Depot.
+
+      CAUSA RAÍZ del espacio en blanco:
+      wkhtmltopdf usa el campo `header_spacing` del paperformat para
+      reservar espacio entre el borde superior de la página y el inicio
+      del cuerpo, independientemente de si existe o no un header real.
+      El paperformat estándar de Odoo tiene header_spacing=3 (mm), lo
+      que con web.basic_layout (sin header) genera un hueco vacío
+      adicional en la parte superior — visible como espacio en blanco
+      al final cuando el contenido no llena la página entera.
+
+      Solución validada en foros Odoo (community + enterprise Odoo.sh 19):
+        · header_spacing = 0  → elimina el espacio reservado para header
+        · header_line = False → sin línea separadora de header
+        · margin_top = 10     → margen superior mínimo para legibilidad
+        · margin_bottom = 10  → margen inferior estándar
+    -->
+    <record id="paperformat_purchase_order_pharma" model="report.paperformat">
+        <field name="name">Compras — Medicine Depot (OC + RFQ)</field>
+        <field name="default" eval="False"/>
+        <field name="format">A4</field>
+        <field name="page_height" eval="False"/>
+        <field name="page_width" eval="False"/>
+        <field name="orientation">Portrait</field>
+        <field name="margin_top">15</field>
+        <field name="margin_bottom">10</field>
+        <field name="margin_left">7</field>
+        <field name="margin_right">7</field>
+        <field name="header_line" eval="False"/>
+        <field name="header_spacing">0</field>
+        <field name="dpi">90</field>
+    </record>
+
+    <!--
+      Asignar el paperformat al ir.actions.report de la Orden de Compra.
+      `purchase.action_report_purchase_order` es el xmlid estándar de Odoo
+      para el reporte de la OC confirmada.
+    -->
+    <record id="purchase.action_report_purchase_order" model="ir.actions.report">
+        <field name="paperformat_id" ref="paperformat_purchase_order_pharma"/>
+    </record>
+
+    <!--
+      Asignar el mismo paperformat al ir.actions.report de la RFQ.
+      `purchase.report_purchase_quotation` es el xmlid estándar de Odoo 19
+      para el reporte de Solicitudes de Cotización (draft/sent).
+    -->
+    <record id="purchase.report_purchase_quotation" model="ir.actions.report">
+        <field name="paperformat_id" ref="paperformat_purchase_order_pharma"/>
+    </record>
+
+</odoo>

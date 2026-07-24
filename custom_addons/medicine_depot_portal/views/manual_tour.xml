@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    Manual Visual — Medicine Depot
+    Implementación: web_tour (Tours interactivos en UI)
+
+    Justificación de elección:
+
+    Opción A (web_tour) — ELEGIDA ✅
+      Ventaja: Guía al usuario paso a paso DENTRO de la interfaz real.
+      Ideal para flujos de acción (afiliación, compra, consulta A la mano).
+      No requiere módulo adicional. Persiste en BD si el usuario lo completa.
+
+    Opción B (Knowledge / Base de Conocimiento)
+      Ventaja: Artículos con formato rico (imágenes, tablas, videos).
+      Desventaja: Requiere módulo 'knowledge' instalado. El usuario debe
+      navegar a él — no aparece donde el usuario ya está trabajando.
+      Adecuado como complemento estático, no como guía interactiva.
+
+    Opción C (Páginas QWeb estáticas en /help)
+      Ventaja: Accesible públicamente, sin login.
+      Desventaja: Desconectado de la interfaz real. Requiere mantenimiento
+      manual cuando cambia la UI.
+
+    Decisión: web_tour es la opción nativa de mayor impacto para usuarios
+    finales del portal. Se puede combinar con artículos Knowledge para
+    referencia avanzada (Opción A + B).
+-->
+<odoo>
+    <data>
+
+        <!-- ============================================================
+             TOUR 1: Flujo de Afiliación (/afiliacion)
+             Público — no requiere login
+             ============================================================ -->
+        <record id="tour_md_afiliacion" model="web_tour.tour">
+            <field name="name">md_afiliacion_tour</field>
+            <field name="sequence">10</field>
+        </record>
+
+        <!-- ============================================================
+             TOUR 2: Portal del Cliente — Dashboard /my
+             Requiere login como cliente
+             ============================================================ -->
+        <record id="tour_md_portal_dashboard" model="web_tour.tour">
+            <field name="name">md_portal_dashboard_tour</field>
+            <field name="sequence">20</field>
+        </record>
+
+        <!-- ============================================================
+             TOUR 3: Tienda Online — /shop con badge A la mano
+             Público — no requiere login
+             ============================================================ -->
+        <record id="tour_md_shop_ala_mano" model="web_tour.tour">
+            <field name="name">md_shop_ala_mano_tour</field>
+            <field name="sequence">30</field>
+        </record>
+
+    </data>
+</odoo>

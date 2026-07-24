@@ -1,0 +1,347 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ════════════════════════════════════════════════════════════════
+         PORTAL /my/orders — Columna "Estado de Envío"
+         ─────────────────────────────────────────────────────────────
+         Hereda de sale.portal_my_orders para inyectar una nueva
+         columna en la tabla de órdenes del cliente.
+
+         Estructura nativa (Odoo 19 sale_portal_templates.xml L86-122):
+           <thead>
+             <tr class="active">
+               <th>Sales Order #</th>
+               <th class="text-end">Order Date</th>
+               <th name="order_total" class="text-end">Total</th>
+             </tr>
+           </thead>
+           <t t-foreach="orders" t-as="order">
+             <tr>
+               <td><a>order.name</a></td>
+               <td class="text-end">order.date_order</td>
+               <td name="order_amount_total" class="text-end">amount_total</td>
+             </tr>
+           </t>
+
+         Insertamos la columna "Estado de Envío" ANTES de la columna
+         Total (th[name='order_total'] / td[name='order_amount_total'])
+         para mantener el monto al final.
+    ════════════════════════════════════════════════════════════════ -->
+
+    <!-- Badge de estado de albarán — reutilizado en listado y detalle -->
+    <template id="picking_state_badge" name="Picking State Badge">
+        <t t-if="picking_rec.state == 'assigned'">
+            <span class="badge rounded-pill bg-info">Listo para enviar</span>
+        </t>
+        <t t-elif="picking_rec.state == 'done'">
+            <span class="badge rounded-pill bg-success">Entregado</span>
+        </t>
+        <t t-elif="picking_rec.state in ('confirmed', 'waiting')">
+            <span class="badge rounded-pill bg-warning pk-pulse">En progreso</span>
+        </t>
+        <t t-else="">
+            <span class="badge rounded-pill bg-secondary">
+                <t t-out="dict(picking_rec._fields['state'].selection).get(picking_rec.state, picking_rec.state)"/>
+            </span>
+        </t>
+    </template>
+
+    <!-- ── Encabezado: nueva columna antes de "Total" ─────────────── -->
+    <template
+        id="portal_my_orders_delivery_header"
+        inherit_id="sale.portal_my_orders"
+        name="Delivery Status Column Header"
+        priority="99"
+    >
+        <xpath expr="//thead//tr//th[@name='order_total']" position="before">
+            <th class="text-center d-none d-md-table-cell">Estado de Envío</th>
+        </xpath>
+    </template>
+
+
+    <!-- ── Cuerpo: badge de estado en cada fila ──────────────────── -->
+    <template
+        id="portal_my_orders_delivery_body"
+        inherit_id="sale.portal_my_orders"
+        name="Delivery Status Column Body"
+        priority="99"
+    >
+        <xpath expr="//t[@t-foreach='orders']//tr//td[@name='order_amount_total']" position="before">
+            <td class="text-center d-none d-md-table-cell">
+                <t t-if="order.portal_delivery_status and order.portal_delivery_status != 'no_delivery'">
+                    <span t-attf-class="badge rounded-pill bg-#{order.portal_delivery_badge_class or 'secondary'}"
+                          t-field="order.portal_delivery_status"/>
+                </t>
+                <t t-else="">
+                    <span class="text-muted small">—</span>
+                </t>
+            </td>
+        </xpath>
+    </template>
+
+
+    <!-- ════════════════════════════════════════════════════════════════
+         PORTAL /my/pickings — Card en /my + lista + detalle
+         ─────────────────────────────────────────────────────────────
+         Expone albaranes de venta al usuario portal:
+         - Card en /my/home con contador
+         - Breadcrumb
+         - Lista paginada con filtro y sorting
+         - Detalle con líneas de movimiento
+    ════════════════════════════════════════════════════════════════ -->
+
+    <!-- ── Card "Mis Pedidos" en /my ────────────────────────────── -->
+    <template
+        id="portal_my_home_picking"
+        inherit_id="portal.portal_my_home"
+        priority="25"
+    >
+        <xpath expr="//div[@id='md_portal_extensions_hook']" position="inside">
+            <t t-call="portal.portal_docs_entry">
+                <t t-set="title">Mis Pedidos</t>
+                <t t-set="url" t-value="'/my/pickings'"/>
+                <t t-set="text">Consulta el estado de tus pedidos para recolección</t>
+                <t t-set="placeholder_count" t-value="'picking_count'"/>
+                <t t-set="icon_class" t-value="'oi oi-inbox'"/>
+            </t>
+        </xpath>
+    </template>
+
+
+    <!-- ── Breadcrumb ────────────────────────────────────────────── -->
+    <template
+        id="portal_my_home_menu_picking"
+        inherit_id="portal.portal_breadcrumbs"
+        priority="25"
+    >
+        <xpath expr="//ol[hasclass('o_portal_submenu')]" position="inside">
+            <li t-if="page_name in ('picking', 'picking_detail')"
+                t-attf-class="breadcrumb-item #{'active' if page_name == 'picking' else ''}">
+                <a t-if="page_name == 'picking_detail'" t-attf-href="/my/pickings?{{ keep_query() }}">Mis Pedidos</a>
+                <t t-else="">Mis Pedidos</t>
+            </li>
+            <li t-if="page_name == 'picking_detail'" class="breadcrumb-item active">
+                <t t-out="stock_picking.name"/>
+            </li>
+        </xpath>
+    </template>
+
+
+    <!-- ── Lista /my/pickings ───────────────────────────────────── -->
+    <template id="portal_my_pickings" name="My Pickings">
+        <t t-call="portal.portal_layout">
+            <t t-set="breadcrumbs_searchbar" t-value="True"/>
+
+            <t t-call="portal.portal_searchbar">
+                <t t-set="title">Mis Pedidos</t>
+            </t>
+
+            <div t-if="not pickings" class="pk-empty" role="status">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                     stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"
+                     aria-hidden="true">
+                    <path d="M3 9l1.5-4.5A2 2 0 0 1 6.4 3h11.2a2 2 0 0 1 1.9 1.5L21 9"/>
+                    <path d="M3 9h18v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9z"/>
+                    <path d="M9 13h6"/>
+                </svg>
+                <span class="pk-empty-title">Aún no tienes pedidos para recolección</span>
+                <span>Cuando realices una compra, aquí verás el estado de tus pedidos.</span>
+                <a href="/shop" class="btn btn-primary rounded-pill mt-2">Ir a la tienda</a>
+            </div>
+
+            <t t-if="pickings" t-call="portal.portal_table">
+                <thead>
+                    <tr class="active">
+                        <th>Pedido</th>
+                        <th>Referencia</th>
+                        <th class="text-end">Fecha Programada</th>
+                        <th class="text-center">Estado</th>
+                        <th class="d-none d-lg-table-cell">Tracking</th>
+                    </tr>
+                </thead>
+                <t t-foreach="pickings" t-as="picking">
+                    <tr>
+                        <td>
+                            <t t-if="picking.sale_id">
+                                <a t-att-href="picking.sale_id.get_portal_url()">
+                                    <t t-out="picking.sale_id.name"/>
+                                </a>
+                            </t>
+                        </td>
+                        <td>
+                            <small class="text-muted"><t t-out="picking.name"/></small>
+                        </td>
+                        <td class="text-end">
+                            <span t-field="picking.scheduled_date"
+                                  t-options="{'widget': 'date'}"/>
+                        </td>
+                        <td class="text-center">
+                            <t t-set="picking_rec" t-value="picking"/>
+                            <t t-call="portal_picking_visibility.picking_state_badge"/>
+                        </td>
+                        <td class="d-none d-lg-table-cell">
+                            <t t-if="'carrier_tracking_ref' in picking._fields and picking.carrier_tracking_ref">
+                                <small t-out="picking.carrier_tracking_ref"/>
+                            </t>
+                        </td>
+                    </tr>
+                </t>
+            </t>
+        </t>
+    </template>
+
+
+    <!-- ── Detalle /my/pickings/<id> ─────────────────────────────── -->
+    <template id="portal_my_picking_detail"
+              inherit_id="portal.portal_sidebar"
+              primary="True"
+              name="Picking Detail">
+        <xpath expr="//div[hasclass('o_portal_sidebar')]" position="inside">
+            <div class="row o_portal_picking_sidebar">
+
+                <!-- LEFT SIDEBAR (col-lg-4) -->
+                <t t-call="portal.portal_record_sidebar">
+                    <t t-set="classes" t-value="'col-lg-4 col-xxl-3 d-print-none'"/>
+                    <t t-set="title">
+                        <h2 t-field="stock_picking.name" class="mb-0"/>
+                    </t>
+                    <t t-set="entries">
+                        <div class="d-flex flex-column gap-3 mt-3">
+                            <div id="picking_status" class="pk-bento">
+                                <h6><small class="text-muted">Estado del albarán</small></h6>
+                                <t t-set="picking_rec" t-value="stock_picking"/>
+                                <t t-call="portal_picking_visibility.picking_state_badge"/>
+                            </div>
+
+                            <div id="picking_details" class="pk-bento">
+                                <h6><small class="text-muted">Información del albarán</small></h6>
+                                <ul class="list-unstyled ps-0 mb-0">
+                                    <li class="pk-info-row">
+                                        <strong>Tipo:</strong>
+                                        <span t-field="stock_picking.picking_type_id.name"/>
+                                    </li>
+                                    <li class="pk-info-row">
+                                        <strong>Programado:</strong>
+                                        <span t-field="stock_picking.scheduled_date"
+                                              t-options="{'widget': 'date'}"/>
+                                    </li>
+                                    <li t-if="stock_picking.sale_id" class="pk-info-row">
+                                        <strong>Orden de venta:</strong>
+                                        <a t-att-href="stock_picking.sale_id.get_portal_url()">
+                                            <t t-out="stock_picking.sale_id.name"/>
+                                        </a>
+                                    </li>
+                                    <li t-if="stock_picking.origin" class="pk-info-row">
+                                        <strong>Origen:</strong>
+                                        <span t-out="stock_picking.origin"/>
+                                    </li>
+                                </ul>
+                            </div>
+
+                            <div t-if="'carrier_tracking_ref' in stock_picking._fields and stock_picking.carrier_tracking_ref" id="picking_tracking" class="pk-bento">
+                                <h6><small class="text-muted">Seguimiento</small></h6>
+                                <small>
+                                    <t t-if="stock_picking.carrier_id and stock_picking.carrier_id.tracking_url">
+                                        <a t-att-href="stock_picking._get_tracking_link()" target="_blank">
+                                            <t t-out="stock_picking.carrier_tracking_ref"/>
+                                        </a>
+                                    </t>
+                                    <t t-else="">
+                                        <t t-out="stock_picking.carrier_tracking_ref"/>
+                                    </t>
+                                </small>
+                            </div>
+
+                            <div id="picking_destination" class="pk-bento">
+                                <h6><small class="text-muted">Dirección de destino</small></h6>
+                                <t t-set="partner_dest" t-value="stock_picking.partner_id"/>
+                                <address t-if="partner_dest" class="o_address">
+                                    <strong t-out="partner_dest.name"/>
+                                    <br t-if="partner_dest.street"/>
+                                    <t t-out="partner_dest.street" t-if="partner_dest.street"/>
+                                    <br t-if="partner_dest.street2"/>
+                                    <t t-out="partner_dest.street2" t-if="partner_dest.street2"/>
+                                    <br/>
+                                    <t t-out="partner_dest.zip" t-if="partner_dest.zip"/>
+                                    <t t-out="partner_dest.city" t-if="partner_dest.city"/>
+                                    <br t-if="partner_dest.country_id"/>
+                                    <t t-out="partner_dest.country_id.name" t-if="partner_dest.country_id"/>
+                                </address>
+                            </div>
+                        </div>
+                    </t>
+                </t>
+
+                <!-- MAIN CONTENT (col-12 col-lg-8) -->
+                <div id="picking_content" class="col-12 col-lg-8 col-xxl-9 mt-5 mt-lg-0">
+                    <div class="o_portal_page_title">
+                        <h1 t-field="stock_picking.name"/>
+                    </div>
+
+                    <!-- Item 39 · Timeline de estados del pedido -->
+                    <t t-if="stock_picking.state != 'cancel'">
+                        <t t-set="pk_stage"
+                           t-value="{'done': 3, 'assigned': 2, 'confirmed': 1, 'waiting': 1}.get(stock_picking.state, 0)"/>
+                        <ol class="pk-timeline" aria-label="Progreso del pedido">
+                            <t t-foreach="['Confirmado', 'En preparación', 'Listo para enviar', 'Entregado']"
+                               t-as="pk_label">
+                                <li t-attf-class="pk-step #{'is-done' if pk_label_index &lt; pk_stage else ''} #{'is-current' if pk_label_index == pk_stage else ''}">
+                                    <t t-out="pk_label"/>
+                                </li>
+                            </t>
+                        </ol>
+                    </t>
+
+                    <!-- Tabla de líneas de movimiento -->
+                    <div id="picking_moves" class="table-responsive">
+                        <table class="table table-sm o_portal_my_doc_table">
+                            <thead>
+                                <tr class="active">
+                                    <th>Producto</th>
+                                    <th class="text-end">Cantidad Demandada</th>
+                                    <th class="text-end">Cantidad Realizada</th>
+                                    <th t-if="stock_picking.picking_type_id.code == 'outgoing'">Unidad</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <t t-foreach="stock_picking.move_ids_without_package" t-as="move">
+                                    <tr>
+                                        <td>
+                                            <strong t-field="move.product_id.name"/>
+                                            <t t-if="move.product_id.default_code">
+                                                <br/>
+                                                <small class="text-muted">[<t t-out="move.product_id.default_code"/>]</small>
+                                            </t>
+                                            <t t-if="move.move_line_ids">
+                                                <br/>
+                                                <small t-foreach="move.move_line_ids" t-as="line">
+                                                    <div t-if="line.lot_name or line.lot_id">
+                                                        Lote:
+                                                        <t t-if="line.lot_id" t-out="line.lot_id.name"/>
+                                                        <t t-elif="line.lot_name" t-out="line.lot_name"/>
+                                                    </div>
+                                                </small>
+                                            </t>
+                                        </td>
+                                        <td class="text-end" data-label="Cantidad Demandada">
+                                            <t t-out="'%.2f' % move.product_qty"/>
+                                            <t t-out="move.product_uom.name"/>
+                                        </td>
+                                        <td class="text-end" data-label="Cantidad Realizada">
+                                            <t t-out="'%.2f' % move.quantity"/>
+                                            <t t-out="move.product_uom.name"/>
+                                        </td>
+                                        <td t-if="stock_picking.picking_type_id.code == 'outgoing'" data-label="Unidad">
+                                            <t t-out="move.product_uom.name"/>
+                                        </td>
+                                    </tr>
+                                </t>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </xpath>
+    </template>
+
+</odoo>

@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+
+    <!--
+        SelectLotPopup extension — FEFO guide table + expiry badges.
+
+        XPath 1: Inject FEFO reference table BEFORE the lot-container div.
+        XPath 2: Inject expiry badge AFTER the lot-name span inside each selected item.
+    -->
+    <t t-name="bi_pos_stock.SelectLotPopupFefo"
+       t-inherit="point_of_sale.SelectLotPopup"
+       t-inherit-mode="extension"
+       owl="1">
+
+        <!-- ── XPath 1: FEFO reference table ── -->
+        <xpath expr="//div[hasclass('lot-container')]" position="before">
+            <div t-if="hasAnyExpiry and fefoLots.length"
+                 class="fefo-guide mb-3 px-1">
+
+                <!-- Header row -->
+                <div class="d-flex align-items-center mb-2 gap-2">
+                    <span class="badge bg-primary" style="font-size:0.72rem;">
+                        <i class="fa fa-sort-amount-asc me-1"/>FEFO
+                    </span>
+                    <small class="text-muted">
+                        Vende primero el lote que caduca antes
+                    </small>
+                </div>
+
+                <!-- Scrollable table -->
+                <div class="fefo-table-wrapper border rounded"
+                     style="max-height:190px; overflow-y:auto;">
+                    <table class="table table-sm table-hover mb-0"
+                           style="font-size:0.8rem;">
+                        <thead class="table-light"
+                               style="position:sticky; top:0; z-index:1;">
+                            <tr>
+                                <th style="padding:6px 8px;">#</th>
+                                <th style="padding:6px 8px;">Lote / Serie</th>
+                                <th class="text-center" style="padding:6px 8px;">Cant.</th>
+                                <th class="text-center" style="padding:6px 8px;">Vencimiento</th>
+                                <th class="text-center" style="padding:6px 8px;">Días</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <t t-foreach="fefoLots" t-as="flot" t-key="flot.id">
+                                <tr t-att-class="flot_index === 0 ? 'table-active fw-bold' : ''">
+
+                                    <!-- Position indicator (1st = sell first) -->
+                                    <td class="text-muted" style="padding:5px 8px;">
+                                        <t t-if="flot_index === 0">
+                                            <span class="badge bg-warning text-dark">1°</span>
+                                        </t>
+                                        <t t-else="">
+                                            <t t-esc="flot_index + 1"/>
+                                        </t>
+                                    </td>
+
+                                    <!-- Lot name -->
+                                    <td style="padding:5px 8px; font-weight:500;">
+                                        <t t-esc="flot.name"/>
+                                    </td>
+
+                                    <!-- Quantity -->
+                                    <td class="text-center" style="padding:5px 8px;">
+                                        <span class="badge bg-secondary">
+                                            <t t-esc="flot.product_qty"/>
+                                        </span>
+                                    </td>
+
+                                    <!-- Expiry date -->
+                                    <td class="text-center text-muted" style="padding:5px 8px;">
+                                        <t t-if="flot.expiration_date">
+                                            <t t-esc="fefoFormatDate(flot.expiration_date)"/>
+                                        </t>
+                                        <t t-else="">
+                                            <span class="text-muted">—</span>
+                                        </t>
+                                    </td>
+
+                                    <!-- Days remaining badge -->
+                                    <td class="text-center" style="padding:5px 8px;">
+                                        <t t-if="flot.expiration_date">
+                                            <t t-set="daysLeft" t-value="fefoGetDaysLeft(flot.expiration_date)"/>
+                                            <span t-att-class="'badge bg-' + fefoGetColorClass(flot.expiration_date)">
+                                                <t t-if="daysLeft &lt; 0">VENCIDO</t>
+                                                <t t-else=""><t t-esc="daysLeft"/>d</t>
+                                            </span>
+                                        </t>
+                                        <t t-else="">
+                                            <span class="badge bg-secondary">—</span>
+                                        </t>
+                                    </td>
+
+                                </tr>
+                            </t>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </xpath>
+
+        <!-- ── XPath 2: Expiry badge on each already-selected lot item ── -->
+        <xpath expr="//div[hasclass('lot-item')]/span[hasclass('form-control')]"
+               position="after">
+            <t t-set="_expiry" t-value="getLotExpiry(v.id)"/>
+            <span t-if="_expiry"
+                  t-att-class="'badge ms-1 align-self-center bg-' + getLotColor(v.id)"
+                  style="font-size:0.72rem; white-space:nowrap;">
+                <i class="fa fa-clock-o me-1"/>
+                <t t-esc="getLotExpiryLabel(v.id)"/>
+            </span>
+        </xpath>
+
+    </t>
+</templates>

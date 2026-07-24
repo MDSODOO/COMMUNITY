@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!--
+        Hero del wizard. Parametrizable mediante:
+          - wizard_eyebrow (string)
+          - wizard_title (string)
+          - wizard_summary_left  (tuple: title, value, hint)
+          - wizard_summary_right (tuple: title, value, hint)
+          - wizard_steps (list of dict: number, label, hint)
+          - wizard_step_attr (data-attr usado por el JS: 'data-pv-step-jump' | 'data-aff-step-jump')
+    -->
+    <template id="s_md_wizard_hero" name="MD · Wizard Hero">
+        <section class="md-tile md-tile--dark md_pv_hero s_md_wizard_hero"
+                 data-snippet="s_md_wizard_hero" data-name="MD Wizard Hero">
+            <t t-if="wizard_progress_label">
+                <div class="md_wizard_hero_main d-grid gap-3">
+                    <div class="md_pv_hero_copy md_affiliacion_intro d-flex flex-column">
+                        <span class="md-card-tag" t-esc="wizard_eyebrow or 'Nuevo flujo'"/>
+                        <h2 class="md_affiliacion_title" t-esc="wizard_title or 'Guía con lenguaje claro y pasos cortos.'"/>
+                        <p class="md_affiliacion_subtitle">Captura por bloques, con progreso visible y validación inmediata.</p>
+                    </div>
+
+                    <div class="md_pv_stepper md_affiliacion_stepper s_md_wizard_stepper" role="list" aria-label="Progreso del wizard">
+                        <t t-foreach="wizard_steps or []" t-as="step">
+                            <button type="button" class="md_pv_stepper_item md_affiliacion_stepper_item"
+                                    t-att-data-pv-step-jump="step['number'] if (wizard_step_attr or 'data-pv-step-jump') == 'data-pv-step-jump' else None"
+                                    t-att-data-aff-step-jump="step['number'] if (wizard_step_attr or '') == 'data-aff-step-jump' else None">
+                                <span t-esc="step['number']"/>
+                                <strong t-esc="step['label']"/>
+                                <small t-esc="step['hint']"/>
+                            </button>
+                        </t>
+                    </div>
+
+                    <div class="md_wizard_progress_head">
+                        <span class="md_wizard_progress_caption" t-esc="wizard_progress_label"/>
+                        <span class="md_wizard_progress_pct" data-wizard-progress-pct="true">0%</span>
+                    </div>
+                    <div class="md_wizard_progress" aria-hidden="true">
+                        <span class="md_wizard_progress_bar" data-wizard-progress-bar="true"/>
+                    </div>
+                </div>
+
+                <div class="md_pv_hero_meta md_affiliacion_wizard_meta d-grid gap-3">
+                    <article class="md_pv_summary_card md_affiliacion_summary_card d-flex flex-column">
+                        <span t-esc="(wizard_summary_left and wizard_summary_left[0]) or 'Tiempo estimado'"/>
+                        <strong t-esc="(wizard_summary_left and wizard_summary_left[1]) or '6-8 min'"/>
+                        <p t-esc="(wizard_summary_left and wizard_summary_left[2]) or 'Sin recargar al usuario.'"/>
+                    </article>
+                    <article class="md_pv_summary_card md_affiliacion_summary_card d-flex flex-column">
+                        <span t-esc="(wizard_summary_right and wizard_summary_right[0]) or 'Resultado'"/>
+                        <strong t-esc="(wizard_summary_right and wizard_summary_right[1]) or 'Registro interno'"/>
+                        <p t-esc="(wizard_summary_right and wizard_summary_right[2]) or 'Reporte trazable.'"/>
+                    </article>
+                </div>
+            </t>
+            <t t-else="">
+                <div class="md_pv_hero_copy md_affiliacion_intro">
+                    <span class="md-card-tag" t-esc="wizard_eyebrow or 'Nuevo flujo'"/>
+                    <h2 class="md_affiliacion_title" t-esc="wizard_title or 'Guía con lenguaje claro y pasos cortos.'"/>
+                    <p class="md_affiliacion_subtitle">Captura por bloques, con progreso visible y validación inmediata.</p>
+                </div>
+
+                <div class="md_pv_hero_meta md_affiliacion_wizard_meta">
+                    <article class="md_pv_summary_card md_affiliacion_summary_card">
+                        <span t-esc="(wizard_summary_left and wizard_summary_left[0]) or 'Tiempo estimado'"/>
+                        <strong t-esc="(wizard_summary_left and wizard_summary_left[1]) or '6-8 min'"/>
+                        <p t-esc="(wizard_summary_left and wizard_summary_left[2]) or 'Sin recargar al usuario.'"/>
+                    </article>
+                    <article class="md_pv_summary_card md_affiliacion_summary_card">
+                        <span t-esc="(wizard_summary_right and wizard_summary_right[0]) or 'Resultado'"/>
+                        <strong t-esc="(wizard_summary_right and wizard_summary_right[1]) or 'Registro interno'"/>
+                        <p t-esc="(wizard_summary_right and wizard_summary_right[2]) or 'Reporte trazable.'"/>
+                    </article>
+                </div>
+
+                <div class="md_pv_stepper md_affiliacion_stepper s_md_wizard_stepper" role="list" aria-label="Progreso del wizard">
+                    <t t-foreach="wizard_steps or []" t-as="step">
+                        <button type="button" class="md_pv_stepper_item md_affiliacion_stepper_item"
+                                t-att-data-pv-step-jump="step['number'] if (wizard_step_attr or 'data-pv-step-jump') == 'data-pv-step-jump' else None"
+                                t-att-data-aff-step-jump="step['number'] if (wizard_step_attr or '') == 'data-aff-step-jump' else None">
+                            <span t-esc="step['number']"/>
+                            <strong t-esc="step['label']"/>
+                            <small t-esc="step['hint']"/>
+                        </button>
+                    </t>
+                </div>
+
+                <div class="md_wizard_progress" aria-hidden="true">
+                    <span class="md_wizard_progress_bar" data-wizard-progress-bar="true"/>
+                </div>
+            </t>
+        </section>
+    </template>
+
+    <record id="s_md_wizard_hero_snippet" model="ir.ui.view">
+        <field name="name">MD · Wizard Hero (registro snippet)</field>
+        <field name="type">qweb</field>
+        <field name="mode">extension</field>
+        <field name="inherit_id" ref="website.snippets"/>
+        <field name="arch" type="xml">
+            <xpath expr="//snippets[@id='snippet_structure']" position="inside">
+                <t t-snippet="medicine_depot_portal.s_md_wizard_hero"
+                   t-thumbnail="/medicine_depot_portal/static/img/snippets/s_md_wizard_hero.svg"/>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

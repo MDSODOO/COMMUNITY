@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <template id="s_md_hero" name="MD · Hero">
+        <section class="s_md_hero" aria-label="Promociones y acceso principal">
+            <div class="s_md_hero-slider" data-hero-slider="">
+                <div class="s_md_hero-slide s_md_hero-slide--hotsale is-active"
+                     data-slide="0"
+                     data-campaign-end="2026-07-20">
+                    <div class="s_md_hero-hot-sale">
+                        <picture class="s_md_hero-hot-sale-picture">
+                            <source media="(max-width: 767px)"
+                                    srcset="/medicine_depot_website/static/src/img/promo_futbol_2026_mobile.png"/>
+                            <img src="/medicine_depot_website/static/src/img/promo_futbol_2026.png"
+                                 alt="MedicineDepot - Vive la emoción del fútbol con MedicineDepot: compra, participa y gana una pantalla de 50 pulgadas. Promoción del 11 de junio al 19 de julio 2026."
+                                 width="1920"
+                                 height="1080"
+                                 loading="eager"
+                                 decoding="async"
+                                 fetchpriority="high"/>
+                        </picture>
+                        <div class="s_md_hero-hot-sale-actions">
+                            <a href="/shop" class="md-btn-primary">Comprar ahora</a>
+                            <span>Confianza y bienestar en un solo lugar</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="s_md_hero-slide" data-slide="1">
+                    <div class="s_md_hero-content container">
+                        <span class="md-eyebrow md-eyebrow--light">Medicine Depot</span>
+                        <h1 class="s_md_hero-headline">Confianza y bienestar en un solo lugar</h1>
+                        <p class="s_md_hero-lead">
+                            Surtido farmacéutico, acompañamiento normativo y atención especializada
+                            para farmacias que buscan crecer con procesos más claros.
+                        </p>
+                        <div class="s_md_hero-cta-group">
+                            <a href="/afiliacion" class="md-btn-primary">Afíliate</a>
+                            <a href="/sucursales" class="md-btn-ghost">Ver Sucursales</a>
+                        </div>
+                        <div class="s_md_hero-proof" aria-label="Indicadores de servicio">
+                            <span><strong>6</strong> sucursales</span>
+                            <span><strong>MedicD</strong> acompañamiento normativo</span>
+                            <span><strong>Retail</strong> y mostrador</span>
+                        </div>
+                        <div class="s_md_hero-brand-card" aria-label="Promesa de marca">
+                            <strong>Somos MedicineDepot</strong>
+                            <span>Confianza y bienestar en un solo lugar para farmacias y profesionales de salud.</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="s_md_hero-controls" data-hero-controls="">
+                <button class="s_md_hero-pause" data-hero-pause="" type="button" aria-pressed="false">
+                    Pausar
+                </button>
+                <div class="s_md_hero-dots" data-hero-dots="" aria-label="Navegación de diapositivas">
+                    <button class="s_md_hero-dot is-active" data-goto="0" type="button" aria-label="Diapositiva 1"/>
+                    <button class="s_md_hero-dot" data-goto="1" type="button" aria-label="Diapositiva 2"/>
+                </div>
+            </div>
+        </section>
+    </template>
+
+</odoo>

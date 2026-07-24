@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!--
+        Agrega formulario CRM a la página MedicD del portal.
+        Hereda con prioridad mayor que el parche de shell (230).
+    -->
+    <template id="md_medicd_crm_form"
+              inherit_id="medicine_depot_portal.medicd_page_view"
+              name="Medicine Depot - MedicD CRM Form"
+              priority="240">
+
+        <xpath expr="//div[@data-page-key='medicd_page_structure']"
+               position="after">
+            <section class="md-section md-section--compact md-bento-section">
+                <div class="md-section-head">
+                    <div>
+                        <span class="md-eyebrow">Únete</span>
+                        <h2>¿Tienes o planeas tener una farmacia?</h2>
+                    </div>
+                    <p class="md-lead">Cuéntanos sobre tu farmacia y te contactamos para comenzar.</p>
+                </div>
+
+                <form class="md_pv_form" id="medicd-form" novalidate="novalidate"
+                      data-action="/web/medicd/submit">
+
+                    <div class="md_pv_fields">
+                        <div class="md_pv_field">
+                            <label for="medicd_nombre">Nombre *</label>
+                            <input type="text" id="medicd_nombre" name="nombre"
+                                   class="md_pv_input" required="required"
+                                   placeholder="Tu nombre"/>
+                        </div>
+                        <div class="md_pv_field">
+                            <label for="medicd_apellido">Apellido</label>
+                            <input type="text" id="medicd_apellido" name="apellido"
+                                   class="md_pv_input"
+                                   placeholder="Tu apellido"/>
+                        </div>
+                        <div class="md_pv_field">
+                            <label for="medicd_email">Correo electrónico *</label>
+                            <input type="email" id="medicd_email" name="email"
+                                   class="md_pv_input" required="required"
+                                   placeholder="tu@correo.com"/>
+                        </div>
+                        <div class="md_pv_field">
+                            <label for="medicd_telefono">Teléfono</label>
+                            <input type="tel" id="medicd_telefono" name="telefono"
+                                   class="md_pv_input"
+                                   placeholder="55 1234 5678"/>
+                        </div>
+                    </div>
+
+                    <!-- Pregunta principal -->
+                    <div class="md_pv_field md_pv_field--radio">
+                        <p class="md_pv_hint">¿Ya tienes una farmacia? *</p>
+                        <label class="md_pv_radio-label">
+                            <input type="radio" name="tiene_farmacia" value="si" required="required"/>
+                            Sí, ya tengo farmacia
+                        </label>
+                        <label class="md_pv_radio-label">
+                            <input type="radio" name="tiene_farmacia" value="no"/>
+                            No, planeo abrir una
+                        </label>
+                    </div>
+
+                    <!-- Campos condicionales: tiene farmacia = sí -->
+                    <div class="md_pv_fields" id="medicd-fields-si" hidden="hidden">
+                        <div class="md_pv_field">
+                            <label for="medicd_direccion">Dirección</label>
+                            <input type="text" id="medicd_direccion" name="direccion"
+                                   class="md_pv_input" placeholder="Calle y número"/>
+                        </div>
+                        <div class="md_pv_field">
+                            <label for="medicd_colonia">Colonia</label>
+                            <input type="text" id="medicd_colonia" name="colonia"
+                                   class="md_pv_input" placeholder="Colonia"/>
+                        </div>
+                        <div class="md_pv_field">
+                            <label for="medicd_cp">Código Postal</label>
+                            <input type="text" id="medicd_cp" name="cp"
+                                   class="md_pv_input" placeholder="00000" maxlength="5"/>
+                        </div>
+                        <div class="md_pv_field">
+                            <label for="medicd_estado">Estado</label>
+                            <input type="text" id="medicd_estado" name="estado"
+                                   class="md_pv_input" placeholder="Estado"/>
+                        </div>
+                        <div class="md_pv_field md_pv_field--radio">
+                            <p class="md_pv_hint">¿Tienes proveedor actual?</p>
+                            <label class="md_pv_radio-label">
+                                <input type="radio" name="tiene_proveedor" value="si"/>
+                                Sí
+                            </label>
+                            <label class="md_pv_radio-label">
+                                <input type="radio" name="tiene_proveedor" value="no"/>
+                                No
+                            </label>
+                        </div>
+                        <div class="md_pv_field" id="medicd-field-proveedor" hidden="hidden">
+                            <label for="medicd_proveedor">Nombre del proveedor actual</label>
+                            <input type="text" id="medicd_proveedor" name="proveedor"
+                                   class="md_pv_input" placeholder="Ej. Marzam, FANASA..."/>
+                        </div>
+                    </div>
+
+                    <!-- Campos condicionales: tiene farmacia = no -->
+                    <div class="md_pv_fields" id="medicd-fields-no" hidden="hidden">
+                        <div class="md_pv_field">
+                            <label for="medicd_tiempo_apertura">Tiempo estimado de apertura</label>
+                            <input type="text" id="medicd_tiempo_apertura" name="tiempo_apertura"
+                                   class="md_pv_input" placeholder="Ej. 3 meses, 1 año..."/>
+                        </div>
+                        <div class="md_pv_field">
+                            <label for="medicd_dir_futura">Dirección futura (opcional)</label>
+                            <input type="text" id="medicd_dir_futura" name="direccion_futura"
+                                   class="md_pv_input" placeholder="Zona o colonia aproximada"/>
+                        </div>
+                    </div>
+
+                    <div class="md_pv_actions">
+                        <button type="submit" class="md_pv_btn md_pv_btn--primary"
+                                id="medicd-submit-btn">
+                            Enviar solicitud
+                        </button>
+                    </div>
+
+                    <div class="md_pv_hint" id="medicd-msg" hidden="hidden"
+                         aria-live="polite"/>
+
+                </form>
+            </section>
+        </xpath>
+
+    </template>
+
+</odoo>

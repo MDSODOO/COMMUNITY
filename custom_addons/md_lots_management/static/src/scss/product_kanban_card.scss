@@ -1,0 +1,70 @@
+// ════════════════════════════════════════════════════════════════════════
+// product_kanban_card.scss — Kanban "A la mano" card, Inventario > Productos
+// ────────────────────────────────────────────────────────────────────────
+// Extiende product.product_template_kanban_view (ver views/
+// product_template_kanban_card_views.xml) con el indicador de existencia
+// fisica "A la mano" (qty_available) para almacenistas.
+//
+// Consume backend_tokens.scss (var(--md-*), medicine_depot_portal,
+// dependencia de este modulo, ya cargado antes en el mismo bundle
+// web.assets_backend). El estilo base de tarjeta/hover/borde de TODO
+// kanban del backend ya lo aplica backend_bento.scss de forma global a
+// .o_kanban_view .o_kanban_record (Step 16/17 — border-radius, border,
+// shadow, hover translateY(-2px)) — no se repite aqui, solo se agrega lo
+// especifico de esta card (acento de marca + badge "A la mano").
+//
+// SIN JS de medicion de altura / masonry: el reflow de columnas lo resuelve
+// el kanban renderer nativo de Odoo (mismo mecanismo que ya usa
+// handheld_kanban.scss, que tampoco toca .o_kanban_renderer). Este archivo
+// solo ajusta tipografia/espaciado por media query — nunca layout
+// dependiente de medicion post-carga de imagen (ese es el bug nativo de
+// website_sale, arquitectura de render distinta, no aplica al kanban de
+// backend).
+// ════════════════════════════════════════════════════════════════════════
+
+.o_web_client .o_kanban_view .o_kanban_record.o_md_product_kanban_card {
+
+    // Acento de marca a la izquierda — mismo criterio que
+    // .o_md_handheld_kanban .o_kanban_record (handheld_kanban.scss): distingue
+    // esta card sin duplicar el efecto glass del portal de clientes en
+    // tarjetas de datos.
+    border-left: 3px solid var(--md-primary);
+
+    .o_md_product_kanban_onhand {
+        display: flex;
+    }
+
+    // Badge "A la mano": alto contraste solido, mismo patron visual que
+    // .o_md_handheld_badge (handheld_kanban.scss) — reusa el lenguaje visual
+    // ya validado para inventario fisico en vez de inventar uno nuevo.
+    .o_md_product_kanban_badge {
+        display: inline-block;
+        padding: 0.25rem 0.75rem;
+        border-radius: var(--md-radius-pill);
+        font-size: var(--md-text-sm);
+        font-weight: var(--md-weight-heading);
+        color: #fff;
+        font-variant-numeric: tabular-nums;
+    }
+
+    .o_md_product_kanban_badge--ok {
+        background: var(--md-action);
+    }
+
+    .o_md_product_kanban_badge--low {
+        background: var(--md-danger);
+    }
+}
+
+// ── Mobile / handheld viewport (<576px, breakpoint sm de Bootstrap) ──────
+// Solo ajusta tipografia/espaciado — el reflow de columnas ya lo maneja el
+// kanban renderer nativo (mismo criterio que handheld_kanban.scss: sin
+// override de grid-template-columns ni JS de medicion de altura).
+@media (max-width: 575.98px) {
+    .o_web_client .o_kanban_view .o_kanban_record.o_md_product_kanban_card {
+        .o_md_product_kanban_badge {
+            font-size: var(--md-text-xs);
+            padding: 0.2rem 0.6rem;
+        }
+    }
+}

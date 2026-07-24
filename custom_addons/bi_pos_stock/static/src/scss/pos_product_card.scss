@@ -1,0 +1,162 @@
+// =============================================================================
+// pos_product_card.scss — bi_pos_stock ProductCard lot-selection footer
+// Odoo 19 Enterprise POS — FEFO / Multi-Branch edition
+//
+// PURPOSE
+// -------
+// 1. Convert .product article to flex-column so a bottom footer div can
+//    naturally sit below the product name without position:absolute tricks.
+//
+// 2. Enlarge product cards slightly beyond pos_custom_layout.scss values
+//    to give comfortable space for both the product name and the lot footer.
+//
+// 3. Style the lot-card-footer:
+//    - Always in the DOM → no layout jump when a lot is selected.
+//    - Invisible by default (opacity:0) via .lot-footer-empty.
+//    - Smooth opacity transition when a lot is confirmed.
+//
+// LOAD ORDER
+// ----------
+// Loaded AFTER pos_custom_layout.scss so our min-height overrides win on
+// cascade.  Specificity strategy identical to pos_custom_layout.scss:
+//   .pos .rightpane .product  →  (0,3,0)  beats core (0,2,0).
+// =============================================================================
+
+
+// ── 1. CARD — flex-column layout + clean border/background ──────────────────
+//
+// Core Odoo 19 POS renders .product with a thick (6px) bottom border that
+// can appear black on some themes. We thin it to 1px and ensure a neutral
+// background so the card looks clean regardless of the active POS theme.
+//
+// flex-direction: column lets the lot-card-footer sit naturally at the bottom.
+
+.pos .rightpane .product {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    border: 1px solid var(--md-pos-card-border) !important;
+    background: var(--md-pos-card-bg) !important;
+    border-radius: 8px !important;
+}
+
+
+// Sin dark mode en tarjetas POS — el rightpane es siempre claro en Odoo 19.
+// Bootstrap .btn-light ya provee el color de texto correcto para fondo claro.
+
+
+// ── 2. CARD — larger min-height (supplements pos_custom_layout.scss) ─────────
+//
+// pos_custom_layout.scss sets: 8rem desktop / 7rem @lg
+// We bump to 9rem / 8rem to give the footer enough breathing room.
+
+.pos .rightpane .product:not(:has(.product-img)) {
+    min-height: 9rem;
+
+    @include media-breakpoint-up(lg) {   // ≥ 992px
+        min-height: 8rem;
+    }
+}
+
+
+// ── 3. LOT-CARD FOOTER ───────────────────────────────────────────────────────
+//
+// Always rendered in the DOM so vertical space is reserved even when empty.
+// Visibility is toggled via the .lot-footer-empty class (added/removed in OWL
+// template based on selectedLotInfo getter).
+
+.lot-card-footer {
+    min-height: 1.8rem;       // Reserve space — same height whether visible or not
+    padding: 2px 4px;
+    transition: opacity 0.2s ease;
+    flex-shrink: 0;            // Never squish the footer when card is at min-height
+    overflow: hidden;
+}
+
+// Hidden state: invisible but still occupies space → no layout jump
+.lot-card-footer.lot-footer-empty {
+    opacity: 0;
+    pointer-events: none;
+}
+
+
+// ── 4. TRAFFIC-LIGHT STOCK BADGE ────────────────────────────────────────────
+//
+// Applied to .qty-left-label / .qty-tright-label / .qty-bright-label on
+// non-lot storable products. Three states replace the user-configured
+// background color for immediate at-a-glance stock status.
+//
+//  stock-badge-green  → qty > low_stock threshold (healthy)
+//  stock-badge-yellow → 0 < qty ≤ threshold       (low)
+//  stock-badge-red    → qty ≤ 0                   (out of stock)
+
+.stock-badge-green {
+    background-color: var(--md-success) !important;
+    color: #fff !important;
+}
+
+.stock-badge-yellow {
+    background-color: var(--md-warning) !important;
+    color: #fff !important;
+}
+
+.stock-badge-red {
+    background-color: var(--md-danger) !important;
+    color: #fff !important;
+}
+
+
+// ── 5. HIDE NATIVE CART-QTY BADGE (bottom-right black box) ──────────────────
+//
+// Odoo 19 core renders a <span class="product-cart-qty position-absolute
+// bottom-0 end-0 ..."> showing how many units are in the current order.
+// We hide it because it overlaps our lot-card-footer and stock badges.
+// CSS-only: no XML template override needed.
+
+.pos .rightpane .product .product-cart-qty {
+    display: none !important;
+}
+
+
+// ── 6. SHORT-EXPIRY CRITICAL RING (< 6 months / 180 days) ───────────────────
+//
+// Rendered inside <article> as an absolutely-positioned div when the product
+// has at least one on-hand lot expiring within 180 days (isShortExpiry prop).
+//
+// Design choices:
+//   • Purple (#875A7B) matches the Odoo/QFM brand palette and is visually
+//     distinct from the red (out-of-stock), yellow (low-stock), and green
+//     badges already used in the module — no color collision.
+//   • border-radius: 8px matches .pos .rightpane .product border-radius.
+//   • pointer-events: none — the ring is purely decorative; card clicks pass through.
+//   • z-index: 5 — sits above stock badges (z-index 1–3) but below dialogs.
+//   • The "Prox. Vencer" pill provides a text label for accessibility and for
+//     users who may not perceive color differences.
+
+.short-expiry-ring {
+    position: absolute;
+    inset: 0;
+    border: 2px solid var(--md-expiry);
+    border-radius: 8px;
+    pointer-events: none;
+    z-index: 5;
+    box-shadow:
+        0 0 0 3px rgba(var(--md-expiry-rgb), 0.15),   // soft purple glow
+        inset 0 0 0 1px rgba(var(--md-expiry-rgb), 0.08); // subtle inner tint
+}
+
+.short-expiry-pill {
+    position: absolute;
+    bottom: 4px;
+    right: 4px;
+    font-size: 0.6rem;
+    font-weight: 700;
+    line-height: 1;
+    padding: 2px 5px;
+    border-radius: 3px;
+    background: var(--md-expiry);
+    color: #fff;
+    letter-spacing: 0.3px;
+    white-space: nowrap;
+    pointer-events: none;
+}

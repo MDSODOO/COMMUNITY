@@ -1,0 +1,248 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="pharma_z_report_email_body" name="Reporte Z farmaceutico por lote">
+        <div class="pz-mail">
+            <style>
+                .pz-mail {
+                    font-family: Arial, sans-serif;
+                    color: #1f2933;
+                    font-size: 0.8125rem;
+                    line-height: 1.45;
+                }
+                .pz-mail h2 {
+                    margin: 0 0 0.25rem 0;
+                    font-size: 1.25rem;
+                }
+                .pz-mail h3 {
+                    margin: 1rem 0 0.5rem 0;
+                    font-size: 1rem;
+                }
+                .pz-mail p {
+                    margin: 0;
+                }
+                .pz-muted {
+                    color: #52606d;
+                }
+                .pz-space {
+                    margin-bottom: 0.75rem;
+                }
+                .pz-table {
+                    border-collapse: collapse;
+                    width: 100%;
+                    border: 1px solid #d9e2ec;
+                }
+                .pz-table.plain {
+                    border: 0;
+                }
+                .pz-table-mb {
+                    margin-bottom: 0.875rem;
+                }
+                .pz-row-head {
+                    background-color: #eef2f7;
+                }
+                .pz-cell {
+                    border: 1px solid #d9e2ec;
+                    padding: 0.3125rem;
+                    vertical-align: top;
+                }
+                .pz-cell.plain {
+                    border: 0;
+                    padding: 0.1875rem 0.5rem;
+                }
+                .pz-cell-num {
+                    text-align: right;
+                    white-space: nowrap;
+                }
+                .pz-cell-center {
+                    text-align: center;
+                }
+                .pz-warn {
+                    margin: 0.5rem 0 0 0;
+                    color: #8a4b00;
+                }
+                @media screen and (max-width: 768px) {
+                    .pz-mail {
+                        font-size: 0.875rem;
+                        line-height: 1.6;
+                    }
+                    .pz-table-scroll {
+                        overflow-x: auto;
+                        -webkit-overflow-scrolling: touch;
+                    }
+                    .pz-table-scroll .pz-table {
+                        min-width: 680px;
+                    }
+                    .pz-cell {
+                        padding: 0.375rem;
+                    }
+                }
+            </style>
+
+            <h2>Reporte diario de ventas Z</h2>
+            <p><strong><t t-esc="report['company_name']"/></strong></p>
+            <p class="pz-muted pz-space">
+                <t t-esc="report['company_address']"/>
+            </p>
+            <p class="pz-muted pz-space">
+                Se adjunta el detalle operativo en Excel para revision y conciliacion.
+            </p>
+
+            <table class="pz-table plain pz-table-mb">
+                <tbody>
+                    <tr>
+                        <td class="pz-cell plain" style="width: 180px;"><strong>Sesiones</strong></td>
+                        <td class="pz-cell plain"><t t-esc="report['session_name']"/></td>
+                    </tr>
+                    <tr>
+                        <td class="pz-cell plain"><strong>Punto de venta</strong></td>
+                        <td class="pz-cell plain"><t t-esc="report['config_name']"/></td>
+                    </tr>
+                    <tr>
+                        <td class="pz-cell plain"><strong>Periodo</strong></td>
+                        <td class="pz-cell plain">
+                            <t t-esc="report['start_at']"/> - <t t-esc="report['stop_at']"/>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3>Movimientos por producto</h3>
+            <div class="table-responsive pz-table-scroll">
+            <table class="pz-table">
+                <thead>
+                    <tr class="pz-row-head">
+                        <th class="pz-cell">Fecha/Hora</th>
+                        <th class="pz-cell">Orden POS</th>
+                        <th class="pz-cell">Cliente asociado</th>
+                        <th class="pz-cell">Producto</th>
+                        <th class="pz-cell">Lote</th>
+                        <th class="pz-cell">Caducidad</th>
+                        <th class="pz-cell pz-cell-num">Cantidad</th>
+                        <th class="pz-cell">Unidad</th>
+                        <th class="pz-cell pz-cell-num">Importe</th>
+                        <th class="pz-cell pz-cell-num">Dto.%</th>
+                        <th class="pz-cell pz-cell-num">Dto. Importe</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <t t-if="report['movements']">
+                        <tr t-foreach="report['movements']" t-as="line"
+                            t-att-style="'background-color: #fff8e1;' if line['warning'] else ''">
+                            <td class="pz-cell">
+                                <t t-esc="line['timestamp']"/>
+                            </td>
+                            <td class="pz-cell">
+                                <t t-esc="line['order_name']"/>
+                            </td>
+                            <td class="pz-cell">
+                                <t t-esc="line['customer_name']"/>
+                            </td>
+                            <td class="pz-cell">
+                                <t t-esc="line['product_name']"/>
+                            </td>
+                            <td class="pz-cell">
+                                <t t-esc="line['lot_name']"/>
+                            </td>
+                            <td class="pz-cell">
+                                <t t-esc="line['expiration_date']"/>
+                            </td>
+                            <td class="pz-cell pz-cell-num">
+                                <t t-esc="line['qty']"/>
+                            </td>
+                            <td class="pz-cell">
+                                <t t-esc="line['uom']"/>
+                            </td>
+                            <td class="pz-cell pz-cell-num">
+                                <t t-esc="line['amount']"/>
+                            </td>
+                            <td class="pz-cell pz-cell-num">
+                                <t t-if="line.get('discount_pct')">
+                                    <t t-esc="'%.1f%%' % line['discount_pct']"/>
+                                </t>
+                            </td>
+                            <td class="pz-cell pz-cell-num">
+                                <t t-if="line.get('discount_amount')">
+                                    <t t-esc="line['discount_amount']"/>
+                                </t>
+                            </td>
+                        </tr>
+                    </t>
+                    <t t-else="">
+                        <tr>
+                            <td colspan="11" class="pz-cell pz-cell-center">
+                                Sin movimientos de venta en la sesion.
+                            </td>
+                        </tr>
+                    </t>
+                </tbody>
+            </table>
+            </div>
+
+            <t t-if="report['warning_count']">
+                <p class="pz-warn">
+                    <strong>Advertencias de trazabilidad:</strong>
+                    <t t-esc="report['warning_count']"/> movimiento(s) requieren revision de lote o caducidad.
+                </p>
+            </t>
+
+            <h3>Total descuentos</h3>
+            <p class="pz-space">
+                Numero de descuentos: <t t-esc="report['discount_count']"/> |
+                Importe de los descuentos: <t t-esc="report['discount_amount']"/>
+            </p>
+
+            <t t-if="report['invoices']">
+                <h3>Facturas</h3>
+                <table class="pz-table">
+                    <tbody>
+                        <tr t-foreach="report['invoices']" t-as="invoice">
+                            <td class="pz-cell">
+                                <t t-esc="invoice['invoice_name']"/>
+                            </td>
+                            <td class="pz-cell">
+                                <t t-esc="invoice['order_names']"/>
+                            </td>
+                            <td class="pz-cell pz-cell-num">
+                                <t t-esc="invoice['amount']"/>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </t>
+
+            <h3>Control de la sesion</h3>
+            <p>Total: <strong><t t-esc="report['total']"/></strong></p>
+            <p class="pz-space">Numero de transacciones: <t t-esc="report['transaction_count']"/></p>
+
+            <t t-if="report['payments']">
+                <table class="pz-table pz-table-mb">
+                    <tbody>
+                        <tr t-foreach="report['payments']" t-as="payment">
+                            <td class="pz-cell">
+                                <t t-esc="payment['name']"/>
+                            </td>
+                            <td class="pz-cell pz-cell-num">
+                                <t t-esc="payment['amount']"/>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </t>
+
+            <t t-if="report['cash_lines']">
+                <table class="pz-table">
+                    <tbody>
+                        <tr t-foreach="report['cash_lines']" t-as="cash_line">
+                            <td class="pz-cell">
+                                <t t-esc="cash_line['name']"/>
+                            </td>
+                            <td class="pz-cell pz-cell-num">
+                                <t t-esc="cash_line['amount']"/>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </t>
+        </div>
+    </template>
+</odoo>

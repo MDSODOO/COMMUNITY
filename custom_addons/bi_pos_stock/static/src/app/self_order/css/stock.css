@@ -1,0 +1,75 @@
+.qty-left-label{
+	position: absolute;
+    top: 5px !important;
+    font-size: 11px;
+    border-radius: 2px;
+    background-color: var(--md-success);
+    color: white;
+    width: 16px;
+    height: 15px;
+    display: inline-table;
+    justify-content: center;
+    align-items: center;
+    vertical-align: top;
+    line-height: 13px;
+    padding: 2px 5px;
+}
+.qty-image-label{
+	position: absolute;
+    top: 25px !important;
+    left: 5px;
+    font-size: 11px;
+    border-radius: 2px;
+    background-color: var(--md-success);
+    color: white;
+    width: 16px;
+    height: 15px;
+    display: inline-table;
+    justify-content: center;
+    align-items: center;
+    vertical-align: top;
+    line-height: 13px;
+    padding: 2px 5px;
+}
+
+.qty-tright-label{
+	position: absolute;
+    top: 5px !important;
+    right: 5px;
+    font-size: 11px;
+    border-radius: 2px;
+    background-color: var(--md-success);
+    color: white;
+    width: 16px;
+    height: 15px;
+    display: inline-table;
+    justify-content: center;
+    align-items: center;
+    vertical-align: top;
+    line-height: 13px;
+    padding: 2px 5px;
+}
+.qty-bright-label{
+	position: absolute;
+    bottom: 5px !important;
+    right: 5px;
+    font-size: 11px;
+    border-radius: 2px;
+    background-color: var(--md-success);
+    color: white;
+    width: 16px;
+    height: 15px;
+    display: inline-table;
+    justify-content: center;
+    align-items: center;
+    vertical-align: top;
+    line-height: 13px;
+    padding: 2px 5px;
+}
+
+.out-of-stock-qty{
+	background-color: var(--md-danger) !important;
+}
+
+
+

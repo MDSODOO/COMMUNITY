@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates>
+    <!--
+        OrderDisplay extension — Total de Productos y Piezas.
+
+        FIXED (Odoo 19): OrderDisplay is "service-less" — the order comes via props.order,
+        NOT from the POS store. We access it via props.order.lines directly in the template,
+        avoiding any dependency on pos.selectedOrder or custom getters that would require
+        usePos() inside the component.
+
+        "Productos" cuenta PRODUCTOS DISTINTOS, no renglones — antes usaba
+        props.order.lines.length, así que el mismo producto repartido en 2
+        pos.order.line por llevar lotes distintos (orderline_lot_patch.js las
+        mantiene separadas a propósito) se contaba como 2 productos, aunque el
+        ticket ya las fusiona visualmente en 1 renglón (mergeReceiptLotLines).
+        Se agrupa con la MISMA clave que usa esa fusión (producto+price_unit+
+        discount; las líneas de combo cuentan aparte por su propio uuid, igual
+        que en bi_pos_stock.OrderlineReceiptMergeAttrs) y se cuentan los grupos
+        distintos, no las líneas.
+
+        FIXED: `new Set(...)` rompía el render con "ctx.Set is not a
+        constructor" — el compilador de QWeb/OWL resuelve identificadores
+        contra el contexto (ctx) del template, y los constructores globales de
+        JS (Set, Map, Array, etc.) no están expuestos ahí. Confirmado en vivo:
+        rompía el carrito completo en CUALQUIER orden con al menos 1 producto.
+        Se reemplaza por .filter((v, i, arr) => arr.indexOf(v) === i).length,
+        que solo usa métodos de array (sin constructores globales).
+    -->
+    <t t-name="bi_pos_stock.OrderDisplay" t-inherit="point_of_sale.OrderDisplay" t-inherit-mode="extension" owl="1">
+        <xpath expr="//div[hasclass('order-summary')]" position="after">
+            <t t-if="props.order and props.order.lines and props.order.lines.length > 0">
+                <div class="md-order-stats">
+                    <div class="md-order-stat">
+                        <i class="fa fa-list-ol md-order-stat__icon"/>
+                        <div>
+                            <span class="md-order-stat__label">Productos</span>
+                            <strong class="md-order-stat__value">
+                                <t t-esc="props.order.lines.map((l) => (l.combo_parent_id || l.combo_line_ids?.length) ? l.uuid : (l.product_id.id + '_' + l.price_unit + '_' + l.discount)).filter((v, i, arr) => arr.indexOf(v) === i).length"/>
+                            </strong>
+                        </div>
+                    </div>
+                    <div class="md-order-stat">
+                        <i class="fa fa-cubes md-order-stat__icon"/>
+                        <div>
+                            <span class="md-order-stat__label">Piezas</span>
+                            <strong class="md-order-stat__value">
+                                <t t-esc="props.order.lines.reduce((s, l) => s + (l.qty || 0), 0).toFixed(2)"/>
+                            </strong>
+                        </div>
+                    </div>
+                </div>
+            </t>
+        </xpath>
+    </t>
+
+    <!--
+        Orderline — línea de ahorro consolidada.
+
+        Formato "X% de descuento en $Y", donde Y = precio unitario ANTES de descuento × |qty|.
+        Cubre dos orígenes distintos del descuento (ver orderline_discount_patch.js):
+          - Numpad (line.discount > 0): Y = price_unit × qty (price_unit ya es el precio
+            original, el % se aplica después).
+          - Pricelist (line.discount === 0 pero price_unit < lst_price real del producto):
+            Odoo nunca llena line.discount para descuentos por pricelist — el precio ya
+            viene rebajado directo en price_unit. getEffectiveDiscountInfo() deriva el %
+            comparando contra el lst_price real; Y = ese lst_price × qty.
+
+        El nativo point_of_sale.Orderline ya muestra su propio "X% discount off on Y" con
+        ícono fa-tag dentro de <li class="price-per-unit"> (ver
+        addons/point_of_sale/static/src/app/components/orderline/orderline.xml) — pero ese
+        nativo tiene la MISMA limitación (solo lee line.discount), así que tampoco aparece
+        para descuentos por pricelist. Se oculta vía CSS (pos_receipt_print.scss,
+        .price-per-unit) en el ticket impreso; este badge queda como la única línea de
+        descuento visible ahí, y ahora cubre ambos casos.
+
+        XPath targets div.product-name which is stable across Odoo 17-19 POS.
+    -->
+    <t t-name="bi_pos_stock.OrderlineInlineDiscount"
+       t-inherit="point_of_sale.Orderline"
+       t-inherit-mode="extension"
+       owl="1">
+        <xpath expr="//div[hasclass('product-name')]" position="after">
+            <t t-set="bi_discount_info" t-value="line.getEffectiveDiscountInfo()"/>
+            <t t-if="bi_discount_info.pct > 0">
+                <div class="bi-discount-inline text-muted" style="font-size:9px;">
+                    <t t-esc="bi_discount_info.pct.toFixed(0)"/>% de descuento en $<t t-esc="(bi_discount_info.originalUnitPrice * Math.abs(line.qty || 0)).toFixed(2)"/>
+                </div>
+            </t>
+        </xpath>
+    </t>
+
+    <!--
+        Orderline — atributos data-* para la fusión visual de lotes en el ticket.
+
+        Solo agrega atributos (no reestructura nada nativo — bajo riesgo). La fusión real
+        ocurre en JS después del render (order_widget.js, OrderDisplay.mergeReceiptLotLines),
+        leyendo estos data-* con los valores ya calculados por Odoo (line.qty, line.displayPrice)
+        para sumarlos correctamente sin reimplementar el motor de impuestos/descuentos.
+
+        Las líneas de combo reciben su propio uuid como merge-key (nunca coinciden entre sí)
+        porque su precio depende de combo_line_ids y no es seguro sumarlas aquí.
+    -->
+    <t t-name="bi_pos_stock.OrderlineReceiptMergeAttrs"
+       t-inherit="point_of_sale.Orderline"
+       t-inherit-mode="extension"
+       owl="1">
+        <xpath expr="//li[hasclass('orderline')]" position="attributes">
+            <attribute name="t-att-data-merge-key">line.combo_parent_id || line.combo_line_ids?.length ? line.uuid : (line.product_id.id + '_' + line.price_unit + '_' + line.discount)</attribute>
+            <attribute name="t-att-data-line-qty">line.qty</attribute>
+            <attribute name="t-att-data-line-price">line.displayPrice</attribute>
+        </xpath>
+    </t>
+</templates>

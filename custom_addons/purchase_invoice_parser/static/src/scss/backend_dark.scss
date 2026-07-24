@@ -1,0 +1,90 @@
+// ════════════════════════════════════════════════════════════════════════
+// backend_dark.scss — Tokens de dark mode para purchase_invoice_parser
+// ────────────────────────────────────────────────────────────────────────
+// Registrado en web.assets_web_dark: Odoo 19 inyecta este bundle
+// ÚNICAMENTE cuando el dark mode está activo (preferencia de usuario).
+// No se necesitan selectores .o_dark_mode ni [data-bs-theme]: este
+// archivo solo se carga en modo oscuro (mismo patrón que
+// medicine_depot_portal/backend_dark.scss).
+//
+// Antes este override vivía gateado por html[data-bs-theme="dark"] dentro
+// de price_notification_menu.scss y cfdi_upload_zone.scss (bundle
+// web.assets_backend) — ese atributo nunca aparece en el DOM real de
+// Odoo 19, así que las reglas nunca se aplicaban. Ver
+// docs/audits/2026-07-01_backend_dark_mode_audit.md.
+// ════════════════════════════════════════════════════════════════════════
+
+// ── Menú de notificaciones de precio (price_notification_menu.scss) ────────
+.pip_price_notification {
+    .o_nav_entry:hover {
+        background: rgba(255, 255, 255, 0.08);
+    }
+
+    .pip_unread {
+        background: rgba(231, 76, 60, 0.12);
+    }
+
+    .pip_old {
+        color: #e57373;
+    }
+
+    .pip_new {
+        color: #66bb6a;
+    }
+
+    .pip_product_link {
+        color: var(--bs-body-color, #dee2e6);
+
+        &:hover {
+            color: var(--bs-primary, #5bc0de);
+        }
+    }
+}
+
+// ── Bento upload zone del wizard "Importar XML" (cfdi_upload_zone.scss) ────
+.pip_bento_card {
+    background:   rgba(26, 31, 46, 0.60);
+    border-color: rgba(255, 255, 255, 0.08);
+    box-shadow:
+        0 2px 14px rgba(0, 0, 0, 0.35),
+        0 1px 4px  rgba(0, 0, 0, 0.25);
+
+    @supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
+        background: rgba(26, 31, 46, 0.45);
+    }
+
+    &--header {
+        background: linear-gradient(
+            135deg,
+            rgba(22, 166, 217, 0.18) 0%,
+            rgba(26, 31, 46, 0.35) 100%
+        );
+    }
+}
+
+.pip_upload_zone {
+    border-color: rgba(255, 255, 255, 0.18);
+    background:   rgba(255, 255, 255, 0.03);
+
+    &:not(.pip_upload_zone--filled):hover {
+        background: rgba(1, 126, 132, 0.10);
+    }
+
+    &--dragover {
+        background: rgba(1, 126, 132, 0.18) !important;
+    }
+
+    &--filled {
+        background: rgba(25, 135, 84, 0.12);
+    }
+
+    &--readonly {
+        background: var(--bs-dark-bg-subtle, #1a1d20);
+    }
+}
+
+.modal-content:has(.pip_bento_card) {
+    box-shadow:
+        0 8px 32px rgba(0, 0, 0, 0.45),
+        0 2px 8px  rgba(0, 0, 0, 0.30);
+}

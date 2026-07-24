@@ -1,0 +1,13 @@
+{
+  "module": "medicine_depot_scrap_batch",
+  "started_at": "2026-05-25T19:52:45.971Z",
+  "completed_phases": [],
+  "phases": {},
+  "meta": {
+    "total_tokens": 0,
+    "total_cost": 0,
+    "providers_used": []
+  },
+  "current_version": "audit",
+  "target_version": "audit"
+}

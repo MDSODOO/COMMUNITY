@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Fuente global de marca: Source Sans Pro para cuerpo y titulares. -->
+    <template id="md_head_font_preconnect"
+              inherit_id="website.layout"
+              name="MD · Global brand font">
+        <xpath expr="//head" position="inside">
+            <link rel="preconnect" href="https://fonts.googleapis.com"/>
+            <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous"/>
+            <link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;600;700;800;900&amp;family=Source+Sans+Pro:wght@400;600;700;900&amp;display=swap"
+                  rel="stylesheet"/>
+        </xpath>
+    </template>
+
+    <template id="md_official_logo_in_navbar"
+              inherit_id="website.option_header_brand_logo"
+              name="MD · Official logo in navbar (logo option)"
+              priority="320">
+        <xpath expr="//a[@data-name='Navbar Logo']" position="replace">
+            <t t-set="md_nav_company_id"
+               t-value="request.website.company_id.id if request.website and request.website.company_id else request.env.company.id"/>
+            <a data-name="Navbar Logo" href="/" t-attf-class="navbar-brand logo #{_link_class}">
+                <img t-if="website and website.logo"
+                     t-att-src="'/web/image/website/%s/logo' % website.id"
+                     class="img img-fluid md-official-logo"
+                     width="180"
+                     height="56"
+                     t-att-alt="website.name or 'Logotipo Oficial de Medicine Depot - Distribuidora Farmacéutica'"
+                     loading="lazy"/>
+                <img t-else=""
+                     t-att-src="'/logo.png?company=%s' % md_nav_company_id"
+                     class="img img-fluid md-official-logo"
+                     width="180"
+                     height="56"
+                     alt="Logotipo Oficial de Medicine Depot - Distribuidora Farmacéutica"
+                     loading="lazy"/>
+            </a>
+        </xpath>
+    </template>
+
+    <template id="md_official_logo_in_navbar_name_fallback"
+              inherit_id="website.option_header_brand_name"
+              name="MD · Official logo in navbar (name option fallback)"
+              priority="320">
+        <xpath expr="//a[contains(@t-attf-class, 'navbar-brand')]" position="replace">
+            <t t-set="md_nav_company_id"
+               t-value="request.website.company_id.id if request.website and request.website.company_id else request.env.company.id"/>
+            <a data-name="Navbar Logo" href="/" t-attf-class="navbar-brand logo #{_link_class}">
+                <img t-if="website and website.logo"
+                     t-att-src="'/web/image/website/%s/logo' % website.id"
+                     class="img img-fluid md-official-logo"
+                     width="180"
+                     height="56"
+                     t-att-alt="website.name or 'Logotipo Oficial de Medicine Depot - Distribuidora Farmacéutica'"
+                     loading="lazy"/>
+                <img t-else=""
+                     t-att-src="'/logo.png?company=%s' % md_nav_company_id"
+                     class="img img-fluid md-official-logo"
+                     width="180"
+                     height="56"
+                     alt="Logotipo Oficial de Medicine Depot - Distribuidora Farmacéutica"
+                     loading="lazy"/>
+            </a>
+        </xpath>
+    </template>
+
+    <template id="md_shop_force_bento_header"
+              inherit_id="website.layout"
+              name="MD · Force unified Bento navbar on public native pages"
+              priority="420">
+        <xpath expr="//header[@id='top']" position="before">
+            <t t-set="md_path" t-value="request.httprequest.path or '/'"/>
+            <t t-set="md_is_public_shell" t-value="'md-bento-public' in (body_classname or '')"/>
+            <t t-set="md_is_backend_surface"
+               t-value="(md_path.startswith('/web') or md_path.startswith('/odoo')) and not md_path.startswith('/web/login') and not md_path.startswith('/web/signup') and not md_path.startswith('/web/reset_password')"/>
+            <t t-if="not md_is_public_shell and not md_is_backend_surface">
+                <t t-set="md_nav_items"
+                   t-value="[
+                       {'label': 'Inicio', 'url': '/', 'active': md_path in ('/', '/home')},
+                       {'label': 'Tienda', 'url': '/shop', 'active': md_path.startswith('/shop')},
+                       {'label': 'Afiliación', 'url': '/afiliacion', 'active': md_path.startswith('/afiliacion')},
+                       {'label': 'MedicD', 'url': '/medicd', 'active': md_path.startswith('/medicd')},
+                       {'label': 'Sucursales', 'url': '/sucursales', 'active': md_path.startswith('/sucursales')},
+                       {'label': 'Farmacovigilancia', 'url': '/farmacovigilancia', 'active': md_path.startswith('/farmacovigilancia')},
+                       {'label': 'Contacto', 'url': '/contactus', 'active': md_path.startswith('/contactanos') or md_path.startswith('/contactus') or md_path.startswith('/contacto-quejas'), 'cta': True},
+                   ]"/>
+                <header class="md-bento-topbar" role="banner">
+                    <div class="md-bento-container">
+                        <div class="md-bento-nav">
+                            <t t-call="medicine_depot_portal.md_nav_logo"/>
+                            <t t-call="medicine_depot_portal.md_nav_items"/>
+                            <t t-call="medicine_depot_portal.md_nav_cart"/>
+                            <t t-call="medicine_depot_portal.md_nav_account"/>
+                            <t t-call="medicine_depot_portal.md_nav_toggle"/>
+                        </div>
+                    </div>
+                </header>
+            </t>
+        </xpath>
+
+        <xpath expr="//header[@id='top']" position="attributes">
+            <attribute name="t-attf-class"
+                       add="#{'d-none' if 'md-bento-public' not in (body_classname or '') and not ((request.httprequest.path or '').startswith('/web') or (request.httprequest.path or '').startswith('/odoo')) or (request.httprequest.path or '').startswith('/web/login') or (request.httprequest.path or '').startswith('/web/signup') or (request.httprequest.path or '').startswith('/web/reset_password') else ''}"
+                       separator=" "/>
+        </xpath>
+    </template>
+
+    <template id="md_navbar_bento_link"
+              inherit_id="website.layout"
+              name="MD · Navbar Bento Link"
+              priority="15">
+        <xpath expr="//ul[@id='top_menu']" position="inside">
+            <t t-if="not user_id._is_public()">
+                <li class="nav-item">
+                    <a href="/my/dashboard"
+                       class="nav-link fw-bold text-primary md-bento-native-account-link"
+                       aria-label="Ir a mi cuenta">
+                        <i class="fa fa-th-large me-1" aria-hidden="true"/> Mi cuenta
+                    </a>
+                </li>
+            </t>
+        </xpath>
+    </template>
+
+</odoo>

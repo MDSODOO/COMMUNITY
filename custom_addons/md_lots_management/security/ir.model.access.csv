@@ -1,0 +1,6 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_production_lot_user,production_lot_access_user,stock.model_stock_lot,base.group_user,1,0,0,0
+access_production_lot_inventory,production_lot_access_inventory,stock.model_stock_lot,stock.group_stock_user,1,1,1,0
+access_production_lot_manager,production_lot_access_manager,stock.model_stock_lot,stock.group_stock_manager,1,1,1,1
+access_md_lot_a_la_mano_wizard,md_lot_a_la_mano_wizard,model_md_lot_a_la_mano_wizard,stock.group_stock_user,1,1,1,0
+access_md_lot_assign_company_wizard,md_lot_assign_company_wizard,model_md_lot_assign_company_wizard,stock.group_stock_user,1,1,1,0

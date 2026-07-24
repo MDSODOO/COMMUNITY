@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="report_saleorder_lot_column" inherit_id="sale.report_saleorder_document" priority="90">
+
+        <xpath expr="//div[hasclass('page')]" position="attributes">
+            <attribute name="class" add="pharma-doc-page so-active" separator=" "/>
+        </xpath>
+
+        <!--
+          Suppress native discount column; we render our own Desc.%
+          after Cantidad to match the invoice column order.
+        -->
+        <xpath expr="//t[@t-set='display_discount']" position="attributes">
+            <attribute name="t-value">False</attribute>
+        </xpath>
+
+        <xpath expr="//div[@id='informations']" position="attributes">
+            <attribute name="style">display:none</attribute>
+        </xpath>
+
+        <xpath expr="//table[hasclass('o_main_table')]" position="before">
+            <t t-set="pharma_show_extended_cols" t-value="not (doc.state in ('draft', 'sent') or doc.env.context.get('proforma'))"/>
+            <!--
+              Header pharma como primer bloque del body. Antes vivía vía xpath
+              en web.external_layout_*; ahora se inyecta aquí para garantizar
+              orden visual estable (logo+doc-info → stripe → meta-band → addr).
+              Los sub-templates resuelven `o if o else doc` y aceptan ambos.
+            -->
+            <t t-call="pharma_reports.pharma_full_header_sale"/>
+            <div class="pharma-body-address-shell">
+                <t t-set="pharma_doc" t-value="doc"/>
+                <t t-set="pharma_company" t-value="doc.company_id.sudo()"/>
+                <t t-call="pharma_reports.pharma_company_address_block"/>
+            </div>
+        </xpath>
+
+        <xpath expr="//table[hasclass('o_main_table')]" position="attributes">
+            <attribute name="class" add="pharma-lines" separator=" "/>
+        </xpath>
+
+        <xpath expr="//table[hasclass('o_main_table')]" position="before">
+            <div class="pharma-section-ttl">Líneas de Producto</div>
+        </xpath>
+
+        <xpath expr="//div[@name='total']" position="attributes">
+            <attribute name="class" add="pharma-total-block" separator=" "/>
+        </xpath>
+
+        <!-- Rename native column headers to match invoice style -->
+        <xpath expr="//th[@name='th_description']" position="replace">
+            <th name="th_description" class="text-start">Descripción</th>
+        </xpath>
+        <xpath expr="//th[@name='th_quantity']" position="replace">
+            <th name="th_quantity" class="text-end text-nowrap">Cantidad</th>
+        </xpath>
+        <xpath expr="//th[@name='th_priceunit']" position="replace">
+            <th name="th_priceunit" class="text-end text-nowrap">Precio unitario</th>
+        </xpath>
+        <xpath expr="//th[@name='th_taxes']" position="replace">
+            <th name="th_taxes" t-if="display_taxes" class="text-end">Impuestos</th>
+        </xpath>
+        <xpath expr="//th[@name='th_subtotal']" position="replace">
+            <th name="th_subtotal" class="text-end">Importe</th>
+        </xpath>
+
+        <!-- Desc.% column header after Cantidad (only for confirmed orders) -->
+        <xpath expr="//th[@name='th_quantity']" position="after">
+            <th name="th_discount_pharma" class="text-end text-nowrap" t-if="pharma_show_extended_cols">Desc. %</th>
+        </xpath>
+
+        <xpath expr="//td[@name='td_product_name']" position="attributes">
+            <attribute name="class" add="pharma-product-cell" separator=" "/>
+        </xpath>
+
+        <!--
+          Inline lot + expiry inside the description cell — matches the invoice
+          format "Lote: X | Caducidad: Y" as a second line under the product name.
+          For confirmed orders with deliveries, shows picking lots; otherwise
+          uses the lot pre-assigned on the sale line.
+        -->
+        <xpath expr="//td[@name='td_product_name']" position="inside">
+            <t t-set="pharma_inline_lots" t-value="line.picking_lot_ids.sorted('name') if (doc.state not in ('draft', 'sent') and line.picking_lot_ids) else line.lot_id"/>
+            <t t-foreach="pharma_inline_lots" t-as="ilot">
+                <div class="pharma-lot-inline">Lote: <span t-esc="ilot.name"/>
+                    <t t-if="ilot.expiration_date"> | Caducidad: <span t-field="ilot.expiration_date" t-options='{"widget": "date"}'/></t>
+                </div>
+            </t>
+        </xpath>
+
+        <!-- Desc.% cell after Cantidad -->
+        <xpath expr="//td[@name='td_product_quantity']" position="after">
+            <td name="td_product_discount_pharma" class="text-end" t-if="pharma_show_extended_cols">
+                <t t-if="line.discount">
+                    <span t-field="line.discount" t-options='{"widget": "float", "precision": 2}'/>%
+                </t>
+                <t t-else="">
+                    <span class="text-muted">—</span>
+                </t>
+            </td>
+        </xpath>
+
+        <!--
+          Section / combo colspan:
+            Descripción(1) + Cantidad(1) + Precio(1) + Importe(1) = 4 base
+            + Impuestos(0-1) + Desc.%(0-1)
+        -->
+        <xpath expr="//tr[@name='tr_section']//t[@t-set='section_name_colspan']" position="attributes">
+            <attribute name="t-value">4 + (1 if display_taxes else 0) + (1 if pharma_show_extended_cols else 0)</attribute>
+        </xpath>
+        <xpath expr="//td[@name='td_combo_name']" position="attributes">
+            <attribute name="t-att-colspan">4 + (1 if display_taxes else 0) + (1 if pharma_show_extended_cols else 0)</attribute>
+        </xpath>
+        <xpath expr="//td[@name='td_section_group_quantity']" position="after">
+            <td name="td_section_group_discount_pharma" t-if="pharma_show_extended_cols"/>
+        </xpath>
+
+    </template>
+</odoo>

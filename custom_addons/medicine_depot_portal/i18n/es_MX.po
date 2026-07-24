@@ -1,0 +1,55 @@
+# Translation of Medicine Depot - Portal Bento.
+# Spanish (Mexico). Regla terminológica: señal comercial visible = "A la mano".
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 19.0\n"
+"Report-Msgid-Bugs-To: \n"
+"Language-Team: Spanish (Mexico) <es_MX@li.org>\n"
+"Language: es_MX\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#. module: medicine_depot_portal
+#: code:addons/medicine_depot_portal/controllers/portal.py:0
+msgid "A la mano"
+msgstr "A la mano"
+
+#. module: medicine_depot_portal
+#: model_terms:ir.ui.view,arch_db:medicine_depot_portal.md_portal_my_home_bento
+msgid "Bitácora reciente"
+msgstr "Bitácora reciente"
+
+#. module: medicine_depot_portal
+#: model_terms:ir.ui.view,arch_db:medicine_depot_portal.md_portal_my_home_bento
+msgid "Facturas pendientes"
+msgstr "Facturas pendientes"
+
+#. module: medicine_depot_portal
+#: model_terms:ir.ui.view,arch_db:medicine_depot_portal.md_portal_my_home_bento
+msgid "Pedido activo"
+msgstr "Pedido activo"
+
+#. module: medicine_depot_portal
+#: model_terms:ir.ui.view,arch_db:medicine_depot_portal.md_portal_my_home_bento
+msgid "Productos favoritos"
+msgstr "Productos favoritos"
+
+#. module: medicine_depot_portal
+#: model_terms:ir.ui.view,arch_db:medicine_depot_portal.md_portal_my_home_bento
+msgid "Sin pedidos en curso"
+msgstr "Sin pedidos en curso"
+
+#. module: medicine_depot_portal
+#: model_terms:ir.ui.view,arch_db:medicine_depot_portal.md_portal_my_home_bento
+msgid "Todo al corriente."
+msgstr "Todo al corriente."
+
+#. module: medicine_depot_portal
+#: model_terms:ir.ui.view,arch_db:medicine_depot_portal.md_portal_my_home_bento
+msgid "Ver detalle →"
+msgstr "Ver detalle →"
+
+# NOTA: usar siempre la señal comercial visible "A la mano".

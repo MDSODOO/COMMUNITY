@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!--
+        Fragment: tarjeta de producto individual.
+        Parámetros: product (browse record), show_badge (bool), badge_type (discount|new|outofstock)
+    -->
+    <template id="s_md_product_card_item" name="MD · Product Card Item">
+        <div class="md-product-card md-reveal">
+            <!-- Image with lazy loading + blurred placeholder -->
+            <div class="md-product-card__image"
+                 t-att-aria-label="'Cargando imagen' if not product.image_128 else None">
+                <t t-if="product.image_128">
+                    <img t-att-src="'/web/image/product.template/%s/image_128' % product.id"
+                         t-att-alt="product.name"
+                         loading="lazy"
+                         width="300"
+                         height="225"
+                         decoding="async"/>
+                </t>
+                <t t-else="">
+                    <div class="md-skeleton md-skeleton--img" aria-hidden="true"/>
+                </t>
+
+                <!-- Badge system -->
+                <t t-if="product.lst_price and product.lst_price &gt; product.list_price">
+                    <span class="md-product-badge md-product-badge--discount"
+                          aria-label="Precio especial">
+                        <t t-esc="'%d%%' % (round((1 - product.list_price / product.lst_price) * 100))"/>
+                        OFF
+                    </span>
+                </t>
+                <t t-elif="product.is_new if hasattr(product, 'is_new') else False">
+                    <span class="md-product-badge md-product-badge--new">Nuevo</span>
+                </t>
+                <t t-elif="product.sudo().virtual_available &lt;= 0">
+                    <span class="md-product-badge md-product-badge--outofstock">Sin producto a la mano</span>
+                </t>
+            </div>
+
+            <!-- Body -->
+            <div class="md-product-card__body">
+                <h3 class="md-product-card__name mb-2">
+                    <t t-esc="product.name"/>
+                </h3>
+                <t t-if="product.description_sale">
+                    <p class="md-small-note">
+                        <t t-esc="product.description_sale[:80]"/>
+                    </p>
+                </t>
+                <div class="md-product-card__footer">
+                    <span class="md-product-card__price">
+                        $<t t-esc="'%.2f' % product.list_price"/>
+                        <t t-if="product.lst_price and product.lst_price != product.list_price">
+                            <span class="md-product-card__price-old">
+                                $<t t-esc="'%.2f' % product.lst_price"/>
+                            </span>
+                        </t>
+                    </span>
+                    <a t-att-href="'/shop/product/%s' % product.id"
+                       class="md-btn md-btn--primary mt-2">
+                        Ver producto
+                    </a>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <!--
+        s_md_product_grid · Grid de tarjetas de productos.
+        Usa stagger animation via .md-product-grid + .md-product-card.
+    -->
+    <template id="s_md_product_grid" name="MD · Product Grid">
+        <section class="s_md_product_grid md-section o_colored_level"
+                 data-snippet="s_md_product_grid"
+                 data-name="MD Product Grid">
+            <div class="md-bento-container">
+                <div class="md-section-head md-reveal">
+                    <div>
+                        <span class="md-eyebrow">Catálogo</span>
+                        <h2>Nuestros productos</h2>
+                        <p class="md-lead">Encuentra lo que necesitas con la calidad que mereces.</p>
+                    </div>
+                </div>
+                <div class="md-product-grid" role="list">
+                    <t t-foreach="products" t-as="product">
+                        <t t-call="medicine_depot_portal.s_md_product_card_item"
+                           role="listitem"/>
+                    </t>
+                </div>
+            </div>
+        </section>
+    </template>
+
+</odoo>

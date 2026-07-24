@@ -1,0 +1,748 @@
+// =============================================================================
+// pos_glass_bento.scss — Glassmorphism + Bento redesign for ProductScreen
+// Odoo 19 Community POS — Medicine Depot Sureste
+//
+// SOURCE
+// ------
+// Implements the "Rediseño PoS — Glassmorphism + Bento" design handoff:
+// dark glass ProductScreen (navbar, promotions row, cart panel, product
+// grid, numpad, PAGO button) + the FEFO lot-selection/detail popups.
+//
+// SCOPE — intentionally NOT touched here
+// ---------------------------------------
+// PaymentScreen, ReceiptScreen and the backend sessions dashboard are out of
+// scope for this pass (see handoff §6.2 priorities) — only ProductScreen +
+// its popups are restyled. Existing behavior (stock guards, branchStock
+// keying, FEFO cascade) is untouched; this file is visual-only.
+//
+// WHY THESE RULES LOAD LAST
+// --------------------------
+// Registered after pos_custom_layout.scss / pos_product_card.scss / the
+// stock.css bundle in __manifest__.py — cascade order lets these rules win
+// ties without needing !important everywhere (added only where the target
+// rule already used !important upstream, e.g. .rightpane .product background).
+//
+// DESIGN TOKENS — why redefined here instead of importing md_tokens.scss
+// ------------------------------------------------------------------------
+// md_tokens.scss (md_bento_theme) is only bundled into web.assets_frontend
+// (the marketing site), not point_of_sale._assets_pos — SCSS bundles compile
+// independently in Odoo, so its $md-* SCSS variables are not visible here,
+// and importing a frontend-bundle file into the POS bundle risks pulling in
+// website-only Bootstrap context. Following the pattern pos_custom_layout.scss
+// already established, brand colors are plain CSS custom properties declared
+// in :root — same hex/rgba values as design_tokens.json, just re-declared in
+// the bundle that actually needs them.
+//
+// DARK MODE — "fixed dark", not prefers-color-scheme
+// -----------------------------------------------------
+// The design handoff recommends dark mode FIXED for the POS (audit §8, Q1),
+// not tied to the OS preference the way the pre-existing bi_pos_stock dark
+// rules are (@media prefers-color-scheme, see pos_custom_layout.scss /
+// stock.css). Making glass-dark the unconditional default here is a real
+// behavior change from "dark only if OS is dark" to "always dark" — but it
+// respects the escape hatch already wired in pos_theme_mode.js: a POS
+// configured with iface_theme = 'light' gets body.pos-force-light, which
+// this file treats as an explicit opt-out back to Odoo's native light look
+// (all rules below are scoped under body:not(.pos-force-light)).
+//
+// BLUR BUDGET — tablet hardware
+// -------------------------------
+// backdrop-filter blur kept to 8-10px everywhere (never > 12px per the
+// handoff's hardware constraint) and disabled entirely under
+// prefers-reduced-motion, where surfaces fall back to a flat translucent
+// background (no blur, same opacity look minus the GPU cost).
+// =============================================================================
+
+:root {
+    // ── Glass surfaces (dark) ────────────────────────────────────────────────
+    --pg-bg-navbar:        rgba(7, 28, 34, 0.55);
+    --pg-bg-panel:         rgba(7, 28, 34, 0.5);
+    --pg-bg-card:          linear-gradient(165deg, rgba(255,255,255,0.09), rgba(255,255,255,0.02) 60%), rgba(7, 28, 34, 0.5);
+    --pg-bg-card-border:   rgba(255, 255, 255, 0.10);
+    --pg-bg-modal:         linear-gradient(165deg, rgba(20,45,55,0.98), rgba(7,28,34,0.98));
+    --pg-bg-line:          rgba(255, 255, 255, 0.045);
+    --pg-bg-chip-neutral:  rgba(255, 255, 255, 0.06);
+    --pg-border-soft:      rgba(255, 255, 255, 0.10);
+    --pg-border-softer:    rgba(255, 255, 255, 0.08);
+    --pg-text:             #EAF6FB;
+    --pg-text-muted:       rgba(234, 246, 251, 0.6);
+    --pg-text-faint:       rgba(234, 246, 251, 0.5);
+
+    // ── Brand gradients / accents (design_tokens.json, gradients.*) ──────────
+    --pg-gradient-brand:   linear-gradient(90deg, #16A6D9 0%, #35BADF 46%, #97D700 100%);
+    --pg-gradient-glow:    radial-gradient(42rem 28rem at 88% -12%, rgba(151,215,0,0.10), transparent 64%),
+                           radial-gradient(38rem 24rem at 6% 108%, rgba(22,166,217,0.14), transparent 62%);
+    --pg-bg-screen:        linear-gradient(180deg, #073A4C 0%, #152330 100%);
+    --pg-blue-highlight:   #59CBE8;
+    --pg-green-highlight:  #B9EA43;
+    --pg-danger:           #FF8A80;
+    --pg-warning:          #FFD54F;
+
+    // ── Radii (design_tokens.json borderRadius.*) ────────────────────────────
+    --pg-radius-xs:   6px;
+    --pg-radius-sm:   16px;
+    --pg-radius-base: 24px;
+    --pg-radius-xl:   28px;
+    --pg-radius-pill: 999px;
+
+    // ── Blur budget — 8-10px default, never used above 10px in this file ────
+    --pg-blur-sm:  8px;
+    --pg-blur-base: 10px;
+
+    // ── Typography — brand fonts with safe system fallbacks ──────────────────
+    // No @import of Google Fonts here on purpose: the POS runs kiosk-mode on
+    // hardware that must keep working offline (see pos_ping_silence.js,
+    // service_worker_bypass.js elsewhere in this module) — an external font
+    // fetch is a network dependency a cash register shouldn't have. If these
+    // families happen to be installed locally they're used; otherwise the
+    // stack falls back to the system sans/mono the POS already uses.
+    --pg-font-heading: 'Source Sans 3', 'Source Sans Pro', system-ui, sans-serif;
+    --pg-font-body:    'Lato', system-ui, sans-serif;
+    --pg-font-mono:    'IBM Plex Mono', 'SF Mono', Consolas, monospace;
+}
+
+// =============================================================================
+// Everything below is scoped under body:not(.pos-force-light) — see the
+// "DARK MODE" note above. pos-force-light (iface_theme = 'light') falls back
+// to Odoo's native look + the pre-existing bi_pos_stock light styling.
+// =============================================================================
+
+body:not(.pos-force-light) {
+
+    // ── prefers-reduced-motion: kill blur, keep the translucent look ────────
+    @media (prefers-reduced-motion: reduce) {
+        .pos .product-screen,
+        .pos .pos-topheader,
+        .pos .leftpane,
+        .pos .rightpane .product,
+        .pos .category-list .category-button,
+        .pos .modal-content {
+            backdrop-filter: none !important;
+            -webkit-backdrop-filter: none !important;
+            transition: none !important;
+        }
+    }
+
+    // ── 1. PRODUCT SCREEN ROOT — dark brand gradient + ambient glow ─────────
+    .pos .product-screen {
+        background: var(--pg-gradient-glow), var(--pg-bg-screen);
+    }
+
+    .pos .rightpane {
+        background: transparent !important;
+        color: var(--pg-text);
+    }
+
+    .pos .rightpane .o_view_nocontent,
+    .pos .rightpane p {
+        color: var(--pg-text-muted);
+    }
+
+    // =========================================================================
+    // 2. NAVBAR
+    // =========================================================================
+
+    // background necesita !important: Odoo core aplica la clase de utilidad
+    // bg-view (background-color ... !important) al mismo elemento, que sin
+    // esto le gana en silencio a esta regla y el navbar se queda blanco.
+    .pos .pos-topheader {
+        background: var(--pg-bg-navbar) !important;
+        backdrop-filter: blur(var(--pg-blur-base));
+        -webkit-backdrop-filter: blur(var(--pg-blur-base));
+        border-bottom: 1px solid var(--pg-border-softer);
+        color: var(--pg-text);
+    }
+
+    .pos .pos-topheader .navbar-separator {
+        background: var(--pg-border-soft);
+    }
+
+    // "Registrar" — brand gradient pill (primary action in the navbar cluster)
+    .pos .pos-topheader .register-label {
+        background: var(--pg-gradient-brand) !important;
+        color: #073A4C !important;
+        border: none !important;
+        border-radius: var(--pg-radius-pill) !important;
+        font-weight: 700;
+        min-height: 44px;
+
+        &.active {
+            box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.25) inset;
+        }
+    }
+
+    // "Órdenes" — plain text button, no competing visual weight vs. Registrar
+    .pos .pos-topheader .orders-button {
+        background: transparent !important;
+        color: var(--pg-text-muted) !important;
+        border: none !important;
+        font-weight: 600;
+        min-height: 44px;
+
+        &.active,
+        &:hover {
+            color: var(--pg-text) !important;
+        }
+    }
+
+    .pos .pos-topheader .navbar-menu .btn + .btn {
+        margin-inline-start: 2px;
+    }
+
+    // "+" (new order) / session-number pill / OrderTabs — neutral glass chips
+    .pos .pos-topheader .btn-light,
+    .pos .pos-topheader .oe_status {
+        background: var(--pg-bg-chip-neutral) !important;
+        color: var(--pg-text) !important;
+        border: 1px solid var(--pg-border-soft) !important;
+        min-height: 44px;
+    }
+
+    // Contextual chips: "A la mano" (blue) / "Pedidos en línea" (green) /
+    // "Actualizar precios" (neutral) — pill chips per the handoff, replacing
+    // the solid btn-secondary look. Selectors match the classes already
+    // authored in navbar.xml / pos_custom_layout.scss (no XML change needed).
+    .pos .pos-topheader .btn-md-navbar-stock,
+    .pos .pos-topheader .btn-md-navbar-ecommerce,
+    .pos .pos-topheader .btn-md-navbar-refresh-prices {
+        border-radius: var(--pg-radius-pill) !important;
+        font-size: 0.72rem;
+        font-weight: 700;
+        min-height: 44px;
+        box-shadow: none !important;
+        border: 1px solid transparent !important;
+    }
+
+    .pos .pos-topheader .btn-md-navbar-stock {
+        background: rgba(22, 166, 217, 0.16) !important;
+        color: var(--pg-blue-highlight) !important;
+        border-color: rgba(22, 166, 217, 0.3) !important;
+
+        &:hover { background: rgba(22, 166, 217, 0.26) !important; }
+    }
+
+    .pos .pos-topheader .btn-md-navbar-ecommerce {
+        background: rgba(151, 215, 0, 0.15) !important;
+        color: var(--pg-green-highlight) !important;
+        border-color: rgba(151, 215, 0, 0.3) !important;
+
+        &:hover { background: rgba(151, 215, 0, 0.25) !important; }
+    }
+
+    .pos .pos-topheader .btn-md-navbar-refresh-prices {
+        background: var(--pg-bg-chip-neutral) !important;
+        color: var(--pg-text-muted) !important;
+        border-color: var(--pg-border-soft) !important;
+
+        &:hover { background: rgba(255, 255, 255, 0.12) !important; color: var(--pg-text) !important; }
+    }
+
+    // Search bar
+    .pos .pos-topheader .input-container {
+        background: var(--pg-bg-chip-neutral) !important;
+        border: 1px solid var(--pg-border-soft) !important;
+        border-radius: var(--pg-radius-sm);
+        color: var(--pg-text);
+        min-height: 44px;
+
+        .o_input {
+            background: transparent !important;
+            color: var(--pg-text) !important;
+
+            &::placeholder { color: var(--pg-text-faint); }
+        }
+
+        .fa { color: var(--pg-text-muted); }
+    }
+
+    // Cashier avatar
+    //
+    // The handoff's avatar is a gradient circle with the cashier's initial
+    // rendered as text. Odoo's native CashierName always renders an <img>
+    // (the user's res.users avatar, usually an opaque photo/placeholder) —
+    // a CSS background never shows through an opaque <img>, so a gradient
+    // *behind* it would be invisible. Rather than fake it, we keep the real
+    // avatar image and give it a brand-gradient ring + glass pill around it,
+    // which is the honest way to bring brand color into an element whose
+    // pixels come from the user's actual photo.
+    .pos .pos-topheader .cashier-name {
+        background: var(--pg-bg-chip-neutral) !important;
+        border: 1px solid var(--pg-border-soft) !important;
+        border-radius: var(--pg-radius-pill) !important;
+        min-height: 44px;
+
+        .avatar {
+            width: 26px;
+            height: 26px;
+            border-radius: var(--pg-radius-pill) !important;
+            box-shadow: 0 0 0 2px #16A6D9, 0 0 0 3px rgba(255, 255, 255, 0.15);
+        }
+    }
+
+    .pos .pos-topheader .fa-bars,
+    .pos .pos-topheader .fa-barcode {
+        color: var(--pg-text);
+    }
+
+    // =========================================================================
+    // 3. PROMOTIONS ROW
+    //
+    // No curated "pinned promotions" model exists in this codebase (checked —
+    // there is no promo/featured-product backend feature to redesign). The
+    // closest real equivalent already shipping in Odoo's POS is the native
+    // CategorySelector (pos.category chips), which shares the .product-list
+    // grid class with the product grid itself. We override it into a single
+    // horizontal-scroll row here, matching the handoff's promo-row layout,
+    // WITHOUT inventing a new backend model this task didn't ask for.
+    // A true curated-promotions feature (own model + admin UI) is a
+    // reasonable follow-up but out of scope for a visual redesign pass.
+    // =========================================================================
+
+    .pos .rightpane .category-list {
+        display: flex !important;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        gap: 10px;
+        padding: 12px 20px 0 20px !important;
+        background: transparent;
+
+        &::-webkit-scrollbar { height: 6px; }
+        &::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.14); border-radius: 8px; }
+    }
+
+    .pos .rightpane .category-list .category-button {
+        flex: 0 0 auto;
+        min-width: 148px;
+        background: rgba(22, 166, 217, 0.14) !important;
+        border: 1px solid rgba(22, 166, 217, 0.28) !important;
+        border-radius: var(--pg-radius-sm) !important;
+        backdrop-filter: blur(var(--pg-blur-sm));
+        -webkit-backdrop-filter: blur(var(--pg-blur-sm));
+        color: var(--pg-text) !important;
+        opacity: 1 !important;
+
+        &.o_colorlist_item_color_none { background: rgba(22, 166, 217, 0.14) !important; }
+
+        span { color: var(--pg-text) !important; font-weight: 700; font-size: 0.72rem; }
+    }
+
+    // =========================================================================
+    // 4. CART PANEL (leftpane)
+    //
+    // Width breakpoints intentionally left as already tuned in
+    // pos_custom_layout.scss (560/460px, fluid < 992px) rather than forcing
+    // the prototype's fluid 36% — those px values were calibrated against
+    // real tablet viewports already in production; only the visual treatment
+    // (glass bg/radius/shadow) changes here.
+    // =========================================================================
+
+    // Mismo motivo que .pos-topheader arriba: bg-view (Odoo core) gana sin
+    // !important y el panel del carrito se queda blanco.
+    .pos .leftpane {
+        background: var(--pg-bg-panel) !important;
+        backdrop-filter: blur(var(--pg-blur-base));
+        -webkit-backdrop-filter: blur(var(--pg-blur-base));
+        border: 1px solid var(--pg-border-soft);
+        border-radius: var(--pg-radius-base);
+        box-shadow: 0 24px 60px rgba(7, 58, 76, 0.35);
+        margin: 14px 0 14px 20px;
+        color: var(--pg-text);
+    }
+
+    .pos .leftpane .order-summary,
+    .pos .leftpane .pads {
+        background: transparent;
+        color: var(--pg-text);
+    }
+
+    // Column header "Producto | Precio" — handled by order_receipt.xml column
+    // headers where present; here we just make sure inherited text is legible.
+    .pos .leftpane .text-muted {
+        color: var(--pg-text-faint) !important;
+    }
+
+    // Order stats chips (md-order-stats / md-order-stat — bi_pos_stock's own
+    // "Productos" / "Piezas" tiles, see order_widget.xml)
+    .pos .leftpane .md-order-stat {
+        background: rgba(22, 166, 217, 0.10);
+        border-color: rgba(22, 166, 217, 0.18);
+    }
+    .pos .leftpane .md-order-stat:nth-child(2) {
+        background: rgba(151, 215, 0, 0.10);
+        border-color: rgba(151, 215, 0, 0.20);
+    }
+    .pos .leftpane .md-order-stat__icon {
+        background: rgba(255, 255, 255, 0.08);
+        color: var(--pg-blue-highlight);
+    }
+    .pos .leftpane .md-order-stat:nth-child(2) .md-order-stat__icon {
+        color: var(--pg-green-highlight);
+    }
+    .pos .leftpane .md-order-stat__label {
+        color: var(--pg-text-faint);
+    }
+    .pos .leftpane .md-order-stat__value {
+        color: var(--pg-text);
+    }
+
+    // ── Order lines ──────────────────────────────────────────────────────────
+    .pos .leftpane .orderline {
+        background: var(--pg-bg-line);
+        border: 1px solid var(--pg-border-softer);
+        border-radius: var(--pg-radius-sm);
+        padding: 6px 8px;
+        margin-bottom: 6px;
+        color: var(--pg-text);
+        transition: background var(--pg-blur-sm) ease;
+
+        .product-name,
+        .qty,
+        .product-price {
+            color: var(--pg-text);
+        }
+
+        .attribute-line,
+        .price-per-unit,
+        .text-muted {
+            color: var(--pg-text-faint) !important;
+        }
+
+        &.selected-orderline,
+        &:hover {
+            background: rgba(22, 166, 217, 0.10);
+        }
+    }
+
+    // Lot chip — "<qty> Lote <código> <fecha>" (lot_label_patch.js text,
+    // rendered as <li class="lot-number"> by core Orderline.xml). Restyled
+    // as a pill chip with a document icon via ::before — no template change
+    // needed, the text already carries the qty/código/fecha (lot_label_patch.js).
+    .pos .leftpane .orderline .lot-number {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        margin-top: 4px;
+        font-family: var(--pg-font-mono);
+        font-size: 10.5px;
+        font-weight: 700;
+        padding: 3px 9px;
+        border-radius: var(--pg-radius-pill);
+        background: rgba(151, 215, 0, 0.14);
+        color: var(--pg-green-highlight);
+        list-style: none;
+
+        &::before { content: "\f0ea"; font-family: FontAwesome; }
+    }
+
+    .pos .leftpane .orderline .bi-discount-inline {
+        color: rgba(255, 213, 79, 0.85) !important;
+    }
+
+    // ── Footer: numpad + PAGO ────────────────────────────────────────────────
+    .pos .leftpane .numpad-button {
+        background: rgba(255, 255, 255, 0.05) !important;
+        border: 1px solid var(--pg-border-soft) !important;
+        color: var(--pg-text) !important;
+        min-height: 44px;
+        border-radius: var(--pg-radius-xs);
+
+        &:hover { background: rgba(255, 255, 255, 0.10) !important; }
+        &:active { background: rgba(22, 166, 217, 0.18) !important; }
+    }
+
+    .pos .leftpane .actionpad .pay.pay-order-button {
+        background: var(--pg-gradient-brand) !important;
+        border: none !important;
+        color: #073A4C !important;
+        font-weight: 800;
+        font-size: 1rem;
+        min-height: 52px;
+        border-radius: var(--pg-radius-sm);
+        box-shadow: 0 10px 26px rgba(22, 166, 217, 0.35);
+
+        &:disabled,
+        &.btn-secondary {
+            background: rgba(255, 255, 255, 0.08) !important;
+            color: var(--pg-text-faint) !important;
+            box-shadow: none;
+        }
+    }
+
+    .pos .leftpane .fast-pay-button,
+    .pos .leftpane .control-buttons .btn {
+        background: rgba(255, 255, 255, 0.06) !important;
+        border: 1px solid var(--pg-border-soft) !important;
+        color: var(--pg-text) !important;
+        min-height: 44px;
+    }
+
+    // =========================================================================
+    // 5. PRODUCT GRID + PRODUCT CARD
+    // =========================================================================
+
+    .pos .rightpane .product-list:not(.category-list) {
+        background: transparent;
+    }
+
+    // Overrides pos_product_card.scss's light --md-pos-card-bg default with
+    // the dark glass recipe from the handoff. Same !important weight as the
+    // rule being overridden (both target .pos .rightpane .product).
+    .pos .rightpane .product {
+        background: var(--pg-bg-card) !important;
+        border: 1px solid var(--pg-bg-card-border) !important;
+        border-radius: var(--pg-radius-sm) !important;
+        backdrop-filter: blur(var(--pg-blur-base));
+        -webkit-backdrop-filter: blur(var(--pg-blur-base));
+        box-shadow: 0 14px 30px rgba(7, 58, 76, 0.22);
+        transition: transform 0.18s var(--pg-easing, ease), box-shadow 0.18s ease;
+
+        &:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 18px 36px rgba(7, 58, 76, 0.30);
+        }
+
+        // Name + price stack vertically — Bootstrap's d-flex on .product-content
+        // defaults to row; force column so the injected price line (see
+        // product_card.xml, bi_pos_stock.ProductCardPrice) sits below the name
+        // instead of beside it.
+        .product-content {
+            display: flex !important;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .product-name {
+            color: var(--pg-text) !important;
+            font-family: var(--pg-font-heading);
+            font-weight: 700;
+            font-size: 0.82rem;
+        }
+    }
+
+    .pos .rightpane .product .product-card-price {
+        font-family: var(--pg-font-mono);
+        font-size: 0.85rem;
+        font-weight: 700;
+        color: var(--pg-blue-highlight);
+    }
+
+    // Info "i" button — top-right, always visible (see product_card.xml)
+    .pos .rightpane .lot-info-btn {
+        background: rgba(255, 255, 255, 0.10) !important;
+        border: 1px solid var(--pg-border-soft) !important;
+        color: var(--pg-text) !important;
+        width: 22px;
+        height: 22px;
+        box-shadow: none !important;
+
+        &:hover {
+            background: rgba(255, 255, 255, 0.18) !important;
+            color: var(--pg-blue-highlight) !important;
+        }
+    }
+
+    // Selected-lot footer badges (bg-danger/warning/success/secondary from
+    // getExpiryColorClass) already carry semantic color via Bootstrap — just
+    // make sure they read on the dark glass card.
+    .pos .rightpane .lot-card-footer .badge.bg-secondary {
+        background-color: rgba(255, 255, 255, 0.14) !important;
+        color: var(--pg-text) !important;
+    }
+
+    // Stock badges (qty-*-label) keep their semantic red/yellow/green from
+    // pos_product_card.scss untouched — only add a soft border so they read
+    // as chips against the glass card instead of solid corners.
+    .pos .rightpane .qty-left-label,
+    .pos .rightpane .qty-image-label,
+    .pos .rightpane .qty-tright-label,
+    .pos .rightpane .qty-bright-label {
+        border: 1px solid rgba(255, 255, 255, 0.25);
+        border-radius: var(--pg-radius-pill);
+    }
+}
+
+// =============================================================================
+// 6. MODALS — LotSelectionPopup / LotDetailPopup / SelectLotPopup (FEFO guide)
+//
+// Kept OUTSIDE the body:not(.pos-force-light) wrapper on purpose: dialogs are
+// portalled to <body> in Odoo's DOM (not necessarily nested under the .pos
+// wrapper), and the pre-existing .pos .modal-content glass rule (stock.css)
+// already targets them regardless of light/dark — we extend that same
+// unconditional-by-design surface rather than re-scope it.
+// =============================================================================
+
+.pos .modal-content {
+    background: var(--pg-bg-modal) !important;
+    border-radius: var(--pg-radius-xl) !important;
+    box-shadow: 0 32px 60px -8px rgba(7, 58, 76, 0.5) !important;
+    backdrop-filter: blur(var(--pg-blur-base)) !important;
+    -webkit-backdrop-filter: blur(var(--pg-blur-base)) !important;
+    color: var(--pg-text);
+}
+
+.pos .lot-fefo-badge {
+    background: rgba(151, 215, 0, 0.16);
+    color: var(--pg-green-highlight);
+    border-radius: var(--pg-radius-pill);
+    font-weight: 800;
+}
+
+// ── LotSelectionPopup ────────────────────────────────────────────────────────
+
+.pos .lot-selection-popup {
+    .lot-legend .badge { border-radius: var(--pg-radius-pill); font-weight: 700; }
+
+    .lot-selection-table-wrapper {
+        border: 1px solid var(--pg-border-soft);
+        border-radius: var(--pg-radius-sm);
+        overflow: hidden;
+
+        table { margin-bottom: 0; color: var(--pg-text); }
+
+        thead {
+            background: rgba(22, 166, 217, 0.14);
+            th {
+                color: var(--pg-blue-highlight);
+                font-size: 0.72rem;
+                text-transform: uppercase;
+                letter-spacing: 0.04em;
+                border-bottom: none;
+            }
+        }
+
+        tbody tr {
+            border-top: 1px solid var(--pg-border-softer);
+            cursor: pointer;
+
+            td { color: var(--pg-text); vertical-align: middle; }
+
+            &:hover { background: rgba(255, 255, 255, 0.04); }
+
+            &.lot-row-selected {
+                background: rgba(22, 166, 217, 0.14);
+                outline: 2px solid rgba(22, 166, 217, 0.5);
+                outline-offset: -1px;
+            }
+        }
+    }
+
+    .lot-code {
+        font-family: var(--pg-font-mono);
+        font-weight: 700;
+    }
+
+    .lot-stepper-btn {
+        width: 26px;
+        height: 26px;
+        min-height: 0; // override the 44px global touch-target rule: this is a
+                       // secondary stepper inside a modal already sized for
+                       // fingertip taps in the design prototype — the row
+                       // itself (48px+ tall) is the primary touch target.
+        border-radius: 7px;
+        border: 1px solid var(--pg-border-soft);
+        background: rgba(255, 255, 255, 0.06);
+        color: var(--pg-text);
+        font-weight: 700;
+        line-height: 1;
+
+        &:hover { background: rgba(255, 255, 255, 0.14); }
+    }
+
+    .lot-stepper-value {
+        display: inline-block;
+        min-width: 24px;
+        text-align: center;
+        font-family: var(--pg-font-mono);
+        font-weight: 800;
+        color: var(--pg-text);
+    }
+
+    .lot-empty-warning {
+        font-size: 11.5px;
+        color: var(--pg-danger);
+        background: rgba(239, 83, 80, 0.10);
+        border-radius: var(--pg-radius-xs);
+        padding: 8px 12px;
+    }
+
+    .lot-confirm-btn {
+        background: var(--pg-gradient-brand);
+        color: #073A4C;
+        font-weight: 800;
+        border: none;
+        border-radius: var(--pg-radius-sm);
+
+        &:disabled {
+            background: rgba(255, 255, 255, 0.08);
+            color: var(--pg-text-faint);
+            cursor: not-allowed;
+        }
+    }
+}
+
+// ── LotDetailPopup — FEFO breakdown (lot-tracked) + regulatory fields (non-lot) ──
+
+.pos .lot-detail-popup {
+    .table {
+        color: var(--pg-text);
+        --bs-table-hover-bg: rgba(255, 255, 255, 0.04);
+        --bs-table-color: var(--pg-text);
+    }
+
+    .fefo-first-row {
+        background-color: rgba(151, 215, 0, 0.14) !important;
+        border-left: 3px solid var(--pg-green-highlight);
+    }
+
+    .regulatory-fields {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+    }
+
+    .regulatory-field-row {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 10px 4px;
+        border-bottom: 1px solid var(--pg-border-softer);
+    }
+
+    .regulatory-field-label {
+        color: var(--pg-text-faint);
+        font-weight: 500;
+    }
+
+    .regulatory-field-value {
+        color: var(--pg-text);
+        font-weight: 700;
+        text-align: right;
+        font-family: var(--pg-font-mono);
+    }
+}
+
+// ── SelectLotPopup FEFO guide (select_lot_popup_patch.xml) — dark glass ─────
+// Extends the existing .fefo-guide selector (stock.css) unconditionally
+// instead of only inside @media (prefers-color-scheme: dark), consistent
+// with this file's "dark fixed" default.
+
+.pos .fefo-guide {
+    background: rgba(15, 23, 42, 0.55) !important;
+    border-color: var(--pg-border-soft) !important;
+}
+
+.pos .fefo-guide .table td,
+.pos .fefo-guide .table th {
+    color: var(--pg-text) !important;
+}
+
+.pos .fefo-guide thead.table-light,
+.pos .fefo-guide thead.table-light th {
+    background-color: rgba(255, 255, 255, 0.06) !important;
+    color: var(--pg-text-faint) !important;
+}
+
+.pos .fefo-guide .table-active {
+    background: rgba(151, 215, 0, 0.14) !important;
+    color: var(--pg-green-highlight) !important;
+}

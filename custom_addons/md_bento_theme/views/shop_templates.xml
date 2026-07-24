@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <template id="md_shop_products_bento"
+              inherit_id="website_sale.products"
+              name="Medicine Depot Bento Shop"
+              priority="260">
+        <xpath expr="//div[@id='wrap']" position="attributes">
+            <attribute name="class" add="md-bento md-shop" separator=" "/>
+        </xpath>
+
+        <xpath expr="//aside[@id='products_grid_before']" position="attributes">
+            <attribute name="class" add="md-shop-filter-aside" separator=" "/>
+        </xpath>
+
+        <xpath expr="//div[hasclass('o_wsale_products_grid_before_rail')]" position="attributes">
+            <attribute name="class" add="md-shop-filter-card md-bento-card" separator=" "/>
+        </xpath>
+
+        <xpath expr="//div[@id='products_grid']/header[@id='o_wsale_products_header']" position="before">
+            <section class="md-shop-banner md-bento-card mb-4">
+                <div>
+                    <span class="md-eyebrow">Tienda</span>
+                    <h1 class="h2">Catálogo farmacéutico para tu operación diaria</h1>
+                    <p>Compra productos seleccionados para farmacia, mostrador y atención profesional.</p>
+                </div>
+                <a href="/shop" class="btn btn-primary rounded-pill">Explorar catálogo</a>
+            </section>
+        </xpath>
+
+        <xpath expr="//div[@id='products_grid']" position="attributes">
+            <attribute name="class" add="md-products-grid gy-4 gx-3" separator=" "/>
+        </xpath>
+    </template>
+
+</odoo>

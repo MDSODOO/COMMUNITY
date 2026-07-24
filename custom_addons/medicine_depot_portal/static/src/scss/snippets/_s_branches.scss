@@ -1,0 +1,2244 @@
+// Medicine Depot · Sucursales — Mapa SVG de la Península con pines ADN.
+
+// ── Layout principal ─────────────────────────────────────────────────────────
+
+.s_md_branches {
+    display: grid;
+    grid-template-columns: 1fr 1.4fr;
+    gap: $md-gap;
+    align-items: start;
+
+    @media (max-width: $bp-lg) { grid-template-columns: 1fr; }
+}
+
+// ── Mapa SVG ─────────────────────────────────────────────────────────────────
+
+.md-peninsula-wrapper {
+    position: sticky;
+    top: unquote("clamp(72px, 7vw, 96px)");
+    padding: unquote("clamp(10px, 1.4vw, 14px)");
+    max-width: 100%;
+    border: 1px solid rgba($md-white, 0.12);
+    border-radius: $md-r-card;
+    background:
+        radial-gradient(circle at 100% 0%, rgba($md-green, 0.22) 0 46px, transparent 47px),
+        linear-gradient(135deg, rgba($md-white, 0.16), rgba($md-white, 0.05)),
+        rgba($md-white, 0.06);
+    box-shadow: 0 24px 60px rgba($md-ink-900, 0.22);
+
+    @media (max-width: $bp-lg) { position: static; }
+}
+
+.md-peninsula-svg {
+    width: 100%;
+    aspect-ratio: 10 / 7;
+    height: auto;
+    border-radius: $md-r-card;
+    display: block;
+    overflow: hidden;
+}
+
+.md-gmap-fallback .md-peninsula-svg {
+    transform-origin: 50% 52%;
+    transition: transform 0.35s ease, filter 0.35s ease;
+}
+
+.s_md_branches[data-state-focus="all"] .md-gmap-fallback .md-peninsula-svg {
+    transform: scale(1) translate(0, 0);
+}
+
+.s_md_branches[data-state-focus="yucatan"] .md-gmap-fallback .md-peninsula-svg {
+    transform: scale(1.24) translate(0, 46px);
+}
+
+.s_md_branches[data-state-focus="campeche"] .md-gmap-fallback .md-peninsula-svg {
+    transform: scale(1.28) translate(62px, 28px);
+}
+
+.s_md_branches[data-state-focus="qroo"] .md-gmap-fallback .md-peninsula-svg {
+    transform: scale(1.28) translate(-64px, 28px);
+}
+
+.md-map-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 12px;
+    color: rgba($md-white, 0.72);
+    font-size: $md-text-xs;
+    font-weight: 900;
+    text-transform: uppercase;
+
+    span {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        min-height: 28px;
+        padding: 5px 9px;
+        border-radius: $md-r-pill;
+        background: rgba($md-white, 0.08);
+        border: 1px solid rgba($md-white, 0.1);
+    }
+}
+
+.md-map-key {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+.md-map-key--yucatan { background: $md-green; }
+.md-map-key--campeche { background: $md-green-150; }
+.md-map-key--qroo { background: $md-blue; border: 1px solid rgba($md-white, 0.3); }
+
+// ── Estados del mapa ─────────────────────────────────────────────────────────
+
+.md-state {
+    transition: filter 0.25s ease;
+    cursor: default;
+
+    &:hover { filter: brightness(1.15); }
+}
+
+.md-state--campeche  { fill: $md-green-150; }
+.md-state--yucatan   { fill: $md-green; }
+.md-state--qroo      { fill: $md-blue; }
+
+.md-peninsula-border {
+    fill: none;
+    stroke: rgba($md-white, 0.74);
+    stroke-width: 2;
+    pointer-events: none;
+}
+
+.md-state-divider {
+    fill: none;
+    stroke: rgba($md-white, 0.44);
+    stroke-width: 1.25;
+    stroke-dasharray: 5 4;
+    pointer-events: none;
+}
+
+.md-state-label {
+    fill: rgba($md-white, 0.86);
+    font-family: $md-font-title;
+    font-size: $md-type-small;
+    font-weight: 700;
+    text-anchor: middle;
+    pointer-events: none;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+// ── Pin ADN — base ───────────────────────────────────────────────────────────
+
+.md-dna-pin {
+    cursor: pointer;
+    outline: none;
+}
+
+.pin-glow {
+    fill: rgba($md-green, 0.12);
+    transition: fill 0.2s ease;
+    transform-box: fill-box;
+    transform-origin: center;
+}
+
+.md-dna-pin:hover .pin-glow {
+    fill: rgba($md-green, 0.26);
+}
+
+.md-dna-pin:focus .pin-glow {
+    fill: rgba($md-green, 0.32);
+}
+
+// ── Hélice ADN ───────────────────────────────────────────────────────────────
+
+.dna-strand {
+    fill: none;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.strand-a {
+    stroke: $md-green;
+    stroke-width: 2px;
+    animation: helix-a 2.6s linear infinite;
+    transform-box: fill-box;
+    transform-origin: 50% 50%;
+}
+
+.strand-b {
+    stroke: $md-blue-300;
+    stroke-width: 1px;
+    animation: helix-b 2.6s linear infinite;
+    transform-box: fill-box;
+    transform-origin: 50% 50%;
+}
+
+.dna-base {
+    stroke: rgba($md-white, 0.55);
+    stroke-width: 1px;
+    stroke-linecap: round;
+    animation: base-fade 2.6s linear infinite;
+}
+
+// ── Punto de anclaje del pin ─────────────────────────────────────────────────
+
+.pin-dot {
+    fill: $md-green;
+    transition: r 0.18s ease, fill 0.18s ease;
+}
+
+.pin-pulse {
+    fill: none;
+    stroke: $md-green;
+    stroke-width: 1.5px;
+    animation: pulse-ring 2.6s ease-out infinite;
+    transform-box: fill-box;
+    transform-origin: center;
+    pointer-events: none;
+}
+
+.md-dna-pin:hover .pin-dot {
+    fill: $md-green-300;
+}
+
+.md-dna-pin:focus .pin-dot {
+    fill: $md-green-300;
+}
+
+// ── Tooltip ──────────────────────────────────────────────────────────────────
+
+.pin-tooltip-bg {
+    fill: $md-gray;
+    opacity: 0;
+    transition: opacity 0.18s ease;
+}
+
+.pin-tooltip-city {
+    fill: $md-white;
+    font-family: $md-font-title;
+    font-size: $md-type-eyebrow;
+    font-weight: 700;
+    opacity: 0;
+    transition: opacity 0.18s ease;
+    pointer-events: none;
+}
+
+.pin-tooltip-state {
+    fill: rgba($md-white, 0.65);
+    font-family: $md-font-body;
+    font-size: $md-type-eyebrow;
+    opacity: 0;
+    transition: opacity 0.18s ease;
+    pointer-events: none;
+}
+
+.md-dna-pin:hover .pin-tooltip-bg,
+.md-dna-pin:hover .pin-tooltip-city,
+.md-dna-pin:hover .pin-tooltip-state,
+.md-dna-pin:focus .pin-tooltip-bg,
+.md-dna-pin:focus .pin-tooltip-city,
+.md-dna-pin:focus .pin-tooltip-state {
+    opacity: 1;
+}
+
+// ── Keyframes ────────────────────────────────────────────────────────────────
+
+@keyframes helix-a {
+    0%   { stroke-width: 2.6px; opacity: 1; }
+    25%  { stroke-width: 1.4px; opacity: 0.55; }
+    50%  { stroke-width: 0.5px; opacity: 0.2; }
+    75%  { stroke-width: 1.4px; opacity: 0.55; }
+    100% { stroke-width: 2.6px; opacity: 1; }
+}
+
+@keyframes helix-b {
+    0%   { stroke-width: 0.5px; opacity: 0.2; }
+    25%  { stroke-width: 1.4px; opacity: 0.55; }
+    50%  { stroke-width: 2.6px; opacity: 1; }
+    75%  { stroke-width: 1.4px; opacity: 0.55; }
+    100% { stroke-width: 0.5px; opacity: 0.2; }
+}
+
+@keyframes base-fade {
+    0%, 100%  { opacity: 0.7; }
+    20%, 80%  { opacity: 0.15; }
+    50%       { opacity: 0.7; }
+}
+
+@keyframes pulse-ring {
+    0%   { transform: scale(1); opacity: 0.8; }
+    100% { transform: scale(3); opacity: 0; }
+}
+
+// ── Panel de tarjetas de sucursales ──────────────────────────────────────────
+
+.md-branches-panel {
+    display: flex;
+    flex-direction: column;
+    gap: $md-gap;
+}
+
+.md-branches-panel-head {
+    padding: unquote("clamp(16px, 2vw, 22px)");
+    border: 1px solid rgba($md-white, 0.18);
+    border-radius: $md-r-card;
+    background:
+        radial-gradient(circle at 100% 0%, rgba($md-green, 0.24) 0 38px, transparent 39px),
+        rgba($md-white, 0.18);
+    box-shadow: 0 16px 36px rgba($md-ink-900, 0.2);
+}
+
+.md-branches-title {
+    color: rgba($md-white, 0.92);
+    font-family: $md-font-title;
+    font-size: $md-type-card-title;
+    font-weight: 900;
+    line-height: 1.12;
+    margin: 0 0 4px;
+}
+
+.md-branches-subtitle {
+    color: rgba($md-white, 0.64);
+    font-size: $md-type-small;
+    line-height: 1.5;
+    margin: 0 0 14px;
+}
+
+.md-branches-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+
+    span {
+        display: inline-flex;
+        align-items: center;
+        min-height: 28px;
+        padding: 5px 10px;
+        border-radius: $md-r-pill;
+        background: rgba($md-green, 0.22);
+        border: 1px solid rgba($md-green, 0.28);
+        color: $md-white;
+        font-size: $md-text-xs;
+        font-weight: 900;
+    }
+}
+
+.md-branch-cards-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: $md-gap;
+
+    @media (max-width: 1180px) {
+        grid-template-columns: 1fr;
+    }
+}
+
+.md-branch-card {
+    background:
+        linear-gradient(135deg, rgba($md-white, 0.97), rgba($md-blue-100, 0.92)),
+        rgba($md-white, 0.94);
+    border: 1px solid rgba($md-blue, 0.24);
+    border-radius: $md-r-card;
+    padding: unquote("clamp(14px, 2vw, 20px)");
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-height: 100%;
+    position: relative;
+    overflow: hidden;
+    transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+
+    &::before {
+        content: '';
+        position: absolute;
+        inset: 0 auto 0 0;
+        width: 4px;
+        background: $md-green;
+        opacity: 0.7;
+    }
+
+    &:hover {
+        background: rgba($md-white, 0.99);
+        border-color: rgba($md-green, 0.45);
+        transform: translateY(-2px);
+        box-shadow: 0 18px 42px rgba($md-ink-900, 0.14);
+    }
+
+    strong {
+        font-family: $md-font-title;
+        font-size: $md-type-body;
+        font-weight: 900;
+        color: $md-ink;
+        display: block;
+    }
+
+    p {
+        font-size: $md-text-sm;
+        color: $md-muted;
+        line-height: 1.45;
+        margin: 0;
+    }
+}
+
+.md-branch-card-top,
+.md-branch-card p,
+.md-branch-card-actions,
+.md-branch-phone {
+    position: relative;
+    z-index: 1;
+}
+
+.md-branch-name {
+    margin: 0;
+    color: $md-ink;
+    font-family: $md-font-title;
+    font-size: $md-type-body;
+    font-weight: 800;
+    letter-spacing: 0;
+    line-height: 1.25;
+}
+
+.md-branch-address {
+    margin: 0;
+    font-style: normal;
+    font-size: $md-type-small;
+    line-height: 1.55;
+    color: $md-muted;
+}
+
+.md-branch-kicker {
+    display: inline-flex;
+    width: fit-content;
+    margin-bottom: 4px;
+    padding: 4px 8px;
+    border-radius: $md-r-pill;
+    background: rgba($md-green, 0.18);
+    border: 1px solid rgba($md-green, 0.2);
+    color: $md-green-900;
+    font-size: $md-type-eyebrow;
+    font-weight: 900;
+    text-transform: uppercase;
+}
+
+.md-branch-phone {
+    color: $md-blue-800;
+    font-size: $md-text-sm;
+    font-weight: 900;
+    text-decoration: none;
+
+    &:hover {
+        color: $md-green;
+    }
+}
+
+.md-branch-card-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: auto;
+
+    .md-btn {
+        min-height: 36px;
+        padding: 8px 14px;
+        font-size: $md-type-small;
+    }
+
+    .md-btn--ghost {
+        border: 1px solid rgba($md-blue, 0.22);
+        color: $md-ink;
+        background: rgba($md-white, 0.92);
+
+        &:hover {
+            border-color: rgba($md-blue, 0.35);
+            background: rgba($md-blue-100, 0.8);
+        }
+    }
+}
+
+.md-branches-empty {
+    color: rgba($md-white, 0.82);
+    font-size: $md-type-small;
+    line-height: 1.5;
+    margin: 0;
+}
+
+@media (max-width: $bp-sm) {
+    .md-peninsula-wrapper,
+    .md-gmap-fallback {
+        padding: 8px;
+    }
+
+    .md-map-legend span {
+        min-height: 24px;
+        padding: 4px 8px;
+        font-size: $md-type-eyebrow;
+    }
+
+    .md-state-label {
+        font-size: $md-type-eyebrow;
+    }
+
+    .md-dna-pin {
+        transform: scale(0.92);
+    }
+
+    .md-branch-cards-grid {
+        grid-template-columns: 1fr;
+        scroll-snap-type: none;
+        overflow: visible;
+        max-height: none;
+        padding-right: 0;
+    }
+
+    .md-branch-card { scroll-snap-align: unset; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .md-dna-pin,
+    .strand-a,
+    .strand-b,
+    .dna-base,
+    .pin-pulse {
+        animation: none !important;
+    }
+}
+
+// ── Fase 3 — Mejoras Sucursales (29 puntos) ───────────────────────────────────
+
+// M3: Layout proporciones — mapa más ancho
+.s_md_branches {
+    grid-template-columns: 1.7fr 1fr;
+
+    @media (max-width: $bp-lg) { grid-template-columns: 1fr; }
+}
+
+// M4: Mobile map height limit
+@media (max-width: $bp-md) {
+    .md-gmap-container,
+    .md-peninsula-wrapper,
+    .md-gmap-fallback {
+        max-height: 280px;
+        overflow: hidden;
+    }
+
+    .md-peninsula-svg {
+        height: 280px;
+        width: auto;
+        max-width: 100%;
+    }
+}
+
+// Map hero rebuild: full-width interactive map first, filters and Bento cards below.
+.s_md_branches--map-hero {
+    display: block;
+
+    .md-branches-map-hero {
+        margin-bottom: unquote("clamp(18px, 2.4vw, 30px)");
+    }
+
+    .md-gmap-container {
+        position: relative;
+        top: auto;
+        min-height: 60vh;
+        border-radius: 24px;
+        overflow: hidden;
+        box-shadow: 0 28px 70px rgba($md-ink-900, 0.26);
+    }
+
+    .md-gmap-canvas,
+    .md-gmap-fallback,
+    .md-peninsula-wrapper {
+        min-height: 60vh;
+        height: 60vh;
+        max-height: 720px;
+        border-radius: 24px;
+    }
+
+    .md-peninsula-svg {
+        width: 100%;
+        height: 100%;
+        aspect-ratio: auto;
+    }
+
+    .md-branches-panel {
+        gap: unquote("clamp(14px, 2vw, 24px)");
+    }
+
+    .md-branches-toolbar {
+        position: sticky;
+        top: 72px;
+        z-index: 8;
+        display: grid;
+        gap: 10px;
+        padding: 12px;
+        border: 1px solid rgba($md-white, 0.14);
+        border-radius: 16px;
+        background: rgba($md-ink-900, 0.74);
+        backdrop-filter: blur(14px);
+        box-shadow: 0 18px 44px rgba($md-ink-900, 0.18);
+    }
+
+    .md-branches-city-tabs {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+
+        button {
+            min-height: 32px;
+            padding: 5px 12px;
+            border: 1px solid rgba($md-white, 0.16);
+            border-radius: $md-r-pill;
+            background: rgba($md-white, 0.08);
+            color: rgba($md-white, 0.76);
+            font-size: $md-text-sm;
+            font-weight: 800;
+            cursor: pointer;
+
+            &:hover,
+            &.is-active {
+                background: rgba($md-green, 0.22);
+                border-color: rgba($md-green, 0.42);
+                color: $md-white;
+            }
+        }
+    }
+
+    .md-branch-cards-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 1180px) {
+    .s_md_branches--map-hero .md-branch-cards-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: $bp-md) {
+    .s_md_branches--map-hero {
+        .md-branches-map-hero {
+            position: sticky;
+            top: 64px;
+            z-index: 7;
+            margin-left: -8px;
+            margin-right: -8px;
+        }
+
+        .md-gmap-container,
+        .md-gmap-canvas,
+        .md-gmap-fallback,
+        .md-peninsula-wrapper {
+            min-height: 300px;
+            height: 40vh;
+            max-height: 360px;
+            border-radius: 16px;
+        }
+
+        .md-branches-toolbar {
+            position: relative;
+            top: auto;
+        }
+
+        .md-branch-cards-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+}
+
+// ── 2026 immersive dark map + translucent sidebar ───────────────────────────
+.s_md_branches--map-hero {
+    --md-branches-map-min: calc(100vh - 88px);
+    position: relative;
+    width: 100vw;
+    min-height: var(--md-branches-map-min);
+    margin-left: calc(50% - 50vw);
+    margin-right: calc(50% - 50vw);
+    padding: 0;
+    overflow: clip;
+    background: $md-ink-900;
+
+    .md-branches-map-hero {
+        position: relative;
+        z-index: 0;
+        margin: 0;
+        min-height: var(--md-branches-map-min);
+    }
+
+    .md-gmap-container {
+        width: 100vw;
+        min-height: var(--md-branches-map-min);
+        height: var(--md-branches-map-min);
+        border: 0;
+        border-radius: 0;
+        box-shadow: none;
+        background:
+            linear-gradient(90deg, rgba($md-ink-900, 0.88), rgba($md-ink-900, 0.18) 42%, rgba($md-ink-900, 0.52)),
+            $md-ink-900;
+    }
+
+    .md-gmap-container::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        background:
+            radial-gradient(circle at 74% 28%, rgba($md-green, 0.10), transparent 24%),
+            linear-gradient(90deg, rgba($md-ink-950, 0.58), transparent 38%, rgba($md-ink-950, 0.24));
+        z-index: 1;
+    }
+
+    .md-gmap-canvas,
+    .md-gmap-fallback,
+    .md-peninsula-wrapper {
+        min-height: var(--md-branches-map-min);
+        height: var(--md-branches-map-min);
+        max-height: none;
+        border-radius: 0;
+    }
+
+    .md-peninsula-wrapper {
+        padding: 0;
+        border: 0;
+        box-shadow: none;
+        background:
+            linear-gradient(90deg, rgba($md-ink-900, 0.94), rgba($md-ink-900, 0.48)),
+            $md-ink-900;
+    }
+
+    .md-peninsula-svg {
+        border-radius: 0;
+        filter: saturate(1.08) contrast(1.04);
+
+        > rect {
+            fill: $md-ink-900;
+        }
+    }
+
+    .md-state--campeche { fill: rgba($md-green-900, 0.8); }
+    .md-state--yucatan { fill: $md-green-900; }
+    .md-state--qroo { fill: $md-blue-900; }
+
+    .md-state:hover {
+        filter: brightness(1.28) saturate(1.1);
+    }
+
+    .md-peninsula-border,
+    .md-state-divider {
+        stroke: rgba($md-white, 0.28);
+    }
+
+    .md-state-label {
+        fill: rgba($md-white, 0.72);
+    }
+
+    .md-map-legend {
+        position: absolute;
+        right: unquote("clamp(14px, 2vw, 28px)");
+        bottom: unquote("clamp(14px, 2vw, 28px)");
+        z-index: 3;
+        margin: 0;
+        padding: 8px;
+        border: 1px solid rgba($md-white, 0.12);
+        border-radius: 16px;
+        background: rgba($md-ink-950, 0.68);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+    }
+
+    .md-branches-panel {
+        position: absolute;
+        z-index: 4;
+        top: unquote("clamp(20px, 4vw, 48px)");
+        left: unquote("clamp(14px, 3vw, 48px)");
+        bottom: unquote("clamp(20px, 3vw, 40px)");
+        width: #{unquote("min(440px, calc(100vw - 32px))")};
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        padding: unquote("clamp(16px, 2vw, 22px)");
+        border: 1px solid rgba($md-white, 0.15);
+        border-radius: 24px;
+        background:
+            linear-gradient(180deg, rgba($md-ink-950, 0.90), rgba($md-ink-950, 0.82)),
+            rgba($md-ink-950, 0.86);
+        color: rgba($md-white, 0.90);
+        box-shadow:
+            0 28px 70px rgba(0, 0, 0, 0.34),
+            0 1px 0 rgba($md-white, 0.10) inset;
+        backdrop-filter: blur(18px) saturate(1.1);
+        -webkit-backdrop-filter: blur(18px) saturate(1.1);
+        overflow: hidden;
+    }
+
+    .md-branches-panel-head {
+        flex: 0 0 auto;
+    }
+
+    .md-branches-title {
+        color: $md-white;
+    }
+
+    .md-branches-subtitle,
+    .md-branches-meta,
+    .md-small-note {
+        color: rgba($md-white, 0.66);
+    }
+
+    .md-branches-meta span {
+        border-color: rgba($md-white, 0.13);
+        background: rgba($md-white, 0.07);
+        color: rgba($md-white, 0.78);
+    }
+
+    .md-branches-toolbar {
+        position: relative;
+        top: auto;
+        z-index: 1;
+        flex: 0 0 auto;
+        padding: 10px;
+        border-radius: 18px;
+        border-color: rgba($md-white, 0.13);
+        background: rgba($md-white, 0.06);
+        box-shadow: none;
+    }
+
+    .md-branches-state-tabs {
+        margin-bottom: 0;
+    }
+
+    .md-branches-city-tabs {
+        max-height: 78px;
+        overflow: auto;
+        scrollbar-width: thin;
+    }
+
+    .md-branch-cards-grid {
+        grid-template-columns: 1fr;
+        flex: 1 1 auto;
+        min-height: 0;
+        overflow: auto;
+        padding-right: 4px;
+        scrollbar-width: thin;
+        scrollbar-color: rgba($md-green, 0.55) rgba($md-white, 0.08);
+    }
+
+    .md-branch-card {
+        border-color: rgba($md-white, 0.12);
+        background:
+            linear-gradient(135deg, rgba($md-white, 0.10), rgba($md-white, 0.055)),
+            rgba($md-ink-950, 0.72);
+        color: rgba($md-white, 0.88);
+        box-shadow: none;
+    }
+
+    .md-branch-name,
+    .md-branch-hours strong {
+        color: $md-white;
+    }
+
+    .md-branch-kicker,
+    .md-branch-data-label,
+    .md-branch-address,
+    .md-branch-hours li {
+        color: rgba($md-white, 0.68);
+    }
+
+    .md-branch-data,
+    .md-branch-phone {
+        border-color: rgba($md-white, 0.10);
+        background: rgba($md-white, 0.06);
+    }
+
+    .md-branch-copy-btn {
+        color: rgba($md-white, 0.58);
+    }
+
+    .md-dna-pin,
+    .md-gmap-pin {
+        .pin-glow {
+            fill: rgba($md-green, 0.34);
+        }
+
+        .strand-a {
+            stroke: $md-green;
+            filter: drop-shadow(0 0 5px rgba($md-green, 0.55));
+        }
+
+        .strand-b {
+            stroke: $md-blue-300;
+            filter: drop-shadow(0 0 5px rgba($md-blue, 0.52));
+        }
+
+        .dna-base {
+            stroke: rgba($md-white, 0.62);
+        }
+
+        .pin-dot {
+            fill: $md-green-300;
+        }
+
+        .pin-pulse {
+            stroke: $md-green-300;
+        }
+    }
+
+    .leaflet-container {
+        background: $md-ink-950;
+    }
+
+    // Invierte tiles de OpenStreetMap (claros) para conseguir el aspecto dark
+    // sin depender de CartoCDN, que los adblockers bloquean como tracker.
+    .leaflet-tile {
+        filter: invert(95%) hue-rotate(180deg) brightness(88%) contrast(88%);
+    }
+}
+
+@media (min-width: 1280px) {
+    .s_md_branches--map-hero .md-branches-panel {
+        width: 468px;
+    }
+}
+
+@media (min-width: 1440px) {
+    .s_md_branches--map-hero .md-branches-panel {
+        width: 520px;
+    }
+}
+
+@media (min-width: 1600px) {
+    .s_md_branches--map-hero .md-branches-panel {
+        width: 580px;
+    }
+}
+
+@media (min-width: 1920px) {
+    .s_md_branches--map-hero .md-branches-panel {
+        width: 640px;
+    }
+}
+
+@media (max-width: $bp-md) {
+    .s_md_branches--map-hero {
+        --md-branches-map-min: 52vh;
+        overflow: visible;
+        padding-bottom: 0;
+
+        .md-branches-map-hero {
+            position: relative;
+            top: auto;
+            min-height: var(--md-branches-map-min);
+            margin: 0;
+        }
+
+        .md-gmap-container,
+        .md-gmap-canvas,
+        .md-gmap-fallback,
+        .md-peninsula-wrapper {
+            min-height: var(--md-branches-map-min);
+            height: var(--md-branches-map-min);
+            max-height: none;
+            border-radius: 0;
+        }
+
+        .md-map-legend {
+            display: none;
+        }
+
+        .md-branches-panel {
+            position: relative;
+            inset: auto;
+            width: calc(100vw - 20px);
+            max-height: none;
+            margin: -42px auto 0;
+            border-radius: 24px 24px 0 0;
+        }
+
+        .md-branch-cards-grid {
+            overflow: visible;
+            max-height: none;
+        }
+    }
+}
+
+// M8: Tabs de filtro por estado
+.md-branches-state-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: $md-gap;
+
+    button {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        min-height: 32px;
+        padding: 5px 12px;
+        border-radius: $md-r-pill;
+        border: 1.5px solid rgba($md-white, 0.18);
+        background: rgba($md-white, 0.06);
+        color: rgba($md-white, 0.72);
+        font-size: $md-text-sm;
+        font-weight: 700;
+        cursor: pointer;
+        transition: background 0.18s ease, border-color 0.18s ease, color 0.18s ease;
+
+        &:hover {
+            background: rgba($md-white, 0.14);
+            color: $md-white;
+        }
+
+        &.is-active {
+            background: rgba($md-green, 0.22);
+            border-color: rgba($md-green, 0.4);
+            color: $md-white;
+        }
+
+        i {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+            flex-shrink: 0;
+        }
+
+        &[data-state="yucatan"] i { background: $md-green; }
+        &[data-state="campeche"] i { background: $md-green-150; }
+        &[data-state="qroo"] i { background: $md-blue; }
+    }
+}
+
+// M11: Open/closed badge
+.md-branch-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 8px;
+    border-radius: $md-r-pill;
+    font-size: $md-type-eyebrow;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+
+    &::before {
+        content: '';
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        flex-shrink: 0;
+    }
+
+    &.is-open {
+        background: rgba($md-green, 0.18);
+        border: 1px solid rgba($md-green, 0.3);
+        color: $md-green-300;
+
+        &::before { background: $md-green; }
+    }
+
+    &.is-closed {
+        background: rgba($md-white, 0.06);
+        border: 1px solid rgba($md-white, 0.12);
+        color: rgba($md-white, 0.5);
+
+        &::before { background: $md-gray; }
+    }
+}
+
+// M15: Selected card state (triggered by pin click or card JS)
+.md-branch-card.is-selected {
+    border-color: rgba($md-green, 0.55) !important;
+    box-shadow: 0 0 0 2px rgba($md-green, 0.3), 0 18px 42px rgba($md-ink-900, 0.2) !important;
+    transform: translateY(-3px) !important;
+
+    &::before { opacity: 1 !important; background: $md-green !important; }
+}
+
+// Sucursal más cercana al usuario (geolocalización) — badge "Más cercana"
+.md-branch-card.is-nearest {
+    border-color: rgba($md-blue, 0.55) !important;
+    box-shadow: 0 0 0 2px rgba($md-blue, 0.32), 0 18px 42px rgba($md-ink-900, 0.18) !important;
+
+    &::after {
+        content: "Más cercana";
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        z-index: $z-raised;
+        padding: 3px 10px;
+        border-radius: $md-r-pill;
+        background: $md-blue;
+        color: $md-white;
+        font-size: $md-text-xs;
+        font-weight: 700;
+        box-shadow: $md-shadow-sm;
+    }
+}
+
+// M16: Branch placeholder image
+.md-branch-img {
+    width: 100%;
+    height: 80px;
+    border-radius: $md-r-card;
+    overflow: hidden;
+    margin-bottom: 10px;
+    background: linear-gradient(135deg, rgba($md-blue, 0.18), rgba($md-green, 0.12));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: $md-font-title;
+    font-size: $md-type-card-title;
+    font-weight: 900;
+    color: rgba($md-white, 0.6);
+
+    img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+}
+
+// M13: Copy address button
+.md-branch-copy-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: none;
+    border: none;
+    padding: 2px 4px;
+    cursor: pointer;
+    color: rgba($md-ink, 0.45);
+    font-size: $md-type-eyebrow;
+    border-radius: 4px;
+    transition: color 0.18s ease, background 0.18s ease;
+
+    svg { width: 12px; height: 12px; }
+
+    &:hover { color: $md-green-600; background: rgba($md-green, 0.12); }
+    &.is-copied { color: $md-green-600; }
+}
+
+// M24: PIN selected state on SVG
+.md-dna-pin.is-selected {
+    animation: none !important;
+    transform: scale(1.28) translateY(-3px);
+
+    .pin-glow {
+        fill: rgba($md-green, 0.35) !important;
+        r: 20;
+    }
+
+    .pin-dot { fill: $md-green-300 !important; }
+}
+
+.md-dna-pin.is-hovered {
+    .pin-glow { fill: rgba($md-green, 0.28) !important; }
+    .pin-dot  { fill: $md-green-300 !important; }
+}
+
+.md-dna-pin.is-filter-hidden {
+    opacity: 0.2;
+    pointer-events: none;
+}
+
+// M26: Card entrance animation
+@keyframes md-card-enter {
+    from { opacity: 0; transform: translateY(18px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+.md-branch-card.md-will-animate {
+    opacity: 1;
+    transform: none;
+}
+
+.s_md_branches.is-js-ready .md-branch-card.md-will-animate {
+    opacity: 0;
+    transform: translateY(18px);
+}
+
+.md-branch-card.md-animate-in {
+    animation: md-card-enter 0.42s ease both;
+}
+
+// Google Maps container
+.md-gmap-container {
+    position: sticky;
+    top: unquote("clamp(72px, 7vw, 96px)");
+    border-radius: $md-r-card;
+    overflow: hidden;
+    box-shadow: 0 24px 60px rgba($md-ink-900, 0.22);
+    border: 1px solid rgba($md-white, 0.12);
+
+    @media (max-width: $bp-lg) { position: static; }
+}
+
+.md-gmap-canvas {
+    width: 100%;
+    aspect-ratio: 10 / 7;
+    min-height: 340px;
+    display: block;
+    border-radius: $md-r-card;
+}
+
+.md-gmap-fallback {
+    position: static !important;
+}
+
+// Google Maps InfoWindow brand styles
+.md-gmap-infowin {
+    padding: 6px 2px;
+    max-width: 240px;
+    font-family: $md-font-body;
+
+    strong {
+        display: block;
+        font-family: $md-font-title;
+        font-weight: 900;
+        font-size: $md-type-body;
+        color: $md-ink;
+        margin-bottom: 4px;
+    }
+
+    p {
+        font-size: $md-type-small;
+        color: $md-muted;
+        line-height: 1.45;
+        margin: 0 0 6px;
+    }
+
+    a {
+        display: block;
+        color: $md-blue;
+        font-size: $md-type-small;
+        font-weight: 700;
+        text-decoration: none;
+        margin-bottom: 2px;
+
+        &:hover { color: $md-blue-700; }
+    }
+}
+
+// DNA pin in Google Maps (reusa animaciones del SVG estático)
+.md-gmap-pin {
+    cursor: pointer;
+    display: block;
+
+    .md-gmap-pin-svg {
+        width: 28px;
+        height: 80px;
+        overflow: visible;
+        display: block;
+    }
+
+    .pin-glow {
+        fill: rgba($md-green, 0.12);
+        transition: fill 0.2s ease;
+    }
+    .dna-strand {
+        fill: none;
+        stroke-linecap: round;
+    }
+    .strand-a {
+        stroke: $md-green;
+        stroke-width: 2px;
+        animation: helix-a 2.6s linear infinite;
+    }
+    .strand-b {
+        stroke: $md-blue-300;
+        stroke-width: 1px;
+        animation: helix-b 2.6s linear infinite;
+    }
+    .dna-base {
+        stroke: rgba($md-white, 0.55);
+        stroke-width: 1px;
+        stroke-linecap: round;
+        animation: base-fade 2.6s linear infinite;
+    }
+    .pin-dot  { fill: $md-green; transition: fill 0.18s ease; }
+    .pin-pulse {
+        fill: none;
+        stroke: $md-green;
+        stroke-width: 1.5px;
+        animation: pulse-ring 2.6s ease-out infinite;
+        transform-origin: center;
+        pointer-events: none;
+    }
+
+    &.is-active {
+        .pin-glow { fill: rgba($md-green, 0.3); }
+        .pin-dot  { fill: $md-green-300; }
+    }
+
+    &:hover .pin-glow { fill: rgba($md-green, 0.24); }
+}
+
+.md-leaflet-pin-shell {
+    background: transparent;
+    border: 0;
+
+    .md-gmap-pin {
+        transform: translateY(4px);
+    }
+}
+
+.md-map-cluster {
+    display: grid;
+    place-items: center;
+    width: 54px !important;
+    height: 54px !important;
+    margin-left: -27px !important;
+    margin-top: -27px !important;
+    border-radius: 50%;
+    background: rgba($md-danger, 0.22);
+
+    span {
+        display: grid;
+        place-items: center;
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: $md-danger;
+        color: $md-white;
+        font-family: $md-font-title;
+        font-size: $md-type-body;
+        font-weight: 900;
+        box-shadow: 0 12px 28px rgba($md-danger, 0.32);
+    }
+}
+
+.md-leaflet-popup {
+    .leaflet-popup-content-wrapper {
+        border-radius: 12px;
+    }
+
+    .leaflet-popup-content {
+        margin: 10px 12px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .md-gmap-pin .strand-a,
+    .md-gmap-pin .strand-b,
+    .md-gmap-pin .dna-base,
+    .md-gmap-pin .pin-pulse {
+        animation: none;
+    }
+}
+
+// ── Fase 3 cierre — Bento cards (horarios + datos de contacto) ───────────────
+.s_md_branches {
+    .md-branch-cards-grid {
+        gap: unquote("clamp(12px, 1.6vw, 16px)");
+    }
+
+    .md-branch-card {
+        border-radius: 16px;
+        gap: 10px;
+        box-shadow: 0 16px 34px rgba($md-ink-900, 0.14);
+    }
+
+    .md-branch-data-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+
+    .md-branch-data {
+        padding: 10px 12px;
+        border-radius: 12px;
+        border: 1px solid rgba($md-blue, 0.14);
+        background: rgba($md-white, 0.78);
+    }
+
+    .md-branch-data-label {
+        display: block;
+        margin-bottom: 6px;
+        color: rgba($md-ink, 0.62);
+        font-size: $md-type-eyebrow;
+        font-weight: 900;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+    }
+
+    .md-branch-address {
+        margin: 0;
+        font-style: normal;
+        font-size: $md-type-small;
+        line-height: 1.5;
+    }
+
+    .md-branch-hours {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+        display: grid;
+        gap: 5px;
+
+        li {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            font-size: $md-type-small;
+            color: rgba($md-ink, 0.7);
+        }
+
+        strong {
+            color: $md-ink;
+            font-family: $md-font-title;
+            font-size: $md-type-small;
+            font-weight: 800;
+        }
+    }
+
+    .md-branch-copy-btn {
+        margin-top: 8px;
+    }
+
+    .md-branch-phone {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        width: fit-content;
+        margin-top: 2px;
+        padding: 4px 9px;
+        border-radius: $md-r-pill;
+        border: 1px solid rgba($md-blue, 0.16);
+        background: rgba($md-white, 0.76);
+        font-size: $md-type-small;
+
+        i {
+            font-size: $md-type-eyebrow;
+        }
+    }
+
+    .md-branch-card-actions {
+        gap: 6px;
+        margin-top: 2px;
+    }
+}
+
+@media (min-width: 860px) {
+    .s_md_branches .md-branch-data-grid {
+        grid-template-columns: 1.2fr 0.8fr;
+    }
+}
+
+// Final responsive layout: cards first, interactive map pinned to the right on desktop.
+@media (min-width: $bp-lg) {
+    .s_md_branches {
+        grid-template-columns: minmax(360px, 0.92fr) minmax(420px, 1.08fr);
+    }
+
+    .s_md_branches .md-branches-panel {
+        order: 1;
+    }
+
+    .s_md_branches .md-gmap-container {
+        order: 2;
+    }
+}
+
+@media (max-width: $bp-lg) {
+    .s_md_branches .md-gmap-container {
+        order: 1;
+    }
+
+    .s_md_branches .md-branches-panel {
+        order: 2;
+    }
+}
+
+@media (max-width: $bp-md) {
+    .md-gmap-container,
+    .md-gmap-canvas,
+    .md-gmap-fallback,
+    .md-peninsula-wrapper {
+        height: unquote("min(40vh, 300px)");
+        min-height: 280px;
+        max-height: 300px;
+    }
+
+    .md-gmap-canvas,
+    .md-peninsula-svg {
+        aspect-ratio: auto;
+    }
+
+    .md-peninsula-svg {
+        width: 100%;
+        height: 100%;
+    }
+}
+
+// Final cascade lock: immersive map rules must stay after legacy two-column rules.
+.s_md_branches--map-hero {
+    --md-branches-map-min: calc(100vh - 88px);
+    display: block;
+    position: relative;
+    width: 100vw;
+    min-height: var(--md-branches-map-min);
+    margin-left: calc(50% - 50vw);
+    margin-right: calc(50% - 50vw);
+    padding: 0;
+    overflow: clip;
+    background: $md-ink-950;
+
+    .md-branches-map-hero,
+    .md-gmap-container,
+    .md-gmap-canvas,
+    .md-gmap-fallback,
+    .md-peninsula-wrapper {
+        min-height: var(--md-branches-map-min);
+        height: var(--md-branches-map-min);
+        max-height: none;
+        border-radius: 0;
+    }
+
+    .md-branches-map-hero {
+        position: relative;
+        top: auto;
+        z-index: 0;
+        margin: 0;
+    }
+
+    .md-gmap-container {
+        position: relative;
+        top: auto;
+        width: 100vw;
+        border: 0;
+        box-shadow: none;
+        background: $md-ink-950;
+    }
+
+    .md-branches-panel {
+        position: absolute;
+        z-index: 4;
+        top: unquote("clamp(20px, 4vw, 48px)");
+        left: unquote("clamp(14px, 3vw, 48px)");
+        bottom: unquote("clamp(20px, 3vw, 40px)");
+        width: #{unquote("min(440px, calc(100vw - 32px))")};
+        max-height: none;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+    }
+
+    .md-branch-cards-grid {
+        grid-template-columns: 1fr;
+        min-height: 0;
+        overflow: auto;
+    }
+}
+
+@media (min-width: 1280px) {
+    .s_md_branches--map-hero .md-branches-panel {
+        width: 468px;
+    }
+}
+
+@media (min-width: 1440px) {
+    .s_md_branches--map-hero .md-branches-panel {
+        width: 520px;
+    }
+}
+
+@media (min-width: 1600px) {
+    .s_md_branches--map-hero .md-branches-panel {
+        width: 580px;
+    }
+}
+
+@media (min-width: 1920px) {
+    .s_md_branches--map-hero .md-branches-panel {
+        width: 640px;
+    }
+}
+
+@media (max-width: $bp-md) {
+    .s_md_branches--map-hero {
+        --md-branches-map-min: 52vh;
+        overflow: visible;
+
+        .md-branches-map-hero {
+            position: relative;
+            top: auto;
+            z-index: 0;
+        }
+
+        .md-gmap-container,
+        .md-gmap-canvas,
+        .md-gmap-fallback,
+        .md-peninsula-wrapper {
+            min-height: var(--md-branches-map-min);
+            height: var(--md-branches-map-min);
+            max-height: none;
+            border-radius: 0;
+        }
+
+        .md-branches-panel {
+            position: relative;
+            inset: auto;
+            width: calc(100vw - 20px);
+            margin: -42px auto 0;
+            border-radius: 24px 24px 0 0;
+        }
+
+        .md-branch-cards-grid {
+            overflow: visible;
+            max-height: none;
+        }
+    }
+}
+
+// ── Modo Claro: reset del fondo inmersivo del mapa de sucursales ─────────────
+// En light mode el layout --map-hero usa fondos neutros para no mostrar
+// permanentemente la paleta oscura ($md-ink-950) diseñada para dark mode.
+// html:not(.o_dark_mode) es un selector de backend que nunca se cumple en el
+// frontend (siempre "verdadero" por ausencia, forzando modo claro fijo) — ver
+// docs/audits/2026-07-01_backend_dark_mode_audit.md. El toggle real del
+// frontend escribe data-color-scheme="dark" en <body>.
+body:not([data-color-scheme="dark"]) .s_md_branches--map-hero {
+    background: var(--bs-body-bg);
+
+    .md-gmap-container {
+        background: var(--bs-body-bg);
+    }
+
+    .leaflet-container {
+        background: var(--bs-body-bg);
+    }
+
+    .md-branches-panel {
+        background:
+            linear-gradient(180deg, rgba($md-white, 0.96), rgba($md-blue-100, 0.92)),
+            rgba($md-blue-100, 0.90);
+        color: var(--bs-body-color);
+        border-color: rgba($md-blue, 0.20);
+        box-shadow:
+            0 28px 70px rgba($md-blue, 0.14),
+            0 1px 0 rgba($md-white, 0.80) inset;
+    }
+
+    .md-branches-title { color: $md-ink; }
+
+    .md-branches-subtitle,
+    .md-branches-meta { color: $md-muted; }
+
+    .md-branches-meta span {
+        background: rgba($md-green, 0.12);
+        border-color: rgba($md-green, 0.22);
+        color: $md-green-900;
+    }
+
+    .md-branches-toolbar {
+        background: rgba($md-white, 0.82);
+        border-color: rgba($md-blue, 0.14);
+    }
+
+    .md-branch-card {
+        background:
+            linear-gradient(135deg, rgba($md-white, 0.97), rgba($md-blue-100, 0.92)),
+            rgba($md-white, 0.94);
+        color: $md-ink;
+        border-color: rgba($md-blue, 0.18);
+    }
+
+    .md-branch-name,
+    .md-branch-hours strong { color: $md-ink; }
+
+    .md-branch-address,
+    .md-branch-data-label { color: $md-muted; }
+
+    .md-branch-data {
+        background: rgba($md-white, 0.78);
+        border-color: rgba($md-blue, 0.14);
+    }
+
+    .md-branch-phone {
+        background: rgba($md-white, 0.76);
+        border-color: rgba($md-blue, 0.16);
+    }
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// Layout Bento responsivo · reemplaza al inmersivo full-bleed `--map-hero`.
+//
+// El mapa interactivo (SVG de la Península + canvas Google Maps + pines ADN)
+// vive dentro de una Bento box: bordes redondeados pronunciados, sombra sutil
+// y `overflow:hidden` para que el mapa no se "salga" de las esquinas. El panel
+// de filtros/sucursales es una tarjeta Bento adyacente. 100% responsivo de
+// iPhone 14 Pro Max a monitores ultra-anchos: aspect-ratio fluido, anchos
+// acotados al contenedor — SIN 100vw / 100vh — por lo que nunca desborda.
+// Este bloque va al final del archivo para ganar a las reglas legacy en cascada.
+// ════════════════════════════════════════════════════════════════════════════
+.s_md_branches--bento {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+    padding: 0;
+    overflow: visible;
+    background: transparent;
+    grid-template-columns: none;
+
+    // ── Grid Bento: apilado vertical (mapa → panel → qr) ──
+    .md-bento-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: unquote("clamp(16px, 2.2vw, 28px)");
+        align-items: start;
+        width: 100%;
+        max-width: 100%;
+
+        @media (min-width: #{$bp-lg}) {
+            grid-template-areas:
+                "map"
+                "panel"
+                "qr";
+        }
+    }
+
+    // ── Bento box del mapa: ancho completo, más alto ──
+    .md-bento-map-card {
+        position: relative;
+        width: 100%;
+        max-width: 100%;
+        aspect-ratio: 3 / 2;
+        border-radius: unquote("clamp(18px, 2.2vw, 28px)");
+        overflow: hidden;
+        background: $md-gray-100;
+        border: 1px solid rgba($md-white, 0.72);
+        box-shadow: 0 0 0 1px rgba($md-blue-900, 0.05),
+                    0 14px 40px rgba($md-ink-900, 0.12),
+                    inset 0 1px 0 rgba($md-white, 0.6);
+
+        @media (min-width: #{$bp-sm}) { aspect-ratio: 21 / 9; }
+        @media (min-width: #{$bp-lg}) {
+            grid-area: map;
+            aspect-ratio: 21 / 9;
+            min-height: 520px;
+        }
+    }
+
+    // El mapa y sus capas llenan por completo la Bento box.
+    .md-branches-map-hero,
+    .md-gmap-container,
+    .md-gmap-canvas,
+    .md-gmap-fallback,
+    .md-peninsula-wrapper {
+        position: absolute;
+        inset: 0;
+        top: auto;
+        width: 100%;
+        height: 100%;
+        min-height: 0;
+        max-height: none;
+        margin: 0;
+        border: 0;
+        border-radius: 0;
+        box-shadow: none;
+    }
+
+    .md-branches-map-hero,
+    .md-gmap-container,
+    .md-gmap-canvas,
+    .md-gmap-fallback,
+    .md-peninsula-wrapper { inset: 0; }
+
+    .md-branches-map-hero { z-index: 0; }
+    .md-gmap-container { background: #0d1b1a; } // fallback oscuro si tiles bloqueados
+
+    .md-peninsula-wrapper {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: unquote("clamp(8px, 1.6vw, 18px)");
+        background:
+            linear-gradient(135deg, rgba($md-blue, 0.06), rgba($md-green, 0.05)),
+            $md-gray-50;
+    }
+
+    .md-peninsula-svg {
+        width: 100%;
+        height: 100%;
+        max-height: 100%;
+        aspect-ratio: auto;
+        border-radius: 0;
+    }
+
+    // Leyenda flotante dentro de la Bento box (glass claro)
+    .md-map-legend {
+        position: absolute;
+        right: unquote("clamp(10px, 1.6vw, 18px)");
+        bottom: unquote("clamp(10px, 1.6vw, 18px)");
+        z-index: 3;
+        margin: 0;
+        padding: 6px 8px;
+        border-radius: 14px;
+        background: rgba($md-white, 0.82);
+        border: 1px solid rgba($md-ink-900, 0.08);
+        box-shadow: 0 8px 22px rgba($md-ink-900, 0.10);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+
+        span {
+            color: $md-ink;
+            background: transparent;
+            border: 0;
+            min-height: 0;
+        }
+    }
+
+    // ── Sección QR: fila debajo del mapa ──
+    .md-qr-section {
+        padding: unquote("clamp(14px, 1.8vw, 20px)");
+        border-radius: unquote("clamp(18px, 2.2vw, 28px)");
+        border: 1px solid rgba($md-white, 0.72);
+        box-shadow: 0 0 0 1px rgba($md-blue-900, 0.05),
+                    0 8px 24px rgba($md-ink-900, 0.08),
+                    inset 0 1px 0 rgba($md-white, 0.6);
+        background:
+            linear-gradient(135deg, rgba($md-white, 0.88), rgba($md-blue-100, 0.62)),
+            $md-white;
+
+        @media (min-width: #{$bp-lg}) {
+            grid-area: qr;
+            // Panel QR ahora ocupa el ancho completo → items en fila
+            .md-qr-items { justify-content: center; }
+        }
+
+        .md-qr-section-label {
+            font-size: $md-type-small;
+            font-weight: 700;
+            color: $md-muted;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            margin: 0 0 unquote("clamp(10px, 1.2vw, 14px)");
+        }
+
+        .md-qr-items {
+            display: flex;
+            flex-wrap: wrap;
+            gap: unquote("clamp(10px, 1.4vw, 16px)");
+        }
+
+        .md-qr-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .md-qr-item-label {
+            font-size: 11px;
+            font-weight: 700;
+            color: $md-ink;
+            text-align: center;
+            line-height: 1.2;
+        }
+
+        .md-qr-widget {
+            padding: 8px;
+            background: $md-white;
+            border-radius: $md-r-card;
+            border: 1px solid rgba($md-blue, 0.12);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 8px rgba($md-blue-900, 0.06);
+
+            canvas, img { width: 80px; height: 80px; display: block; }
+            .md-skeleton--img { width: 80px; height: 80px; }
+        }
+    }
+
+    // ── Panel Bento adyacente ──
+    .md-bento-panel-card {
+        position: static;
+        inset: auto;
+        width: 100%;
+        max-width: 100%;
+        margin: 0;
+        display: flex;
+        flex-direction: column;
+        gap: unquote("clamp(12px, 1.6vw, 18px)");
+        min-height: 0;
+        max-height: none;
+        overflow: visible;
+        padding: unquote("clamp(16px, 2vw, 24px)");
+        border-radius: unquote("clamp(18px, 2.2vw, 28px)");
+        @include md-liquid-glass(0.62, 22px);
+        color: $md-ink;
+
+        @media (min-width: #{$bp-lg}) { grid-area: panel; }
+    }
+
+    // Cabecera con el mismo lenguaje del CTA del home: superficie clara,
+    // acento verde y fondo con tintes de marca.
+    .md-branches-panel-head {
+        padding: unquote("clamp(16px, 2vw, 22px)");
+        border: 1px solid rgba($md-blue-900, 0.10);
+        border-radius: $md-r-card;
+        background:
+            radial-gradient(circle at 92% 12%, rgba($md-green, 0.2) 0 38px, transparent 39px),
+            radial-gradient(circle at 92% 12%, transparent 0 58px, rgba($md-blue, 0.14) 59px 64px, transparent 65px),
+            linear-gradient(135deg, rgba($md-white, 0.94), rgba($md-blue-100, 0.74)),
+            $md-white;
+        box-shadow: $md-shadow-soft;
+    }
+
+    .md-branches-title {
+        color: $md-ink;
+        font-family: $md-font-title;
+        font-weight: 900;
+    }
+
+    .md-branches-subtitle,
+    .md-small-note { color: $md-muted; }
+
+    .md-branches-meta span {
+        background: rgba($md-green, 0.12);
+        border-color: rgba($md-green, 0.22);
+        color: $md-green-900;
+    }
+
+    // Toolbar de filtros: vidrio suave dentro del panel glass
+    .md-branches-toolbar {
+        position: static;
+        top: auto;
+        z-index: 1;
+        display: grid;
+        gap: 0.65rem;
+        padding: 0.72rem;
+        border-radius: 1.2rem;
+        border: 1px solid rgba($md-white, 0.72);
+        background:
+            linear-gradient(145deg, rgba($md-white, 0.72), rgba($md-white, 0.42)),
+            rgba($md-white, 0.48);
+        box-shadow:
+            inset 0 1px 0 rgba($md-white, 0.78),
+            0 10px 24px rgba($md-blue-900, 0.06);
+        backdrop-filter: blur(12px) saturate(1.25);
+        -webkit-backdrop-filter: blur(12px) saturate(1.25);
+    }
+
+    .md-branches-state-tabs,
+    .md-branches-city-tabs {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        max-height: none;
+        overflow: visible;
+
+        button {
+            appearance: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.38rem;
+            min-height: 34px;
+            border: 1px solid rgba($md-blue-900, 0.10);
+            border-radius: $md-r-pill !important;
+            background: rgba($md-white, 0.78);
+            color: $md-muted;
+            box-shadow: inset 0 1px 0 rgba($md-white, 0.78);
+            font-weight: 900;
+            line-height: 1;
+            white-space: nowrap;
+            transition: transform 0.16s ease,
+                        box-shadow 0.16s ease,
+                        background 0.16s ease,
+                        border-color 0.16s ease,
+                        color 0.16s ease;
+
+            &:hover {
+                background: rgba($md-blue, 0.10);
+                border-color: rgba($md-blue, 0.24);
+                color: $md-blue-800;
+                transform: translateY(-1px);
+            }
+
+            &.is-active {
+                background: $md-brand-gradient !important;
+                border-color: transparent !important;
+                color: $md-white !important;
+                box-shadow:
+                    0 9px 20px rgba($md-blue, 0.22),
+                    inset 0 1px 0 rgba($md-white, 0.26);
+            }
+        }
+    }
+
+    .md-branches-state-tabs {
+        gap: 0.45rem;
+        margin-bottom: 0;
+
+        button {
+            padding: 0.48rem 0.78rem;
+
+            i {
+                width: 0.46rem;
+                height: 0.46rem;
+                border-radius: 50%;
+                box-shadow: 0 0 0 3px rgba($md-white, 0.52);
+            }
+
+            &.is-active i {
+                background: $md-white !important;
+                box-shadow: 0 0 0 3px rgba($md-white, 0.22);
+            }
+        }
+    }
+
+    .md-branches-city-tabs {
+        gap: 0.5rem;
+        padding: 0.58rem;
+        border: 1px solid rgba($md-blue-900, 0.08);
+        border-radius: 1rem;
+        background: rgba($md-white, 0.48);
+
+        button {
+            min-height: 36px;
+            padding: 0.52rem 0.82rem;
+            font-size: $md-type-small;
+
+            &::before {
+                content: "";
+                width: 0.42rem;
+                height: 0.42rem;
+                border-radius: 50%;
+                background: rgba($md-blue, 0.48);
+                box-shadow: 0 0 0 3px rgba($md-blue, 0.08);
+                flex: 0 0 auto;
+            }
+
+            &.is-active::before {
+                background: $md-white;
+                box-shadow: 0 0 0 3px rgba($md-white, 0.20);
+            }
+        }
+    }
+
+    // Rejilla de tarjetas: se adapta al ancho del panel
+    .md-branch-cards-grid {
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: unquote("clamp(10px, 1.4vw, 16px)");
+        min-height: 0;
+        max-height: none;
+        overflow: visible;
+        padding: 0;
+    }
+
+    .md-branch-card {
+        background:
+            linear-gradient(135deg, rgba($md-white, 0.98), rgba($md-blue-100, 0.9)),
+            $md-white;
+        color: $md-ink;
+        border-color: rgba($md-blue, 0.18);
+        box-shadow: $md-shadow-sm;
+    }
+
+    .md-branch-card-actions .md-btn {
+        min-height: 40px;
+        border-radius: $md-r-pill;
+        font-weight: 900;
+    }
+
+    .md-branch-card-actions .md-btn--ghost {
+        background: $md-white;
+        color: $md-blue-800;
+        border-color: rgba($md-blue, 0.18);
+
+        &:hover {
+            background: $md-blue-100;
+            color: $md-blue-800;
+        }
+    }
+
+    .md-branch-status.is-open {
+        background: rgba($md-green, 0.16);
+        border-color: rgba($md-green, 0.32);
+        color: $md-green-900;
+    }
+
+    .md-branch-status.is-closed {
+        background: rgba($md-ink, 0.06);
+        border-color: rgba($md-ink, 0.10);
+        color: $md-muted;
+    }
+
+    // Panel ancho completo: tarjetas en grid responsivo multi-columna
+    @media (min-width: #{$bp-lg}) {
+        .md-branch-cards-grid {
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        }
+    }
+}
+
+// ── Hero bento de sucursales: cobertura + formato ────────────────────────────
+.md-branches-hero {
+    display: grid;
+    grid-template-columns: minmax(0, 7fr) minmax(300px, 5fr);
+    gap: $md-gap;
+    margin-bottom: $md-gap-md;
+    align-items: stretch;
+
+    @media (max-width: $bp-lg) { grid-template-columns: 1fr; }
+}
+
+.md-branches-hero-art {
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    min-height: unquote("clamp(360px, 42vw, 520px)");
+    padding: unquote("clamp(24px, 4vw, 48px)");
+    border-radius: $md-r-card;
+    @include md-liquid-glass(0.5, 24px);
+    background:
+        radial-gradient(30rem 20rem at 90% -14%, rgba($md-blue, 0.2), transparent 70%),
+        radial-gradient(24rem 18rem at -10% 115%, rgba($md-green, 0.18), transparent 70%),
+        linear-gradient(165deg, rgba($md-white, 0.6), rgba($md-white, 0.26) 46%, rgba($md-white, 0.12)),
+        rgba($md-white, 0.5);
+    color: $md-ink;
+
+    &::after {
+        content: "";
+        position: absolute;
+        inset: 18px;
+        border-radius: inherit;
+        border: 1px solid rgba($md-white, 0.55);
+        pointer-events: none;
+    }
+
+    .md-eyebrow {
+        position: relative;
+        z-index: 1;
+    }
+
+    .md-page-title {
+        position: relative;
+        z-index: 1;
+        margin: 0.85rem 0 0;
+        color: $md-dark !important;
+    }
+
+    .md-lead {
+        position: relative;
+        z-index: 1;
+        max-width: 46ch;
+        margin: 1rem 0 0;
+        color: $md-muted !important;
+    }
+}
+
+.md-branches-hero-facts {
+    display: grid;
+    grid-template-rows: repeat(2, minmax(0, 1fr));
+    gap: $md-gap;
+
+    @media (max-width: $bp-lg) {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        grid-template-rows: none;
+    }
+
+    @media (max-width: $bp-sm) {
+        grid-template-columns: 1fr;
+    }
+}
+
+.md-branches-fact {
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+    padding: unquote("clamp(18px, 2.4vw, 28px)");
+    border-radius: $md-r-card;
+    @include md-liquid-glass(0.52, 20px);
+    color: $md-ink;
+
+    &--mint {
+        background:
+            linear-gradient(165deg, rgba($md-green, 0.22), rgba($md-green, 0.08) 55%, transparent),
+            rgba($md-white, 0.52);
+        border-color: rgba($md-green, 0.35);
+        color: $md-green-900;
+    }
+}
+
+.md-branches-fact-kicker {
+    font-size: $md-type-eyebrow;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: $md-muted;
+
+    .md-branches-fact--mint & { color: $md-green-600; }
+}
+
+.md-branches-fact-metrics {
+    display: flex;
+    flex-wrap: wrap;
+    gap: $md-gap-md;
+    margin-top: auto;
+}
+
+.md-branches-metric {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+
+    strong {
+        font-family: $md-font-title;
+        font-size: $md-type-metric;
+        font-weight: 900;
+        line-height: 1;
+        color: $md-dark;
+    }
+
+    span {
+        font-size: $md-text-sm;
+        font-weight: 600;
+        color: rgba($md-dark, 0.7);
+    }
+}
+
+.md-branches-fact-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.md-branches-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.4rem 0.8rem;
+    border-radius: $md-r-pill;
+    background: rgba($md-white, 0.55);
+    border: 1px solid rgba($md-blue-900, 0.08);
+    box-shadow: inset 0 1px 0 rgba($md-white, 0.8);
+    color: $md-ink;
+    font-size: $md-type-small;
+    font-weight: 700;
+
+    i {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: $md-blue;
+    }
+
+    &--green i { background: $md-green; }
+}
+
+.md-branches-fact-note {
+    margin: auto 0 0;
+    font-size: $md-text-sm;
+    line-height: 1.5;
+    color: $md-muted;
+}

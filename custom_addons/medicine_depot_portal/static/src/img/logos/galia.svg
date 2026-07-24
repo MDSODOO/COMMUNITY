@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="520" height="220" viewBox="0 0 520 220" role="img" aria-label="Galia">
+  <title>Galia</title>
+  <g fill="none" fill-rule="evenodd">
+    <circle cx="114" cy="110" r="58" fill="#F0F8EA"/>
+    <path fill="#6FAE2E" d="M118 61c25 0 45 14 54 35h-29c-6-6-14-10-25-10-18 0-31 13-31 31s13 31 31 31c14 0 24-7 28-18h-32v-22h61v13c0 30-23 53-57 53-34 0-59-25-59-57s25-56 59-56Z"/>
+    <text x="305" y="124" fill="#204A31" font-family="Arial, Helvetica, sans-serif" font-size="70" font-weight="800" text-anchor="middle">GALIA</text>
+    <text x="305" y="158" fill="#6E7A72" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="700" text-anchor="middle" letter-spacing="4">LABORATORIO</text>
+  </g>
+</svg>

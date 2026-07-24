@@ -1,0 +1,274 @@
+.md-socios-bento-section {
+  margin-bottom: clamp(2rem, 3.5vw, 3.5rem);
+  overflow: visible;
+  padding: 0;
+  position: relative;
+}
+
+.md-socios-bento-card {
+  position: relative;
+  overflow: visible;
+  padding: clamp(2rem, 3.5vw, 3.5rem) clamp(1rem, 3vw, 4rem) 0;
+  border-radius: 2.4rem;
+
+  // Frosty glass base
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.58), rgba(255, 255, 255, 0.22)) !important;
+  border: 1px solid rgba(255, 255, 255, 0.72) !important;
+  backdrop-filter: blur(28px) saturate(145%) !important;
+  -webkit-backdrop-filter: blur(28px) saturate(145%) !important;
+
+  // Specular drop shadow
+  box-shadow:
+    0 32px 72px rgba(7, 58, 76, 0.08),
+    0 12px 28px rgba(7, 58, 76, 0.04),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9) !important;
+
+  // Add organic liquid color spheres behind/inside the card
+  &::before,
+  &::after {
+    content: "";
+    position: absolute;
+    z-index: -1;
+    border-radius: 50%;
+    filter: blur(60px);
+    pointer-events: none;
+    opacity: 0.28;
+  }
+
+  &::before {
+    top: -4rem;
+    left: -2rem;
+    width: 24rem;
+    height: 24rem;
+    background: radial-gradient(circle, rgba(22, 166, 217, 0.45) 0%, transparent 70%);
+  }
+
+  &::after {
+    right: -2rem;
+    bottom: -4rem;
+    width: 20rem;
+    height: 20rem;
+    background: radial-gradient(circle, rgba(141, 198, 63, 0.40) 0%, transparent 70%);
+  }
+}
+
+.md-socios-heading {
+  max-width: 58rem;
+  margin: 0 auto;
+  padding-bottom: clamp(2rem, 3.5vw, 3.5rem);
+}
+
+.md-socios-heading h2 {
+  font-family: $md-font-title !important;
+  color: #073a4c !important;
+  font-size: clamp(2rem, 4.5vw, 3.8rem);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  line-height: 1.1;
+  margin: 0;
+  text-transform: uppercase;
+  text-wrap: balance;
+}
+
+.bento-overlap-box {
+  background: rgba(255, 255, 255, 0.65) !important;
+  border: 1px solid rgba(255, 255, 255, 0.72) !important;
+  border-radius: clamp(1.5rem, 3vw, 2.5rem);
+  box-shadow:
+    0 24px 60px rgba(7, 58, 76, 0.08),
+    0 8px 24px rgba(7, 58, 76, 0.04),
+    inset 0 1px 0 rgba(255, 255, 255, 0.95) !important;
+  backdrop-filter: blur(20px) saturate(1.3) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(1.3) !important;
+  margin-top: 0;
+  margin-bottom: 0;
+  overflow: visible;
+  padding: clamp(1.1rem, 2.8vw, 1.95rem);
+  position: relative;
+  z-index: 10;
+}
+
+.md-socios-bento-section .s_md_socios-marquee {
+  mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+  overflow: hidden;
+  padding: .35rem 0;
+  position: relative;
+  width: 100%;
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+}
+
+.md-socios-bento-section .s_md_socios-track {
+  --md-socios-gap: clamp(1rem, 1.8vw, 1.5rem);
+  align-items: center;
+  animation: md-socios-bento-marquee 38s linear infinite;
+  display: flex;
+  gap: var(--md-socios-gap);
+  width: max-content;
+  will-change: transform;
+}
+
+.md-socios-bento-section .s_md_socios-marquee:hover .s_md_socios-track,
+.md-socios-bento-section .s_md_socios-marquee:focus-within .s_md_socios-track {
+  animation-play-state: paused;
+}
+
+.md-socios-bento-section .s_md_socios-logo {
+  align-items: center;
+  background: rgba(255, 255, 255, 0.8) !important;
+  border: 1px solid rgba(22, 166, 217, 0.15) !important;
+  border-radius: 1.35rem;
+  box-shadow:
+    0 12px 32px rgba(7, 58, 76, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.98) !important;
+  backdrop-filter: blur(16px) saturate(1.15) !important;
+  -webkit-backdrop-filter: blur(16px) saturate(1.15) !important;
+  display: flex;
+  flex: 0 0 auto;
+  height: clamp(5.8rem, 8.5vw, 7rem);
+  justify-content: center;
+  padding: 1.1rem 1.5rem;
+  position: relative;
+  transition: border-color 0.3s cubic-bezier(0.25, 0.8, 0.25, 1),
+              box-shadow 0.3s cubic-bezier(0.25, 0.8, 0.25, 1),
+              transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1),
+              background 0.3s ease;
+  width: clamp(11.5rem, 19vw, 14.75rem);
+}
+
+.md-socios-bento-section .s_md_socios-logo img {
+  display: block;
+  height: 4.25rem;
+  object-fit: contain;
+  width: 100%;
+}
+
+.md-socios-bento-section .s_md_socios-logo--pisa img,
+.md-socios-bento-section .s_md_socios-logo--biomep img {
+  height: 4.85rem;
+}
+
+.md-socios-bento-section .s_md_socios-logo--quimpharma img,
+.md-socios-bento-section .s_md_socios-logo--bruluagsa img,
+.md-socios-bento-section .s_md_socios-logo--kendrick img {
+  height: 3.75rem;
+}
+
+.md-socios-bento-section .s_md_socios-logo strong {
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  height: 1px;
+  overflow: hidden;
+  position: absolute;
+  white-space: nowrap;
+  width: 1px;
+}
+
+.md-socios-bento-section .s_md_socios-logo:hover {
+  border-color: rgba(22, 166, 217, 0.5);
+  background: rgba(255, 255, 255, 0.92) !important;
+  box-shadow:
+    0 20px 48px rgba(7, 58, 76, 0.15),
+    0 8px 16px rgba(22, 166, 217, 0.2) !important;
+  transform: translateY(-6px) scale(1.04);
+}
+
+@keyframes md-socios-bento-marquee {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+
+  to {
+    transform: translate3d(calc(-50% - (var(--md-socios-gap) / 2)), 0, 0);
+  }
+}
+
+@media (max-width: 767.98px) {
+  .md-socios-bento-section {
+    margin-bottom: 4rem;
+    padding-top: 0;
+  }
+
+  .md-socios-bento-card {
+    border-radius: 1.5rem;
+    padding: 2.5rem 1rem 0;
+  }
+
+  .md-socios-heading {
+    padding-bottom: 3rem;
+  }
+
+  .md-socios-heading h2 {
+    font-size: 2rem;
+  }
+
+  .bento-overlap-box {
+    border-radius: 1.35rem;
+    bottom: -40px;
+    margin-bottom: -40px;
+  }
+
+  .md-socios-bento-section .s_md_socios-logo {
+    width: 10.25rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .md-socios-bento-section .s_md_socios-track {
+    animation: none;
+    flex-wrap: wrap;
+    justify-content: center;
+    width: auto;
+  }
+
+  .md-socios-bento-section .s_md_socios-track .s_md_socios-logo:nth-child(n + 17) {
+    display: none;
+  }
+}
+
+// ── Modo oscuro ──────────────────────────────────────────────────────────────
+// html.o_dark_mode/[data-bs-theme] son selectores de backend, nunca presentes
+// en el frontend — ver docs/audits/2026-07-01_backend_dark_mode_audit.md.
+body[data-color-scheme="dark"] {
+  .md-socios-bento-card {
+    background: 
+      linear-gradient(135deg, rgba(7, 28, 34, 0.65), rgba(7, 28, 34, 0.35)) !important;
+    border-color: rgba(255, 255, 255, 0.08) !important;
+    box-shadow:
+      0 32px 72px rgba(0, 0, 0, 0.4),
+      inset 0 1px 0 rgba(255, 255, 255, 0.05) !important;
+      
+    &::before {
+      background: radial-gradient(circle, rgba(22, 166, 217, 0.2) 0%, transparent 70%) !important;
+    }
+    &::after {
+      background: radial-gradient(circle, rgba(141, 198, 63, 0.15) 0%, transparent 70%) !important;
+    }
+    
+    .md-socios-heading h2 {
+      background: linear-gradient(135deg, #ffffff 0%, #a4e3f8 100%) !important;
+      -webkit-background-clip: text !important;
+      -webkit-text-fill-color: transparent !important;
+    }
+  }
+
+  .bento-overlap-box {
+    background: rgba(10, 25, 30, 0.5) !important;
+    border-color: rgba(255, 255, 255, 0.08) !important;
+    box-shadow: 
+      0 30px 80px rgba(0, 0, 0, 0.3),
+      inset 0 1px 0 rgba(255, 255, 255, 0.05) !important;
+  }
+
+  .s_md_socios-logo {
+    background: rgba(255, 255, 255, 0.05) !important;
+    border-color: rgba(255, 255, 255, 0.08) !important;
+    box-shadow: 
+      0 8px 24px rgba(0, 0, 0, 0.2),
+      inset 0 1px 0 rgba(255, 255, 255, 0.05) !important;
+      
+    img {
+      filter: brightness(0.9) contrast(1.1);
+    }
+  }
+}

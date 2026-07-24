@@ -1,0 +1,30 @@
+<odoo>
+    <record id="view_move_form_cfdi" model="ir.ui.view">
+        <field name="name">account.move.form.cfdi</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="account.view_move_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header" position="inside">
+                <button name="action_generate_cfdi_xml" type="object"
+                        string="Generar CFDI" class="oe_highlight"
+                        invisible="move_type not in ('out_invoice', 'out_refund') or state != 'posted' or l10n_mx_cfdi_state == 'signed'"/>
+                <field name="l10n_mx_cfdi_state" widget="badge"
+                       invisible="move_type not in ('out_invoice', 'out_refund')"
+                       decoration-success="l10n_mx_cfdi_state == 'stamped'"
+                       decoration-info="l10n_mx_cfdi_state == 'signed'"
+                       decoration-danger="l10n_mx_cfdi_state == 'error'"/>
+            </xpath>
+            <xpath expr="//field[@name='invoice_payment_term_id']" position="after">
+                <field name="l10n_mx_forma_pago"
+                       invisible="move_type not in ('out_invoice', 'out_refund')"/>
+                <field name="l10n_mx_metodo_pago"
+                       invisible="move_type not in ('out_invoice', 'out_refund')"/>
+            </xpath>
+            <xpath expr="//sheet" position="inside">
+                <div invisible="not l10n_mx_cfdi_error" class="alert alert-danger" role="alert">
+                    <field name="l10n_mx_cfdi_error"/>
+                </div>
+            </xpath>
+        </field>
+    </record>
+</odoo>

@@ -1,0 +1,111 @@
+// Medicine Depot · Snippet bento para blog destacado.
+
+.s_md_blog_grid {
+    display: grid;
+    grid-template-columns: 1fr 1.6fr;
+    gap: $md-gap;
+
+    @media (max-width: 991px) { grid-template-columns: 1fr; }
+
+    .md-tile { @include md-tile(); }
+    .md-tile {
+        border-radius: $md-r-card;
+        box-shadow: $md-shadow-sm;
+    }
+    .md-tile--dark { background: linear-gradient(135deg, $md-ink, $md-ink-900); color: $md-white; }
+
+    .md-blog-list {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .md-blog-card {
+        position: relative;
+        overflow: hidden;
+        display: grid;
+        grid-template-columns: 96px 1fr;
+        gap: 14px;
+        align-items: center;
+        background: $md-white;
+        border-radius: $md-r-card;
+        padding: 14px;
+        border: 1px solid rgba($md-blue-900, 0.08);
+        box-shadow: $md-shadow-sm;
+        transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+        text-decoration: none;
+        color: inherit;
+
+        &::before {
+            content: '';
+            position: absolute;
+            inset: 0 auto 0 0;
+            width: 5px;
+            background: $md-green;
+        }
+
+        &:hover {
+            transform: translateY(-3px);
+            border-color: rgba($md-blue, 0.22);
+            box-shadow: $md-shadow-md;
+            color: inherit;
+            text-decoration: none;
+        }
+
+        .md-blog-thumb {
+            width: 96px;
+            height: 96px;
+            border-radius: $md-r-card;
+            background: linear-gradient(135deg, $md-blue-100, $md-green-100);
+            color: $md-blue-800;
+            display: grid;
+            place-items: center;
+            font-size: 1.45rem;
+            overflow: hidden;
+            flex-shrink: 0;
+
+            img {
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+                object-position: center;
+            }
+        }
+
+        h3 {
+            font-size: 15px;
+            margin: 4px 0;
+            letter-spacing: 0;
+            line-height: 1.22;
+            font-family: $md-font-title;
+            font-weight: 700;
+            color: $md-ink;
+        }
+
+        .md-blog-meta {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 5px;
+            color: $md-muted;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: none;
+        }
+
+        .md-blog-tag {
+            display: inline-block;
+            background: $md-green-100;
+            color: $md-green-600;
+            border-radius: 999px;
+            padding: 2px 8px;
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+        }
+
+        p  { font-size: 13px; color: $md-muted; margin: 0; line-height: 1.55; }
+        a  { color: $md-blue; font-weight: 700; font-size: 13px; }
+    }
+}

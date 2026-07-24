@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!--
+        Mejora 28 · Pila global de toasts/píldoras flotantes.
+        Inyectamos un contenedor estable en website.layout para que los
+        flujos de notificaciones (carrito, checkout, formularios) puedan
+        montar alertas estilo Bento. Los estilos viven en site_unify.scss
+        bajo la clase .md-toast-stack y .md-toast.
+        Selector único en el DOM público: cualquier JS de toasts puede
+        montar instancias con document.getElementById('md-toast-stack').
+    -->
+    <!--
+        Mejora espacial · Cuadrícula de tienda "airy".
+        Añade gap vertical/horizontal entre tarjetas de producto usando
+        las utilidades Bootstrap 5 gy-4 / gx-3. El xpath apunta a
+        #products_grid que es el row principal del grid de website_sale
+        en Odoo 17-19. Si el template cambia de ID la herencia falla de
+        forma silenciosa (sin romper nada).
+    -->
+    <template id="md_shop_grid_airy"
+              inherit_id="website_sale.products"
+              name="MD · Airy shop product grid"
+              priority="220">
+        <xpath expr="//div[@id='products_grid']" position="attributes">
+            <attribute name="class" add="gy-4 gx-3" separator=" "/>
+        </xpath>
+    </template>
+
+    <template id="md_layout_toast_stack"
+              inherit_id="website.layout"
+              name="MD · Toast pill stack"
+              priority="220">
+        <xpath expr="//body" position="inside">
+            <div id="md-toast-stack"
+                 class="md-toast-stack"
+                 aria-live="polite"
+                 aria-atomic="false"/>
+        </xpath>
+    </template>
+
+</odoo>

@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="180" viewBox="0 0 640 180" role="img" aria-labelledby="title desc">
+  <title id="title">Medicine Depot</title>
+  <desc id="desc">Logotipo vectorial de Medicine Depot.</desc>
+  <defs>
+    <linearGradient id="mdg" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#16A6D9"/>
+      <stop offset="52%" stop-color="#35BADF"/>
+      <stop offset="100%" stop-color="#97D700"/>
+    </linearGradient>
+  </defs>
+  <rect x="6" y="34" width="112" height="112" rx="28" fill="url(#mdg)"/>
+  <path d="M38 110c8-16 11-32 16-48 6-20 17-30 35-30 19 0 30 12 30 30 0 20-12 34-33 40-11 3-22 2-31 8-6 4-11 11-13 18" fill="none" stroke="#FFFFFF" stroke-width="8" stroke-linecap="round"/>
+  <circle cx="90" cy="95" r="10" fill="#FFFFFF"/>
+  <g fill="#073A4C" font-family="Source Sans Pro, Source Sans 3, Arial, sans-serif" letter-spacing="0">
+    <text x="142" y="84" font-size="58" font-weight="800">Medicine</text>
+    <text x="142" y="138" font-size="58" font-weight="800" fill="#16A6D9">Depot</text>
+    <text x="144" y="164" font-size="20" font-weight="600" fill="#667481">Confianza y bienestar en un solo lugar</text>
+  </g>
+</svg>

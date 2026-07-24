@@ -1,0 +1,11 @@
+// Medicine Depot · Public Bento shell
+// Modular imports. Dependency order: tokens → navbar → modules below.
+
+@import 'medicine_depot_portal/static/src/scss/snippets/navbar';
+@import 'medicine_depot_portal/static/src/scss/snippets/typography';
+@import 'medicine_depot_portal/static/src/scss/snippets/cards';
+@import 'medicine_depot_portal/static/src/scss/snippets/map';
+@import 'medicine_depot_portal/static/src/scss/snippets/forms';
+@import 'medicine_depot_portal/static/src/scss/snippets/utilities';
+@import 'medicine_depot_portal/static/src/scss/snippets/animations';
+@import 'medicine_depot_portal/static/src/scss/snippets/responsive';

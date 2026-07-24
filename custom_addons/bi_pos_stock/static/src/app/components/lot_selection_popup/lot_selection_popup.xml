@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <!--
+        LotSelectionPopup — FEFO stepper table (glass modal).
+
+        Visual language mirrors bi_pos_stock.LotDetailPopup (same legend,
+        same FEFO star convention) so the two lot-related popups read as one
+        family, per the glassmorphism handoff. Styling lives in
+        pos_glass_bento.scss (class="lot-selection-popup").
+    -->
+    <t t-name="bi_pos_stock.LotSelectionPopup">
+        <Dialog size="'lg'" contentClass="'lot-selection-popup'">
+
+            <!-- ── Header ── -->
+            <t t-set-slot="header">
+                <h5 class="modal-title d-flex align-items-center gap-2">
+                    <span class="badge lot-fefo-badge">
+                        <i class="fa fa-sort-amount-asc me-1"/>FEFO
+                    </span>
+                    Lotes a la mano
+                    <span class="fst-italic fw-normal text-muted fs-6" t-esc="productName"/>
+                </h5>
+            </t>
+
+            <!-- ── Body ── -->
+            <div t-if="!hasLots" class="text-center py-4 text-muted">
+                <i class="fa fa-inbox fa-2x mb-3"/>
+                <p>No hay lotes con A la mano en esta sucursal.</p>
+            </div>
+
+            <div t-else="" class="px-1">
+
+                <!-- FEFO legend — semantic expiry ranges + "sell first" tag -->
+                <div class="d-flex gap-2 flex-wrap mb-3 lot-legend">
+                    <span class="badge bg-danger"><i class="fa fa-circle me-1"/>Vencido / ≤ 30 días</span>
+                    <span class="badge bg-warning text-dark"><i class="fa fa-circle me-1"/>31 – 90 días</span>
+                    <span class="badge bg-success"><i class="fa fa-circle me-1"/>&gt; 90 días</span>
+                    <span class="ms-auto badge lot-fefo-badge">
+                        <i class="fa fa-star me-1"/>1° = Vender primero
+                    </span>
+                </div>
+
+                <div class="lot-selection-table-wrapper">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead>
+                            <tr>
+                                <th style="width:8%;">#</th>
+                                <th style="width:26%;">Lote / N° Serie</th>
+                                <th class="text-center" style="width:22%;">A la mano</th>
+                                <th class="text-center" style="width:20%;">Vencimiento</th>
+                                <th class="text-center" style="width:24%;">Días restantes</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <t t-foreach="lots" t-as="lot" t-key="lot.key">
+                                <tr t-on-click="() => this.toggleRow(lot.key)"
+                                    t-att-class="lotQty(lot.key) > 0 ? 'lot-row-selected' : ''">
+
+                                    <!-- Position — FEFO star for the first row -->
+                                    <td>
+                                        <span t-if="isFefo(lot_index)" class="badge lot-fefo-badge">
+                                            <i class="fa fa-star me-1"/>1°
+                                        </span>
+                                        <span t-else="" class="text-muted"><t t-esc="lot_index + 1"/>°</span>
+                                    </td>
+
+                                    <!-- Lot code -->
+                                    <td class="lot-code">
+                                        <i class="fa fa-cube me-1 text-muted"/>
+                                        <t t-esc="lot.lot_name"/>
+                                    </td>
+
+                                    <!-- Quantity stepper — independent per lot -->
+                                    <td class="text-center" t-on-click="(ev) => ev.stopPropagation()">
+                                        <div class="lot-stepper d-inline-flex align-items-center gap-2">
+                                            <button type="button" class="lot-stepper-btn"
+                                                    t-on-click="() => this.dec(lot.key)">−</button>
+                                            <span class="lot-stepper-value" t-esc="lotQty(lot.key)"/>
+                                            <button type="button" class="lot-stepper-btn"
+                                                    t-on-click="() => this.inc(lot.key)">+</button>
+                                        </div>
+                                        <div class="text-muted small mt-1">
+                                            de <t t-esc="lot.qty"/> pzas
+                                        </div>
+                                    </td>
+
+                                    <!-- Expiry date -->
+                                    <td class="text-center">
+                                        <t t-if="lot.expiration_date">
+                                            <span t-attf-class="text-{{colorClass(lot.expiration_date)}}">
+                                                <t t-esc="dateLabel(lot.expiration_date)"/>
+                                            </span>
+                                        </t>
+                                        <t t-else="">
+                                            <span class="text-muted">Sin fecha</span>
+                                        </t>
+                                    </td>
+
+                                    <!-- Days remaining -->
+                                    <td class="text-center">
+                                        <t t-if="lot.expiration_date">
+                                            <t t-set="_days" t-value="daysLeft(lot.expiration_date)"/>
+                                            <span t-attf-class="badge bg-{{colorClass(lot.expiration_date)}}">
+                                                <t t-if="_days &lt; 0">VENCIDO</t>
+                                                <t t-else=""><t t-esc="_days"/>d</t>
+                                            </span>
+                                        </t>
+                                        <t t-else="">
+                                            <span class="badge bg-secondary">—</span>
+                                        </t>
+                                    </td>
+                                </tr>
+                            </t>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div t-if="!hasSelection" class="lot-empty-warning mt-2">
+                    Selecciona al menos un lote (toca la fila o usa +) antes de agregar al ticket.
+                </div>
+            </div>
+
+            <!-- ── Footer ── -->
+            <t t-set-slot="footer">
+                <button class="btn btn-secondary" t-on-click="props.close">Cerrar</button>
+                <button t-if="hasLots"
+                        class="btn lot-confirm-btn flex-fill"
+                        t-att-disabled="!hasSelection"
+                        t-on-click="confirm">
+                    <t t-esc="confirmLabel"/>
+                </button>
+            </t>
+
+        </Dialog>
+    </t>
+</templates>

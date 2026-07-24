@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_scrap_summary_2025_search" model="ir.ui.view">
+        <field name="name">medicine.depot.scrap.summary.2025.search</field>
+        <field name="model">medicine.depot.scrap.summary.2025</field>
+        <field name="arch" type="xml">
+            <search string="Acumulado del mes">
+                <!-- Búsqueda libre: 'Periodo' habilita date-picker con rango -->
+                <field name="periodo" string="Periodo"/>
+                <field name="sucursal"/>
+                <field name="anio"/>
+                <field name="company_id" groups="base.group_multi_company"/>
+                <field name="location_id"/>
+
+                <!-- Presets de rango temporal -->
+                <filter name="this_month"
+                        string="Este mes"
+                        domain="[
+                            ('periodo', '&gt;=', context_today().strftime('%Y-%m-01')),
+                            ('periodo', '&lt;', (context_today() + relativedelta(months=1)).strftime('%Y-%m-01'))
+                        ]"/>
+                <filter name="last_month"
+                        string="Mes anterior"
+                        domain="[
+                            ('periodo', '&gt;=', (context_today() - relativedelta(months=1)).strftime('%Y-%m-01')),
+                            ('periodo', '&lt;', context_today().strftime('%Y-%m-01'))
+                        ]"/>
+                <filter name="last_3_months"
+                        string="Últimos 3 meses"
+                        domain="[
+                            ('periodo', '&gt;=', (context_today() - relativedelta(months=3)).strftime('%Y-%m-01'))
+                        ]"/>
+                <filter name="last_6_months"
+                        string="Últimos 6 meses"
+                        domain="[
+                            ('periodo', '&gt;=', (context_today() - relativedelta(months=6)).strftime('%Y-%m-01'))
+                        ]"/>
+                <separator/>
+                <filter name="current_year"
+                        string="Año actual"
+                        domain="[('anio', '=', context_today().year)]"/>
+                <filter name="last_year"
+                        string="Año anterior"
+                        domain="[('anio', '=', (context_today() - relativedelta(years=1)).year)]"/>
+
+                <separator/>
+                <filter name="group_anio"     string="Agrupar por año"      context="{'group_by': 'anio'}"/>
+                <filter name="group_mes"      string="Agrupar por mes"      context="{'group_by': 'mes'}"/>
+                <filter name="group_sucursal" string="Agrupar por sucursal" context="{'group_by': 'sucursal'}"/>
+                <filter name="group_company"  string="Agrupar por compañía" context="{'group_by': 'company_id'}" groups="base.group_multi_company"/>
+            </search>
+        </field>
+    </record>
+
+    <record id="view_scrap_summary_2025_pivot" model="ir.ui.view">
+        <field name="name">medicine.depot.scrap.summary.2025.pivot</field>
+        <field name="model">medicine.depot.scrap.summary.2025</field>
+        <field name="arch" type="xml">
+            <!-- Sucursal como row principal (lo que el usuario lee primero),
+                 mes como col. Costo es el measure default destacado. -->
+            <pivot string="Acumulado de bajas" display_quantity="false">
+                <field name="sucursal" type="row"/>
+                <field name="mes" type="col"/>
+                <field name="costo" type="measure" string="Costo (MXN)"/>
+                <field name="scrap_qty" type="measure" string="Piezas"/>
+                <field name="line_count" type="measure" string="Líneas"/>
+            </pivot>
+        </field>
+    </record>
+
+    <record id="view_scrap_summary_2025_graph" model="ir.ui.view">
+        <field name="name">medicine.depot.scrap.summary.2025.graph</field>
+        <field name="model">medicine.depot.scrap.summary.2025</field>
+        <field name="arch" type="xml">
+            <!-- Barras apiladas por sucursal sobre la línea temporal:
+                 más legible que líneas finas para comparar magnitudes
+                 mes a mes y al mismo tiempo ver la composición por tienda. -->
+            <graph string="Tendencia mensual de bajas" type="bar" stacked="1">
+                <field name="periodo" type="row" interval="month"/>
+                <field name="sucursal" type="col"/>
+                <field name="costo" type="measure" string="Costo (MXN)"/>
+            </graph>
+        </field>
+    </record>
+
+    <record id="view_scrap_summary_2025_list" model="ir.ui.view">
+        <field name="name">medicine.depot.scrap.summary.2025.list</field>
+        <field name="model">medicine.depot.scrap.summary.2025</field>
+        <field name="arch" type="xml">
+            <list string="Detalle de bajas por período"
+                  class="o_scrap_batch_module"
+                  create="0" edit="0" delete="0"
+                  default_order="periodo desc, sucursal">
+                <field name="anio" string="Año"/>
+                <field name="mes" string="Mes"/>
+                <field name="sucursal" string="Sucursal"/>
+                <field name="line_count" string="Líneas" sum="Total"/>
+                <field name="scrap_qty" string="Cantidad" sum="Total"/>
+                <field name="company_id" groups="base.group_multi_company"/>
+                <field name="currency_id" column_invisible="1"/>
+                <field name="costo" string="Costo (MXN)" widget="monetary" sum="Total"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="action_scrap_summary_2025" model="ir.actions.act_window">
+        <field name="name">Acumulado del mes</field>
+        <field name="res_model">medicine.depot.scrap.summary.2025</field>
+        <field name="view_mode">pivot,graph,list</field>
+        <field name="search_view_id" ref="view_scrap_summary_2025_search"/>
+        <field name="context">{'search_default_this_month': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Acumulado consolidado de bajas (módulo nuevo + histórico legado).
+            </p>
+            <p>
+                Costos calculados desde el precio unitario de la PO de origen
+                del lote. Usa el filtro <b>Periodo</b> para seleccionar un
+                rango de fechas personalizado.
+            </p>
+        </field>
+    </record>
+
+    <menuitem id="menu_scrap_summary_2025"
+              name="Acumulado del mes"
+              parent="stock.menu_stock_scrap"
+              action="action_scrap_summary_2025"
+              sequence="50"
+              groups="stock.group_stock_user"/>
+
+</odoo>

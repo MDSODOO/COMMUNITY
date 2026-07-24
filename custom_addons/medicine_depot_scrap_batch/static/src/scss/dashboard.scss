@@ -1,0 +1,434 @@
+// Medicine Depot — paleta corporativa (inlineada: Odoo 19 bloquea @import locales)
+
+// ── Primarios ──────────────────────────────────────────────────────────────
+$md-primary:       #16A6D9;
+$md-primary-2:     #3dbde6;
+$md-primary-dark:  #073A4C;
+$md-primary-soft:  #e0f5fb;
+
+// ── Acción / estados ──────────────────────────────────────────────────────
+$md-action:        #97D700;
+$md-action-soft:   #eef9c2;
+$md-danger:        #e30613;
+$md-danger-soft:   #fde2e3;
+$md-warning:       #f59f00;
+$md-warning-soft:  #fff4d6;
+
+// ── Neutros ───────────────────────────────────────────────────────────────
+$md-ink:           #0e1730;
+$md-ink-2:         #33405e;
+$md-muted:         #7a86a3;
+$md-paper:         #f4f6fb;
+$md-card-bg:       #ffffff;
+$md-border:        #e3e7f1;
+
+// ── Espaciado / forma ─────────────────────────────────────────────────────
+$md-radius-sm:     6px;
+$md-radius-md:     10px;
+$md-radius-lg:     14px;
+
+// Todos los estilos viven dentro de .o_scrap_batch_module.
+// Nada escapa al scope del módulo.
+
+.o_scrap_batch_module {
+
+    // ── CSS custom properties (accesibles desde QWeb / JS inline) ─────────
+    --md-primary:      #{$md-primary};
+    --md-primary-2:    #{$md-primary-2};
+    --md-primary-dark: #{$md-primary-dark};
+    --md-primary-soft: #{$md-primary-soft};
+    --md-action:       #{$md-action};
+    --md-action-soft:  #{$md-action-soft};
+    --md-danger:       #{$md-danger};
+    --md-danger-soft:  #{$md-danger-soft};
+    --md-warning:      #{$md-warning};
+    --md-warning-soft: #{$md-warning-soft};
+    --md-ink:          #{$md-ink};
+    --md-ink-2:        #{$md-ink-2};
+    --md-muted:        #{$md-muted};
+    --md-paper:        #{$md-paper};
+    --md-card-bg:      #{$md-card-bg};
+    --md-border:       #{$md-border};
+    --md-radius-sm:    #{$md-radius-sm};
+    --md-radius-md:    #{$md-radius-md};
+    --md-radius-lg:    #{$md-radius-lg};
+    --md-shadow-1:     0 1px 2px rgba(14, 23, 48, 0.06), 0 1px 3px rgba(14, 23, 48, 0.08);
+    --md-shadow-2:     0 4px 12px rgba(14, 23, 48, 0.10);
+    --md-font-heading: 'Poppins', system-ui, sans-serif;
+    --md-font-body:    'Inter', system-ui, sans-serif;
+    --md-font-num:     'Inter', system-ui, sans-serif;
+
+    // ── KPI strip ─────────────────────────────────────────────────────────
+    .md-kpi-strip {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 12px;
+    }
+
+    .md-kpi-strip-4 {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        margin-bottom: 20px;
+    }
+
+    .md-kpi {
+        background: var(--md-card-bg);
+        border: 1px solid var(--md-border);
+        border-radius: var(--md-radius-md);
+        padding: 14px 16px;
+        border-top: 3px solid var(--md-primary);
+        box-shadow: var(--md-shadow-1);
+
+        .md-kpi-label {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--md-muted);
+            font-weight: 600;
+        }
+
+        .md-kpi-value {
+            font-family: var(--md-font-heading);
+            font-weight: 700;
+            font-size: 26px;
+            margin-top: 4px;
+            color: var(--md-ink);
+            line-height: 1.1;
+            font-variant-numeric: tabular-nums;
+
+            a, a:hover, a:visited {
+                color: inherit;
+                text-decoration: none;
+            }
+        }
+
+        .md-kpi-sub {
+            font-size: 12px;
+            color: var(--md-muted);
+            margin-top: 4px;
+        }
+
+        .md-kpi-value-text {
+            font-size: 16px;
+            line-height: 1.3;
+        }
+
+        &.danger {
+            border-top-color: var(--md-danger);
+            .md-kpi-value { color: var(--md-danger); }
+        }
+
+        &.warn {
+            border-top-color: var(--md-warning);
+            .md-kpi-value { color: var(--md-warning); }
+        }
+
+        &.ok {
+            border-top-color: var(--md-action);
+            .md-kpi-value { color: var(--md-action); }
+        }
+    }
+
+    // ── Card ──────────────────────────────────────────────────────────────
+    .md-card {
+        background: var(--md-card-bg);
+        border: 1px solid var(--md-border);
+        border-radius: var(--md-radius-md);
+        padding: 16px;
+        box-shadow: var(--md-shadow-1);
+
+        h3 {
+            font-family: var(--md-font-heading);
+            font-weight: 600;
+            font-size: 15px;
+            margin: 0 0 12px;
+            color: var(--md-ink);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+
+            .hint {
+                font-family: var(--md-font-body);
+                font-weight: 400;
+                font-size: 12px;
+                color: var(--md-muted);
+            }
+        }
+    }
+
+    // ── Pivot table ───────────────────────────────────────────────────────
+    table.md-pivot {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 12.5px;
+        font-variant-numeric: tabular-nums;
+
+        th, td {
+            padding: 7px 8px;
+            text-align: right;
+            border-bottom: 1px solid var(--md-border);
+        }
+
+        thead th {
+            background: var(--md-primary);
+            color: #fff;
+            border-bottom: 2px solid var(--md-primary-dark);
+            font-weight: 600;
+            font-size: 11.5px;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+
+        th:first-child, td:first-child {
+            text-align: left;
+            font-weight: 500;
+            color: var(--md-ink-2);
+        }
+
+        tbody th {
+            color: var(--md-primary);
+            font-weight: 600;
+        }
+
+        tfoot {
+            background: var(--md-primary-soft);
+
+            td {
+                font-weight: 700;
+                color: var(--md-primary);
+                border-bottom: none;
+            }
+        }
+
+        // Heat map — escala de rojo (caducidad)
+        td.heat-0 { background: var(--bs-card-bg); }
+        td.heat-1 { background: #fde2e3; }
+        td.heat-2 { background: #fbb9bb; }
+        td.heat-3 { background: #f47b80; color: #fff; }
+        td.heat-4 { background: #e9404a; color: #fff; }
+        td.heat-5 { background: #b80a14; color: #fff; }
+    }
+
+    // ── List table ────────────────────────────────────────────────────────
+    table.md-list {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 13px;
+
+        th, td {
+            padding: 9px 10px;
+            border-bottom: 1px solid var(--md-border);
+            text-align: left;
+        }
+
+        thead th {
+            background: var(--md-primary-soft);
+            color: var(--md-primary);
+            font-weight: 600;
+            font-size: 11.5px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            border-bottom: 2px solid var(--md-primary);
+        }
+
+        tbody tr:hover { background: rgba(22, 166, 217, 0.05); }
+
+        .num {
+            text-align: right;
+            font-variant-numeric: tabular-nums;
+        }
+    }
+
+    // ── Status badges ─────────────────────────────────────────────────────
+    .md-badge {
+        display: inline-block;
+        padding: 2px 10px;
+        border-radius: 999px;
+        font-size: 11.5px;
+        font-weight: 600;
+        letter-spacing: 0.02em;
+
+        &.draft     { background: #eef1f7; color: var(--md-ink-2); }
+        &.review    { background: var(--md-warning-soft); color: #7a4a00; border: 1px solid #e6c97a; }
+        &.approved  { background: var(--md-action-soft); color: #3d5800; }
+        &.posted    { background: var(--md-primary); color: #fff; }
+        &.cancelled { background: #f1f1f5; color: var(--md-muted); text-decoration: line-through; }
+        &.tag-cad   { background: var(--md-danger-soft); color: #a3000a; border: 1px solid #e8a8ab; }
+        &.tag-mer   { background: var(--md-warning-soft); color: #7a4a00; border: 1px solid #e6c97a; }
+    }
+
+    // ── Statusbar (barra de estado del formulario) ────────────────────────
+    .md-statusbar {
+        display: flex;
+        align-items: center;
+        background: var(--md-primary-soft);
+        padding: 10px 16px;
+        border-radius: var(--md-radius-md);
+        margin-bottom: 14px;
+        border: 1px solid var(--md-border);
+
+        .step {
+            padding: 6px 16px;
+            font-size: 12.5px;
+            font-weight: 600;
+            color: var(--md-muted);
+            position: relative;
+
+            .num {
+                display: inline-block;
+                width: 18px;
+                height: 18px;
+                line-height: 18px;
+                text-align: center;
+                background: var(--bs-card-bg);
+                color: var(--bs-body-color);
+                border-radius: 50%;
+                font-size: 11px;
+                margin-right: 6px;
+                border: 1.5px solid currentColor;
+            }
+
+            &.done {
+                color: var(--md-action);
+                .num {
+                    background: var(--md-action);
+                    color: var(--bs-white, #fff);
+                    border-color: var(--md-action);
+                }
+            }
+
+            &.now {
+                color: var(--md-primary);
+                background: var(--bs-card-bg);
+                border-radius: 999px;
+                box-shadow: var(--md-shadow-1);
+                .num {
+                    background: var(--md-primary);
+                    color: var(--bs-white, #fff);
+                    border-color: var(--md-primary);
+                }
+            }
+        }
+
+        .sep {
+            flex: 1;
+            height: 2px;
+            background: var(--md-border);
+            margin: 0 4px;
+        }
+    }
+
+    // ── Kanban ────────────────────────────────────────────────────────────
+    .md-kanban {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 12px;
+    }
+
+    @media (max-width: 1400px) {
+        .md-kpi-strip,
+        .md-kpi-strip-4 {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+    }
+
+    @media (max-width: 768px) {
+        .md-kpi-strip,
+        .md-kpi-strip-4 {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    .md-kb-col {
+        background: linear-gradient(180deg, var(--md-primary-soft) 0%, transparent 80%);
+        border-radius: var(--md-radius-md);
+        padding: 10px;
+        min-height: 320px;
+
+        h4 {
+            font-family: var(--md-font-heading);
+            font-weight: 600;
+            font-size: 13px;
+            margin: 2px 4px 10px;
+            color: var(--md-primary);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+
+            .ct {
+                background: var(--md-primary);
+                color: #fff;
+                border-radius: 999px;
+                font-size: 11px;
+                padding: 2px 8px;
+                font-weight: 600;
+            }
+        }
+    }
+
+    .md-kb-card {
+        background: var(--md-card-bg);
+        border: 1px solid var(--md-border);
+        border-left: 4px solid var(--md-primary);
+        border-radius: var(--md-radius-md);
+        padding: 10px 12px;
+        margin-bottom: 8px;
+        box-shadow: var(--md-shadow-1);
+        cursor: pointer;
+        transition: transform 0.15s, box-shadow 0.2s;
+
+        &:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--md-shadow-2);
+            border-left-color: var(--md-danger);
+        }
+
+        .name {
+            font-weight: 600;
+            font-size: 13.5px;
+            font-family: var(--md-font-heading);
+            color: var(--md-ink);
+        }
+
+        .amt {
+            font-family: var(--md-font-num);
+            font-weight: 700;
+            font-size: 14px;
+            color: var(--md-danger);
+            font-variant-numeric: tabular-nums;
+        }
+
+        .meta {
+            font-size: 11.5px;
+            color: var(--md-muted);
+            margin-top: 2px;
+        }
+
+        .progress {
+            height: 4px;
+            background: var(--md-paper);
+            border-radius: 2px;
+            margin-top: 8px;
+            overflow: hidden;
+
+            .fill {
+                height: 100%;
+                background: linear-gradient(90deg, var(--md-warning), var(--md-danger));
+            }
+        }
+    }
+
+    // ── Utilidades ────────────────────────────────────────────────────────
+    .muted  { color: var(--md-muted); font-size: 12px; }
+    .ref    { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--md-primary); }
+
+    // ── Kanban: costo total y fecha (movidos desde inline style — Step 13) ──
+    .md-kanban-cost {
+        color: var(--md-danger);
+        font-size: 15px;
+        font-variant-numeric: tabular-nums;
+    }
+
+    .md-kanban-date {
+        font-size: 11px;
+    }
+}

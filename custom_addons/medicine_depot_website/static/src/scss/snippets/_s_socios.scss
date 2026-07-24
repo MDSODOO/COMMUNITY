@@ -1,0 +1,190 @@
+// Medicine Depot Website · Socios logo cloud snippet
+
+.s_md_socios {
+    position: relative;
+    overflow: hidden;
+    background:
+        radial-gradient(circle at 100% 0%, rgba($md-green, 0.18) 0 52px, transparent 53px),
+        $md-white;
+    border-radius: $md-r-card;
+    padding: unquote("clamp(32px, 4vw, 48px)");
+    text-align: center;
+    box-shadow: $md-shadow-soft;
+    border: 1px solid rgba($md-blue, 0.12);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+    &:hover {
+        transform: translateY(-2px);
+        box-shadow: $md-shadow-md;
+    }
+}
+
+.s_md_socios-label {
+    font-size: $md-text-sm;
+    font-weight: 900;
+    color: $md-green-600;
+    text-transform: uppercase;
+    letter-spacing: 0;
+    margin-bottom: unquote("clamp(16px, 2vw, 24px)");
+}
+
+.s_md_socios-logos {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 0.9rem;
+    justify-items: stretch;
+    align-items: center;
+    min-height: 72px;
+
+    img {
+        max-height: unquote("clamp(40px, 5vw, 56px)");
+        width: auto;
+        // mix-blend-mode integra logos con fondo blanco/cream sin caja blanca visible
+        mix-blend-mode: multiply;
+        filter: grayscale(0.6) opacity(0.75);
+        transition: filter 0.2s ease, mix-blend-mode 0.2s ease;
+
+        &:hover {
+            filter: grayscale(0) opacity(1);
+            mix-blend-mode: normal;
+        }
+    }
+}
+
+.s_md_socios-logo {
+    min-height: 58px;
+    border: 1px solid rgba($md-blue-900, 0.1);
+    border-radius: $md-r-card;
+    background:
+        linear-gradient(135deg, rgba($md-blue, 0.06), rgba($md-green, 0.08)),
+        $md-gray-50;
+    color: $md-muted-900;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 10px;
+    padding: 0.75rem;
+    font-family: $md-font-title;
+    font-size: 0.95rem;
+    font-weight: 900;
+    text-align: left;
+    transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease;
+
+    span {
+        width: 38px;
+        height: 38px;
+        border-radius: 10px;
+        display: inline-grid;
+        place-items: center;
+        background: $md-white;
+        color: $md-blue-800;
+        border: 1px solid rgba($md-blue, 0.14);
+        font-size: 0.72rem;
+        letter-spacing: 0;
+        flex: 0 0 auto;
+    }
+
+    strong {
+        color: $md-ink;
+        font-size: 0.95rem;
+        line-height: 1.1;
+    }
+
+    &:hover {
+        transform: translateY(-2px);
+        border-color: rgba($md-blue, 0.22);
+        background: $md-white;
+    }
+}
+
+// ── 2026 infinite logo marquee ───────────────────────────────────────────────
+.s_md_socios-marquee {
+    position: relative;
+    overflow: hidden;
+    width: 100%;
+    padding: 2px 0;
+    mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+    -webkit-mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+}
+
+.s_md_socios-track {
+    --md-socios-gap: #{unquote("clamp(12px, 1.4vw, 20px)")};
+    display: flex;
+    width: max-content;
+    gap: var(--md-socios-gap);
+    align-items: center;
+    animation: md-socios-marquee 34s linear infinite;
+    will-change: transform;
+}
+
+.s_md_socios-marquee:hover .s_md_socios-track,
+.s_md_socios-marquee:focus-within .s_md_socios-track {
+    animation-play-state: paused;
+}
+
+.s_md_socios-marquee .s_md_socios-logo {
+    flex: 0 0 auto;
+    width: unquote("clamp(150px, 15vw, 188px)");
+    min-height: 68px;
+    justify-content: center;
+    padding: 0.8rem 1rem;
+    background:
+        linear-gradient(135deg, rgba($md-white, 0.96), rgba($md-green, 0.08)),
+        $md-white;
+
+    img {
+        display: block;
+        width: 100%;
+        max-width: 138px;
+        max-height: 42px;
+        object-fit: contain;
+        filter: grayscale(0.2) saturate(0.92) opacity(0.88);
+    }
+
+    > span {
+        display: none;
+    }
+
+    strong {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip: rect(0 0 0 0);
+        white-space: nowrap;
+        clip-path: inset(50%);
+    }
+
+    &:hover img {
+        filter: grayscale(0) saturate(1.04) opacity(1);
+    }
+}
+
+@keyframes md-socios-marquee {
+    from { transform: translate3d(0, 0, 0); }
+    to   { transform: translate3d(calc(-50% - (var(--md-socios-gap) / 2)), 0, 0); }
+}
+
+@media (max-width: $bp-sm) {
+    .s_md_socios {
+        padding-inline: 18px;
+    }
+
+    .s_md_socios-marquee {
+        mask-image: linear-gradient(90deg, transparent, #000 5%, #000 95%, transparent);
+        -webkit-mask-image: linear-gradient(90deg, transparent, #000 5%, #000 95%, transparent);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .s_md_socios-track {
+        width: auto;
+        flex-wrap: wrap;
+        justify-content: center;
+        animation: none;
+    }
+
+    .s_md_socios-track .s_md_socios-logo:nth-child(n + 13) {
+        display: none;
+    }
+}

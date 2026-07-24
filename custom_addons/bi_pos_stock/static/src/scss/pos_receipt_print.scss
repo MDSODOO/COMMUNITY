@@ -1,0 +1,268 @@
+// ══════════════════════════════════════════════════════════════════════════
+// Ticket de cliente (OrderReceipt) — formato compacto 80mm
+// ══════════════════════════════════════════════════════════════════════════
+//
+// No hay IoT Box / impresora ESC-POS configurada (ver network/pos_ping_silence.js
+// — silencia los 404 de hw_proxy). El ticket físico sale por impresión de
+// navegador sobre el mismo DOM que se ve en pantalla, así que este CSS
+// reformatea directamente lo que el cliente recibe en papel, no solo una
+// vista previa.
+//
+// Objetivo: tipografía monoespaciada + separadores punteados típicos de
+// térmica 80mm. `.md-order-stats` (tarjetas "bento" con color de fondo,
+// pensadas para la pantalla del cajero en el carrito) se aplanan aquí a una
+// simple línea de texto — el color y el radio de borde no imprimen en papel
+// térmico monocromo y solo desperdician alto de ticket.
+//
+// Todo queda scoped bajo `.pos-receipt` para no tocar el mismo OrderDisplay
+// cuando se reutiliza en el carrito de ProductScreen (ahí sí debe verse el
+// bento a color — ver stock.css).
+
+.pos-receipt {
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 11px;
+    line-height: 1.25;
+
+    // Al imprimir en térmica (sin IoT Box/ESC-POS — el navegador imprime el mismo DOM que
+    // se ve en pantalla), texto con font-weight normal o grises (#555/#333/.text-muted de
+    // Bootstrap) se ve descolorido/irregular. Se fuerza negro sólido + negrita en TODO el
+    // ticket con !important, incluyendo cualquier utilidad de Bootstrap que traiga su
+    // propio color/weight con !important (ej. .text-muted).
+    &,
+    & * {
+        color: #000 !important;
+        font-weight: bold !important;
+    }
+
+    // Otro módulo instalado en este Odoo (wayakna_pos/generic_components/product_card)
+    // también estiliza el ticket y trae `.pos-receipt .fw-bolder{font-weight: normal
+    // !important;}` (2 clases de especificidad) — le gana a la regla global de arriba
+    // (.pos-receipt * = 1 clase + universal) para CUALQUIER elemento con la clase nativa
+    // de Bootstrap `.fw-bolder` (ej. `.qty` y `.pos-receipt-amount.receipt-total`, que la
+    // traen de fábrica en point_of_sale.Orderline/OrderReceipt). Confirmado en vivo:
+    // ambos medían font-weight:400 pese a la regla global. `.fw-bolder.fw-bolder` duplica
+    // la clase para subir a 3 clases de especificidad y ganar sin depender del orden de
+    // carga entre módulos.
+    .fw-bolder.fw-bolder {
+        font-weight: bold !important;
+    }
+
+    // ── Espacio entre el borde superior del ticket y el logo ────────────
+    // El logo mantiene su tamaño natural (sin regla propia) — lo que se reduce es el
+    // padding-top del contenedor raíz .pos-receipt, que trae `p-2` de Bootstrap
+    // (0.5rem/8px en los 4 lados) desde point_of_sale.OrderReceipt. Solo se toca
+    // padding-top para no afectar el aire a los costados/abajo del ticket.
+    // 2px seguía viéndose con demasiado espacio — se lleva a 0.
+    padding-top: 0 !important;
+
+    // ── Encabezado de columnas "Producto | Precio" (bi_pos_stock.OrderReceiptItemsHeader) ──
+    .md-receipt-items-header {
+        font-weight: bold;
+        font-size: 10px;
+        padding: 2px 0;
+        margin-bottom: 2px;
+        border-bottom: 1px solid #000;
+    }
+
+    // ── Datos de contacto / sucursal (bloque nativo bajo el logo) ───────
+    .pos-receipt-contact {
+        padding-bottom: 4px;
+        margin-bottom: 4px;
+        border-bottom: 1px dashed #000;
+        text-align: center;
+        font-size: 10px;
+        line-height: 1.2;
+
+        // Oculta order.config.receipt_header (RFC/dirección de la sucursal) — queda solo
+        // "Atendido por" + el nombre de caja en negrita que agrega
+        // bi_pos_stock.ReceiptHeaderCompanyName justo encima. No tiene clase propia en el
+        // arch nativo (point_of_sale.ReceiptHeader), por eso se excluye por hermanos
+        // .cashier/.md-receipt-company-name en vez de apuntarlo por XPath.
+        // NOTA: sin excluir .md-receipt-company-name, esta regla también ocultaba ese div
+        // nuevo (bug real encontrado en la primera verificación en vivo).
+        > div:not(.cashier):not(.md-receipt-company-name) {
+            display: none;
+        }
+    }
+
+    // ── Datos del cliente (solo si la venta tiene un partner asignado) ──
+    // point_of_sale.ReceiptHeader renderiza nombre, dirección y RFC del cliente en
+    // .pos-receipt-customer (3 divs sin clase propia, en ese orden). Se oculta todo
+    // menos el primero (nombre) — dirección y RFC no deben aparecer en el ticket.
+    .pos-receipt-customer > div:not(:first-child) {
+        display: none;
+    }
+
+    // ── Líneas de la orden ───────────────────────────────────────────────
+    .order-container {
+        border-bottom: 1px dashed #000;
+        padding-bottom: 2px;
+        margin-bottom: 2px;
+    }
+    .orderline {
+        padding-bottom: 2px;
+        margin-bottom: 2px;
+        border-bottom: 1px dotted #000;
+
+        &:last-child {
+            border-bottom: none;
+        }
+    }
+    // .qty (cantidad, ej. "1") venía más chica que .product-price por CSS nativo de Odoo
+    // (badge de cantidad, pensado para pantalla) — se pareja al tamaño del precio a la
+    // derecha explícitamente, en vez de depender de la herencia del font-size raíz.
+    // font-weight repetido aquí como refuerzo (la fuente real es .fw-bolder.fw-bolder
+    // arriba, que cubre a .qty y a .receipt-total por igual).
+    // Ancho fijo + centrado: antes .qty solo ocupaba el ancho de su propio texto (d-inline-block
+    // sin width), así que "1" y "12" no alineaban entre sí. Con un ancho fijo, la cantidad queda
+    // centrada en su propia "columna" bajo el encabezado "Producto" en vez de pegada al nombre.
+    .qty {
+        font-size: 11px;
+        font-weight: bold !important;
+        width: 22px;
+        text-align: center;
+        flex-shrink: 0;
+    }
+    // En modo recibo, .product-price trae `.font-monospace` de Bootstrap (!important),
+    // que usa una pila de fuentes distinta a la Courier New del ticket — por eso se veía
+    // con tipografía distinta a .qty aunque ambos midieran lo mismo. Se fuerza la misma
+    // pila en cualquier .font-monospace del ticket (precios, impuestos, total, pago,
+    // descuento — todos los montos a la derecha la usan).
+    .font-monospace {
+        font-family: 'Courier New', Courier, monospace !important;
+    }
+    .product-price {
+        font-size: 11px;
+        white-space: nowrap;
+    }
+    .info-list {
+        font-size: 9px;
+        margin-left: 12px;
+
+        // .price-per-unit es reutilizada por point_of_sale.Orderline nativo para DOS cosas:
+        // el texto "$X / Unidades" Y la línea de descuento nativa ("X% discount off on Y"
+        // con ícono fa-tag) — ver addons/point_of_sale/.../orderline.xml. Ocultar esta clase
+        // quita ambas de un solo golpe; bi_pos_stock.OrderlineInlineDiscount (order_widget.xml)
+        // la reemplaza con la línea consolidada "Ahorro: X% (Precio orig: $Y)".
+        .price-per-unit {
+            display: none;
+        }
+        .lot-number {
+            list-style: none;
+            // Sin font-size propio: hereda los 9px de .info-list para que coincida
+            // con el resto de los renglones del ticket (antes tenía 11px, se veía
+            // desproporcionado frente a "Ahorro:" y las demás líneas pequeñas).
+        }
+    }
+
+    // ── Stats "Productos / Piezas" — aplanadas para impresión ───────────
+    // Anula el bento de color de stock.css (fondo, borde redondeado, íconos)
+    // solo dentro del ticket; el carrito en pantalla conserva el estilo bento.
+    .md-order-stats {
+        display: flex;
+        justify-content: space-between;
+        gap: 0;
+        padding: 2px 0;
+        margin-bottom: 2px;
+        border-top: 1px dashed #000;
+        border-bottom: 1px dashed #000;
+        background: none;
+    }
+    .md-order-stat {
+        flex: 0 0 auto;
+        background: none;
+        border: none;
+        border-radius: 0;
+        padding: 0;
+        gap: 3px;
+        font-size: 10px;
+
+        .md-order-stat__icon {
+            display: none; // los íconos fa- no aportan nada en térmica monocromo
+        }
+        .md-order-stat__label {
+            display: inline;
+            font-size: 10px;
+            font-weight: bold !important;
+            text-transform: none;
+            letter-spacing: normal;
+
+            &::after {
+                content: ":";
+            }
+        }
+        .md-order-stat__value {
+            display: inline;
+            font-size: 10px;
+            font-weight: bold !important;
+            margin-left: 2px;
+        }
+    }
+
+    // ── Impuestos y total ────────────────────────────────────────────────
+    .pos-receipt-taxes {
+        padding: 2px 0;
+        margin-bottom: 2px;
+        border-bottom: 1px dashed #000;
+        font-size: 10px;
+    }
+    // ── Total / Efectivo / Cambio / Descuentos — un solo bloque sin separación ──
+    // Antes Total tenía 13px (contra 10px del resto) y .paymentlines traía su propio
+    // border-bottom, dejando una línea punteada entre Efectivo y lo que viniera después
+    // (Cambio/Descuentos). Se parejan tamaños y se quita esa separación interna — el
+    // borde de arriba de .pos-receipt-taxes ya marca dónde empieza el bloque.
+    //
+    // .receipt-change (Cambio) y el div de Descuentos son nativos de OrderReceipt.xml
+    // solo si aplica (order.showChange / order.getTotalDiscount()).
+    .pos-receipt-amount.receipt-total,
+    .paymentlines,
+    .pos-receipt-amount.receipt-change {
+        font-size: 10px;
+        padding: 2px 0;
+    }
+
+    // El div de Descuentos no tiene clase propia (solo "text-start", genérica de
+    // Bootstrap usada en todo el ticket) — se apuntan directo sus dos <span>
+    // (.label-discount y el monto que le sigue) en vez de usar :has() sobre el div
+    // contenedor, para no depender de soporte de :has() en el navegador/WebView
+    // que use la impresora física.
+    .label-discount,
+    .label-discount + .pos-receipt-right-align {
+        font-size: 10px;
+    }
+
+    // ── Firma / leyenda de devoluciones (bloque nativo white-space:pre-line) ──
+    .pos-receipt-center-align {
+        font-size: 9px;
+        line-height: 1.35;
+        padding: 4px 0;
+    }
+
+    // ── Bloque nativo de sucursal/dirección/RFC/email/website ───────────
+    // Se oculta completo: el nombre de compañía ya va arriba junto al cajero
+    // (bi_pos_stock.ReceiptHeaderCompanyName) y email/website se reinsertan centrados a
+    // 12px en el footer (bi_pos_stock.OrderReceiptFooterCleanup). El watermark
+    // "Powered by Odoo" (.footer-powered-by) se elimina por XPath, no por CSS.
+    //
+    // :not(.pos-receipt-order-data) evita chocar con el bloque nativo de "Expected
+    // delivery" (order.shipping_date), que comparte las mismas 3 clases d-flex/gap-2/pt-3
+    // pero además trae `.pos-receipt-order-data`.
+    //
+    // !important es necesario: Bootstrap 5 define `.d-flex { display: flex !important; }`,
+    // que le gana a un `display: none` normal sin importar el orden/especificidad de esta
+    // regla (bug real encontrado en la primera verificación en vivo — sin !important el
+    // bloque seguía visible).
+    > div.d-flex.gap-2.pt-3:not(.pos-receipt-order-data) {
+        display: none !important;
+    }
+
+    .pos-receipt-order-data {
+        font-size: 9px;
+    }
+}
+
+@media print {
+    .pos-receipt {
+        max-width: 80mm;
+    }
+}

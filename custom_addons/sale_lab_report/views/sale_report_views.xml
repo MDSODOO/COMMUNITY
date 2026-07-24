@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+
+        <!-- Vista de búsqueda dedicada (no heredada): deliberadamente minimalista.
+             Lo único seleccionable por el usuario es la Línea (un checkbox por
+             laboratorio, combinables entre sí vía OR) y la Fecha de la orden
+             (widget nativo de rango de fechas). Producto (filas) y Sucursal
+             (columnas) son fijos, definidos por el contexto de la acción, no
+             filtros que el usuario pueda cambiar.
+             product_line_id.name usa ilike (no =) porque los valores en línea
+             traen espacios en blanco inconsistentes (ej. ' SERRAL') en la BD real.
+             NOTA: en producción (Odoo.sh Enterprise) este filtro usa el campo
+             Studio x_studio_line.x_name; en Community ese campo no existe, así
+             que aquí se usa product_line_id (módulo md_product_lines, migrado
+             desde LINEAS_ARTICULOS de Microsip) como equivalente real. -->
+        <record id="view_ventas_laboratorio_search" model="ir.ui.view">
+            <field name="name">sale.report.search.ventas.laboratorio</field>
+            <field name="model">sale.report</field>
+            <field name="arch" type="xml">
+                <search string="Ventas Laboratorio">
+                    <field name="date" string="Fecha de la Orden"/>
+                    <filter name="filter_date" date="date" default_period="month"/>
+                    <separator/>
+                    <filter string="SERRAL" name="linea_serral"
+                            domain="[('product_tmpl_id.product_line_id.name', 'ilike', 'SERRAL')]"/>
+                    <filter string="RAAM" name="linea_raam"
+                            domain="[('product_tmpl_id.product_line_id.name', 'ilike', 'RAAM')]"/>
+                    <filter string="PERRIGO - QUIFA" name="linea_perrigo_quifa"
+                            domain="[('product_tmpl_id.product_line_id.name', 'ilike', 'PERRIGO - QUIFA')]"/>
+                    <filter string="LIFERPAL" name="linea_liferpal"
+                            domain="[('product_tmpl_id.product_line_id.name', 'ilike', 'LIFERPAL')]"/>
+                    <filter string="GELCAPS/PHARMACAPS" name="linea_gelcaps_pharmacaps"
+                            domain="[('product_tmpl_id.product_line_id.name', 'ilike', 'GELCAPS/PHARMACAPS')]"/>
+                    <filter string="CMD" name="linea_cmd"
+                            domain="[('product_tmpl_id.product_line_id.name', 'ilike', 'CMD')]"/>
+                </search>
+            </field>
+        </record>
+
+        <!-- Acción: Tabla Dinámica (Pivot) + Gráfico, mismos filtros (búsqueda
+             de arriba) para ambas vistas. Filas/eje = Producto, columnas/serie
+             = Sucursal (company_id — confirmado en vivo que es el campo real
+             de sucursal; warehouse_id no sirve porque en esta BD todo pasa por
+             un único almacén "MDS MERIDA"). Sin estos defaults, el gráfico
+             cae en agrupar por Fecha (poco útil aquí); con 'company_id' como
+             groupby el gráfico de barras queda legible (6 series como máximo,
+             a diferencia de agrupar por producto que serían cientos de barras).
+             Exportable a Excel vía el botón de descarga nativo del pivot (no
+             requiere código adicional). -->
+        <record id="action_ventas_laboratorio_pivot" model="ir.actions.act_window">
+            <field name="name">Ventas Laboratorio</field>
+            <field name="res_model">sale.report</field>
+            <field name="view_mode">pivot,graph</field>
+            <field name="search_view_id" ref="view_ventas_laboratorio_search"/>
+            <field name="context">{
+                'pivot_row_groupby': ['product_tmpl_id'],
+                'pivot_column_groupby': ['company_id'],
+                'pivot_measures': ['product_uom_qty'],
+                'graph_groupbys': ['company_id'],
+                'graph_measure': 'product_uom_qty',
+                'graph_mode': 'bar',
+            }</field>
+        </record>
+
+        <!-- Menú: Ventas > Reportes > Ventas Laboratorio -->
+        <menuitem id="menu_ventas_laboratorio"
+                  name="Ventas Laboratorio"
+                  parent="sale.menu_sale_report"
+                  action="action_ventas_laboratorio_pivot"
+                  sequence="20"/>
+
+    </data>
+</odoo>

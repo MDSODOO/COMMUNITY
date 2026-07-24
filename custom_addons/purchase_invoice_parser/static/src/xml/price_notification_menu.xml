@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="purchase_invoice_parser.PriceNotificationMenu">
+        <t t-if="state.visible">
+            <li class="o_menu_systray_item pip_price_notification">
+                <a class="o_nav_entry d-flex align-items-center px-2"
+                   t-on-click.stop="toggle"
+                   title="Actualizaciones de precio de proveedores">
+                    <i class="fa fa-line-chart fa-fw"/>
+                    <span t-if="state.count > 0"
+                          class="pip_badge badge rounded-pill text-bg-danger ms-1">
+                        <t t-esc="state.count > 99 ? '99+' : state.count"/>
+                    </span>
+                </a>
+
+                <div t-if="state.open"
+                     class="pip_dropdown dropdown-menu dropdown-menu-end show shadow">
+
+                    <div class="pip_header d-flex justify-content-between align-items-center px-3 py-2 border-bottom">
+                        <span class="fw-semibold small">Actualizaciones de precio</span>
+                        <a t-if="state.count > 0"
+                           class="pip_mark_read small text-muted text-decoration-none"
+                           t-on-click.stop="_markAllRead">
+                            Marcar leídas
+                        </a>
+                    </div>
+
+                    <!-- F11: Estado de carga / vacío / lista de notificaciones -->
+                    <t t-if="state.loading">
+                        <div class="pip_loading text-center py-4">
+                            <i class="fa fa-spinner fa-spin text-muted"/>
+                        </div>
+                    </t>
+                    <t t-elif="state.notifications.length === 0">
+                        <div class="pip_empty text-muted text-center py-4 small">
+                            Sin actualizaciones recientes
+                        </div>
+                    </t>
+                    <t t-else="">
+                        <t t-foreach="state.notifications" t-as="notif" t-key="notif.id">
+                            <div class="pip_item px-3 py-2 border-bottom"
+                                 t-att-class="{
+                                     'pip_unread': notif.state === 'unread',
+                                     'pip_applied': notif.state === 'applied',
+                                 }">
+
+                                <!-- Nombre del producto — clic abre la ficha -->
+                                <div class="pip_product fw-semibold small text-truncate mb-1">
+                                    <t t-if="notif.product_tmpl_id">
+                                        <a class="pip_product_link text-decoration-none"
+                                           t-on-click.stop="() => this.goToProduct(notif.product_tmpl_id)"
+                                           t-esc="notif.product_name"/>
+                                    </t>
+                                    <t t-else="">
+                                        <span t-esc="notif.product_name"/>
+                                    </t>
+                                </div>
+
+                                <!-- Precios: anterior → nuevo -->
+                                <div class="pip_prices d-flex align-items-center gap-2 my-1">
+                                    <span class="pip_old small" t-esc="notif.old_price_fmt"/>
+                                    <i class="fa fa-arrow-right text-muted" style="font-size:10px;"/>
+                                    <span class="pip_new small fw-semibold" t-esc="notif.new_price_fmt"/>
+                                </div>
+
+                                <!-- Meta + botones de acción -->
+                                <div class="d-flex justify-content-between align-items-center gap-2 mt-1">
+                                    <div class="pip_meta text-muted text-truncate" style="font-size:11px;">
+                                        <t t-esc="notif.partner_name"/>
+                                        <t t-if="notif.purchase_order_name">
+                                            · <t t-esc="notif.purchase_order_name"/>
+                                        </t>
+                                    </div>
+
+                                    <div class="d-flex gap-1 flex-shrink-0">
+                                        <t t-if="notif.state === 'applied'">
+                                            <span class="pip_applied_badge text-success"
+                                                  style="font-size:10px;">
+                                                <i class="fa fa-check-circle me-1"/>Aplicado
+                                            </span>
+                                        </t>
+                                        <t t-else="">
+                                            <button class="pip_apply_btn btn btn-outline-success btn-sm"
+                                                    t-on-click.stop="() => this.applyPrice(notif)"
+                                                    t-att-disabled="notif._applying">
+                                                <i class="fa fa-check me-1"/>Aplicar
+                                            </button>
+                                        </t>
+
+                                        <!-- Botón descartar -->
+                                        <button class="pip_delete_btn btn btn-outline-secondary btn-sm"
+                                                t-on-click.stop="() => this.deleteNotification(notif.id)"
+                                                title="Descartar notificación">
+                                            <i class="fa fa-times"/>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </t>
+                    </t>
+                </div>
+            </li>
+        </t>
+    </t>
+</templates>

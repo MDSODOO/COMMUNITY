@@ -1,0 +1,39 @@
+// Medicine Depot · Tokens de marca inyectados en
+// `web._assets_primary_variables` para que los snippets nativos
+// del Website Builder hereden colores y tipografía Bento.
+
+$font-family-sans-serif: 'Source Sans Pro', 'Source Sans 3', sans-serif !default;
+$font-family-base: $font-family-sans-serif !default;
+$headings-font-family: $font-family-sans-serif !default;
+
+$o-theme-colors: (
+    "primary":   #16A6D9,
+    "secondary": #97D700,
+    "success":   #72A800,
+    "info":      #0D7FA8,
+    "warning":   #ffb547,
+    "danger":    #e34a4a,
+    "light":     #F2F5F7,
+    "dark":      #152330,
+) !default;
+
+$o-color-palette: (
+    'o-color-1':  #16A6D9,  // azul brand
+    'o-color-2':  #97D700,  // lima brand
+    'o-color-3':  #898D8D,  // gris brand
+    'o-color-4':  #F2F5F7,  // gray-100
+    'o-color-5':  #073A4C,  // blue-900
+) !default;
+
+$o-website-values-palettes: (
+    (
+        'font':         ('Source Sans Pro', 'Source Sans 3', sans-serif),
+        'headings-font':('Source Sans Pro', 'Source Sans 3', sans-serif),
+        'body-color':   #1A2733,
+        'h1-font-size': 4.2rem,
+        'h2-font-size': 3.0rem,
+        'btn-border-radius':       999px,
+        'btn-border-radius-sm':    999px,
+        'btn-border-radius-lg':    999px,
+    ),
+) !default;

@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 150" width="200" height="150">
+  <!-- Background -->
+  <rect width="200" height="150" rx="6" fill="#0d1b2a"/>
+  <!-- Gradient overlay -->
+  <defs>
+    <linearGradient id="wh_grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#16A6D9" stop-opacity="0.9"/>
+      <stop offset="100%" stop-color="#97D700" stop-opacity="0.7"/>
+    </linearGradient>
+  </defs>
+  <rect width="200" height="150" rx="6" fill="url(#wh_grad)" opacity="0.18"/>
+  <!-- Step indicators -->
+  <circle cx="46" cy="28" r="10" fill="#16A6D9" opacity="0.9"/>
+  <text x="46" y="33" text-anchor="middle" font-size="10" fill="#fff" font-family="sans-serif">1</text>
+  <line x1="58" y1="28" x2="90" y2="28" stroke="#16A6D9" stroke-width="2" opacity="0.6"/>
+  <circle cx="100" cy="28" r="10" fill="none" stroke="#16A6D9" stroke-width="2" opacity="0.6"/>
+  <text x="100" y="33" text-anchor="middle" font-size="10" fill="#16A6D9" font-family="sans-serif">2</text>
+  <line x1="112" y1="28" x2="142" y2="28" stroke="#555" stroke-width="2" opacity="0.4"/>
+  <circle cx="154" cy="28" r="10" fill="none" stroke="#555" stroke-width="2" opacity="0.4"/>
+  <text x="154" y="33" text-anchor="middle" font-size="10" fill="#888" font-family="sans-serif">3</text>
+  <!-- Form fields -->
+  <rect x="20" y="52" width="160" height="16" rx="4" fill="#fff" opacity="0.07"/>
+  <rect x="24" y="56" width="60" height="8" rx="2" fill="#fff" opacity="0.3"/>
+  <rect x="20" y="76" width="160" height="16" rx="4" fill="#fff" opacity="0.07"/>
+  <rect x="24" y="80" width="80" height="8" rx="2" fill="#fff" opacity="0.15"/>
+  <rect x="20" y="100" width="160" height="16" rx="4" fill="#fff" opacity="0.07"/>
+  <!-- Progress bar -->
+  <rect x="20" y="124" width="160" height="4" rx="2" fill="#fff" opacity="0.1"/>
+  <rect x="20" y="124" width="53" height="4" rx="2" fill="#16A6D9" opacity="0.8"/>
+  <!-- CTA button -->
+  <rect x="128" y="133" width="52" height="12" rx="6" fill="#16A6D9"/>
+  <text x="154" y="142" text-anchor="middle" font-size="7" fill="#fff" font-family="sans-serif">Siguiente →</text>
+</svg>

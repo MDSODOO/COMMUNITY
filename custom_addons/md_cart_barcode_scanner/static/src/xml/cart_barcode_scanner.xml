@@ -1,0 +1,53 @@
+<templates xml:space="preserve">
+  <t t-name="md_cart_barcode_scanner.ScanModal">
+    <div id="o_md_barcode_scan_modal" role="dialog" aria-modal="true" aria-label="Escanear Producto">
+      <div class="o_md_scan_header">
+        <span class="o_md_scan_title_pill">Escanear Producto</span>
+        <button type="button" class="o_md_scan_close" data-md-scan-close="1" aria-label="Cerrar">
+          <i class="fa fa-times" aria-hidden="true"/>
+        </button>
+      </div>
+
+      <div class="o_md_scan_viewport">
+        <div class="o_md_scan_grid_bg"/>
+
+        <!-- Html5Qrcode toma posesion total del contenido de #md_barcode_reader
+             (lo limpia e inyecta su propio <video>), por eso las esquinas y la
+             linea animada van como hermanos absolutos dentro de .o_md_scan_frame,
+             nunca como hijos de #md_barcode_reader. -->
+        <div class="o_md_scan_frame">
+          <div id="md_barcode_reader" class="o_md_barcode_reader"/>
+          <div class="o_md_scan_corner tl"/>
+          <div class="o_md_scan_corner tr"/>
+          <div class="o_md_scan_corner bl"/>
+          <div class="o_md_scan_corner br"/>
+          <div class="o_md_scan_line"/>
+        </div>
+
+        <p class="o_md_scan_hint">Coloca el código QR o de barras dentro del recuadro</p>
+
+        <p class="o_md_scan_status o_md_status_pending">Apunta la cámara al código de barras.</p>
+      </div>
+
+      <div class="o_md_scan_sheet">
+        <button type="button" class="o_md_scan_sheet_btn o_md_sheet_manual" data-md-scan-manual-toggle="1">
+          Ingresar código manual
+        </button>
+        <button type="button" class="o_md_scan_sheet_btn o_md_sheet_cancel" data-md-scan-close="1">
+          Cancelar / Volver al carrito
+        </button>
+      </div>
+
+      <div class="o_md_manual_backdrop d-none" data-md-manual-backdrop="1">
+        <div class="o_md_manual_panel">
+          <p class="o_md_manual_title">Ingresar código manualmente</p>
+          <input type="text" class="o_md_manual_input" data-md-manual-input="1" placeholder="Ej. 7501234567890"/>
+          <div class="o_md_manual_actions">
+            <button type="button" class="o_md_manual_cancel" data-md-scan-manual-toggle="1">Cancelar</button>
+            <button type="button" class="o_md_manual_submit" data-md-manual-submit="1">Agregar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </t>
+</templates>

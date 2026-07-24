@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!--
+        Botón "Importar XML" en la cabecera de la list view de purchase.order
+        (Solicitudes de cotización / Órdenes de compra), junto al botón "Nuevo".
+        Sustituye al menú independiente anterior.
+    -->
+    <record id="purchase_order_list_import_cfdi" model="ir.ui.view">
+        <field name="name">purchase.order.list.import.cfdi</field>
+        <field name="model">purchase.order</field>
+        <field name="inherit_id" ref="purchase.purchase_order_view_tree"/>
+        <field name="arch" type="xml">
+            <list position="inside">
+                <header>
+                    <button name="%(action_cfdi_import_wizard)d"
+                            string="Importar XML"
+                            type="action"
+                            class="btn-secondary pip_import_xml_btn"
+                            display="always"/>
+                </header>
+            </list>
+        </field>
+    </record>
+
+    <record id="purchase_rfq_list_import_cfdi" model="ir.ui.view">
+        <field name="name">purchase.rfq.list.import.cfdi</field>
+        <field name="model">purchase.order</field>
+        <field name="inherit_id" ref="purchase.purchase_order_tree"/>
+        <field name="arch" type="xml">
+            <list position="inside">
+                <header>
+                    <button name="%(action_cfdi_import_wizard)d"
+                            string="Importar XML"
+                            type="action"
+                            class="btn-secondary pip_import_xml_btn"
+                            display="always"/>
+                </header>
+            </list>
+        </field>
+    </record>
+
+</odoo>

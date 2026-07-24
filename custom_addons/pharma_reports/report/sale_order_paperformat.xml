@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!--
+      Paperformat personalizado para Cotización / Orden de Venta.
+
+      CAUSA RAÍZ del espacio en blanco superior:
+      El paperformat default de Odoo tiene header_spacing=3mm, que con
+      web.basic_layout reserva una franja superior para el header del
+      paperformat. Desde commit 7b0274d, pharma_full_header vive en el
+      body del documento (no en web.external_layout_*), así que esa
+      franja queda visualmente vacía — se ve como un hueco arriba del
+      logo en el PDF de la cotización (ej. Orden - S02572).
+
+      Mismo patrón que purchase_order_paperformat.xml:
+        · header_spacing = 0   → elimina franja reservada
+        · header_line   = False → sin línea separadora
+        · margin_top    = 15   → margen superior coherente con OC/RFQ
+        · margin_bottom = 10
+        · dpi           = 90
+    -->
+    <record id="paperformat_sale_order_pharma" model="report.paperformat">
+        <field name="name">Ventas — Medicine Depot (Cotización + OV)</field>
+        <field name="default" eval="False"/>
+        <field name="format">A4</field>
+        <field name="page_height" eval="False"/>
+        <field name="page_width" eval="False"/>
+        <field name="orientation">Portrait</field>
+        <field name="margin_top">15</field>
+        <field name="margin_bottom">10</field>
+        <field name="margin_left">7</field>
+        <field name="margin_right">7</field>
+        <field name="header_line" eval="False"/>
+        <field name="header_spacing">0</field>
+        <field name="dpi">90</field>
+    </record>
+
+    <!--
+      Asignar el paperformat al ir.actions.report de la Orden de Venta.
+      `sale.action_report_saleorder` es el xmlid estándar de Odoo para
+      el reporte unificado (cubre tanto cotización como OV confirmada).
+    -->
+    <record id="sale.action_report_saleorder" model="ir.actions.report">
+        <field name="paperformat_id" ref="paperformat_sale_order_pharma"/>
+    </record>
+
+</odoo>

@@ -1,0 +1,50 @@
+# Spanish (Mexico) translation for lot_selection
+# Copyright (C) 2026 Medicine Depot
+# License: OPL-1
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 19.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-06-10 00:00+0000\n"
+"PO-Revision-Date: 2026-06-10 00:00+0000\n"
+"Last-Translator: Daniel Cervera <daniel.cervera.2029@gmail.com>\n"
+"Language-Team: Spanish (Mexico) <noreply@medicinedepot.mx>\n"
+"Language: es_MX\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#. module: lot_selection
+msgid "Lote/Serie"
+msgstr "Lote/Serie"
+
+#. module: lot_selection
+msgid "Fecha de Caducidad"
+msgstr "Fecha de Caducidad"
+
+#. module: lot_selection
+msgid "Lotes Enviados"
+msgstr "Lotes Enviados"
+
+#. module: lot_selection
+msgid "Lotes Recibidos"
+msgstr "Lotes Recibidos"
+
+#. module: lot_selection
+msgid "No es posible confirmar la compra. Corrija estas fechas de caducidad en la columna 'Caduca' de la línea:"
+msgstr "No es posible confirmar la compra. Corrija estas fechas de caducidad en la columna 'Caduca' de la línea:"
+
+#. module: lot_selection
+msgid "sin fecha de caducidad."
+msgstr "sin fecha de caducidad."
+
+#. module: lot_selection
+msgid "ya vencida."
+msgstr "ya vencida."
+
+#. module: lot_selection
+msgid "Sugerencia: use la opción 'Crear y editar...' al crear el lote para ingresar la fecha en el formulario completo."
+msgstr "Sugerencia: use la opción 'Crear y editar...' al crear el lote para ingresar la fecha en el formulario completo."
+

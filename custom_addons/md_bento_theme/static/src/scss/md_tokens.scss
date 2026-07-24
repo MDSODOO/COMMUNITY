@@ -1,0 +1,161 @@
+.md-bento,
+.md-bento-site {
+  // Paleta Manual Identidad 2022 (única fuente: _tokens.scss del portal).
+  // --md-green usa la escala 600 (texto/acento legible sobre claro);
+  // --md-lime es el verde brand pleno (Pantone 375 C) para fondos/dots.
+  --md-blue: #{$md-blue};
+  --md-green: #{$md-green-600};
+  --md-lime: #{$md-green};
+  --md-text: var(--bs-body-color);
+  --md-muted: var(--bs-secondary-color);
+  --md-line: var(--bs-border-color);
+  --md-surface: var(--bs-body-bg);
+  --md-card: var(--bs-tertiary-bg);
+  --md-radius-xl: 1.5rem;
+  --md-shadow-soft: 0 18px 60px rgba(20,49,61,.08);
+  --md-shadow-strong: 0 28px 90px rgba(20,49,61,.16);
+}
+
+.md-bento {
+  color: var(--md-text);
+  background:
+    radial-gradient(42rem 28rem at 88% -12%, rgba(151, 215, 0, 0.12), transparent 64%),
+    radial-gradient(38rem 24rem at 6% 108%, rgba(22, 166, 217, 0.12), transparent 62%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(231, 247, 251, 0.82)),
+    #E7F7FB !important;
+  overflow: clip;
+}
+
+.md-bento-section {
+  padding-block: unquote("clamp(1.75rem, 3.5vw, 3.5rem)");
+}
+
+.md-bento-card {
+  background:
+    linear-gradient(165deg, rgba(255, 255, 255, 0.55), rgba(255, 255, 255, 0.12) 42%, rgba(255, 255, 255, 0.02) 72%),
+    rgba(255, 255, 255, 0.65) !important;
+  border: 1px solid rgba(255, 255, 255, 0.72) !important;
+  border-radius: 1.5rem;
+  box-shadow:
+    0 0 0 1px rgba(7, 58, 76, 0.04),
+    0 24px 60px rgba(7, 58, 76, 0.10),
+    0 6px 18px rgba(7, 58, 76, 0.05),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9) !important;
+  backdrop-filter: blur(18px) saturate(1.45);
+  -webkit-backdrop-filter: blur(18px) saturate(1.45);
+  transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease;
+
+  &:hover {
+    transform: translateY(-5px) scale(1.01);
+    box-shadow:
+      0 0 0 1px rgba(7, 58, 76, 0.06),
+      0 32px 70px rgba(7, 58, 76, 0.14),
+      0 10px 24px rgba(7, 58, 76, 0.08),
+      inset 0 1px 0 rgba(255, 255, 255, 0.9) !important;
+  }
+}
+
+// ── Clase utilitaria global: Glassmorphism Bento Card ────────────────────────
+// Reutilizable en cualquier sección del sitio. Efecto cristal esmerilado sobre
+// el fondo degradado de la página. Usar: class="bento-glass-card"
+.bento-glass-card {
+  background: rgba(255, 255, 255, 0.70);
+  -webkit-backdrop-filter: blur(12px) saturate(1.3);
+  backdrop-filter: blur(12px) saturate(1.3);
+  border: 1px solid rgba(255, 255, 255, 0.40);
+  border-radius: 1.5rem;
+  box-shadow:
+    0 8px 32px 0 rgba(0, 0, 0, 0.05),
+    inset 0 1px 0 rgba(255, 255, 255, 0.80);
+  padding: 2rem;
+  transition: transform 0.22s ease, box-shadow 0.22s ease;
+
+  &:hover {
+    transform: translateY(-3px);
+    box-shadow:
+      0 14px 40px 0 rgba(0, 0, 0, 0.09),
+      inset 0 1px 0 rgba(255, 255, 255, 0.80);
+  }
+}
+
+// Dark mode override para .bento-glass-card
+// .o_dark_mode/[data-bs-theme] son selectores de backend, nunca presentes en
+// el frontend — ver docs/audits/2026-07-01_backend_dark_mode_audit.md.
+body[data-color-scheme="dark"] .bento-glass-card {
+  background: rgba(7, 28, 34, 0.55);
+  border-color: rgba(255, 255, 255, 0.10);
+  box-shadow:
+    0 8px 32px 0 rgba(0, 0, 0, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+// Tonalidades específicas para las bento cards de la Home replicando el Portal
+.md-service-tile:nth-child(even),
+.md-editorial-card:nth-child(even),
+.md-hero-aside {
+  background: linear-gradient(165deg, rgba(22, 166, 217, 0.15), rgba(22, 166, 217, 0.05) 50%, rgba(255, 255, 255, 0.3)), rgba(255, 255, 255, 0.58) !important;
+  border-color: rgba(22, 166, 217, 0.25) !important;
+}
+
+.md-service-tile:nth-child(odd),
+.md-editorial-card:nth-child(odd),
+.md-final-cta,
+.md-hero-card {
+  background: linear-gradient(165deg, rgba(151, 215, 0, 0.18), rgba(151, 215, 0, 0.05) 50%, rgba(255, 255, 255, 0.3)), rgba(255, 255, 255, 0.58) !important;
+  border-color: rgba(151, 215, 0, 0.28) !important;
+}
+
+body[data-color-scheme="dark"] .md-bento {
+  --md-surface: #{$md-ink-950};
+  --md-card: rgba(255,255,255,.06);
+  --md-text: #EAF7F7;
+  --md-muted: #A9C0C6;
+  --md-line: rgba(255,255,255,.12);
+}
+
+body[data-color-scheme="dark"] .md-bento-card {
+  background:
+    linear-gradient(145deg, rgba(255,255,255,.08), rgba(255,255,255,.03));
+  box-shadow: 0 18px 60px rgba(0,0,0,.25);
+}
+
+.md-bento .md-eyebrow {
+  color: var(--md-green);
+  display: inline-flex;
+  font-size: .78rem;
+  font-weight: 800;
+  gap: .45rem;
+  letter-spacing: .12em;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.md-bento :focus-visible,
+.md-bento-site .md-bento-navbar :focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--md-blue), white 18%);
+  outline-offset: 3px;
+}
+
+.md-bento .btn-primary,
+.md-bento-site .md-bento-navbar .btn-primary {
+  --bs-btn-bg: var(--md-blue);
+  --bs-btn-border-color: var(--md-blue);
+  --bs-btn-hover-bg: color-mix(in srgb, var(--md-blue), black 12%);
+  --bs-btn-hover-border-color: color-mix(in srgb, var(--md-blue), black 12%);
+  --bs-btn-active-bg: color-mix(in srgb, var(--md-blue), black 22%);
+  --bs-btn-active-border-color: color-mix(in srgb, var(--md-blue), black 22%);
+}
+
+.md-bento .btn-outline-primary {
+  --bs-btn-color: var(--md-blue);
+  --bs-btn-border-color: color-mix(in srgb, var(--md-blue), transparent 38%);
+  --bs-btn-hover-bg: var(--md-blue);
+  --bs-btn-hover-border-color: var(--md-blue);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .md-bento * {
+    transition-duration: .01ms !important;
+    animation-duration: .01ms !important;
+  }
+}

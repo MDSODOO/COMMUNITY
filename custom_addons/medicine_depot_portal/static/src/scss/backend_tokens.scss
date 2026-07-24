@@ -1,0 +1,104 @@
+// ════════════════════════════════════════════════════════════════════════
+// backend_tokens.scss — Capa de design tokens del backend (Medicine Depot)
+// ────────────────────────────────────────────────────────────────────────
+// Fuente única de verdad para color, tipografía, espaciado y forma del
+// backend custom. Se inyecta ANTES que backend_bento.scss en
+// web.assets_backend para que todos los SCSS posteriores consuman estas
+// CSS custom properties. Reemplaza los 3 sistemas paralelos previos:
+//   · $md-* (compile-time SCSS de backend_bento.scss)
+//   · --md-* scoped a .o_scrap_batch_module (dashboard.scss)
+//   · hex hardcoded sin sistema (price_comparison.scss)
+// ════════════════════════════════════════════════════════════════════════
+
+.o_web_client {
+
+    // ── Marca (Step 6 / 15) ───────────────────────────────────────────────
+    --md-primary:        #16A6D9;
+    --md-primary-2:      #3dbde6;
+    --md-primary-dark:   #073A4C;
+    --md-primary-soft:   #e0f5fb;
+    --md-action:         #97D700;
+    --md-action-soft:    #eef9c2;
+    --md-danger:         #e30613;
+    --md-danger-soft:    #fde2e3;
+    --md-warning:        #f59f00;
+    --md-warning-soft:   #fff4d6;
+    --md-success:        #198754;
+
+    // ── Texto: jerarquía semántica (Step 6) ───────────────────────────────
+    --md-color-text-primary:   #0e1730;   // ink — texto principal
+    --md-color-text-secondary: #33405e;   // ink-2 — texto secundario
+    --md-color-text-muted:     #7a86a3;   // muted — placeholder, hint
+    --md-color-text-accent:    #16A6D9;   // brand blue
+    --md-color-text-dark:      #073A4C;   // labels → dark navy
+
+    // Alias cortos (compat con dashboard.scss)
+    --md-ink:            #0e1730;
+    --md-ink-2:          #33405e;
+    --md-muted:          #7a86a3;
+
+    // ── Superficie ────────────────────────────────────────────────────────
+    --md-paper:          #f4f6fb;
+    --md-card-bg:        #ffffff;
+    --md-border:         #e3e7f1;
+
+    // ── Alias Bootstrap: coherencia con assets backend de Odoo ──────────
+    --bs-body-bg:         var(--md-paper);
+    --bs-body-color:      var(--md-color-text-primary);
+    --bs-secondary-color:  var(--md-color-text-secondary);
+    --bs-heading-color:   var(--md-color-text-dark);
+    --bs-card-bg:         var(--md-card-bg);
+    --bs-border-color:    var(--md-border);
+
+    // ── Forma ─────────────────────────────────────────────────────────────
+    --md-radius-sm:      6px;
+    --md-radius-md:      10px;
+    --md-radius-lg:      14px;
+    --md-radius-pill:    999px;
+
+    // ── Sombras ───────────────────────────────────────────────────────────
+    --md-shadow-1:       0 1px 3px rgba(14, 23, 48, 0.08);
+    --md-shadow-2:       0 4px 12px rgba(14, 23, 48, 0.10);
+    --md-shadow-glass:   0 8px 24px rgba(21, 35, 48, 0.05);
+
+    // ── Escala tipográfica (Step 1) ───────────────────────────────────────
+    --md-text-xs:        0.6875rem;   // 11px
+    --md-text-sm:        0.75rem;     // 12px
+    --md-text-base:      0.8125rem;   // 13px — base de Odoo 19
+    --md-text-md:        0.875rem;    // 14px
+    --md-text-lg:        1rem;        // 16px
+    --md-text-xl:        1.125rem;    // 18px
+    --md-text-kpi:       1.625rem;    // 26px — KPI headline
+
+    // ── Pesos de fuente: contrato explícito (Step 4) ──────────────────────
+    --md-weight-label:    600;   // label de campo → semibold
+    --md-weight-value:    400;   // valor de campo → regular
+    --md-weight-heading:  700;   // título de sección → bold
+    --md-weight-kpi:      700;   // número KPI → bold
+
+    // ── Familias tipográficas: fallbacks seguros sin CDN (Step 2) ─────────
+    --md-font-heading:   "Poppins", "Segoe UI", system-ui, sans-serif;
+    --md-font-body:      "Inter", "Segoe UI", system-ui, sans-serif;
+    --md-font-mono:      "JetBrains Mono", "Fira Code", ui-monospace, monospace;
+
+    // ── Espaciado: múltiplos de 4px alineados a Bootstrap 5 (Step 8) ──────
+    --md-space-1:        4px;
+    --md-space-2:        8px;
+    --md-space-3:        12px;
+    --md-space-4:        16px;
+    --md-space-5:        24px;
+    --md-space-6:        32px;
+
+    // ── Dropdowns ──────────────────────────────────────────────────────────
+    --md-dropdown-bg:            rgba(255, 255, 255, 1);
+    --md-dropdown-color:         var(--md-color-text-primary);
+    --md-dropdown-border:        var(--md-border);
+    --md-dropdown-hover-bg:      var(--md-primary-soft);
+    --md-dropdown-hover-color:   var(--md-primary);
+}
+
+// El override de dark mode (mismas custom properties --md-*) vive en
+// backend_dark.scss (bundle web.assets_web_dark, que Odoo 19 solo carga con
+// el tema oscuro activo). El selector triple .o_dark_mode/[data-bs-theme]
+// que vivía aquí nunca coincidía con el DOM real — ver
+// docs/audits/2026-07-01_backend_dark_mode_audit.md.

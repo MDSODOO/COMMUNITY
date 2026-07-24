@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ════════════════════════════════════════════════════════════════
+         CARRITO  —  "Comprar de nuevo" (placeholder inerte)
+         ─────────────────────────────────────────────────────────────
+         ANCLAJE VERIFICADO contra el código fuente real de Odoo 19.0:
+         website_sale.cart_lines ya trae un enlace "Remove" desktop-only
+         (a.js_delete_product.small) dentro de
+         div[name='o_wsale_cart_line_button_container']. Se ancla ahí
+         mismo. Sin lógica de backend — es solo el enlace visual pedido.
+         Se nombra "Comprar de nuevo" (en vez de "Guardar para después")
+         para evitar colisión de etiqueta con el enlace real y funcional
+         de website_sale_wishlist (a.o_add_wishlist.js_delete_product),
+         que Odoo 19 ya traduce como "Guardar para después" en es_MX.
+    ════════════════════════════════════════════════════════════════ -->
+    <template
+        id="cart_line_save_for_later"
+        inherit_id="website_sale.cart_lines"
+        name="Buy Again Placeholder"
+        priority="99"
+    >
+        <xpath expr="//a[hasclass('js_delete_product') and hasclass('small')]" position="after">
+            <a href="#" class="o_md_save_for_later small text-muted ms-2" title="Próximamente">
+                Comprar de nuevo
+            </a>
+        </xpath>
+    </template>
+
+    <!-- ════════════════════════════════════════════════════════════════
+         CARRITO  —  Precio de línea en negrita
+         ─────────────────────────────────────────────────────────────
+         ANCLAJE VERIFICADO: h6[@name='website_sale_cart_line_price'] en
+         website_sale.cart_lines_price. Ya es semi-bold por ser <h6>;
+         se refuerza con fw-bold explícito.
+    ════════════════════════════════════════════════════════════════ -->
+    <template
+        id="cart_line_price_bold"
+        inherit_id="website_sale.cart_lines_price"
+        name="Bold Cart Line Price"
+        priority="98"
+    >
+        <xpath expr="//h6[@name='website_sale_cart_line_price']" position="attributes">
+            <attribute name="class" add="fw-bold" separator=" "/>
+        </xpath>
+    </template>
+
+</odoo>

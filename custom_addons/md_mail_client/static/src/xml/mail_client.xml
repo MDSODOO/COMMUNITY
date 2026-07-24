@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="md_mail_client.MailClient">
+        <div class="o_md_mail_client">
+            <!-- Columna izquierda: redactar + carpetas + sucursales -->
+            <div class="omc-rail">
+                <button class="omc-compose-btn" t-on-click="compose">
+                    <i class="fa fa-pencil"/> Redactar
+                </button>
+                <div class="omc-nav-group">
+                    <t t-foreach="folders" t-as="f" t-key="f.key">
+                        <div class="omc-nav-item"
+                             t-att-class="{ active: state.folderKey === f.key }"
+                             t-on-click="() => this.loadFolder(f.key)">
+                            <i t-attf-class="fa {{f.icon}}"/>
+                            <span t-esc="f.label"/>
+                        </div>
+                    </t>
+                </div>
+
+                <div class="omc-nav-label">Sucursales</div>
+                <div class="omc-nav-group">
+                    <t t-foreach="state.branches" t-as="b" t-key="b.id">
+                        <div class="omc-nav-item"
+                             t-att-class="{ active: state.branchId === b.id }"
+                             t-on-click="() => this.filterBranch(b.id)">
+                            <span class="omc-branch-dot" t-attf-style="background:{{b.color}}"/>
+                            <span t-esc="b.name"/>
+                        </div>
+                    </t>
+                </div>
+
+                <div class="omc-hint">
+                    Datos reales de <code>mail.mail</code>. Los folders "Recibidos"/"Enviados" se
+                    llenarán cuando conectemos el servidor IMAP/SMTP.
+                </div>
+            </div>
+
+            <!-- Columna centro: lista -->
+            <div class="omc-list-pane">
+                <div class="omc-search-row">
+                    <div class="omc-search-box">
+                        <i class="fa fa-search"/>
+                        <input type="text" placeholder="Buscar por asunto..." t-on-input="onSearch"/>
+                    </div>
+                </div>
+                <div class="omc-list-scroll">
+                    <div class="omc-empty" t-if="!state.loading and !state.messages.length">
+                        <i class="fa fa-inbox"/>
+                        <div>Sin mensajes en "<t t-esc="folderLabel(state.folderKey)"/>"</div>
+                    </div>
+                    <t t-foreach="state.messages" t-as="m" t-key="m.id">
+                        <div class="omc-msg-row"
+                             t-att-class="{ selected: state.selectedId === m.id }"
+                             t-on-click="() => this.select(m.id)">
+                            <i class="omc-star fa"
+                               t-att-class="m.starred ? 'fa-star' : 'fa-star-o'"
+                               t-on-click="(ev) => this.toggleStar(ev, m.id)"/>
+                            <div class="omc-msg-avatar" t-attf-style="background:{{avatarColor(senderName(m))}}"
+                                 t-esc="initials(senderName(m))"/>
+                            <div class="omc-content">
+                                <div class="omc-top-line">
+                                    <div class="omc-sender" t-esc="senderName(m)"/>
+                                    <div class="omc-time" t-esc="m.date"/>
+                                </div>
+                                <div class="omc-subject" t-esc="m.subject or '(sin asunto)'"/>
+                                <span class="omc-tag-pill" t-attf-class="omc-tag-{{m.state}}"
+                                      t-esc="stateLabel(m.state)"/>
+                            </div>
+                        </div>
+                    </t>
+                </div>
+            </div>
+
+            <!-- Columna derecha: lectura -->
+            <div class="omc-reader">
+                <t t-if="state.selected">
+                    <div class="omc-reader-header">
+                        <h1 class="omc-reader-subject" t-esc="state.selected.subject or '(sin asunto)'"/>
+                        <div class="omc-reader-meta">
+                            <div class="omc-reader-avatar"
+                                 t-attf-style="background:{{avatarColor(senderName(state.selected))}}"
+                                 t-esc="initials(senderName(state.selected))"/>
+                            <div>
+                                <div class="omc-reader-from-name" t-esc="senderName(state.selected)"/>
+                                <div class="omc-reader-from-addr" t-esc="state.selected.email_to or state.selected.email_from or ''"/>
+                            </div>
+                            <div class="omc-reader-time" t-esc="state.selected.date"/>
+                            <div class="omc-reader-actions">
+                                <button title="Responder" t-on-click="reply">
+                                    <i class="fa fa-reply"/>
+                                </button>
+                                <button title="Reenviar" t-on-click="forward">
+                                    <i class="fa fa-share"/>
+                                </button>
+                                <button title="Destacar" t-on-click="(ev) => this.toggleStar(ev, state.selected.id)">
+                                    <i class="fa" t-att-class="state.selected.starred ? 'fa-star' : 'fa-star-o'"/>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="omc-reader-body" t-out="state.selected.body_html"/>
+                    <div class="omc-reply-row">
+                        <button class="omc-reply-btn primary" t-on-click="reply">Responder</button>
+                        <button class="omc-reply-btn" t-on-click="forward">Reenviar</button>
+                    </div>
+                </t>
+                <t t-else="">
+                    <div class="omc-empty omc-empty-reader">
+                        <i class="fa fa-envelope-o"/>
+                        <div>Selecciona un mensaje para leerlo</div>
+                    </div>
+                </t>
+            </div>
+        </div>
+    </t>
+</templates>

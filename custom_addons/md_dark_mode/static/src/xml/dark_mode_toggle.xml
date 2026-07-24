@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="md_dark_mode.SystrayIcon">
+        <div class="o_md_dark_mode_toggle d-flex align-items-center justify-content-center px-2"
+             t-on-click="toggle" role="button" title="Modo oscuro">
+            <i t-if="state.dark" class="fa fa-sun-o fa-lg"/>
+            <i t-else="" class="fa fa-moon-o fa-lg"/>
+        </div>
+    </t>
+</templates>

@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!--
+            Restaura la columna "Cajero" en la vista lista de pos.order.
+
+            CONTEXTO DEL PROBLEMA:
+              - En versiones anteriores a Odoo 15, pos.order tenía un campo Char `cashier`.
+              - Studio añadió esa columna a la vista. Al migrar a Odoo 19 el campo fue
+                eliminado del modelo, dejando la columna con encabezado pero sin datos.
+              - Este módulo reemplaza esa lógica con un campo computed+stored (`cashier_display`)
+                que prioriza employee_id.name (Login con empleados) con fallback a user_id.name.
+
+            ACCIÓN REQUERIDA EN BD (ejecutar una sola vez):
+              Desactiva la vista de Studio que generó el conflicto:
+                UPDATE ir_ui_view
+                   SET active = false
+                 WHERE model = 'pos.order'
+                   AND (key ILIKE '%studio%' OR name ILIKE '%cajero%' OR name ILIKE '%cashier%');
+
+              Luego actualiza el módulo:
+                odoo -d <db> -u bi_pos_stock
+        -->
+        <record id="view_pos_order_list_cashier" model="ir.ui.view">
+            <field name="name">pos.order.list.cashier.display</field>
+            <field name="model">pos.order</field>
+            <field name="inherit_id" ref="point_of_sale.view_pos_order_tree"/>
+            <field name="priority">20</field>
+            <field name="arch" type="xml">
+                <!--
+                    Añade cashier_display después del campo partner_id.
+                    optional="show" → visible por defecto, el usuario puede ocultarla
+                    con el selector de columnas (⚙ en la cabecera de la lista).
+                -->
+                <xpath expr="//field[@name='partner_id']" position="after">
+                    <field name="cashier_display" string="Cajero" optional="show"/>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>

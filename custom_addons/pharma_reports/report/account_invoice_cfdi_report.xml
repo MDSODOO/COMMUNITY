@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <template id="pharma_invoice_totals_nowrap_fix"
+              inherit_id="custom_invoice_format.custom_report_invoice_document"
+              priority="310">
+        <xpath expr="//table[hasclass('inv-total-table')]//td[hasclass('text-end')]" position="attributes">
+            <attribute name="class" add="text-nowrap" separator=" "/>
+        </xpath>
+    </template>
+
+</odoo>

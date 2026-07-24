@@ -1,0 +1,438 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Columnas regulatorias en la lista de productos -->
+    <record id="view_product_template_list_pharma_reg" model="ir.ui.view">
+        <field name="name">product.template.list.pharma.reg</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_tree_view"/>
+        <field name="arch" type="xml">
+            <field name="default_code" position="after">
+                <field name="product_line_id" optional="show" string="Línea"/>
+                <field name="l10n_mx_forma_farmaceutica" optional="show" string="Forma"
+                       widget="badge" decoration-info="1"/>
+                <field name="l10n_mx_concentracion" optional="show" string="Concentración"/>
+                <field name="l10n_mx_contenido_empaque" optional="show" string="Contenido"/>
+                <field name="l10n_mx_tipo_envase" optional="show" string="Envase"/>
+                <field name="l10n_mx_talla" optional="show" string="Talla"/>
+                <field name="l10n_mx_dimensiones" optional="hide" string="Dimensiones"/>
+                <field name="active_substance_ids" optional="hide" widget="many2many_tags"
+                       string="Sustancia Activa" options="{'color_field': 'color'}"/>
+            </field>
+        </field>
+    </record>
+
+    <!-- Modal de solo lectura con el detalle regulatorio COFEPRIS, abierto desde el
+         boton (i)/certificado en la card del Kanban de Inventario (equivalente al
+         boton (i) de la ProductCard del POS -> "Detalle regulatorio", pero usando
+         los campos reales de este proyecto en vez del fallback generico del POS).
+         Reutiliza los mismos campos ya agrupados en la pestaña "Regulación COFEPRIS"
+         del formulario completo (product_template_views.xml), en una vista compacta
+         separada para no cargar imagen/precio/inventario en el modal. -->
+    <record id="view_product_template_cofepris_detail_form" model="ir.ui.view">
+        <field name="name">product.template.cofepris.detail.form</field>
+        <field name="model">product.template</field>
+        <field name="arch" type="xml">
+            <form string="Detalle Regulatorio COFEPRIS" create="false" edit="false" delete="false">
+                <sheet>
+                    <div class="oe_title">
+                        <h1><field name="name" readonly="1"/></h1>
+                        <div class="text-muted" invisible="not default_code">
+                            <field name="default_code" readonly="1"/>
+                        </div>
+                    </div>
+                    <group>
+                        <group string="Identificación del medicamento">
+                            <field name="active_substance_ids" widget="many2many_tags"
+                                   readonly="1" options="{'color_field': 'color'}"/>
+                            <field name="product_line_id" readonly="1"/>
+                            <field name="l10n_mx_forma_farmaceutica" readonly="1" placeholder="—"/>
+                            <field name="l10n_mx_concentracion" readonly="1" placeholder="—"/>
+                        </group>
+                        <group string="Cumplimiento normativo">
+                            <field name="l10n_mx_registro_sanitario" readonly="1" placeholder="Sin registrar"/>
+                            <field name="l10n_mx_requiere_receta" readonly="1"/>
+                            <field name="l10n_mx_controlado" readonly="1"/>
+                            <field name="l10n_mx_homologacion_state" readonly="1" widget="badge"/>
+                        </group>
+                        <group string="Presentación y empaque">
+                            <field name="l10n_mx_contenido_empaque" readonly="1" placeholder="—"/>
+                            <field name="l10n_mx_tipo_envase" readonly="1" placeholder="—"/>
+                            <field name="l10n_mx_talla" readonly="1" placeholder="—"/>
+                            <field name="l10n_mx_dimensiones" readonly="1" placeholder="—"/>
+                        </group>
+                    </group>
+                </sheet>
+                <footer>
+                    <button string="Cerrar" class="btn btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <!-- Tarjeta kanban rediseñada con la misma jerarquía visual que "Lotes - Kanban Handheld":
+         nombre + precio destacado arriba, línea/forma como fila secundaria, badge de
+         existencias con color (verde/gris), imagen como aside. -->
+    <record id="view_product_template_kanban_pharma_reg" model="ir.ui.view">
+        <field name="name">product.template.kanban.pharma.reg</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_kanban_view"/>
+        <field name="arch" type="xml">
+            <!-- Ancla en categ_id (kanban root, fuera de <templates>), NO en
+                 product_variant_count: ese <field> vive anidado dentro de
+                 <strong t-if="record.product_variant_count.value &gt; 1">...Variants</strong>,
+                 asi que position="after" ahi insertaba estos campos DENTRO
+                 del <strong> (zona de render visual), no como declaracion de
+                 solo-fetch. Con campos custom no-stored (md_onhand_badge_color,
+                 md_has_short_expiry, md_lot_breakdown_html) eso rompia la
+                 compilacion OWL del kanban (OwlError/TypeError "reading type
+                 of undefined", verificado en vivo). Mismo patron de ancla que
+                 ya usa md_lots_management (kanban/field[@name='categ_id']). -->
+            <field name="categ_id" position="after">
+                <field name="product_line_id"/>
+                <field name="l10n_mx_forma_farmaceutica"/>
+                <field name="l10n_mx_concentracion"/>
+                <field name="l10n_mx_contenido_empaque"/>
+                <field name="l10n_mx_tipo_envase"/>
+                <field name="l10n_mx_talla"/>
+                <field name="l10n_mx_dimensiones"/>
+                <field name="active_substance_ids"/>
+                <field name="qty_available"/>
+                <field name="show_on_hand_qty_status_button"/>
+                <field name="l10n_mx_tiene_iva"/>
+                <field name="l10n_mx_iva_label"/>
+                <field name="l10n_mx_price_con_iva"/>
+                <field name="tracking"/>
+                <field name="is_storable"/>
+                <field name="md_onhand_badge_color"/>
+                <field name="md_has_short_expiry"/>
+                <field name="md_lot_breakdown_html"/>
+            </field>
+
+            <!-- Clase en la RAIZ <kanban> (no en el t-name="card"): confirmado
+                 vía odoo/addons/web/static/src/views/kanban/kanban_arch_parser.js
+                 ("archInfo.className = xmlDoc.getAttribute('class')") y
+                 kanban_controller.xml ("<div t-attf-class='{{ className }} ...'
+                 t-ref='root'>") que esto llega al DIV RAIZ de todo el kanban
+                 controller (breadcrumb + buscador + grid), no solo a cada
+                 card. Se usa para dar scope a un fondo "ambient" detrás del
+                 grid SOLO en esta vista (product_kanban_pos_style.scss
+                 ".o_kanban_pharma_reg_products .o_kanban_renderer") sin tocar
+                 ningun otro Kanban del backend (Contactos, Proyectos, etc. no
+                 llevan esta clase). -->
+            <xpath expr="//kanban" position="attributes">
+                <attribute name="class">o_kanban_pharma_reg_products</attribute>
+            </xpath>
+
+            <!-- Card compacta y estilizada: menos padding, imagen chica.
+                 border-radius/box-shadow NO se agregan aqui: backend_bento.scss
+                 ya los aplica globalmente a .o_kanban_view .o_kanban_record
+                 (ver md_lots_management/static/src/scss/product_kanban_card.scss,
+                 comentario de cabecera): agregarlos de nuevo era redundante. -->
+            <xpath expr="//t[@t-name='card']" position="attributes">
+                <attribute name="class" add="o_kanban_card_pharma_reg p-2" separator=" "/>
+                <attribute name="style">min-height:170px</attribute>
+            </xpath>
+
+            <!-- Imagen reducida, en columna vertical, con tamaño FIJO (ancho y alto)
+                 para que todas las cards midan lo mismo sin importar la proporción
+                 de la foto de cada producto. -->
+            <xpath expr="//aside" position="attributes">
+                <attribute name="class" add="d-flex flex-column align-items-center gap-1" separator=" "/>
+                <attribute name="style">min-width:72px; max-width:72px;</attribute>
+            </xpath>
+            <xpath expr="//field[@name='image_128']" position="attributes">
+                <attribute name="options">{'img_class': 'object-fit-contain', 'preview_image': 'image_128'}</attribute>
+                <attribute name="style">width:72px; height:72px; display:block;</attribute>
+            </xpath>
+
+            <!-- Badge "A la mano": overlay absoluto anclado a la esquina superior
+                 izquierda de la card (misma técnica que .qty-left-label:
+                 position:absolute sobre el contenedor con position:relative
+                 nativo de .o_kanban_record). Forma en pastilla (corregido
+                 2026-07-21: el POS real, pos_glass_bento.scss, SÍ redondea el
+                 badge a pill — ver comentario en product_kanban_pos_style.scss).
+                 Colores semáforo vía md_onhand_badge_color (mismo umbral que
+                 pos.config.low_stock, hoy 0 en las 12 sucursales).
+                 Se mantiene el texto "A la mano" junto al número (a diferencia
+                 del POS, que lo omite por contexto), porque es requisito fijo de
+                 este proyecto (nunca "Disponible"/"Stock"/"Existencias").
+                 Solo para productos NO rastreados por lote/serie: estos usan el
+                 desglose de lotes de abajo en su lugar (badge vs. lotes son
+                 mutuamente excluyentes en bi_pos_stock/product_card.xml). El
+                 badge de md_lots_management sobre esta misma vista base fue
+                 removido (ver product_template_kanban_card_views.xml) para no
+                 duplicar. -->
+            <xpath expr="//t[@t-name='card']" position="inside">
+                <div t-if="record.is_storable.raw_value &amp;&amp; record.tracking.raw_value !== 'lot' &amp;&amp; record.tracking.raw_value !== 'serial'"
+                     t-attf-class="md-onhand-badge md-onhand-badge--{{record.md_onhand_badge_color.value}}">
+                    <field name="qty_available"/> A la mano
+                </div>
+            </xpath>
+
+            <!-- Anillo "Próx. Vencer": replica short-expiry-ring/-pill de
+                 bi_pos_stock/pos_product_card.scss (borde morado + pastilla),
+                 cuando el producto tiene algun lote a la mano venciendo en
+                 <=180 dias (md_has_short_expiry, mismo umbral SHORT_EXPIRY_DAYS
+                 de lot_expiry_utils.js). No depende de un carrito activo: se
+                 calcula por producto, por eso SI es replicable en Inventario. -->
+            <xpath expr="//t[@t-name='card']" position="inside">
+                <div t-if="record.md_has_short_expiry.raw_value" class="md-short-expiry-ring" aria-label="Próximo a vencer" aria-hidden="true">
+                    <span class="md-short-expiry-pill">Prox. Vencer</span>
+                </div>
+            </xpath>
+
+            <!-- Botón COFEPRIS: equivalente exacto al botón regulatorio real
+                 del POS — NO a bi_pos_stock (ese es el de lotes), sino al de
+                 md_pos_product_labels (.md-pos-reg-info-btn), el módulo que
+                 YA replica estas mismas etiquetas en el POS (ver su propio
+                 comentario de cabecera: "Replica en la card de producto de
+                 POS las mismas etiquetas... que ya se muestran en el kanban
+                 de Inventario"). Ese módulo posiciona su botón regulatorio
+                 en la esquina superior IZQUIERDA, ícono fa-flask, relleno
+                 sólido — deliberadamente distinto del botón de lotes
+                 (derecha, blanco translúcido) "para que nunca se confundan
+                 ni se superpongan" (cita textual de su propio comentario).
+                 Auditoría de fidelidad 2026-07-21 (Playwright contra el POS
+                 en vivo): aquí vivía en la esquina DERECHA con fa-certificate;
+                 se corrige posición e ícono para igualar esa regla real.
+                 action_open_cofepris_detail() abre un modal (target=new) con
+                 el detalle regulatorio completo; type="object" es reconocido
+                 de forma nativa por el renderer de Kanban: el click NO abre
+                 el registro completo, solo dispara el método.
+                 aria-label (auditoría de accesibilidad en Dark Mode
+                 2026-07-21, audit_wizard_buttons_darkmode.spec.ts): el
+                 title="" nativo no es suficiente para lectores de pantalla
+                 en un <a> sin texto visible. -->
+            <xpath expr="//t[@t-name='card']" position="inside">
+                <a type="object" name="action_open_cofepris_detail"
+                   class="md-cofepris-btn" title="Detalle regulatorio COFEPRIS"
+                   aria-label="Detalle regulatorio COFEPRIS / COFEPRIS regulatory detail">
+                    <i class="fa fa-flask" aria-hidden="true"/>
+                </a>
+            </xpath>
+
+            <!-- Ajustar "A la mano" directamente desde el Kanban (mejora de
+                 funcionalidad, punto 2 de INVENTORY_KANBAN_UX_PLAN.md).
+                 action_open_quants() es un método NATIVO de product.template
+                 (odoo/addons/stock/models/product.py) — la MISMA acción que
+                 ya usa el botón "A la mano" del formulario de producto: abre
+                 stock.quant filtrado a este producto, editable inline si el
+                 usuario tiene permisos de Gestor de Inventario. No se
+                 necesitó ningún wizard ni método Python nuevo. Esquina
+                 inferior derecha: la única libre en ambos casos (con/sin
+                 lote — COFEPRIS ocupa la izquierda arriba, detalle de lotes
+                 la derecha arriba solo cuando hay lote). -->
+            <xpath expr="//t[@t-name='card']" position="inside">
+                <a type="object" name="action_open_quants"
+                   class="md-adjust-qty-btn" title="Ajustar A la mano">
+                    <i class="fa fa-sliders"/>
+                </a>
+            </xpath>
+
+            <!-- La fila de precio original queda vacía: se mueve arriba en el siguiente xpath.
+                 Esto se hace ANTES de insertar el nuevo bloque para que el selector no
+                 coincida accidentalmente con el <field name="list_price"/> nuevo. -->
+            <xpath expr="//field[@name='list_price']/parent::span" position="replace">
+                <span/>
+            </xpath>
+
+            <!-- Fila superior: Precio arriba a la izquierda. Tratamiento tipográfico
+                 de .md-product-card__price del portal (medicine_depot_portal/_cards.scss):
+                 azul de marca + peso 900, en vez del verde/.95rem anterior (que no
+                 correspondía a ningún token del portal ni del backend) — ver
+                 .md-kanban-price en product_kanban_pos_style.scss.
+                 padding-left:22px (auditoría 2026-07-21): reserva espacio para el
+                 botón COFEPRIS, ahora en la esquina superior izquierda (antes
+                 vivía a la derecha y no chocaba con el precio) — mismo criterio
+                 que md_pos_product_labels/product_card.scss usa con
+                 "padding-left: 18px" en .product-name por la misma razón. -->
+            <xpath expr="//div[hasclass('mb-1')]" position="before">
+                <div class="mb-1" style="white-space:nowrap; padding-left:22px;">
+                    <span class="md-kanban-price">$<field name="list_price"/></span>
+                    <span t-if="record.l10n_mx_tiene_iva.raw_value" class="md-kanban-price-iva">
+                        + <field name="l10n_mx_iva_label"/> = $<field name="l10n_mx_price_con_iva"/>
+                    </span>
+                </div>
+            </xpath>
+
+            <!-- Nombre del producto: tipografía exacta de .md-product-card__name
+                 del portal (auditoría UX 2026-07-21, punto 1.1 de
+                 INVENTORY_KANBAN_UX_PLAN.md) — antes se renderizaba sin
+                 clase (arch base: <field name="name"/> suelto dentro del
+                 div.h5 nativo de Odoo), sin control de salto de línea
+                 (rompía a media palabra). Confirmado el arch real vía
+                 `env.ref('product.product_template_kanban_view').arch` en
+                 odoo shell: es un field suelto, no un span literal — el
+                 primer intento (xpath sobre //div[hasclass('h5')]/span)
+                 fallaba porque ese span no existe en el arch fuente, solo
+                 en el HTML ya renderizado por el widget. -->
+            <xpath expr="//field[@name='name']" position="attributes">
+                <attribute name="class">md-kanban-product-name</attribute>
+            </xpath>
+
+            <!-- Oculta el texto plano "On hand: X" del módulo stock: lo sustituimos por el
+                 chip de arriba a la derecha -->
+            <xpath expr="//div[@t-if='record.show_on_hand_qty_status_button.raw_value']" position="attributes">
+                <attribute name="t-if">0</attribute>
+            </xpath>
+
+            <!-- Línea + Forma/Concentración/Contenido con colores, en formato compacto.
+                 Tratamiento tipográfico md-portal-tag (mayúsculas + peso 900) igual
+                 que .md-product-badge del portal — antes peso 500 sin mayúsculas. -->
+            <span t-if="record.default_code.value" position="after">
+                <div class="d-flex flex-wrap align-items-center gap-1 mt-1" style="row-gap:.25rem;">
+                    <span t-if="record.product_line_id.value" class="badge rounded-pill md-portal-tag"
+                          style="font-size:.65rem; background:#C9784F; color:#fff;">
+                        <field name="product_line_id"/>
+                    </span>
+                    <span t-if="record.l10n_mx_forma_farmaceutica.value" class="badge rounded-pill md-portal-tag"
+                          style="font-size:.65rem; background:#2C8C99; color:#fff;">
+                        <field name="l10n_mx_forma_farmaceutica"/>
+                    </span>
+                    <span t-if="record.l10n_mx_concentracion.value" class="badge rounded-pill md-portal-tag"
+                          style="font-size:.65rem; background:#7B4B9E; color:#fff;">
+                        <field name="l10n_mx_concentracion"/>
+                    </span>
+                    <span t-if="record.l10n_mx_contenido_empaque.value" class="badge rounded-pill md-portal-tag"
+                          style="font-size:.65rem; background:#4A5C8C; color:#fff;">
+                        <field name="l10n_mx_contenido_empaque"/>
+                    </span>
+                    <span t-if="record.l10n_mx_tipo_envase.value" class="badge rounded-pill md-portal-tag"
+                          style="font-size:.65rem; background:#5C8A5C; color:#fff;">
+                        <field name="l10n_mx_tipo_envase"/>
+                    </span>
+                    <span t-if="record.l10n_mx_talla.value" class="badge rounded-pill md-portal-tag"
+                          style="font-size:.65rem; background:#B0785C; color:#fff;">
+                        <field name="l10n_mx_talla"/>
+                    </span>
+                </div>
+                <div class="mt-1" t-if="record.active_substance_ids.raw_value.length" style="font-size:.7rem;">
+                    <field name="active_substance_ids" widget="many2many_tags" options="{'color_field': 'color'}"/>
+                </div>
+                <small class="text-muted d-block" t-if="record.l10n_mx_dimensiones.value" style="font-size:.65rem;">
+                    <field name="l10n_mx_dimensiones"/>
+                </small>
+
+                <!-- Desglose de lotes a la mano (FEFO): equivalente al
+                     lot-card-footer del POS, pero mostrando TODOS los lotes
+                     a la mano en vez de solo el seleccionado en el carrito
+                     (aqui no hay carrito). Mismos iconos calendario/cubos y
+                     colores por vencimiento (md_lot_breakdown_html, generado
+                     en product_template.py con los mismos umbrales que
+                     lot_expiry_utils.js). Solo se renderiza para productos
+                     con seguimiento por lote/serie: coincide con la
+                     condicion del badge de arriba.
+
+                     Botón dedicado al lado (md_lot_detail_button widget):
+                     abre MdKanbanLotDetailPopup — réplica funcional completa
+                     del LotDetailPopup del POS (leyenda + tabla FEFO + fila
+                     "1° = vender primero" + "VENCIDO (Xd)"), que los chips
+                     de abajo NO muestran (los chips son solo un resumen
+                     inline acotado a 6 + "+N").
+
+                     Badge total "A la mano" (auditoría UX 2026-07-21,
+                     e2e_tests/audit_inventory_kanban_usability.spec.ts):
+                     para productos con lote/serie, el badge de arriba
+                     (.md-onhand-badge absoluto) NUNCA se renderiza — solo
+                     quedaban los chips por lote, sin ningún total visible
+                     (había que sumarlos a mano). Este badge NO reemplaza
+                     los chips (siguen siendo la única fuente de detalle por
+                     lote/FEFO), los complementa con la suma. Reutiliza
+                     qty_available (ya fetched arriba para el badge no-lote)
+                     y md_onhand_badge_color (mismo semáforo, sin campo
+                     Python nuevo); usa la variante "inline" del badge (ver
+                     clase en el span de abajo) en vez de la absoluta, para
+                     no competir con el precio en la esquina superior. -->
+                <div class="mt-1 d-flex align-items-center gap-1" t-if="record.tracking.raw_value === 'lot' || record.tracking.raw_value === 'serial'">
+                    <span t-attf-class="md-onhand-badge md-onhand-badge--inline md-onhand-badge--{{record.md_onhand_badge_color.value}}">
+                        <field name="qty_available" options="{'digits': [16, 0]}"/>&#160;A la mano
+                    </span>
+                    <!-- Chips de desglose por lote (md_lot_breakdown_html) ocultos a pedido
+                         del usuario (2026-07-21): la card quedaba muy cargada con badge total +
+                         chips + botón. El detalle por lote/FEFO sigue disponible completo en el
+                         popup (botón de abajo, MdKanbanLotDetailPopup) — solo se oculta el
+                         resumen inline, no la función. Campo/compute Python sin tocar: el popup
+                         usa get_md_lot_detail()/_md_lot_breakdown_data(), no este HTML. -->
+                    <field name="id" widget="md_lot_detail_button" nolabel="1"/>
+                </div>
+            </span>
+        </field>
+    </record>
+
+    <!-- Filtro "En existencia" para el buscador de productos, y lo activamos por
+         defecto en la acción del menú Inventario > Productos para que siempre se
+         muestren primero los productos que cuentan con existencias. -->
+    <record id="view_product_template_search_pharma_reg" model="ir.ui.view">
+        <field name="name">product.template.search.pharma.reg</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_search_view"/>
+        <field name="arch" type="xml">
+            <filter name="is_storable" position="after">
+                <filter string="En Existencia" name="filter_in_stock" domain="[('qty_available','&gt;',0)]"/>
+            </filter>
+
+            <!-- Busqueda libre: que el buscador tambien encuentre por sustancia
+                 activa, forma farmaceutica y linea/marca, no solo por nombre -->
+            <field name="product_tag_ids" position="after">
+                <field name="active_substance_ids" string="Sustancia Activa"/>
+                <field name="l10n_mx_forma_farmaceutica" string="Forma Farmacéutica"/>
+                <field name="product_line_id" string="Línea/Marca"/>
+            </field>
+
+            <!-- Filtros de flujo habitual de Inventario: encontrar huecos de
+                 informacion regulatoria (mismo criterio que ya usamos para el
+                 barrido manual de sustancias/forma/etc. durante la homologacion
+                 COFEPRIS) y separar productos controlados/con receta -->
+            <filter name="filter_in_stock" position="after">
+                <!-- Complemento directo de "En Existencia" (mejora de
+                     funcionalidad, punto 3 de INVENTORY_KANBAN_UX_PLAN.md).
+                     qty_available es un campo real (no compute sin store),
+                     así que sirve directo en un domain de filtro, a
+                     diferencia de md_onhand_badge_color/md_has_short_expiry
+                     (compute sin store: no buscables sin agregar
+                     store=True + lógica de invalidación, fuera de alcance
+                     de este pase). -->
+                <filter string="Sin Existencia" name="filter_out_of_stock" domain="[('qty_available','&lt;=',0)]"/>
+                <separator/>
+                <filter string="Sin Sustancia Activa" name="filter_no_substance"
+                        domain="[('active_substance_ids','=',False)]"/>
+                <filter string="Sin Forma Farmacéutica" name="filter_no_forma"
+                        domain="[('l10n_mx_forma_farmaceutica','=',False)]"/>
+                <filter string="Sin Línea/Marca" name="filter_no_line"
+                        domain="[('product_line_id','=',False)]"/>
+                <filter string="Sin Registro Sanitario" name="filter_no_registro"
+                        domain="[('l10n_mx_registro_sanitario','=',False)]"/>
+                <separator/>
+                <filter string="Requiere Receta" name="filter_requiere_receta"
+                        domain="[('l10n_mx_requiere_receta','=',True)]"/>
+                <filter string="Controlado" name="filter_controlado"
+                        domain="[('l10n_mx_controlado','=',True)]"/>
+            </filter>
+
+            <!-- Agrupar por las mismas caracteristicas que ya mostramos como
+                 etiquetas en el kanban de Inventario y en la card de POS -->
+            <filter name="group_by_categ_id" position="after">
+                <filter string="Sustancia Activa" name="group_by_substance"
+                        context="{'group_by':'active_substance_ids'}"/>
+                <filter string="Línea/Marca" name="group_by_product_line"
+                        context="{'group_by':'product_line_id'}"/>
+                <filter string="Forma Farmacéutica" name="group_by_forma"
+                        context="{'group_by':'l10n_mx_forma_farmaceutica'}"/>
+                <filter string="Tipo de Envase" name="group_by_envase"
+                        context="{'group_by':'l10n_mx_tipo_envase'}"/>
+                <filter string="Estado de Homologación" name="group_by_homologacion"
+                        context="{'group_by':'l10n_mx_homologacion_state'}"/>
+            </filter>
+        </field>
+    </record>
+
+    <record id="stock.product_template_action_product" model="ir.actions.act_window">
+        <field name="context">{"search_default_goods": 1, "search_default_filter_in_stock": 1, "default_is_storable": True}</field>
+    </record>
+
+    <!-- La ruta /odoo/inventory/products realmente resuelve a esta otra accion
+         (path="products", id 678 en la base de datos), no a la anterior. -->
+    <record id="sale.product_template_action" model="ir.actions.act_window">
+        <field name="context">{"search_default_filter_to_sell":1, "search_default_filter_in_stock": 1, "sale_multi_pricelist_product_template": 1}</field>
+    </record>
+</odoo>

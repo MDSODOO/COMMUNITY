@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+        <!--
+            Kanban de Inventario > Productos (product.template) — estilo Bento
+            consistente con el resto del backend custom (backend_tokens.scss /
+            backend_bento.scss, mismo criterio que handheld_kanban.scss).
+
+            Hereda product.product_template_kanban_view (product/views/
+            product_template_views.xml) — la vista kanban REAL usada por
+            stock.product_template_action_product (menu Inventario >
+            Productos, ver stock/views/product_views.xml): esa accion NO
+            declara view_id propio y no existe otra vista kanban para
+            product.template en el modulo stock, asi que Odoo resuelve al
+            kanban de menor prioridad del modelo, que es esta. Confirmado
+            leyendo el arch real dentro del contenedor (no asumido). En
+            Odoo 19 el template de la tarjeta se llama t-name="card" (ya no
+            "kanban-box") — tambien confirmado leyendo el arch real de ESTA
+            vista especifica.
+
+            NOTA: el badge "A la mano" que este record insertaba aqui fue
+            removido (2026-07-21). md_pharma_regulatory/views/
+            product_visual_views.xml hereda esta MISMA vista base y ya aporta
+            el indicador de existencia (ahora con el mismo lenguaje visual de
+            bi_pos_stock ProductCard: badge semaforo + anillo "Prox. Vencer" +
+            desglose de lotes FEFO) — tener los dos generaba el dato
+            duplicado en pantalla (verificado en vivo). Se conserva aqui solo
+            el estilo Bento de la card (clase o_md_product_kanban_card,
+            acento de borde en product_kanban_card.scss), que sigue siendo
+            valido independientemente del indicador de existencia.
+        -->
+        <record id="view_product_template_kanban_on_hand" model="ir.ui.view">
+            <field name="name">product.template.kanban.on.hand</field>
+            <field name="model">product.template</field>
+            <field name="inherit_id" ref="product.product_template_kanban_view"/>
+            <field name="arch" type="xml">
+                <!-- Trae qty_available al read del kanban (no viene por defecto) -->
+                <xpath expr="//kanban/field[@name='categ_id']" position="after">
+                    <field name="qty_available"/>
+                </xpath>
+
+                <!-- Marca la card para poder darle estilo Bento sin afectar otros
+                     kanbans del backend. El class de <t t-name="card"> se aplica
+                     directo sobre el .o_kanban_record generado (patron nativo
+                     Odoo 19, igual que el "flex-row" que ya trae esta vista). -->
+                <xpath expr="//t[@t-name='card']" position="attributes">
+                    <attribute name="class">flex-row o_md_product_kanban_card</attribute>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>

@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <template id="s_socios" name="Medicine Depot Bento Socios Comerciales">
+        <t t-set="md_partner_labs"
+           t-value="[
+               {'name': 'Bruluagsa', 'slug': 'bruluagsa', 'src': '/md_bento_theme/static/src/img/partners/bruluagsa.png'},
+               {'name': 'Bruluart', 'slug': 'bruluart', 'src': '/md_bento_theme/static/src/img/partners/bruluart.svg'},
+               {'name': 'Ambiderm', 'slug': 'ambiderm', 'src': '/md_bento_theme/static/src/img/partners/ambiderm.svg'},
+               {'name': 'Degasa', 'slug': 'degasa', 'src': '/md_bento_theme/static/src/img/partners/degasa.png'},
+               {'name': 'PiSA Farmacéutica', 'slug': 'pisa', 'src': '/md_bento_theme/static/src/img/partners/pisa.png'},
+               {'name': 'Maver', 'slug': 'maver', 'src': '/md_bento_theme/static/src/img/partners/maver.png'},
+               {'name': 'Jaloma', 'slug': 'jaloma', 'src': '/md_bento_theme/static/src/img/partners/jaloma.png'},
+               {'name': 'Galia', 'slug': 'galia', 'src': '/md_bento_theme/static/src/img/partners/galia.svg'},
+               {'name': 'AMSA Laboratorios', 'slug': 'amsa', 'src': '/md_bento_theme/static/src/img/partners/amsa.png'},
+               {'name': 'DGH', 'slug': 'dgh', 'src': '/md_bento_theme/static/src/img/partners/dgh.svg'},
+               {'name': 'BIOMEP', 'slug': 'biomep', 'src': '/md_bento_theme/static/src/img/partners/biomep.png'},
+               {'name': 'Serral', 'slug': 'serral', 'src': '/md_bento_theme/static/src/img/partners/serral.png'},
+               {'name': 'Kendrick', 'slug': 'kendrick', 'src': '/md_bento_theme/static/src/img/partners/kendrick.png'},
+               {'name': 'Quimpharma', 'slug': 'quimpharma', 'src': '/md_bento_theme/static/src/img/partners/quimpharma.png'},
+               {'name': 'Senosiain', 'slug': 'senosiain', 'src': '/md_bento_theme/static/src/img/partners/senosiain.png'},
+               {'name': 'Liomont', 'slug': 'liomont', 'src': '/md_bento_theme/static/src/img/partners/liomont.svg'},
+           ]"/>
+        <section class="md-bento-section md-socios-bento-section">
+            <div class="container">
+                <div class="md-socios-bento-card">
+                    <div class="md-socios-heading text-center mx-auto">
+                        <h2>Socios Comerciales</h2>
+                    </div>
+                    <div class="bento-overlap-box">
+                        <div id="sociosCarousel"
+                             class="s_md_socios-marquee"
+                             aria-label="Laboratorios y marcas que respaldan nuestro catalogo">
+                            <div class="s_md_socios-track">
+                                <t t-foreach="[0, 1]" t-as="carousel_pass">
+                                    <t t-foreach="md_partner_labs" t-as="partner">
+                                        <span t-attf-class="s_md_socios-logo s_md_socios-logo--#{partner['slug']}">
+                                            <img t-att-src="partner['src']"
+                                                 t-att-alt="partner['name']"
+                                                 width="172"
+                                                 height="64"
+                                                 loading="lazy"/>
+                                            <strong t-out="partner['name']"/>
+                                        </span>
+                                    </t>
+                                </t>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </template>
+
+</odoo>

@@ -1,0 +1,245 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="action_report_lab_pdf" model="ir.actions.report">
+        <field name="name">Laboratorios A la mano - PDF</field>
+        <field name="model">report.lab.inventory</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">lab_inventory_report.report_lab_inventory_pdf</field>
+        <field name="report_file">lab_inventory_report.report_lab_inventory_pdf</field>
+        <field name="binding_model_id" ref="model_report_lab_inventory"/>
+        <field name="binding_type">report</field>
+        <field name="print_report_name">'Reporte laboratorios A la mano'</field>
+    </record>
+
+    <template id="pharma_lab_inventory_layout_header">
+        <t t-set="_lab" t-value="o if o else doc"/>
+        <t t-if="_lab and _lab._name == 'report.lab.inventory'">
+            <t t-set="_lab_co" t-value="_lab.env.company.sudo()"/>
+            <div class="pharma-full-header">
+                <div class="d-flex align-items-start justify-content-between pharma-doc-header">
+                    <div class="pharma-logo-shell">
+                        <img t-if="_lab_co.logo" class="md-logo"
+                             t-att-src="image_data_uri(_lab_co.logo)" alt="Logo"/>
+                        <div t-if="_lab_co.report_header"
+                             t-field="_lab_co.report_header"
+                             class="o_company_tagline fw-bold mt-1"/>
+                    </div>
+                    <div class="pharma-doc-info text-end">
+                        <span class="pharma-doc-type">Reporte Laboratorios</span>
+                        <span class="pharma-doc-num">A la mano</span>
+                        <span class="pharma-doc-date">
+                            <t t-if="report_generated_at">
+                                <span t-esc="report_generated_at.strftime('%Y-%m-%d')"/>
+                            </t>
+                        </span>
+                    </div>
+                </div>
+                <div class="pharma-stripe">
+                    <span class="pharma-stripe-band pharma-stripe-band-brand"/>
+                    <span class="pharma-stripe-band pharma-stripe-band-teal"/>
+                    <span class="pharma-stripe-band pharma-stripe-band-lime"/>
+                </div>
+                <div class="row g-0 pharma-meta-band">
+                    <div class="col-3 pharma-meta-cell">
+                        <span class="pharma-meta-label">Laboratorios</span>
+                        <span class="pharma-meta-val pharma-meta-val-sm">
+                            <t t-esc="', '.join(lab_names) if lab_names else '—'"/>
+                        </span>
+                    </div>
+                    <div class="col-3 pharma-meta-cell">
+                        <span class="pharma-meta-label">Sucursales</span>
+                        <span class="pharma-meta-val" t-esc="len(location_names) if location_names else 0"/>
+                    </div>
+                    <div class="col-3 pharma-meta-cell">
+                        <span class="pharma-meta-label">Registros</span>
+                        <span class="pharma-meta-val" t-esc="report_row_count or 0"/>
+                    </div>
+                    <div class="col-3 pharma-meta-cell">
+                        <span class="pharma-meta-label">Compañía</span>
+                        <span class="pharma-meta-val" t-esc="_lab_co.name or '—'"/>
+                    </div>
+                </div>
+            </div>
+        </t>
+    </template>
+
+    <template id="lab_inventory_suppress_header_standard"
+              inherit_id="web.external_layout_standard"
+              priority="1001">
+        <xpath expr="//div[contains(concat(' ', normalize-space(@class), ' '), ' header ') or contains(concat(' ', normalize-space(@t-attf-class), ' '), ' header ')]" position="attributes">
+            <attribute name="t-if">not ((o and o._name == 'report.lab.inventory') or (doc and doc._name == 'report.lab.inventory'))</attribute>
+        </xpath>
+        <xpath expr="//div[contains(concat(' ', normalize-space(@class), ' '), ' header ') or contains(concat(' ', normalize-space(@t-attf-class), ' '), ' header ')]" position="after">
+            <t t-call="lab_inventory_report.pharma_lab_inventory_layout_header"/>
+        </xpath>
+        <xpath expr="//h2[@t-out='layout_document_title']" position="attributes">
+            <attribute name="t-if">not ((o and o._name == 'report.lab.inventory') or (doc and doc._name == 'report.lab.inventory'))</attribute>
+        </xpath>
+    </template>
+
+    <template id="lab_inventory_suppress_header_bold"
+              inherit_id="web.external_layout_bold"
+              priority="1001">
+        <xpath expr="//div[contains(concat(' ', normalize-space(@class), ' '), ' header ') or contains(concat(' ', normalize-space(@t-attf-class), ' '), ' header ')]" position="attributes">
+            <attribute name="t-if">not ((o and o._name == 'report.lab.inventory') or (doc and doc._name == 'report.lab.inventory'))</attribute>
+        </xpath>
+        <xpath expr="//div[contains(concat(' ', normalize-space(@class), ' '), ' header ') or contains(concat(' ', normalize-space(@t-attf-class), ' '), ' header ')]" position="after">
+            <t t-call="lab_inventory_report.pharma_lab_inventory_layout_header"/>
+        </xpath>
+        <xpath expr="//h2[@t-out='layout_document_title']" position="attributes">
+            <attribute name="t-if">not ((o and o._name == 'report.lab.inventory') or (doc and doc._name == 'report.lab.inventory'))</attribute>
+        </xpath>
+    </template>
+
+    <template id="lab_inventory_suppress_header_boxed"
+              inherit_id="web.external_layout_boxed"
+              priority="1001">
+        <xpath expr="//div[contains(concat(' ', normalize-space(@class), ' '), ' header ') or contains(concat(' ', normalize-space(@t-attf-class), ' '), ' header ')]" position="attributes">
+            <attribute name="t-if">not ((o and o._name == 'report.lab.inventory') or (doc and doc._name == 'report.lab.inventory'))</attribute>
+        </xpath>
+        <xpath expr="//div[contains(concat(' ', normalize-space(@class), ' '), ' header ') or contains(concat(' ', normalize-space(@t-attf-class), ' '), ' header ')]" position="after">
+            <t t-call="lab_inventory_report.pharma_lab_inventory_layout_header"/>
+        </xpath>
+        <xpath expr="//h2[@t-out='layout_document_title']" position="attributes">
+            <attribute name="t-if">not ((o and o._name == 'report.lab.inventory') or (doc and doc._name == 'report.lab.inventory'))</attribute>
+        </xpath>
+    </template>
+
+    <template id="lab_inventory_suppress_header_striped"
+              inherit_id="web.external_layout_striped"
+              priority="1001">
+        <xpath expr="//div[contains(concat(' ', normalize-space(@class), ' '), ' header ') or contains(concat(' ', normalize-space(@t-attf-class), ' '), ' header ')]" position="attributes">
+            <attribute name="t-if">not ((o and o._name == 'report.lab.inventory') or (doc and doc._name == 'report.lab.inventory'))</attribute>
+        </xpath>
+        <xpath expr="//div[contains(concat(' ', normalize-space(@class), ' '), ' header ') or contains(concat(' ', normalize-space(@t-attf-class), ' '), ' header ')]" position="after">
+            <t t-call="lab_inventory_report.pharma_lab_inventory_layout_header"/>
+        </xpath>
+        <xpath expr="//h2[@t-out='layout_document_title']" position="attributes">
+            <attribute name="t-if">not ((o and o._name == 'report.lab.inventory') or (doc and doc._name == 'report.lab.inventory'))</attribute>
+        </xpath>
+    </template>
+
+    <template id="lab_inventory_suppress_header_folder"
+              inherit_id="web.external_layout_folder"
+              priority="1001">
+        <xpath expr="//div[contains(concat(' ', normalize-space(@class), ' '), ' header ') or contains(concat(' ', normalize-space(@t-attf-class), ' '), ' header ')]" position="attributes">
+            <attribute name="t-if">not ((o and o._name == 'report.lab.inventory') or (doc and doc._name == 'report.lab.inventory'))</attribute>
+        </xpath>
+        <xpath expr="//div[contains(concat(' ', normalize-space(@class), ' '), ' header ') or contains(concat(' ', normalize-space(@t-attf-class), ' '), ' header ')]" position="after">
+            <t t-call="lab_inventory_report.pharma_lab_inventory_layout_header"/>
+        </xpath>
+    </template>
+
+    <template id="lab_inventory_suppress_header_wave"
+              inherit_id="web.external_layout_wave"
+              priority="1001">
+        <xpath expr="//div[contains(concat(' ', normalize-space(@class), ' '), ' header ') or contains(concat(' ', normalize-space(@t-attf-class), ' '), ' header ')]" position="attributes">
+            <attribute name="t-if">not ((o and o._name == 'report.lab.inventory') or (doc and doc._name == 'report.lab.inventory'))</attribute>
+        </xpath>
+        <xpath expr="//div[contains(concat(' ', normalize-space(@class), ' '), ' header ') or contains(concat(' ', normalize-space(@t-attf-class), ' '), ' header ')]" position="after">
+            <t t-call="lab_inventory_report.pharma_lab_inventory_layout_header"/>
+        </xpath>
+    </template>
+
+    <template id="lab_inventory_suppress_header_bubble"
+              inherit_id="web.external_layout_bubble"
+              priority="1001">
+        <xpath expr="//div[contains(concat(' ', normalize-space(@class), ' '), ' header ') or contains(concat(' ', normalize-space(@t-attf-class), ' '), ' header ')]" position="attributes">
+            <attribute name="t-if">not ((o and o._name == 'report.lab.inventory') or (doc and doc._name == 'report.lab.inventory'))</attribute>
+        </xpath>
+        <xpath expr="//div[contains(concat(' ', normalize-space(@class), ' '), ' header ') or contains(concat(' ', normalize-space(@t-attf-class), ' '), ' header ')]" position="after">
+            <t t-call="lab_inventory_report.pharma_lab_inventory_layout_header"/>
+        </xpath>
+    </template>
+
+    <template id="report_lab_inventory_pdf">
+        <t t-call="web.html_container">
+            <t t-set="o" t-value="docs and docs[0] or False"/>
+            <t t-call="web.external_layout">
+                <t t-set="address" t-value="''"/>
+                <t t-set="information_block" t-value="''"/>
+                <div class="page pharma-doc-page">
+                    <div class="pharma-body-address-shell">
+                        <div class="pharma-doc pharma-addr-grid">
+                            <div class="row g-0">
+                                <div class="col-6 pe-4 pharma-addr-col">
+                                    <span class="pharma-addr-label">Laboratorios</span>
+                                    <div class="pharma-addr-name">
+                                        <t t-esc="', '.join(lab_names) if lab_names else '—'"/>
+                                    </div>
+                                    <div class="pharma-addr-lines">Concentrado por laboratorio</div>
+                                </div>
+                                <div class="col-6 ps-4 pharma-addr-col pharma-addr-divider">
+                                    <span class="pharma-addr-label">Sucursales</span>
+                                    <div class="pharma-addr-name">
+                                        <t t-esc="len(location_names) if location_names else 0"/>
+                                    </div>
+                                    <div class="pharma-addr-lines">
+                                        <t t-esc="', '.join(location_names) if location_names else '—'"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="pharma-section-ttl">Detalle por producto</div>
+                    <table class="table table-sm pharma-lines">
+                        <thead>
+                            <tr>
+                                <th>Laboratorio</th>
+                                <th>Producto</th>
+                                <th>Sucursal</th>
+                                <th class="text-end">A la mano</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr t-foreach="docs" t-as="record">
+                                <td>
+                                    <span t-esc="record.line_name or '—'"/>
+                                </td>
+                                <td class="pharma-product-cell">
+                                    <span t-field="record.product_id"/>
+                                </td>
+                                <td>
+                                    <span t-field="record.location_id"/>
+                                </td>
+                                <td class="text-end">
+                                    <span t-esc="'{:.2f}'.format(record.qty_a_la_mano or 0)"/>
+                                </td>
+                            </tr>
+                            <tr t-if="not docs">
+                                <td colspan="4" class="text-center text-muted">Sin A la mano para mostrar</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <div class="pharma-section-ttl mt-4">Resumen</div>
+                    <div name="total" class="pharma-total-block">
+                        <table>
+                            <tbody>
+                                <tr>
+                                    <td>Total de registros</td>
+                                    <td class="text-end">
+                                        <span t-esc="report_row_count or 0"/>
+                                    </td>
+                                </tr>
+                                <tr class="o_total_row">
+                                    <td>Total A la mano</td>
+                                    <td class="text-end">
+                                        <span t-esc="'{:.2f}'.format(total_a_la_mano or 0)"/>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="text-muted mt-3" style="font-size: 0.7rem;">
+                        Reporte generado por
+                        <span t-esc="user.name"/> ·
+                        <span t-esc="report_generated_at.strftime('%Y-%m-%d %H:%M:%S') if report_generated_at else ''"/>
+                    </div>
+                </div>
+            </t>
+        </t>
+    </template>
+</odoo>

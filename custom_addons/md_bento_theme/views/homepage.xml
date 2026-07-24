@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <template id="md_homepage_content" name="Medicine Depot Bento Homepage Content">
+        <div id="wrap" class="md-bento md-homepage">
+
+            <!-- Banner Promocional Mundial 2026 -->
+            <section class="md-bento-promo-banner">
+                <a href="/shop" title="Vive la emoción del Fútbol con Medicine Depot — Compra, Participa y Gana">
+                    <img src="/md_bento_theme/static/img/banner_mundial_2026.jpg"
+                         srcset="/md_bento_theme/static/img/banner_mundial_2026_sm.jpg 768w,
+                                 /md_bento_theme/static/img/banner_mundial_2026.jpg 1600w,
+                                 /md_bento_theme/static/img/banner_mundial_2026_lg.jpg 1920w"
+                         sizes="100vw"
+                         class="img-fluid w-100"
+                         width="1600"
+                         height="900"
+                         alt="Vive la emoción del Fútbol con Medicine Depot. Compra, Participa y Gana una Pantalla de 50 pulgadas. Por cada $3,500 en compra llévate un boleto. Promoción del 11 de Junio al 19 de Julio 2026."
+                         loading="eager"
+                         fetchpriority="high"
+                         decoding="sync"/>
+                </a>
+            </section>
+
+            <section class="md-bento-hero md-bento-section">
+                <div class="container">
+                    <div class="row g-4 align-items-stretch">
+                        <div class="col-12 col-lg-7">
+                            <div class="md-bento-card bento-glass-card md-hero-card h-100">
+                                <span class="md-eyebrow">● Medicine Depot</span>
+                                <h1>Confianza y bienestar en un solo lugar</h1>
+                                <p class="md-hero-lead">
+                                    Surtido farmacéutico, acompañamiento normativo y atención especializada para farmacias que buscan crecer con procesos más claros.
+                                </p>
+                                <div class="d-flex flex-wrap gap-3 mt-4">
+                                    <a href="/shop" class="btn btn-primary btn-lg rounded-pill">Comprar ahora</a>
+                                    <a href="/afiliacion" class="btn btn-outline-primary btn-lg rounded-pill">Afíliate</a>
+                                    <a href="/sucursales" class="btn btn-light btn-lg rounded-pill shadow-sm">Ver sucursales</a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12 col-lg-5">
+                            <div class="md-bento-card bento-glass-card md-hero-aside h-100">
+                                <div class="md-orb md-orb-blue" aria-hidden="true"/>
+                                <div class="md-orb md-orb-green" aria-hidden="true"/>
+                                <span class="badge rounded-pill text-bg-light">Operación farmacéutica</span>
+                                <h2 class="h3">Compra, afiliación y soporte normativo en una misma experiencia.</h2>
+                                <p>Un sitio rápido, claro y conectado con los flujos nativos de Odoo eCommerce.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="md-metrics-strip md-bento-card bento-glass-card mt-4">
+                        <div class="row g-3 text-center">
+                            <div class="col-12 col-md-4">
+                                <strong>6 sucursales</strong>
+                                <span>Presencia regional</span>
+                            </div>
+                            <div class="col-12 col-md-4">
+                                <strong>Acompañamiento normativo</strong>
+                                <span>Procesos más claros</span>
+                            </div>
+                            <div class="col-12 col-md-4">
+                                <strong>Retail y mostrador</strong>
+                                <span>Atención especializada</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="md-bento-section md-bento-section--services">
+                <div class="container">
+                    <div class="md-section-heading">
+                        <span class="md-eyebrow">● Servicios</span>
+                        <h2>Una red pensada para farmacias que necesitan avanzar.</h2>
+                    </div>
+                    <div class="md-service-bento-grid">
+                        <a href="/afiliacion" class="md-bento-card bento-glass-card md-service-tile md-service-tile-large">
+                            <span>01</span>
+                            <h3>Afiliación</h3>
+                            <p>Integra tus datos, documentos y validaciones en un flujo guiado.</p>
+                        </a>
+                        <a href="https://medicinedepot.com.mx/medicd/" class="md-bento-card bento-glass-card md-service-tile">
+                            <span>02</span>
+                            <h3>MedicD</h3>
+                            <p>Acompañamiento para ordenar procesos de farmacia.</p>
+                        </a>
+                        <a href="/sucursales" class="md-bento-card bento-glass-card md-service-tile">
+                            <span>03</span>
+                            <h3>Sucursales</h3>
+                            <p>Ubica el punto de atención más cercano.</p>
+                        </a>
+                        <a href="/farmacovigilancia" class="md-bento-card bento-glass-card md-service-tile">
+                            <span>04</span>
+                            <h3>Farmacovigilancia</h3>
+                            <p>Canal especializado para reportes y seguimiento.</p>
+                        </a>
+                        <a href="/blog" class="md-bento-card bento-glass-card md-service-tile">
+                            <span>05</span>
+                            <h3>Blog</h3>
+                            <p>Contenido editorial para decisiones mejor informadas.</p>
+                        </a>
+                        <a href="/contactus" class="md-bento-card bento-glass-card md-service-tile">
+                            <span>06</span>
+                            <h3>Contacto</h3>
+                            <p>Ventas, soporte y orientación para tu operación.</p>
+                        </a>
+                    </div>
+                </div>
+            </section>
+
+            <t t-call="md_bento_theme.s_socios"/>
+
+            <section class="md-bento-section md-bento-section--editorial">
+                <div class="container">
+                    <div class="md-section-heading">
+                        <span class="md-eyebrow">● Podcast y blog</span>
+                        <h2>Ideas compactas para operar con más claridad.</h2>
+                    </div>
+                    <div class="row g-4">
+                        <div class="col-12 col-lg-7">
+                            <article class="md-bento-card bento-glass-card md-editorial-card h-100">
+                                <span>Podcast</span>
+                                <h3>Pláticas Farmacéuticas</h3>
+                                <p>Conversaciones breves sobre operación, cumplimiento y retos del mostrador.</p>
+                                <a href="/blog" class="btn btn-outline-primary rounded-pill align-self-start">Ver episodios</a>
+                            </article>
+                        </div>
+                        <div class="col-12 col-lg-5">
+                            <article class="md-bento-card bento-glass-card md-editorial-card h-100">
+                                <span>Blog</span>
+                                <h3>Guías para farmacia</h3>
+                                <p>Notas editoriales para equipos comerciales, responsables sanitarios y dueños de farmacia.</p>
+                                <a href="/blog" class="btn btn-outline-primary rounded-pill align-self-start">Leer blog</a>
+                            </article>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="md-bento-section md-final-cta-section">
+                <div class="container">
+                    <div class="md-bento-card bento-glass-card md-final-cta">
+                        <div>
+                            <span class="md-eyebrow">● Programa MedicD</span>
+                            <h2>Ordena tu farmacia con acompañamiento normativo.</h2>
+                            <p>Recibe orientación comercial y documental sin salir del ecosistema de Medicine Depot.</p>
+                        </div>
+                        <div class="d-flex flex-wrap gap-3">
+                            <a href="/afiliacion" class="btn btn-primary btn-lg rounded-pill">Iniciar afiliación</a>
+                            <a href="/contactus" class="btn btn-outline-primary btn-lg rounded-pill">Hablar con ventas</a>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </template>
+
+    <template id="md_homepage_public_override"
+              inherit_id="medicine_depot_portal.public_home_page"
+              name="Medicine Depot Bento Homepage"
+              priority="260">
+        <xpath expr="//t[@t-call='medicine_depot_portal.public_shell']" position="replace">
+            <t t-set="title">Medicine Depot | Confianza y bienestar</t>
+            <t t-set="meta_description">Surtido farmacéutico, acompañamiento normativo y atención especializada para farmacias.</t>
+            <t t-call="website.layout">
+                <t t-call="md_bento_theme.md_homepage_content"/>
+            </t>
+        </xpath>
+    </template>
+
+    <template id="md_homepage_website_fallback"
+              inherit_id="website.homepage"
+              name="Medicine Depot Bento Homepage Fallback"
+              priority="260">
+        <xpath expr="//div[@id='wrap']" position="replace">
+            <t t-call="md_bento_theme.md_homepage_content"/>
+        </xpath>
+    </template>
+
+</odoo>

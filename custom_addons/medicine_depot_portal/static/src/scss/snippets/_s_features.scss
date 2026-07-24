@@ -1,0 +1,41 @@
+// Medicine Depot · Variante Bento del snippet `s_features` (grid asimétrico).
+
+.s_features.md-bento-grid,
+.s_md_audit_grid,
+.s_md_service_grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: $md-gap;
+
+    @media (max-width: 991px) { grid-template-columns: repeat(2, 1fr); }
+    @media (max-width: 575px) { grid-template-columns: 1fr; }
+
+    .md-tile {
+        @include md-tile();
+        border-radius: $md-r-card;
+        box-shadow: $md-shadow-sm;
+    }
+
+    .md-chip {
+        display: inline-flex;
+        font-size: 11px;
+        font-weight: 900;
+        letter-spacing: 0;
+        text-transform: uppercase;
+        padding: 6px 10px;
+        border-radius: 999px;
+        background: rgba($md-blue, .08);
+        color: $md-blue-800;
+        width: fit-content;
+    }
+    .md-chip--warning { background: rgba($md-green, .14); color: $md-green-900; }
+}
+
+// Asimetría 2-1-1 para destacar la primera tarjeta (Hero secundario).
+.s_md_audit_grid--asymmetric {
+    grid-template-columns: 2fr 1fr 1fr;
+    @media (max-width: 991px) { grid-template-columns: repeat(2, 1fr); }
+    @media (max-width: 575px) { grid-template-columns: 1fr; }
+
+    > :first-child { grid-row: span 2; }
+}

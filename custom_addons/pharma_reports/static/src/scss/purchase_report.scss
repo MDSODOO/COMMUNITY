@@ -1,0 +1,182 @@
+/* ============================================================
+   pharma_reports — Estilos específicos OC
+   El grueso del diseño se hereda de pharma_report.scss (.pharma-*).
+   ============================================================ */
+
+/* ── Header inline ─────────────────────────────────────────── */
+.po-active.pharma-doc-page .pharma-header-inline {
+    margin-top: 0;
+    margin-bottom: 0.6rem;
+}
+
+/* El título del documento en compra es más largo que en factura.
+   Lo compactamos para evitar que "ORDEN DE COMPRA" parta en dos líneas
+   y desplace visualmente el header respecto al resto de reportes. */
+.po-active.pharma-doc-page .pharma-doc-type {
+    display: inline-block;
+    white-space: nowrap !important;
+    word-break: keep-all;
+    overflow-wrap: normal;
+    font-size: 0.52rem;
+    line-height: 1;
+    letter-spacing: 0.05em;
+}
+
+.po-active.pharma-doc-page .pharma-doc-num {
+    font-size: 1.28rem;
+    line-height: 1;
+}
+
+/* Reservar ancho mínimo para el bloque doc-info en OC sin imponer flex
+   shrink/basis fijos (wkhtmltopdf renderiza vacío cuando se combina
+   `flex: 0 0 ...rem` con `width !important`). min-width basta para que
+   "ORDEN DE COMPRA / Pxxxxx / fecha" caben en una sola columna derecha. */
+.po-active.pharma-doc-page .pharma-full-header .pharma-doc-info {
+    min-width: 12rem;
+}
+
+/* ── Colapsar completamente el bloque #informations nativo ──
+   display:none oculta el contenido visualmente pero wkhtmltopdf
+   puede conservar márgenes/padding del nodo en el flujo de impresión.
+   Forzamos height/margin/padding a 0 para eliminar cualquier espacio
+   residual que contribuya al hueco inferior en la OC. */
+.po-active.pharma-doc-page #informations {
+    display: none !important;
+    height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+}
+
+.po-active.pharma-doc-page .pharma-body-address-shell {
+    margin-top: 0.2rem;
+}
+
+/* ── Anular padding-top del footer para purchase.order ─────
+   pharma_report.scss aplica padding-top: 0.65rem al .o_footer_content
+   de sale.order, stock.picking y purchase.order. En la OC, esto añade
+   espacio extra en la zona del footer reservada por wkhtmltopdf,
+   agrandando visualmente el hueco al final de la página. */
+div.article[data-oe-model='purchase.order'] ~ div.footer .o_footer_content {
+    padding-top: 0 !important;
+}
+
+/* ── Suprimir restos del external_layout nativo ────────────── */
+/* Defensive CSS: aunque pharma_layout_*_hide aplica t-if=false a los
+   bloques nativos del external_layout (logo, company_address, h2 título)
+   cuando el documento es sale/picking/purchase, dejamos estas reglas
+   como red de seguridad por si Odoo cambia la estructura del layout
+   y el xpath deja de matchear.
+   Cubrimos los 3 modelos pharma para que la migración a body-first
+   sea consistente entre OC, RFQ, Sale, Cotización y Albarán. */
+div.article[data-oe-model='purchase.order'] img.o_company_logo_small,
+div.article[data-oe-model='purchase.order'] img.o_company_logo,
+div.article[data-oe-model='purchase.order'] .o_company_logo_small,
+div.article[data-oe-model='purchase.order'] [name='company_address'],
+div.article[data-oe-model='purchase.order'] h2[t-out='layout_document_title'],
+div.article[data-oe-model='purchase.order'] h2[t-out],
+div.article[data-oe-model='purchase.order'] .o_company_tagline,
+div.article[data-oe-model='sale.order'] img.o_company_logo_small,
+div.article[data-oe-model='sale.order'] img.o_company_logo,
+div.article[data-oe-model='sale.order'] .o_company_logo_small,
+div.article[data-oe-model='sale.order'] [name='company_address'],
+div.article[data-oe-model='sale.order'] h2[t-out='layout_document_title'],
+div.article[data-oe-model='sale.order'] h2[t-out],
+div.article[data-oe-model='sale.order'] .o_company_tagline,
+div.article[data-oe-model='stock.picking'] img.o_company_logo_small,
+div.article[data-oe-model='stock.picking'] img.o_company_logo,
+div.article[data-oe-model='stock.picking'] .o_company_logo_small,
+div.article[data-oe-model='stock.picking'] [name='company_address'],
+div.article[data-oe-model='stock.picking'] h2[t-out='layout_document_title'],
+div.article[data-oe-model='stock.picking'] h2[t-out],
+div.article[data-oe-model='stock.picking'] .o_company_tagline {
+    display: none !important;
+}
+
+/* Bloques header del external_layout que pueden quedar como contenedores
+   vacíos tras el hiding. Los aplastamos a 0 para que no añadan espacio
+   en blanco antes de pharma_full_header. */
+div.article[data-oe-model='purchase.order'] > div.d-flex:first-child,
+div.article[data-oe-model='purchase.order'] > div.row:first-child,
+div.article[data-oe-model='sale.order'] > div.d-flex:first-child,
+div.article[data-oe-model='sale.order'] > div.row:first-child,
+div.article[data-oe-model='stock.picking'] > div.d-flex:first-child,
+div.article[data-oe-model='stock.picking'] > div.row:first-child {
+    display: none !important;
+}
+
+/* Cuando pharma_full_header vive en el body, el .page nativo ya no debe
+   añadir un margen superior — el header pharma define su propio espaciado. */
+.po-active.pharma-doc-page .pharma-full-header {
+    margin-top: 0 !important;
+}
+
+/* ── Totales nativos de purchase (no usan div[name='total']) ── */
+.po-active.pharma-doc-page table:not(.o_main_table) {
+    width: 260px !important;
+    max-width: 260px !important;
+    margin-left: auto !important;
+    margin-right: 0 !important;
+    margin-top: 0.5rem;
+    border-collapse: collapse;
+
+    /* Tipografía unificada con la tabla principal de líneas (0.75rem)
+       para mantener coherencia visual en todos los reportes. */
+    tr td {
+        padding: 0.4rem 0.55rem;
+        color: #374151;
+        font-size: 0.75rem;
+        line-height: 1.35;
+        border: 0;
+    }
+
+    /* Subtotal (primera fila) con fondo gris azulado de la paleta brand. */
+    tr:first-child td {
+        background-color: #eef2f5 !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+
+    /* Total: azul marino corporativo brand (mismo de factura/cotización). */
+    tr:last-child td,
+    tr.o_total_row td,
+    tr.border-black td {
+        padding: 0.5rem 0.55rem !important;
+        background-color: #234759 !important;
+        color: #ffffff !important;
+        font-size: 0.86rem !important;
+        font-weight: 700 !important;
+        border-color: #234759 !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+
+    tr:last-child td span,
+    tr:last-child td strong,
+    tr.o_total_row td span,
+    tr.o_total_row td strong,
+    tr.border-black td span,
+    tr.border-black td strong {
+        color: #ffffff !important;
+    }
+}
+
+/* ── Colapsar margen inferior de Términos de pago y notas ──
+   El template nativo de purchase renderiza un párrafo/div con
+   margin-bottom grande. Bajo web.basic_layout (sin footer real),
+   ese margen queda sin contener y genera el hueco en blanco visible
+   al final de la página. Lo anulamos aquí de forma quirúrgica. */
+.po-active.pharma-doc-page p[name='payment_term'],
+.po-active.pharma-doc-page div[name='payment_term'],
+.po-active.pharma-doc-page p[name='note'],
+.po-active.pharma-doc-page div[name='note'] {
+    margin-bottom: 0 !important;
+    padding-bottom: 0 !important;
+}
+
+/* Anular también el margin-bottom del último hijo directo del .page
+   para evitar que wkhtmltopdf propague ese espacio al área visible
+   cuando no hay un footer físico que lo absorba. */
+.po-active.pharma-doc-page > *:last-child {
+    margin-bottom: 0 !important;
+}

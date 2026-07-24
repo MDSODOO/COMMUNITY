@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!--
+      ════════════════════════════════════════════════════════════════════
+      Templates de header AISLADOS para sale.order (Cotización / OV).
+
+      MOTIVACIÓN:
+      Los templates compartidos pharma_doc_info / pharma_meta_band /
+      pharma_full_header (en report_layout_overrides.xml) son usados por
+      sale.order, purchase.order y stock.picking. Cada fix quirúrgico
+      para uno (ej. modificador "purchase" con flex 16.5rem que
+      colapsó la columna en wkhtmltopdf — commit 4e51801) impactó los
+      demás. Estrategia de aislamiento: cada modelo tiene su propio
+      doc-info / meta-band / full-header; los compartidos quedan vivos
+      mientras purchase y picking los usen (migración incremental).
+
+      Este archivo añade SOLO la versión sale.order. Los compartidos NO
+      se tocan.
+      ════════════════════════════════════════════════════════════════════
+    -->
+
+    <!--
+      Doc-info (esquina superior derecha): "Cotización" o "Orden de Venta"
+      según estado/contexto + número grande + fecha.
+    -->
+    <template id="pharma_doc_info_sale">
+        <t t-set="_rec" t-value="o if o else doc"/>
+        <t t-set="_is_quote_ctx"
+           t-value="_rec and _rec._name == 'sale.order' and (_rec.state in ('draft', 'sent') or _rec.env.context.get('proforma'))"/>
+        <div class="pharma-doc-info text-end"
+             t-if="_rec and _rec._name == 'sale.order'">
+            <span class="pharma-doc-type">
+                <t t-if="_is_quote_ctx">Cotización</t>
+                <t t-if="not _is_quote_ctx">Orden de Venta</t>
+            </span>
+            <span class="pharma-doc-num" t-esc="_rec.name or ''"/>
+            <span class="pharma-doc-date">
+                <span t-if="_rec.date_order"
+                      t-field="_rec.date_order"
+                      t-options='{"widget": "date"}'/>
+            </span>
+        </div>
+    </template>
+
+    <!--
+      Meta-band sale-only: Vendedor / RFC Emisor / Contacto.
+
+      A diferencia del pharma_meta_band compartido, NO envuelve la fila
+      en <div class="w-100 clearfix mt-4"> — ese wrapper se añadió en
+      commit aadfa6a específicamente para arreglar un problema de flow
+      en purchase, pero genera un margin-top extra innecesario en sale.
+    -->
+    <template id="pharma_meta_band_sale">
+        <t t-set="_rec" t-value="o if o else doc"/>
+        <t t-set="_company" t-value="_rec.company_id.sudo() if _rec else False"/>
+        <div class="row g-0 pharma-meta-band"
+             t-if="_rec and _rec._name == 'sale.order'">
+            <div class="col-4 pharma-meta-cell">
+                <span class="pharma-meta-label">Vendedor</span>
+                <span class="pharma-meta-val">
+                    <t t-esc="_rec.user_id.name or '—'"/>
+                </span>
+            </div>
+            <div class="col-4 pharma-meta-cell">
+                <span class="pharma-meta-label">RFC Emisor</span>
+                <span class="pharma-meta-val">
+                    <t t-esc="(_company and _company.vat) or (_company and _company.partner_id.vat) or '—'"/>
+                </span>
+            </div>
+            <div class="col-4 pharma-meta-cell">
+                <span class="pharma-meta-label">Contacto</span>
+                <span class="pharma-meta-val pharma-meta-val-sm">
+                    <t t-esc="(_company and _company.email) or (_company and _company.partner_id.email) or '—'"/>
+                </span>
+            </div>
+        </div>
+    </template>
+
+    <!--
+      Header completo sale: logo+doc-info → stripe → meta-band.
+      Address-grid se inyecta aparte en sale_order_report.xml usando el
+      template pharma_company_address_block (compartido, no necesita
+      versión sale-only — su comportamiento ya está correctamente
+      condicionado por modelo).
+    -->
+    <template id="pharma_full_header_sale">
+        <t t-set="_rec" t-value="o if o else doc"/>
+        <t t-set="_company" t-value="_rec.company_id.sudo() if _rec else False"/>
+        <div t-if="_rec and _rec._name == 'sale.order'" class="pharma-full-header">
+            <div class="d-flex align-items-start justify-content-between pharma-doc-header">
+                <div class="pharma-logo-shell">
+                    <img t-if="_company and _company.logo"
+                         class="md-logo"
+                         t-att-src="image_data_uri(_company.logo)"
+                         alt="Logo"/>
+                    <div t-if="_company and _company.report_header"
+                         t-field="_company.report_header"
+                         class="o_company_tagline fw-bold mt-1"/>
+                </div>
+                <t t-call="pharma_reports.pharma_doc_info_sale"/>
+            </div>
+            <div class="pharma-stripe">
+                <span class="pharma-stripe-band pharma-stripe-band-brand"/>
+                <span class="pharma-stripe-band pharma-stripe-band-teal"/>
+                <span class="pharma-stripe-band pharma-stripe-band-lime"/>
+            </div>
+            <t t-call="pharma_reports.pharma_meta_band_sale"/>
+        </div>
+    </template>
+
+</odoo>

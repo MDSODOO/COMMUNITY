@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!--
+        Agrega los campos "Perfil de lotes PDF" y "Formato CFDI" al formulario
+        del contacto, en la pestaña "Ventas y Compras", después del campo nativo
+        de Plazos de pago de proveedor. Solo visibles cuando supplier_rank > 0.
+    -->
+    <record id="res_partner_view_form_cfdi_format" model="ir.ui.view">
+        <field name="name">res.partner.form.cfdi.format</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//page[@name='sales_purchases']//field[@name='property_supplier_payment_term_id']"
+                   position="after">
+                <field name="pdf_lot_provider_key"
+                       invisible="supplier_rank == 0"
+                       string="Perfil de lotes PDF"/>
+                <field name="cfdi_supplier_format"
+                       invisible="supplier_rank == 0"
+                       string="Formato CFDI"/>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

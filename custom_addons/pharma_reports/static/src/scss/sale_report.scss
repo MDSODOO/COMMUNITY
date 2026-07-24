@@ -1,0 +1,39 @@
+/* ============================================================
+   pharma_reports — Estilos específicos para Cotización / OV
+   Todas las reglas viven bajo .so-active.pharma-doc-page para no
+   sangrar a otros reportes (OC, picking, factura).
+   ============================================================ */
+
+/* "Orden de Venta" o "Cotización": evitar que parta en dos líneas.
+   En el PDF S02572 "ORDEN DE VENTA" se rompía a "ORDEN DE / VENTA"
+   porque no había nowrap específico. Mismo patrón que OC pero el
+   font-size es ligeramente mayor ya que el texto es más corto que
+   "ORDEN DE COMPRA". */
+.so-active.pharma-doc-page .pharma-doc-type {
+    display: inline-block;
+    white-space: nowrap !important;
+    word-break: keep-all;
+    overflow-wrap: normal;
+    font-size: 0.62rem;
+    line-height: 1;
+    letter-spacing: 0.05em;
+}
+
+.so-active.pharma-doc-page .pharma-doc-num {
+    font-size: 1.4rem;
+    line-height: 1;
+}
+
+/* El bloque doc-info necesita un mínimo de ancho para que el flex
+   container no lo colapse en wkhtmltopdf. Evita imponer flex-basis
+   fijo (esa combinación rompió la OC en commit 4e51801). */
+.so-active.pharma-doc-page .pharma-full-header .pharma-doc-info {
+    min-width: 10rem;
+}
+
+/* Cuando pharma_full_header_sale vive en el body, el .page nativo
+   no debe añadir margen superior — el header pharma define su
+   propio espaciado. */
+.so-active.pharma-doc-page .pharma-full-header {
+    margin-top: 0 !important;
+}

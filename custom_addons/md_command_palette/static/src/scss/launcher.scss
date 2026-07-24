@@ -1,0 +1,456 @@
+// ════════════════════════════════════════════════════════════════════════
+// launcher.scss — MdLauncher (fusión Command Palette + Home Menu grid)
+// ────────────────────────────────────────────────────────────────────────
+// A diferencia del command_palette.scss original, este archivo NO duplica
+// los tokens de marca en variables Sass locales: medicine_depot_portal ya
+// inyecta backend_tokens.scss + backend_bento.scss en el MISMO bundle
+// (web.assets_backend) que este módulo, definiendo las custom properties
+// --md-* sobre .o_web_client. Como MdLauncher se monta como main_component
+// dentro del árbol de .o_web_client, esas variables llegan por herencia
+// normal de CSS aunque este archivo se compile en un módulo distinto — no
+// hay boundary de bundle que salvar aquí (ese sí existe entre
+// assets_backend y assets_frontend/website, que es el caso que
+// justificaba la duplicación original; no aplica entre dos módulos que
+// cargan ambos en assets_backend).
+//
+// Requiere que 'medicine_depot_portal' esté en los `depends` del
+// __manifest__.py de este módulo, para que Odoo garantice el orden de
+// carga (tokens antes que este archivo) — ver manifest propuesto.
+//
+// Auditoría de fidelidad al sistema real (contra backend_tokens.scss,
+// backend_bento.scss y backend_dark.scss, leídos en el servidor antes de
+// escribir este archivo):
+//   1. Sin darken()/lighten(): esas funciones de color de dart-sass están
+//      deprecadas y el borrador original las usaba dos veces sobre
+//      #97D700. Se reemplazan por los hex equivalentes, precalculados una
+//      sola vez con HLS real (no a ojo) — ver constantes $mdl-action-dark-*.
+//   2. Glass: backend_bento.scss usa SIEMPRE fallback opaco
+//      (rgba(255,255,255,0.97)) + blur moderado (10px control panel /
+//      12px statusbar) SOLO dentro de @supports(backdrop-filter). El
+//      borrador original tenía blur(22px) saturate(1.45) sin fallback y
+//      un "highlight diagonal" en gradiente — verificado que esa receta
+//      ("Liquid Glass"/.bento-glass-card) SOLO existe en
+//      medicine_depot_portal/medicine_depot_website/md_bento_theme
+//      (frontend), nunca en backend_bento.scss/backend_dark.scss. Se
+//      sustituye por la receta real de vidrio del backend (flat, sin
+//      gradiente decorativo), con blur bajado a 12px/saturate 1.2 (mismo
+//      rango que .o_form_statusbar) y su fallback opaco correspondiente.
+//   3. Este componente NO es un .o_popover/Dropdown portado vía
+//      .o-overlay-container: se monta como main_component plano dentro del
+//      árbol de .o_web_client (mismo mecanismo que
+//      DialogContainer/NotificationContainer), así que el bug de
+//      compositing de Chromium documentado en backend_bento.scss
+//      (backdrop-filter + position:fixed + portal, reproducido en el menú
+//      de Acción de Contactos) no aplica aquí — confirmado leyendo
+//      launcher.js/xml (no hay Portal ni overlay service involucrados) y
+//      con el historial de la auditoría previa (dark mode con blur ya
+//      capturado funcionando correctamente en producción,
+//      menu_ux_07_palette_dark.png). Se mantiene backdrop-filter con el
+//      patrón @supports de todas formas, por consistencia con el resto
+//      del sistema y como red de seguridad en navegadores sin soporte.
+//   4. Texto en mayúsculas: letter-spacing 0. backend_bento.scss tiene UNA
+//      excepción puntual (.o_horizontal_separator/.o_group_label,
+//      0.06em) pero es minoritaria: el resto del proyecto (portal_bento.scss
+//      .md_fav_chip-adjacent labels, afiliacion.scss, cart_barcode_scanner.scss,
+//      etc.) usa letter-spacing:0 de forma consistente — se sigue esa
+//      convención dominante.
+//   5. Hover de tiles: se usa la magnitud real de
+//      .o_kanban_view .o_kanban_record (translateY(-2px) +
+//      box-shadow 0 12px 28px rgba(22,166,217,0.14)), no la versión más
+//      agresiva (-5px/scale) que pertenece al portal de clientes.
+//   6. Chip "A la mano": proporción real de .md_fav_chip (portal_bento.scss)
+//      — font-weight 700, font-size 0.75rem (== var(--md-text-sm)),
+//      padding 0.15rem 0.5rem, radio píldora, fondo con tinte suave del
+//      color semántico, sin mayúsculas ni borde.
+//
+// Excepción puntual: --md-ink-950 (navy casi negro para el overlay del
+// backdrop) no existe en backend_tokens.scss (el token --md-ink más
+// oscuro definido ahí es --md-primary-dark, #073A4C, insuficientemente
+// oscuro para un overlay de modal). Se mantiene como constante Sass local
+// en vez de forzar un token nuevo en un módulo ajeno sin aprobación.
+$mdl-ink-950: #071316;
+
+// Equivalentes hex precalculados de darken(#97D700, 15%) / darken(#97D700, 20%)
+// (HLS real: H 77.86° S 100% L 42.16% → L-15pp y L-20pp), para no depender
+// de las funciones de color legacy de dart-sass (deprecadas).
+$mdl-action-dark-1: #618B00; // ~darken(#97D700, 15%) — heading "Productos"
+$mdl-action-dark-2: #4F7100; // ~darken(#97D700, 20%) — texto del chip
+
+.o_md_command_palette_backdrop {
+    position: fixed;
+    inset: 0;
+    background:
+        radial-gradient(46rem 30rem at 12% -10%, rgba(22, 166, 217, 0.20), transparent 60%),
+        radial-gradient(40rem 28rem at 92% 106%, rgba(151, 215, 0, 0.16), transparent 62%),
+        rgba($mdl-ink-950, 0.46);
+    z-index: 1100; // por encima de dialogs estándar de Odoo (1050)
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding-top: 12vh;
+
+    @supports (backdrop-filter: blur(1px)) {
+        backdrop-filter: blur(6px);
+        -webkit-backdrop-filter: blur(6px);
+    }
+}
+
+// ── Vidrio real del backend: fallback opaco siempre presente, blur/saturate
+// moderado SOLO dentro de @supports — misma receta que .o_control_panel /
+// .o_form_statusbar en backend_bento.scss. Sin gradiente "highlight"
+// diagonal (esa receta es de medicine_depot_portal/website, no de este
+// bundle). ──
+.o_md_command_palette {
+    width: 92vw;
+    max-width: 640px;
+    max-height: 64vh;
+    background: rgba(255, 255, 255, 0.97); // fallback sólido
+    border: 1px solid rgba(255, 255, 255, 0.75);
+    // Radio deliberadamente mayor que --md-radius-lg (14px): la paleta es
+    // una superficie "flotante" tipo spotlight, no una card de contenido
+    // Bento — se mantiene 24px fijo a propósito para diferenciarla
+    // visualmente del resto de tarjetas del backend.
+    border-radius: 24px;
+    box-shadow:
+        0 0 0 1px rgba(7, 58, 76, 0.05),   // == var(--md-primary-dark) en rgb; rgba() no admite custom properties hex como canal de color
+        0 28px 80px rgba(7, 58, 76, 0.28),
+        0 10px 24px rgba(7, 58, 76, 0.10),
+        inset 0 1px 0 rgba(255, 255, 255, 0.9);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    animation: o_md_command_palette_in 140ms ease-out;
+    color: var(--md-color-text-primary);
+
+    @supports (backdrop-filter: blur(1px)) {
+        background: rgba(255, 255, 255, 0.88);
+        backdrop-filter: blur(12px) saturate(1.2);
+        -webkit-backdrop-filter: blur(12px) saturate(1.2);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        animation-duration: 0.01ms;
+    }
+}
+
+@keyframes o_md_command_palette_in {
+    from { opacity: 0; transform: translateY(-8px) scale(0.98); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.o_md_command_palette_input_wrap {
+    display: flex;
+    align-items: center;
+    gap: var(--md-space-2);
+    padding: var(--md-space-4) var(--md-space-4);
+    border-bottom: 1px solid var(--md-border);
+
+    .o_md_command_palette_icon { opacity: 0.55; color: var(--md-primary-dark); }
+
+    .o_md_command_palette_input {
+        flex: 1 1 auto;
+        border: none;
+        outline: none;
+        font-size: var(--md-text-xl);
+        background: transparent;
+        color: var(--md-color-text-primary);
+        font-family: var(--md-font-body);
+
+        &::placeholder { color: var(--md-muted); }
+    }
+
+    .o_md_command_palette_hint {
+        font-family: var(--md-font-mono);
+        font-size: var(--md-text-xs);
+        opacity: 0.6;
+        border: 1px solid currentColor;
+        border-radius: var(--md-radius-sm);
+        padding: 1px 5px;
+    }
+}
+
+.o_md_command_palette_results {
+    overflow-y: auto;
+    padding: var(--md-space-3);
+    display: flex;
+    flex-direction: column;
+    gap: var(--md-space-2);
+}
+
+// ── Tiles bento: cada categoría de resultado es su propia tarjeta de
+// vidrio con tinte de marca (azul = menús/sugerencias, lima = productos),
+// consistente con el resto de superficies de marca del backend. ──
+.o_md_command_palette_group {
+    border-radius: var(--md-radius-lg);
+    border: 1px solid transparent;
+    padding: var(--md-space-1);
+    background: rgba(255, 255, 255, 0.5);
+}
+
+.o_md_command_palette_group--menu,
+.o_md_command_palette_group--suggested {
+    background: linear-gradient(165deg, rgba(22, 166, 217, 0.14), rgba(22, 166, 217, 0.04) 55%, rgba(255, 255, 255, 0.3));
+    border-color: rgba(22, 166, 217, 0.22);
+}
+
+.o_md_command_palette_group--product {
+    background: linear-gradient(165deg, rgba(151, 215, 0, 0.16), rgba(151, 215, 0, 0.04) 55%, rgba(255, 255, 255, 0.3));
+    border-color: rgba(151, 215, 0, 0.25);
+}
+
+.o_md_command_palette_group_label {
+    display: flex;
+    align-items: center;
+    gap: var(--md-space-1);
+    font-size: var(--md-text-xs);
+    font-weight: var(--md-weight-heading);
+    text-transform: uppercase;
+    letter-spacing: 0; // convención dominante del proyecto para uppercase (ver nota superior)
+    padding: var(--md-space-2) var(--md-space-3) 0.3rem;
+    font-family: var(--md-font-heading);
+
+    .o_md_command_palette_group--menu &,
+    .o_md_command_palette_group--suggested & { color: var(--md-primary); }
+    .o_md_command_palette_group--product & { color: $mdl-action-dark-1; }
+}
+
+.o_md_command_palette_group_count {
+    font-family: var(--md-font-mono);
+    font-weight: 600;
+    opacity: 0.55;
+    letter-spacing: normal;
+    text-transform: none;
+}
+
+// ── Avatar uniforme (28px): ícono real de la app para menús, foto
+// real del producto para productos — en vez de un glifo genérico
+// repetido en cada fila. ──
+.o_md_command_palette_avatar {
+    flex: 0 0 auto;
+    width: 28px;
+    height: 28px;
+    border-radius: var(--md-radius-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    background: rgba(255, 255, 255, 0.7);
+    border: 1px solid var(--md-border);
+    box-shadow: var(--md-shadow-1);
+
+    img { width: 100%; height: 100%; object-fit: contain; }
+    i { opacity: 0.55; font-size: 0.85rem; }
+
+    &--product img { object-fit: cover; }
+}
+
+.o_md_command_palette_group--menu .o_md_command_palette_item.active .o_md_command_palette_avatar,
+.o_md_command_palette_group--menu .o_md_command_palette_item:hover .o_md_command_palette_avatar {
+    border-color: rgba(22, 166, 217, 0.4);
+}
+.o_md_command_palette_group--product .o_md_command_palette_item.active .o_md_command_palette_avatar,
+.o_md_command_palette_group--product .o_md_command_palette_item:hover .o_md_command_palette_avatar {
+    border-color: rgba(151, 215, 0, 0.45);
+}
+
+.o_md_command_palette_item {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: var(--md-space-2);
+    padding: 0.4rem var(--md-space-2);
+    border-radius: var(--md-radius-md);
+    cursor: pointer;
+
+    &::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0.35rem;
+        bottom: 0.35rem;
+        width: 3px;
+        border-radius: 2px;
+        background: transparent;
+    }
+
+    .o_md_command_palette_group--menu & {
+        &.active, &:hover { background: rgba(22, 166, 217, 0.14); }
+        &.active::before { background: var(--md-primary); }
+    }
+    .o_md_command_palette_group--product & {
+        &.active, &:hover { background: rgba(151, 215, 0, 0.20); }
+        &.active::before { background: var(--md-action); }
+    }
+}
+
+// ── Chip "A la mano" — firma visual del componente: la regla de negocio
+// (nunca "Disponible"/"Stock") convertida en el elemento más visible de
+// cada resultado de producto. Proporción real de .md_fav_chip
+// (portal_bento.scss): font-weight 700, font-size 0.75rem, padding
+// 0.15rem 0.5rem, radio píldora, fondo con tinte suave del color
+// semántico, sin mayúsculas ni borde. ──
+.o_md_command_palette_chip {
+    margin-left: auto;
+    display: inline-flex;
+    align-items: baseline;
+    gap: 0.3rem;
+    font-size: var(--md-text-sm); // 0.75rem — igual que .md_fav_chip
+    font-weight: 700;             // igual que .md_fav_chip
+    color: $mdl-action-dark-2;
+    background: rgba(151, 215, 0, 0.12); // tinte suave, igual proporción que rgba($md-blue, 0.12) de .md_fav_chip
+    border-radius: var(--md-radius-pill);
+    padding: 0.15rem 0.5rem;
+    white-space: nowrap;
+}
+
+// ── Grid de "Acciones Sugeridas" — reemplaza el grid de md_home_menu
+// (mismo tamaño de tile/ícono, misma fuente de datos: menuService.getApps()),
+// ahora dentro de la paleta en vez de un <Dropdown> nativo. ──
+$mdl-app-tile-size: 84px;
+$mdl-app-icon-size: 52px;
+
+.o_md_launcher_suggested_grid {
+    display: grid;
+    grid-template-columns: repeat(6, minmax($mdl-app-tile-size, 1fr));
+    gap: var(--md-space-3);
+    padding: var(--md-space-2) var(--md-space-2) var(--md-space-3);
+
+    @media (max-width: 640px) {
+        grid-template-columns: repeat(4, minmax(64px, 1fr));
+    }
+}
+
+// Hover: misma magnitud que .o_kanban_view .o_kanban_record (Step 16/17 de
+// backend_bento.scss) — translateY(-2px) + sombra de marca 12/28 — no la
+// versión más agresiva (-5px/scale(1.015)) que pertenece al portal.
+.o_md_launcher_app_tile {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 6px;
+    padding: var(--md-space-2) 4px;
+    border-radius: var(--md-radius-md);
+    text-align: center;
+    cursor: pointer;
+    transition: background-color 0.2s ease, box-shadow 0.2s ease, transform 0.18s ease;
+
+    &.active, &:hover { background: rgba(22, 166, 217, 0.14); }
+
+    &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 28px rgba(22, 166, 217, 0.14);
+    }
+}
+
+.o_md_launcher_app_icon {
+    width: $mdl-app-icon-size;
+    height: $mdl-app-icon-size;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--md-radius-lg);
+    overflow: hidden;
+    box-shadow: var(--md-shadow-1);
+    background: rgba(255, 255, 255, 0.7);
+
+    img { width: 100%; height: 100%; object-fit: contain; }
+    i { font-size: 22px; color: var(--md-primary); }
+}
+
+.o_md_launcher_app_label {
+    font-size: var(--md-text-sm);
+    line-height: 1.2;
+    max-width: $mdl-app-tile-size;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--md-color-text-primary);
+}
+
+.o_md_command_palette_empty {
+    padding: 2rem 1.25rem;
+    opacity: 0.6;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--md-space-2);
+    font-size: var(--md-text-md);
+
+    .o_md_command_palette_empty_icon { font-size: 1.3rem; opacity: 0.5; }
+}
+
+.o_md_command_palette_footer {
+    display: flex;
+    gap: var(--md-space-4);
+    padding: 0.6rem var(--md-space-4);
+    border-top: 1px solid var(--md-border);
+    font-size: var(--md-text-xs);
+    color: var(--md-muted);
+
+    kbd {
+        font-family: var(--md-font-mono);
+        background: rgba(7, 58, 76, 0.06);
+        border-radius: var(--md-radius-sm);
+        padding: 1px 5px;
+    }
+}
+
+// ── Modo oscuro — convención real de este módulo y de todo el árbol
+// md_* (md_dark_mode, md_home_menu, md_mail_client): clase .o_md_dark_mode
+// en <html>, alternada por JS (localStorage), NO data-color-scheme (eso es
+// solo frontend). Es un sistema DISTINTO e independiente del dark theme
+// nativo de Odoo (--md-* redefinidas en backend_dark.scss, bundle
+// web.assets_web_dark) — por eso aquí no basta con heredar var(--md-*):
+// ese bundle nativo puede no estar activo aunque .o_md_dark_mode sí lo
+// esté (son dos toggles distintos), así que los overrides quedan
+// explícitos como en el command_palette.scss ya desplegado. ──
+.o_md_dark_mode {
+    .o_md_command_palette_backdrop {
+        background:
+            radial-gradient(46rem 30rem at 12% -10%, rgba(22, 166, 217, 0.18), transparent 60%),
+            radial-gradient(40rem 28rem at 92% 106%, rgba(151, 215, 0, 0.14), transparent 62%),
+            rgba(#000, 0.66);
+    }
+
+    .o_md_command_palette {
+        background: rgba($mdl-ink-950, 0.94); // fallback sólido
+
+        @supports (backdrop-filter: blur(1px)) {
+            background: rgba($mdl-ink-950, 0.82);
+        }
+
+        border-color: rgba(255, 255, 255, 0.10);
+        box-shadow:
+            0 28px 80px rgba(#000, 0.5),
+            inset 0 1px 0 rgba(255, 255, 255, 0.06);
+        color: #e8e8ec;
+    }
+
+    .o_md_command_palette_input_wrap,
+    .o_md_command_palette_footer {
+        border-color: rgba(255, 255, 255, 0.08);
+    }
+
+    .o_md_command_palette_input { color: #e8e8ec; }
+    .o_md_command_palette_input_wrap .o_md_command_palette_icon { color: #e8e8ec; }
+
+    .o_md_command_palette_group { background: rgba(255, 255, 255, 0.03); }
+    .o_md_command_palette_group--menu,
+    .o_md_command_palette_group--suggested { background: linear-gradient(165deg, rgba(22, 166, 217, 0.16), rgba(22, 166, 217, 0.03) 60%); }
+    .o_md_command_palette_group--product { background: linear-gradient(165deg, rgba(151, 215, 0, 0.14), rgba(151, 215, 0, 0.03) 60%); }
+
+    .o_md_command_palette_footer { color: rgba(#fff, 0.55); }
+    .o_md_command_palette_footer kbd { background: rgba(255, 255, 255, 0.08); }
+
+    .o_md_command_palette_avatar,
+    .o_md_launcher_app_icon {
+        background: rgba(255, 255, 255, 0.06);
+        border-color: rgba(255, 255, 255, 0.10);
+    }
+
+    .o_md_launcher_app_label { color: #e4e4ef; }
+    .o_md_launcher_app_tile.active,
+    .o_md_launcher_app_tile:hover { background: rgba(255, 255, 255, 0.08); }
+}

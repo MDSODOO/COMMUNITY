@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+        <!-- Vista de Formulario: extensión mejorada con Smart Buttons y estructura nativa -->
+        <record id="view_production_lot_form_customized" model="ir.ui.view">
+            <field name="name">Lotes - Formulario</field>
+            <field name="model">stock.lot</field>
+            <field name="inherit_id" ref="stock.view_production_lot_form"/>
+            <field name="mode">extension</field>
+            <field name="arch" type="xml">
+                <xpath expr="//group[@name='description']" position="replace">
+                    <notebook>
+                        <page string="Información del Lote" name="lot_info">
+                            <group>
+                                <group string="Datos Principales" name="lot_primary_data">
+                                    <field name="name" string="Número de Serie/Lote"/>
+                                    <field name="product_id" string="Producto"/>
+                                    <field name="public_sale_price" string="Precio de Venta"/>
+                                    <field name="public_sale_price_total" string="Precio con Impuestos" class="fw-bold" style="color: #fd7e14;" invisible="not has_public_sale_tax"/>
+                                    <field name="public_sale_price_tax_label" string="Impuesto Aplicable" invisible="not has_public_sale_tax"/>
+                                    <field name="has_public_sale_tax" invisible="1"/>
+                                    <field
+                                        name="ubicacion_destino_id"
+                                        string="Ubicación destino"
+                                        groups="stock.group_stock_user"
+                                        invisible="id"/>
+                                    <field name="ref" string="Referencia"/>
+                                    <field name="estado_lote" string="Estado del Lote"/>
+                                </group>
+                                <group string="Fechas" name="lot_dates">
+                                    <field name="fecha_entrada" string="Fecha de Entrada" readonly="True"/>
+                                    <field name="expiration_date" string="Fecha de Vencimiento"/>
+                                    <field name="fecha_vencimiento_estimado" string="Fecha Estimada"/>
+                                </group>
+                            </group>
+                        </page>
+                        <page string="Referencias Externas" name="lot_references">
+                            <group>
+                                <group string="Proveedor" name="supplier_data">
+                                    <field name="codigo_proveedor_externo" string="Código del Proveedor"/>
+                                    <field name="referencia_compra" string="Referencia de Compra"/>
+                                </group>
+                                <group string="Auditoría" name="audit_data">
+                                    <field name="usuario_creacion" string="Usuario que Creó" readonly="True"/>
+                                    <field name="fecha_ultima_modificacion" string="Última Modificación" readonly="True"/>
+                                </group>
+                            </group>
+                        </page>
+                        <page string="Stock por Sucursal" name="stock_por_sucursal">
+                            <field name="stock_por_almacen_html" nolabel="1" readonly="1"/>
+                        </page>
+                        <page string="Notas de Calidad" name="lot_quality_notes">
+                            <field name="notas_calidad" string="Observaciones" nolabel="1" rows="10"/>
+                        </page>
+                    </notebook>
+                </xpath>
+            </field>
+        </record>
+
+        <!-- Vista Kanban: extensión de la vista nativa -->
+        <record id="view_production_lot_kanban" model="ir.ui.view">
+            <field name="name">Lotes - Kanban</field>
+            <field name="model">stock.lot</field>
+            <field name="inherit_id" ref="stock.view_production_lot_kanban"/>
+            <field name="mode">extension</field>
+            <field name="arch" type="xml">
+                <xpath expr="//templates" position="before">
+                    <field name="qty_a_la_mano"/>
+                    <field name="estado_lote"/>
+                </xpath>
+                <xpath expr="//field[@name='product_id']" position="after">
+                    <div class="small text-muted">
+                        <span class="me-1">A la mano</span>
+                        <field name="qty_a_la_mano"/>
+                    </div>
+                    <div class="small text-muted">
+                        <field name="estado_lote"/>
+                    </div>
+                </xpath>
+            </field>
+        </record>
+
+        <!-- Wizard: Asignar Empresa a Lote -->
+        <record id="view_md_lot_assign_company_wizard_form" model="ir.ui.view">
+            <field name="name">Asignar Empresa - Formulario</field>
+            <field name="model">md.lot.assign.company.wizard</field>
+            <field name="arch" type="xml">
+                <form string="Asignar Empresa">
+                    <sheet>
+                        <div class="alert alert-info" role="alert">
+                            <i class="fa fa-info-circle"/> Selecciona la empresa a asignar al lote.
+                        </div>
+                        <group>
+                            <field name="lot_id" readonly="1"/>
+                            <field name="company_id" required="1"/>
+                            <field name="confirmation_text" readonly="1" invisible="not confirmation_text"/>
+                        </group>
+                    </sheet>
+                    <footer>
+                        <button name="action_assign_company" string="Asignar" type="object" class="btn btn-primary"/>
+                        <button string="Cancelar" class="btn btn-secondary" special="cancel"/>
+                    </footer>
+                </form>
+            </field>
+        </record>
+    </data>
+</odoo>

@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <template id="md_products_item_bento_card"
+              inherit_id="website_sale.products_item"
+              name="Medicine Depot Bento Product Card"
+              priority="260">
+        <!-- Tarjeta principal: añade Bento classes a la forma -->
+        <xpath expr="//form[contains(@t-attf-class, 'oe_product_cart')]" position="attributes">
+            <attribute name="t-attf-class" add="md-product-card card border-0 shadow-sm" separator=" "/>
+        </xpath>
+
+        <!-- Área de imagen: añade clase md-product-media y asegura flexbox -->
+        <xpath expr="//div[contains(@t-attf-class, 'oe_product_image')]" position="attributes">
+            <attribute name="t-attf-class" add="md-product-media" separator=" "/>
+        </xpath>
+
+        <!-- Cuerpo de la tarjeta: contiene texto, precio y CTA -->
+        <xpath expr="//div[hasclass('o_wsale_product_information')]" position="attributes">
+            <attribute name="class" add="card-body md-product-card-body" separator=" "/>
+        </xpath>
+
+        <!-- Metadatos de marca: category name justo después del título -->
+        <xpath expr="//h2[hasclass('o_wsale_products_item_title')]" position="after">
+            <t t-set="md_public_category" t-value="product.public_categ_ids[:1]"/>
+            <span t-if="md_public_category" class="md-product-meta text-muted small" t-out="md_public_category.name"/>
+        </xpath>
+    </template>
+
+    <!-- Raíz semántica Bento de la PDP. Activa (antes active="False").
+         Solo se usan anclajes verificados: #wrap (bedrock Odoo) y
+         #product_details (ya empleado con éxito por product_detail_panel_class).
+         El xpath de galería (o_wsale_product_images) se omite a propósito por
+         no estar verificado contra la fuente de Odoo 19; la galería se estiliza
+         por CSS bajo .md-product-page. NO se añade md-bento-card a #product_details
+         para evitar doble-tarjeta con #o_wsale_product_details_content. -->
+    <template id="md_product_detail_bento_layout"
+              inherit_id="website_sale.product"
+              name="Medicine Depot Bento Product Detail"
+              priority="540">
+        <xpath expr="//div[@id='wrap']" position="attributes">
+            <attribute name="class" add="md-bento md-product-page" separator=" "/>
+        </xpath>
+
+        <xpath expr="//div[@id='product_details']" position="attributes">
+            <attribute name="class" add="md-product-info" separator=" "/>
+        </xpath>
+
+        <xpath expr="//div[@id='product_details']" position="inside">
+            <aside class="md-trust-card mt-4" aria-label="Confianza Medicine Depot">
+                <div>
+                    <strong>Acompañamiento normativo</strong>
+                    <span>Orientación para procesos de farmacia.</span>
+                </div>
+                <div>
+                    <strong>Atención especializada</strong>
+                    <span>Soporte comercial para mostrador y operación.</span>
+                </div>
+                <div>
+                    <strong>Sucursales regionales</strong>
+                    <span>Presencia local para atención cercana.</span>
+                </div>
+            </aside>
+        </xpath>
+    </template>
+
+</odoo>

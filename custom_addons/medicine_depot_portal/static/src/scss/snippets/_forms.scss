@@ -1,0 +1,931 @@
+// Medicine Depot · Forms module
+// Pharmacovigilance wizard, PV fields, buttons, review cards, success states.
+
+.md_pv_page_wrap {
+    min-height: 100%;
+    background:
+        radial-gradient(42rem 28rem at 88% -12%, rgba($md-green, 0.12), transparent 64%),
+        radial-gradient(38rem 24rem at 6% 108%, rgba($md-blue, 0.12), transparent 62%),
+        linear-gradient(180deg, rgba($md-white, 0.94), rgba($md-blue-100, 0.82)),
+        $md-blue-100;
+}
+
+.md_pv_form {
+    display: grid;
+    gap: 18px;
+    width: 100%;
+    max-width: 1280px;
+    margin: 0 auto;
+}
+
+// Hero del wizard en liquid glass claro (mismo lenguaje que afiliación
+// y el resto del sitio). Gana a .md-tile--dark por orden de cascada.
+.md_pv_hero {
+    display: grid;
+    gap: 18px;
+    @include md-liquid-glass(0.6, 22px);
+    background:
+        radial-gradient(26rem 18rem at 88% -12%, rgba($md-blue, 0.18), transparent 70%),
+        radial-gradient(22rem 16rem at -8% 112%, rgba($md-green, 0.16), transparent 70%),
+        linear-gradient(165deg, rgba($md-white, 0.6), rgba($md-white, 0.26) 46%, rgba($md-white, 0.12)),
+        rgba($md-white, 0.5);
+    color: $md-ink;
+}
+
+.md_wizard_hero_main {
+    display: grid;
+    gap: 18px;
+}
+
+.md_pv_hero_copy h2 {
+    margin: 0;
+    font-family: $md-font-title;
+    font-size: $md-type-page-title;
+    line-height: 1.08;
+    font-weight: 900;
+    letter-spacing: 0;
+    color: $md-dark;
+}
+
+.md_pv_hero_copy p {
+    margin: 0;
+    max-width: 720px;
+    color: rgba($md-ink, 0.75) !important;
+    line-height: 1.65;
+    font-size: $md-type-lead;
+}
+
+.md_pv_hero_meta {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.md_pv_summary_card {
+    padding: 16px 18px;
+    border-radius: 0.95rem;
+    background: rgba($md-white, 0.52);
+    border: 1px solid rgba($md-white, 0.7);
+    box-shadow: inset 0 1px 0 rgba($md-white, 0.8),
+                0 6px 16px rgba($md-blue-900, 0.05);
+    backdrop-filter: blur(14px) saturate(1.4);
+    -webkit-backdrop-filter: blur(14px) saturate(1.4);
+
+    span {
+        display: block;
+        font-size: $md-type-eyebrow;
+        letter-spacing: 0;
+        text-transform: uppercase;
+        opacity: 0.72;
+        margin-bottom: 4px;
+    }
+
+    strong {
+        display: block;
+        font-family: $md-font-title;
+        font-size: $md-type-card-title;
+        font-weight: 900;
+        margin-bottom: 4px;
+    }
+
+    p {
+        margin: 0;
+        color: rgba($md-ink, 0.72) !important;
+        line-height: 1.45;
+        font-size: $md-type-small;
+    }
+}
+
+.md_pv_stepper {
+    display: grid;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: 10px;
+}
+
+.md_wizard_progress {
+    position: relative;
+    width: 100%;
+    min-height: 8px;
+    margin-top: 2px;
+    border-radius: $md-r-pill;
+    background: rgba($md-blue-900, 0.08);
+    border: 1px solid rgba($md-blue-900, 0.10);
+    overflow: hidden;
+}
+
+.md_wizard_progress_bar {
+    display: block;
+    width: var(--md-wizard-progress, 0%);
+    min-height: 8px;
+    border-radius: inherit;
+    background: linear-gradient(90deg, rgba($md-green, 0.95), rgba($md-green-300, 0.95));
+    transition: width 0.24s ease;
+}
+
+.md_pv_stepper_item {
+    appearance: none;
+    border: 1px solid rgba($md-white, 0.7);
+    border-radius: $md-r-sm + 2px;
+    padding: 14px 12px;
+    background: rgba($md-white, 0.42);
+    box-shadow: inset 0 1px 0 rgba($md-white, 0.8);
+    backdrop-filter: blur(14px) saturate(1.4);
+    -webkit-backdrop-filter: blur(14px) saturate(1.4);
+    color: $md-ink;
+    text-align: left;
+    display: grid;
+    gap: 4px;
+    transition: 0.18s ease;
+    cursor: pointer;
+
+    span {
+        font-size: $md-type-eyebrow;
+        letter-spacing: 0;
+        font-weight: 900;
+        opacity: 0.72;
+    }
+
+    strong {
+        font-family: $md-font-title;
+        font-size: $md-type-body;
+        font-weight: 900;
+        line-height: 1.05;
+    }
+
+    small {
+        font-size: $md-type-small;
+        line-height: 1.35;
+        opacity: 0.8;
+    }
+
+    &:hover {
+        background: rgba($md-white, 0.62);
+        transform: translateY(-1px);
+    }
+
+    &.is-active {
+        background: rgba($md-blue, 0.14);
+        border-color: rgba($md-blue, 0.38);
+        box-shadow: inset 0 0 0 1px rgba($md-blue, 0.18);
+    }
+
+    &.is-complete {
+        background: rgba($md-green, 0.22) !important;
+        border-color: rgba($md-green, 0.4) !important;
+        box-shadow: 0 0 0 1.5px rgba($md-green, 0.24);
+    }
+}
+
+.md_pv_wizard {
+    display: grid;
+    gap: 16px;
+}
+
+.md_pv_section {
+    display: none;
+    @include md-liquid-glass(0.62, 18px);
+    border-radius: 0.9rem;
+    padding: 1.05rem 1.1rem;
+
+    &,
+    * {
+        text-transform: none !important;
+        color: $md-ink !important;
+    }
+
+    // Shake animation para errores de validacion
+    &.is-invalid {
+        animation: md-aff-shake 0.44s cubic-bezier(0.36, 0.07, 0.19, 0.97);
+        border-color: rgba($md-danger, 0.4) !important;
+    }
+}
+
+.md_pv_section.is-active {
+    display: grid;
+    gap: 18px;
+}
+
+.md_pv_section_head {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    align-items: flex-start;
+
+    h3 {
+        margin: 0;
+        font-family: $md-font-title;
+        font-size: $md-type-card-title;
+        font-weight: 900;
+        letter-spacing: 0;
+        color: $md-dark !important;
+        text-transform: uppercase !important;
+    }
+
+    p {
+        margin: 6px 0 0;
+        color: rgba($md-ink, 0.7) !important;
+        line-height: 1.5;
+        font-size: $md-type-small;
+    }
+
+    span {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: max-content;
+        padding: 6px 12px;
+        border-radius: $md-r-pill;
+        background: rgba($md-blue, 0.1);
+        border: 1px solid rgba($md-blue, 0.14);
+        color: $md-blue-800 !important;
+        font-size: $md-type-eyebrow;
+        font-weight: 900;
+        letter-spacing: 0;
+        text-transform: uppercase;
+    }
+}
+
+.md_pv_fields {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.md_pv_field {
+    display: grid;
+    gap: 6px;
+
+    &--span2 {
+        grid-column: span 2;
+    }
+
+    label {
+        font-size: $md-type-small;
+        font-weight: 600;
+        letter-spacing: 0;
+        color: rgba($md-ink, 0.72) !important;
+    }
+
+    .form-control {
+        height: 42px;
+        border-radius: 0.65rem;
+        border: 1px solid var(--bs-border-color);
+        background: rgba($md-white, 0.5);
+        color: $md-ink !important;
+        font-size: $md-type-body;
+        box-shadow: none;
+        transition: border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+
+        &:focus {
+            border-color: $md-blue;
+            box-shadow: 0 0 0 3px rgba($md-blue, 0.14);
+            background: rgba($md-white, 0.7);
+        }
+    }
+
+    textarea.form-control {
+        min-height: 128px;
+        height: auto;
+    }
+}
+
+.md_pv_actions,
+.md_pv_privacy,
+.md_pv_review_grid {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.md_pv_actions {
+    justify-content: space-between;
+}
+
+.md_pv_actions--final {
+    align-items: flex-end;
+}
+
+.md_pv_hint {
+    margin: 0;
+    color: rgba($md-ink, 0.7) !important;
+    font-size: $md-type-small;
+    line-height: 1.5;
+}
+
+.md_pv_btn {
+    appearance: none;
+    border: 0;
+    border-radius: $md-r-pill;
+    min-height: 44px;
+    padding: 0.75rem 1.15rem;
+    font-size: $md-type-body;
+    font-weight: 900;
+    transition: 0.18s ease;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    text-decoration: none;
+}
+
+.md_pv_btn .spin {
+    width: 14px;
+    height: 14px;
+    border: 2px solid rgba($md-white, 0.36);
+    border-top-color: $md-white;
+    border-radius: 50%;
+    display: inline-block;
+    margin-right: 7px;
+    vertical-align: -2px;
+    animation: md-aff-spin 0.7s linear infinite;
+}
+
+.md_pv_btn--primary {
+    @include md-btn-primary;
+    color: $md-white !important;
+}
+
+.md_pv_btn--ghost {
+    background: $md-white;
+    color: $md-blue-800 !important;
+    border: 1px solid rgba($md-blue, 0.18);
+    box-shadow: inset 0 1px 0 rgba($md-white, 0.7);
+
+    &:hover {
+        background: $md-blue-100;
+        transform: translateY(-1px);
+    }
+}
+
+.md_pv_submit_stack {
+    display: grid;
+    gap: 8px;
+    width: 100%;
+    max-width: 260px;
+    margin-left: auto;
+}
+
+.md_pv_privacy {
+    margin: 0;
+    align-items: flex-start;
+    color: rgba($md-ink, 0.72) !important;
+    line-height: 1.55;
+    font-size: $md-type-small;
+
+    input[type="checkbox"] {
+        margin-top: 0.2rem;
+        width: 17px;
+        height: 17px;
+        accent-color: $md-teal;
+        flex: 0 0 auto;
+    }
+
+    a {
+        color: $md-blue-800 !important;
+        text-decoration: none;
+
+        &:hover {
+            text-decoration: underline;
+        }
+    }
+}
+
+.md_pv_review_grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.85rem;
+    align-items: stretch;
+}
+
+.md_pv_review_card {
+    padding: 0.95rem 1rem;
+    border-radius: 0.95rem;
+    background: rgba($md-teal, 0.06);
+    border: 1px solid rgba($md-teal, 0.1);
+
+    strong {
+        display: block;
+        margin-bottom: 0.35rem;
+        font-family: $md-font-title;
+        font-size: $md-type-card-title;
+        font-weight: 700;
+        color: $md-dark !important;
+    }
+
+    p {
+        margin: 0;
+        font-size: $md-type-small;
+        line-height: 1.55;
+        color: rgba($md-ink, 0.75) !important;
+    }
+}
+
+.md_pv_review_card--soft {
+    background: rgba($md-green, 0.12);
+    border-color: rgba($md-green, 0.22);
+}
+
+.md_pv_success {
+    margin-top: 0.8rem;
+    padding: 0.75rem 0.85rem;
+    border-radius: 0.7rem;
+    border: 1px solid rgba($md-green, 0.5);
+    background: rgba($md-green, 0.16);
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+
+    strong {
+        font-size: $md-type-body;
+        font-weight: 700;
+        color: $md-dark !important;
+    }
+
+    span {
+        font-size: $md-type-small;
+        color: rgba($md-ink, 0.72) !important;
+    }
+}
+
+.md_pv_success_icon {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: $md-green;
+    color: $md-white !important;
+    display: grid;
+    place-items: center;
+    flex: 0 0 auto;
+}
+
+// ── Sizing overrides specifically for the Pharmacovigilance page layout ───────
+.md_pv_page_wrap {
+    .md_pv_form {
+        display: grid !important;
+        gap: 18px !important;
+        width: 100% !important;
+        max-width: 1280px !important;
+        margin: 0 auto !important;
+    }
+
+    .md_pv_fields {
+        display: grid !important;
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        gap: 12px !important;
+    }
+
+    .md_pv_field {
+        display: grid !important;
+        grid-template-columns: 1fr !important;
+        gap: 6px !important;
+
+        &--span2 {
+            grid-column: span 2 !important;
+        }
+
+        label {
+            display: block !important;
+            font-size: $md-type-small !important;
+            font-weight: 600 !important;
+            color: rgba($md-ink, 0.72) !important;
+            margin: 0 !important;
+        }
+
+        .form-control,
+        select.form-control,
+        select {
+            display: block !important;
+            width: 100% !important;
+            height: 42px !important;
+            border-radius: 0.65rem !important;
+            border: 1px solid var(--bs-border-color) !important;
+            background: rgba($md-white, 0.5) !important;
+            color: $md-ink !important;
+            font-size: $md-type-body !important;
+            box-shadow: none !important;
+            line-height: normal !important;
+
+            &:focus {
+                border-color: $md-blue !important;
+                box-shadow: 0 0 0 3px rgba($md-blue, 0.14) !important;
+                background: rgba($md-white, 0.7) !important;
+            }
+        }
+
+        textarea.form-control {
+            min-height: 128px !important;
+            height: auto !important;
+        }
+    }
+
+    .md-section-head {
+        margin-bottom: unquote("clamp(16px, 3.5vw, 28px)");
+
+        h1 {
+            font-size: unquote("clamp(1.8rem, 3.2vw, 2.4rem)") !important;
+            max-width: 28ch !important;
+        }
+
+        .md-lead {
+            font-size: unquote("clamp(0.95rem, 1.8vw, 1.08rem)") !important;
+            line-height: 1.55 !important;
+            max-width: 680px !important;
+            margin-top: 6px !important;
+        }
+    }
+
+    .md_pv_hero_copy h2 {
+        font-size: unquote("clamp(1.4rem, 2.5vw, 1.95rem)") !important;
+    }
+
+    .md_pv_section_head h3 {
+        font-size: unquote("clamp(1.1rem, 2vw, 1.35rem)") !important;
+    }
+
+    // Two-column layout matching /afiliacion
+    .md_pv_layout {
+        display: grid;
+        grid-template-columns: minmax(0, 2.2fr) minmax(280px, 1fr);
+        gap: 0.95rem;
+        align-items: start;
+        width: 100%;
+        max-width: 1280px;
+        margin: 0 auto;
+
+        @media (max-width: 992px) {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    .md_pv_aside {
+        display: flex;
+        flex-direction: column;
+        gap: 0.95rem;
+        position: sticky;
+        top: var(--md-scroll-padding-top, 110px);
+
+        @media (max-width: 992px) {
+            position: static;
+        }
+    }
+
+    .md_pv_checklist_card,
+    .md_pv_help_card {
+        border-radius: 0.9rem;
+        padding: 1.05rem 1.1rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.8rem;
+    }
+
+    .md_pv_checklist_card {
+        @include md-liquid-glass(0.6, 18px);
+        background: rgba($md-white, 0.52);
+        border: 1px solid rgba($md-white, 0.7);
+    }
+
+    .md_pv_aside_kicker {
+        font-size: $md-type-eyebrow;
+        font-weight: 800;
+        letter-spacing: 0;
+        text-transform: uppercase;
+        color: rgba($md-ink, 0.6) !important;
+
+        &--green {
+            color: $md-green-600 !important;
+        }
+    }
+
+    .md_pv_checklist {
+        display: flex;
+        flex-direction: column;
+        gap: 0.65rem;
+    }
+
+    .md_pv_check_item {
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+        font-size: $md-type-small;
+        color: rgba($md-ink, 0.6) !important;
+        font-weight: 500;
+        transition: color 0.22s ease;
+
+        &.is-active {
+            color: $md-blue-800 !important;
+            font-weight: 700;
+        }
+
+        &.is-done {
+            color: $md-dark !important;
+            font-weight: 600;
+        }
+    }
+
+    .md_pv_check_box {
+        flex-shrink: 0;
+        width: 20px;
+        height: 20px;
+        border-radius: 6px;
+        display: grid;
+        place-items: center;
+        background: rgba($md-white, 0.8);
+        border: 1px solid rgba($md-blue, 0.15);
+        color: $md-white;
+        transition: background 0.22s ease, border-color 0.22s ease;
+
+        i {
+            font-size: 0.75rem;
+            opacity: 0;
+            transition: opacity 0.18s ease;
+        }
+
+        .is-done & {
+            background: $md-brand-gradient;
+            border-color: transparent;
+            color: $md-white;
+
+            i {
+                opacity: 1;
+            }
+        }
+
+        .is-active & {
+            border-color: $md-blue;
+            background: rgba($md-blue, 0.08);
+            color: $md-blue-800;
+        }
+    }
+
+    .md_pv_help_card {
+        background:
+            linear-gradient(165deg, rgba($md-green, 0.2), rgba($md-green, 0.08) 60%, transparent),
+            rgba($md-white, 0.52);
+        border: 1px solid rgba($md-green, 0.3);
+        box-shadow: inset 0 1px 0 rgba($md-white, 0.7),
+                    0 14px 34px rgba($md-blue-900, 0.08);
+        backdrop-filter: blur(18px) saturate(1.4);
+        -webkit-backdrop-filter: blur(18px) saturate(1.4);
+
+        p {
+            margin: 0;
+            font-size: $md-type-small;
+            line-height: 1.5;
+            color: $md-ink !important;
+        }
+    }
+
+    .md_pv_help_btn {
+        @include md-btn-primary;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        width: 100%;
+        padding: 0.7rem 1rem;
+        border-radius: $md-r-pill;
+        color: $md-white !important;
+        font-weight: 900;
+        font-size: $md-type-body;
+        text-decoration: none;
+
+        &:hover {
+            color: $md-white !important;
+            text-decoration: none;
+        }
+     }
+
+    .md_pv_portal {
+        background: transparent !important;
+        padding-top: 1.25rem !important;
+    }
+}
+
+// ── Restricted Shop Access Landing Page ────────────────────────────────
+
+.md_restricted_page_wrap {
+    min-height: calc(100vh - 90px);
+    padding: clamp(3.5rem, 7vw, 6rem) 0 clamp(3rem, 5vw, 5rem);
+    background:
+        radial-gradient(70rem 45rem at 95% -8%, rgba($md-green, 0.22), transparent 58%),
+        radial-gradient(55rem 38rem at -8% 108%, rgba($md-blue, 0.2), transparent 55%),
+        radial-gradient(40rem 28rem at 50% 75%, rgba($md-blue-200, 0.18), transparent 65%),
+        linear-gradient(168deg, #f2fbfe 0%, #e8f6fc 45%, #f5fde8 100%);
+}
+
+// Hero
+.md_restricted_hero {
+    max-width: 600px;
+    margin: 0 auto;
+    padding-bottom: clamp(2.5rem, 4vw, 4rem);
+}
+
+// Lock icon circle
+.md_restricted_lock_wrap {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: linear-gradient(145deg, rgba($md-blue, 0.14), rgba($md-blue, 0.05));
+    border: 1.5px solid rgba($md-blue, 0.22);
+    box-shadow:
+        0 8px 28px rgba($md-blue, 0.16),
+        inset 0 1px 0 rgba($md-white, 0.85);
+
+    .md_lock_icon {
+        font-size: 1.9rem;
+        color: $md-blue;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        animation: md-float 3.2s ease-in-out infinite;
+    }
+}
+
+// Eyebrow
+.md_restricted_eyebrow {
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: $md-blue !important;
+}
+
+// Title — no max-width constraint, proper centering
+.md_restricted_title {
+    font-family: $md-font-title;
+    font-weight: 900;
+    font-size: clamp(2rem, 4.5vw, 3.2rem);
+    line-height: 1.06;
+    letter-spacing: -0.04em;
+    color: $md-ink;
+}
+
+// Lead text
+.md_restricted_lead {
+    font-size: 1rem;
+    line-height: 1.65;
+    color: rgba($md-ink, 0.65);
+    max-width: 480px;
+}
+
+// CTA button override — slightly bigger weight
+.md_restricted_btn_login {
+    font-weight: 700;
+}
+
+// Divider between hero and steps
+.md_restricted_divider {
+    position: relative;
+    text-align: center;
+    margin: 0 auto clamp(2rem, 3.5vw, 2.75rem);
+
+    &::before,
+    &::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        height: 1px;
+        width: 28%;
+        background: linear-gradient(to right, transparent, rgba($md-blue, 0.22));
+    }
+
+    &::before {
+        left: 10%;
+        transform-origin: right;
+    }
+
+    &::after {
+        right: 10%;
+        background: linear-gradient(to left, transparent, rgba($md-blue, 0.22));
+    }
+
+    span {
+        display: inline-block;
+        font-size: 0.85rem;
+        font-weight: 700;
+        color: rgba($md-ink, 0.42);
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        padding: 0 1.25rem;
+    }
+}
+
+// Step cards — base (color via modifier, no nth-child)
+.md_restricted_step_card {
+    position: relative;
+    padding: 1.75rem 1.5rem 1.75rem;
+    border-radius: 1.25rem;
+    color: $md-ink !important;
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    transition: transform 0.28s cubic-bezier(0.25, 0.8, 0.25, 1), box-shadow 0.28s ease;
+
+    &:hover {
+        transform: translateY(-7px);
+    }
+
+    // Green — step 01
+    &.md_restricted_step_card--green {
+        background: linear-gradient(152deg, rgba($md-green, 0.22) 0%, rgba($md-green, 0.06) 48%, rgba($md-white, 0.68) 100%);
+        border: 1px solid rgba($md-green, 0.32);
+        box-shadow:
+            0 4px 20px rgba($md-green, 0.12),
+            inset 0 1px 0 rgba($md-white, 0.85);
+
+        &:hover {
+            box-shadow: 0 22px 44px rgba($md-green, 0.16), 0 8px 18px rgba($md-green, 0.1);
+        }
+    }
+
+    // Blue — step 02
+    &.md_restricted_step_card--blue {
+        background: linear-gradient(152deg, rgba($md-blue, 0.2) 0%, rgba($md-blue, 0.05) 48%, rgba($md-white, 0.68) 100%);
+        border: 1px solid rgba($md-blue, 0.28);
+        box-shadow:
+            0 4px 20px rgba($md-blue, 0.12),
+            inset 0 1px 0 rgba($md-white, 0.85);
+
+        &:hover {
+            box-shadow: 0 22px 44px rgba($md-blue, 0.16), 0 8px 18px rgba($md-blue, 0.1);
+        }
+    }
+
+    // Teal — step 03
+    &.md_restricted_step_card--teal {
+        background: linear-gradient(152deg, rgba($md-blue-300, 0.36) 0%, rgba($md-blue-300, 0.1) 48%, rgba($md-white, 0.68) 100%);
+        border: 1px solid rgba($md-blue-300, 0.48);
+        box-shadow:
+            0 4px 20px rgba($md-blue-300, 0.16),
+            inset 0 1px 0 rgba($md-white, 0.85);
+
+        &:hover {
+            box-shadow: 0 22px 44px rgba($md-blue-300, 0.2), 0 8px 18px rgba($md-blue-300, 0.12);
+        }
+    }
+}
+
+.md_step_num {
+    font-family: $md-font-title;
+    font-size: 1rem;
+    font-weight: 900;
+    opacity: 0.18;
+    color: $md-ink;
+    margin-bottom: 0.6rem;
+    letter-spacing: 0.04em;
+}
+
+// Icon circle inside each card
+.md_step_icon_wrap {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 50px;
+    height: 50px;
+    border-radius: 14px;
+    font-size: 1.35rem;
+
+    &--green {
+        background: linear-gradient(140deg, rgba($md-green, 0.24), rgba($md-green, 0.08));
+        color: darken($md-green, 12%);
+        border: 1px solid rgba($md-green, 0.28);
+    }
+
+    &--blue {
+        background: linear-gradient(140deg, rgba($md-blue, 0.2), rgba($md-blue, 0.07));
+        color: $md-blue;
+        border: 1px solid rgba($md-blue, 0.24);
+    }
+
+    &--teal {
+        background: linear-gradient(140deg, rgba($md-blue-300, 0.32), rgba($md-blue-300, 0.1));
+        color: $md-blue-700;
+        border: 1px solid rgba($md-blue-300, 0.3);
+    }
+}
+
+.md_step_title {
+    font-size: 1rem;
+    font-weight: 800;
+    color: $md-ink;
+    margin-bottom: 0.45rem;
+    line-height: 1.25;
+}
+
+.md_step_desc {
+    font-size: 0.875rem;
+    line-height: 1.55;
+    color: rgba($md-ink, 0.6);
+    margin-bottom: 0;
+}
+
+@keyframes md-float {
+    0%   { transform: translateY(0); }
+    50%  { transform: translateY(-9px); }
+    100% { transform: translateY(0); }
+}
+

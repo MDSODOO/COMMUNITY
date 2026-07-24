@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_medicine_depot_pharmacovigilance_report_list" model="ir.ui.view">
+        <field name="name">medicine.depot.pharmacovigilance.report.list</field>
+        <field name="model">medicine.depot.pharmacovigilance.report</field>
+        <field name="arch" type="xml">
+            <list default_order="report_date desc">
+                <field name="name"/>
+                <field name="report_date"/>
+                <field name="patient_name"/>
+                <field name="event_severity"/>
+                <field name="reporter_name"/>
+                <field name="state"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_medicine_depot_pharmacovigilance_report_form" model="ir.ui.view">
+        <field name="name">medicine.depot.pharmacovigilance.report.form</field>
+        <field name="model">medicine.depot.pharmacovigilance.report</field>
+        <field name="arch" type="xml">
+            <form string="Reporte de farmacovigilancia">
+                <header>
+                    <field name="state" widget="statusbar" statusbar_visible="submitted,in_review,done"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" readonly="1"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="report_date" readonly="1"/>
+                            <field name="source" readonly="1"/>
+                            <field name="company_id" readonly="1"/>
+                            <field name="website_id" readonly="1"/>
+                        </group>
+                        <group>
+                            <field name="patient_name"/>
+                            <field name="patient_age"/>
+                            <field name="patient_sex"/>
+                            <field name="patient_city"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Evento">
+                            <group>
+                                <group>
+                                    <field name="event_date"/>
+                                    <field name="event_severity"/>
+                                    <field name="event_outcome"/>
+                                </group>
+                                <group>
+                                    <field name="event_description" nolabel="1"/>
+                                </group>
+                            </group>
+                        </page>
+                        <page string="Medicamento">
+                            <group>
+                                <group>
+                                    <field name="suspected_product_name"/>
+                                    <field name="suspected_product_presentation"/>
+                                    <field name="suspected_batch"/>
+                                    <field name="suspected_dose"/>
+                                </group>
+                                <group>
+                                    <field name="medical_history" nolabel="1"/>
+                                    <field name="current_condition" nolabel="1"/>
+                                </group>
+                            </group>
+                            <group>
+                                <field name="concomitant_medication" nolabel="1"/>
+                            </group>
+                        </page>
+                        <page string="Notificador">
+                            <group>
+                                <group>
+                                    <field name="reporter_name"/>
+                                    <field name="reporter_role"/>
+                                    <field name="reporter_relationship"/>
+                                </group>
+                                <group>
+                                    <field name="reporter_email"/>
+                                    <field name="reporter_phone"/>
+                                    <field name="consent" readonly="1"/>
+                                </group>
+                            </group>
+                            <group>
+                                <field name="notes" nolabel="1"/>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_medicine_depot_pharmacovigilance_report" model="ir.actions.act_window">
+        <field name="name">Farmacovigilancia</field>
+        <field name="res_model">medicine.depot.pharmacovigilance.report</field>
+        <field name="view_mode">list,form</field>
+        <field name="view_id" ref="view_medicine_depot_pharmacovigilance_report_list"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Aún no hay reportes.</p>
+            <p>Los reportes recibidos desde el sitio web aparecerán aquí para seguimiento interno.</p>
+        </field>
+    </record>
+
+    <!-- Solo administradores (base.group_system) ven el módulo/menú de
+         Farmacovigilancia en la vista de aplicaciones. -->
+    <menuitem id="menu_medicine_depot_pharmacovigilance_root"
+              name="Farmacovigilancia"
+              action="action_medicine_depot_pharmacovigilance_report"
+              groups="base.group_system"
+              sequence="95"/>
+
+</odoo>

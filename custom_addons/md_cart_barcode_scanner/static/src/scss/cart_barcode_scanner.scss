@@ -1,0 +1,552 @@
+// ─────────────────────────────────────────────────────────────────────────
+// Carrito B2B con escaner — reskin fiel al lenguaje visual glassmorphism +
+// bento YA establecido en el portal (medicine_depot_portal/_tokens.scss:
+// paleta de marca, mixins md-liquid-glass/md-glass-dark/md-liquid-ambient,
+// radios y sombras). Sin @import: se apoya en el orden de bundle real ya
+// usado en este mismo codebase (ver medicine_depot_portal __manifest__.py,
+// comentario "ORDEN CRITICO: _tokens.scss debe ir primero") — este modulo
+// depende de medicine_depot_portal, asi que sus variables/mixins SCSS ya
+// estan disponibles cuando este archivo compila dentro de web.assets_frontend.
+// Todo escondido tras groups="base.group_portal" en las plantillas: un
+// usuario interno / visitante nunca ve estos estilos activos.
+// ─────────────────────────────────────────────────────────────────────────
+
+#shop_cart {
+    position: relative;
+    // Ambient claro con tintes de marca: le da al vidrio algo que refractar
+    // (mismo mixin que usan las secciones --glass del portal).
+    @include md-liquid-ambient;
+    border-radius: $md-radius-bento;
+    padding: $md-gap-md;
+    margin: -#{$md-gap-md} 0;
+
+    // ── Cabecera ────────────────────────────────────────────────────────
+    .o_md_cart_header_text {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+    }
+    .o_md_cart_header_subtitle {
+        margin: 0;
+        font-size: $md-text-xs;
+        font-weight: 700;
+        letter-spacing: 0;
+        text-transform: uppercase;
+        color: $md-muted;
+    }
+    .o_md_cart_header_title {
+        margin: 0;
+        font-family: $md-font-title;
+        font-size: $md-text-xl;
+        font-weight: 800;
+        letter-spacing: 0;
+        text-transform: uppercase;
+        color: $md-ink;
+    }
+
+    // ── Bento grid ──────────────────────────────────────────────────────
+    .o_md_scanner_bento {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: $md-gap;
+        margin: $md-gap-md 0;
+    }
+
+    .o_md_bento_scan_btn {
+        grid-column: 1 / span 2;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        text-align: left;
+        background: $md-gradient-brand;
+        border: none;
+        border-radius: $md-radius-bento;
+        padding: $md-card-pad-compact;
+        cursor: pointer;
+        box-shadow: 0 12px 26px rgba($md-blue, 0.24),
+                    0 6px 14px rgba($md-green, 0.16);
+        transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
+
+        &:hover {
+            filter: saturate(1.08);
+            transform: translateY(-1px);
+            box-shadow: 0 16px 32px rgba($md-blue, 0.30),
+                        0 8px 18px rgba($md-green, 0.22);
+
+            .o_md_bento_scan_icon i {
+                transform: scale(1.08);
+            }
+        }
+        &:active {
+            transform: translateY(0);
+        }
+    }
+    .o_md_bento_scan_icon {
+        width: 50px;
+        height: 50px;
+        border-radius: $md-radius;
+        background: rgba($md-white, 0.95);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        box-shadow: $md-shadow-sm;
+
+        i {
+            color: $md-blue;
+            font-size: 20px;
+            transition: transform 0.18s ease;
+        }
+    }
+    .o_md_bento_scan_text {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+    }
+    .o_md_bento_scan_title {
+        font-family: $md-font-title;
+        font-size: $md-text-md;
+        font-weight: 800;
+        color: $md-white;
+        text-transform: uppercase;
+        letter-spacing: 0;
+    }
+    .o_md_bento_scan_subtitle {
+        margin-top: 1px;
+        font-size: $md-text-sm;
+        color: rgba($md-white, 0.9);
+        text-transform: none;
+    }
+    .o_md_bento_scan_chevron {
+        color: $md-white;
+        font-size: 16px;
+        flex-shrink: 0;
+    }
+
+    // Mismo tratamiento que .md_data_card en el portal: vidrio + tinte
+    // diagonal de color por identidad (--invoice/--quote), no vidrio
+    // plano. Cada tile lleva el color de su icono/KPI a su fondo.
+    .o_md_bento_stat {
+        @include md-liquid-glass(0.58, 18px);
+        border-radius: $md-radius;
+        padding: $md-card-pad-compact;
+        transition: transform 0.22s ease, box-shadow 0.22s ease;
+
+        &:hover {
+            transform: translateY(-5px) scale(1.015);
+            box-shadow: 0 22px 44px rgba($md-blue-900, 0.12),
+                        0 8px 18px rgba($md-blue-900, 0.08);
+        }
+    }
+    .o_md_bento_stat--items {
+        background: linear-gradient(165deg, rgba($md-blue, 0.15), rgba($md-blue, 0.05) 50%, rgba($md-white, 0.3)),
+                    rgba($md-white, 0.58);
+        border-color: rgba($md-blue, 0.25);
+        .o_md_bento_stat_value { color: $md-blue-800; }
+    }
+    .o_md_bento_stat--total {
+        background: linear-gradient(165deg, rgba($md-green, 0.18), rgba($md-green, 0.05) 50%, rgba($md-white, 0.3)),
+                    rgba($md-white, 0.58);
+        border-color: rgba($md-green, 0.28);
+        .o_md_bento_stat_value { color: $md-green-900; }
+    }
+    .o_md_bento_stat_value {
+        margin: 0;
+        font-family: $md-font-title;
+        font-size: $md-text-xl;
+        font-weight: 900;
+        line-height: 1;
+        color: $md-ink;
+    }
+    .o_md_bento_stat_label {
+        margin: 4px 0 0;
+        font-size: $md-text-xs;
+        font-weight: 600;
+        color: rgba($md-ink, 0.7);
+        text-transform: uppercase;
+        letter-spacing: 0;
+    }
+
+    // ── Badge "A la mano" ───────────────────────────────────────────────
+    // Mismas proporciones que .md_fav_chip (el chip real ya usado en el
+    // portal): sin mayusculas, sin tracking, padding compacto.
+    .o_md_on_hand_badge {
+        display: inline-block;
+        margin-top: 4px;
+        padding: 0.15rem 0.5rem;
+        border-radius: $md-r-pill;
+        font-size: 0.75rem;
+        font-weight: 700;
+        white-space: nowrap;
+    }
+    .o_md_on_hand_badge.o_md_on_hand_ok {
+        background: rgba($md-success, 0.14);
+        color: $md-success;
+    }
+    .o_md_on_hand_badge.o_md_on_hand_low {
+        background: rgba($md-warning, 0.16);
+        color: $md-warning;
+    }
+
+    // ── Tarjetas de producto ────────────────────────────────────────────
+    // Reskin de .o_cart_product (nativo) sin tocar su estructura/JS.
+    #cart_products .o_cart_product {
+        @include md-liquid-glass(0.58, 16px);
+        background-image: linear-gradient(165deg, rgba($md-blue, 0.08), rgba($md-blue, 0.02) 50%, rgba($md-white, 0.3));
+        border-color: rgba($md-blue, 0.16);
+        border-radius: $md-radius-bento;
+        padding: $md-card-pad-compact;
+        margin-bottom: 0;
+        transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease;
+
+        &:hover {
+            transform: translateY(-5px) scale(1.015);
+            box-shadow: 0 22px 44px rgba($md-blue-900, 0.12),
+                        0 8px 18px rgba($md-blue-900, 0.08);
+        }
+    }
+    #cart_products .o_cart_product_image {
+        border-radius: $md-radius;
+        overflow: hidden;
+    }
+    #cart_products .js_delete_product {
+        text-decoration: underline;
+        color: $md-muted;
+        font-weight: 600;
+
+        &:hover {
+            color: $md-danger;
+        }
+    }
+    // Stepper +/- : pill gris claro con botones circulares blancos.
+    #cart_products .css_quantity {
+        background: $md-gray-100;
+        border-radius: $md-r-sm;
+        padding: 4px 6px;
+        border: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+
+        .btn-link {
+            border: none !important;
+            background: $md-white;
+            border-radius: 7px;
+            width: 26px;
+            height: 26px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: $md-blue;
+            box-shadow: $md-shadow-sm;
+        }
+        .js_quantity {
+            border: none;
+            background: transparent;
+            box-shadow: none;
+            text-align: center;
+            font-weight: 700;
+            color: $md-ink;
+        }
+    }
+
+    // ── Resumen / footer sticky ─────────────────────────────────────────
+    .o_total_card {
+        @include md-liquid-glass(0.72, 18px);
+        border-radius: $md-radius-bento;
+    }
+    .o_cart_total table td {
+        text-transform: uppercase;
+        font-size: $md-text-sm;
+        letter-spacing: 0.02em;
+    }
+    [name="o_order_total"] td {
+        font-size: $md-text-lg;
+    }
+    a[name="website_sale_main_button"] {
+        @include md-btn-primary;
+        border-radius: $md-radius !important;
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+    }
+}
+
+// ═════════════════════════════════════════════════════════════════════════
+//  VISTA DE ESCANEO — overlay pantalla completa. Fondo oscuro de marca
+//  ($md-gradient-dark, el mismo token que .md-section--dark) a proposito:
+//  es el visor de camara, un contexto distinto al resto del sitio claro.
+//  Los paneles flotantes usan vidrio claro translucido de baja opacidad
+//  sobre ese fondo oscuro (mismo blur/saturate que $md-blur-glass en vez
+//  de valores arbitrarios), consistente con el resto del sitio.
+// ═════════════════════════════════════════════════════════════════════════
+@keyframes mdScanLine {
+    0% { top: 6%; opacity: 0.3; }
+    50% { top: 92%; opacity: 1; }
+    100% { top: 6%; opacity: 0.3; }
+}
+@keyframes mdToastIn {
+    from { opacity: 0; transform: translate(-50%, 10px); }
+    to { opacity: 1; transform: translate(-50%, 0); }
+}
+@keyframes mdFadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+#o_md_barcode_scan_modal {
+    position: fixed;
+    inset: 0;
+    z-index: $z-modal;
+    display: flex;
+    flex-direction: column;
+    background: $md-gradient-dark;
+    animation: mdFadeIn 0.2s ease;
+
+    .o_md_scan_header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: calc(18px + env(safe-area-inset-top)) 16px 10px;
+        flex-shrink: 0;
+    }
+    .o_md_scan_title_pill {
+        background: rgba($md-white, 0.1);
+        backdrop-filter: blur($md-blur-glass) saturate(1.4);
+        -webkit-backdrop-filter: blur($md-blur-glass) saturate(1.4);
+        border: 1px solid rgba($md-white, 0.18);
+        border-radius: $md-radius;
+        padding: 8px 14px;
+        color: $md-white;
+        font-size: $md-text-sm;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+    }
+    .o_md_scan_close {
+        width: 36px;
+        height: 36px;
+        border-radius: $md-r-pill;
+        background: rgba($md-white, 0.12);
+        backdrop-filter: blur($md-blur-glass) saturate(1.4);
+        -webkit-backdrop-filter: blur($md-blur-glass) saturate(1.4);
+        border: 1px solid rgba($md-white, 0.18);
+        color: $md-white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 16px;
+        line-height: 1;
+    }
+
+    .o_md_scan_viewport {
+        flex: 1;
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        min-height: 0;
+    }
+    .o_md_scan_grid_bg {
+        position: absolute;
+        inset: 0;
+        background-image:
+            linear-gradient(rgba($md-white, 0.04) 1px, transparent 1px),
+            linear-gradient(90deg, rgba($md-white, 0.04) 1px, transparent 1px);
+        background-size: 26px 26px;
+        pointer-events: none;
+    }
+    // Rectangular, no cuadrado: debe coincidir con el qrbox real que usa
+    // Html5Qrcode (250x150 en cart_barcode_scanner.js) — un codigo de
+    // barras 1D (EAN13/UPC/Code128) es ancho y bajo, no cuadrado. Un
+    // recuadro visual que no coincide con la region real de deteccion
+    // confunde al usuario sobre donde encuadrar el producto.
+    .o_md_scan_frame {
+        width: 250px;
+        height: 150px;
+        position: relative;
+    }
+    .o_md_barcode_reader {
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        border-radius: $md-r-sm;
+
+        video {
+            width: 100% !important;
+            height: 100% !important;
+            object-fit: cover;
+            border-radius: $md-r-sm;
+        }
+    }
+    .o_md_scan_corner {
+        position: absolute;
+        width: 36px;
+        height: 36px;
+        border: 0 solid $md-blue-300;
+        pointer-events: none;
+    }
+    .o_md_scan_corner.tl { top: -3px; left: -3px; border-top-width: 3px; border-left-width: 3px; border-radius: $md-r-sm 0 0 0; }
+    .o_md_scan_corner.tr { top: -3px; right: -3px; border-top-width: 3px; border-right-width: 3px; border-radius: 0 $md-r-sm 0 0; }
+    .o_md_scan_corner.bl { bottom: -3px; left: -3px; border-bottom-width: 3px; border-left-width: 3px; border-radius: 0 0 0 $md-r-sm; }
+    .o_md_scan_corner.br { bottom: -3px; right: -3px; border-bottom-width: 3px; border-right-width: 3px; border-radius: 0 0 $md-r-sm 0; }
+    .o_md_scan_line {
+        position: absolute;
+        left: 6px;
+        right: 6px;
+        height: 2px;
+        background: linear-gradient(90deg, transparent, $md-blue-300, transparent);
+        animation: mdScanLine 2.4s ease-in-out infinite;
+        pointer-events: none;
+    }
+
+    .o_md_scan_hint {
+        position: absolute;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        margin: 0;
+        color: rgba($md-white, 0.6);
+        font-size: $md-text-sm;
+        text-align: center;
+        width: 260px;
+    }
+
+    .o_md_scan_status {
+        position: absolute;
+        top: 52px;
+        left: 50%;
+        transform: translateX(-50%);
+        animation: mdToastIn 0.25s ease;
+        color: $md-white;
+        padding: 10px 16px;
+        border-radius: $md-radius;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        max-width: 88%;
+        border: 1px solid rgba($md-white, 0.25);
+        box-shadow: $md-shadow-glass;
+        font-size: $md-text-sm;
+        font-weight: 600;
+        line-height: 1.3;
+        text-align: center;
+        backdrop-filter: blur($md-blur-glass);
+        -webkit-backdrop-filter: blur($md-blur-glass);
+        margin: 0;
+
+        &.o_md_status_ok {
+            background: rgba($md-success, 0.85);
+        }
+        &.o_md_status_error {
+            background: rgba($md-danger, 0.85);
+        }
+        &.o_md_status_pending {
+            background: rgba($md-blue, 0.75);
+        }
+    }
+
+    .o_md_scan_sheet {
+        flex-shrink: 0;
+        margin: 0 16px calc(16px + env(safe-area-inset-bottom));
+        background: rgba($md-white, 0.1);
+        backdrop-filter: blur($md-blur-glass) saturate(1.4);
+        -webkit-backdrop-filter: blur($md-blur-glass) saturate(1.4);
+        border: 1px solid rgba($md-white, 0.18);
+        border-radius: $md-radius-bento;
+        padding: $md-gap-sm;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+    .o_md_scan_sheet_btn {
+        width: 100%;
+        border: none;
+        padding: 13px 14px;
+        border-radius: $md-radius;
+        font-size: $md-text-sm;
+        font-weight: 600;
+        cursor: pointer;
+        text-transform: uppercase;
+        letter-spacing: 0.02em;
+    }
+    .o_md_scan_sheet_btn.o_md_sheet_manual {
+        background: rgba($md-white, 0.14);
+        color: $md-white;
+        border: 1px solid rgba($md-white, 0.2);
+    }
+    .o_md_scan_sheet_btn.o_md_sheet_cancel {
+        background: none;
+        color: rgba($md-white, 0.6);
+        font-weight: 600;
+        padding: 6px;
+    }
+
+    // ── Modal de entrada manual ─────────────────────────────────────────
+    .o_md_manual_backdrop {
+        position: absolute;
+        inset: 0;
+        background: rgba($md-ink-950, 0.5);
+        backdrop-filter: blur(4px);
+        -webkit-backdrop-filter: blur(4px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: $z-overlay;
+        padding: 24px;
+    }
+    .o_md_manual_panel {
+        width: 100%;
+        max-width: 340px;
+        background: rgba($md-white, 0.16);
+        backdrop-filter: blur(24px) saturate(1.4);
+        -webkit-backdrop-filter: blur(24px) saturate(1.4);
+        border: 1px solid rgba($md-white, 0.3);
+        border-radius: $md-radius-bento;
+        padding: 22px;
+    }
+    .o_md_manual_title {
+        margin: 0 0 12px;
+        color: $md-white;
+        font-size: $md-text-md;
+        font-weight: 700;
+        text-transform: uppercase;
+    }
+    .o_md_manual_input {
+        width: 100%;
+        background: rgba($md-white, 0.15);
+        border: 1px solid rgba($md-white, 0.3);
+        color: $md-white;
+        padding: 12px;
+        border-radius: $md-r-sm;
+        font-size: $md-text-sm;
+        margin-bottom: 14px;
+
+        &::placeholder {
+            color: rgba($md-white, 0.6);
+        }
+    }
+    .o_md_manual_actions {
+        display: flex;
+        gap: 10px;
+    }
+    .o_md_manual_actions button {
+        flex: 1;
+        padding: 12px;
+        border-radius: $md-r-sm;
+        font-size: $md-text-sm;
+        font-weight: 600;
+        cursor: pointer;
+        text-transform: uppercase;
+    }
+    .o_md_manual_cancel {
+        background: rgba($md-white, 0.14);
+        color: $md-white;
+        border: 1px solid rgba($md-white, 0.2);
+    }
+    .o_md_manual_submit {
+        @include md-btn-primary;
+        border-radius: $md-r-sm !important;
+    }
+}

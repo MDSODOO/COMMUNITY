@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="md_command_palette.Launcher">
+        <div t-if="state.open" class="o_md_command_palette_backdrop" t-on-click="close">
+            <div class="o_md_command_palette"
+                 role="dialog"
+                 aria-modal="true"
+                 aria-label="Buscador y navegación / Search and navigation"
+                 t-on-click.stop="">
+                <div class="o_md_command_palette_input_wrap">
+                    <i class="fa fa-search o_md_command_palette_icon"/>
+                    <input t-ref="paletteInput"
+                           type="text"
+                           role="combobox"
+                           aria-expanded="true"
+                           aria-autocomplete="list"
+                           aria-controls="o_md_launcher_results"
+                           t-attf-aria-activedescendant="{{ results[state.activeIndex] ? results[state.activeIndex].key : '' }}"
+                           class="o_md_command_palette_input"
+                           placeholder="Buscar menús, productos… / Search menus, products…"
+                           t-on-input="onInput"/>
+                    <span class="o_md_command_palette_hint">Esc</span>
+                </div>
+                <div id="o_md_launcher_results" class="o_md_command_palette_results" role="listbox">
+
+                    <!-- ══ Estado por defecto (sin búsqueda activa): grid de -->
+                    <!-- "Acciones Sugeridas" — mismas apps instaladas que -->
+                    <!-- antes mostraba el grid de md_home_menu, ahora dentro -->
+                    <!-- de este mismo componente. ══ -->
+                    <div t-if="!state.query.trim()" class="o_md_command_palette_group o_md_command_palette_group--suggested">
+                        <div class="o_md_command_palette_group_label">
+                            Acciones Sugeridas / Suggested Actions
+                        </div>
+                        <div t-if="state.suggestedApps.length" class="o_md_launcher_suggested_grid">
+                            <!-- t-foreach sobre "results" (no "state.suggestedApps" + reconstrucción -->
+                            <!-- inline del item): mismo patrón ya usado, sin fallos, en Menús/Productos -->
+                            <!-- más abajo. La versión anterior reconstruía { key: `app-${app.id}`, app } -->
+                            <!-- dentro del propio t-on-click Y repetía app.id en t-on-mouseenter y en -->
+                            <!-- t-attf-aria-selected/class dentro del mismo bloque — el compilador de OWL -->
+                            <!-- perdía la referencia a "app" en ese closure y lanzaba TypeError -->
+                            <!-- (Cannot read properties of undefined reading 'id') antes de llegar a -->
+                            <!-- onItemClick, dejando el modal abierto para siempre. Reutilizar el "item" -->
+                            <!-- ya resuelto por el getter "results" elimina esa reconstrucción. -->
+                            <t t-foreach="results" t-as="item" t-key="item.key">
+                                <div t-att-id="item.key"
+                                     role="option"
+                                     t-attf-aria-selected="{{ results.indexOf(item) === state.activeIndex ? 'true' : 'false' }}"
+                                     t-attf-class="o_md_launcher_app_tile {{ results.indexOf(item) === state.activeIndex ? 'active' : '' }}"
+                                     t-on-click="() => this.onItemClick(item)"
+                                     t-on-mouseenter="() => this.state.activeIndex = results.indexOf(item)">
+                                    <span class="o_md_launcher_app_icon">
+                                        <img t-if="item.iconUrl" t-att-src="item.iconUrl" alt=""/>
+                                        <i t-else="" class="oi oi-apps"/>
+                                    </span>
+                                    <span class="o_md_launcher_app_label" t-esc="item.label"/>
+                                </div>
+                            </t>
+                        </div>
+                        <div t-else="" class="o_md_command_palette_empty">
+                            <i class="fa fa-th-large o_md_command_palette_empty_icon"/>
+                            <span>Escribe para buscar / Start typing to search</span>
+                        </div>
+                    </div>
+
+                    <!-- ══ Estado de búsqueda activa: resultados agrupados ══ -->
+                    <t t-else="">
+                        <div t-if="!results.length" class="o_md_command_palette_empty">
+                            <i class="fa fa-search-minus o_md_command_palette_empty_icon"/>
+                            <span>
+                                Sin resultados para “<t t-esc="state.query"/>” / No results for “<t t-esc="state.query"/>”
+                            </span>
+                        </div>
+                        <div t-if="state.menuResults.length" class="o_md_command_palette_group o_md_command_palette_group--menu">
+                            <div class="o_md_command_palette_group_label">
+                                Menús / Menus <span class="o_md_command_palette_group_count" t-esc="state.menuResults.length"/>
+                            </div>
+                            <t t-foreach="state.menuResults" t-as="item" t-key="item.key">
+                                <div t-att-id="item.key"
+                                     role="option"
+                                     t-attf-aria-selected="{{ results.indexOf(item) === state.activeIndex ? 'true' : 'false' }}"
+                                     t-attf-class="o_md_command_palette_item {{ results.indexOf(item) === state.activeIndex ? 'active' : '' }}"
+                                     t-on-click="() => this.onItemClick(item)"
+                                     t-on-mouseenter="() => this.state.activeIndex = results.indexOf(item)">
+                                    <span class="o_md_command_palette_avatar">
+                                        <img t-if="item.iconUrl" t-att-src="item.iconUrl" alt=""/>
+                                        <i t-else="" class="fa fa-th-large"/>
+                                    </span>
+                                    <span t-esc="item.label"/>
+                                </div>
+                            </t>
+                        </div>
+                        <div t-if="state.productResults.length" class="o_md_command_palette_group o_md_command_palette_group--product">
+                            <div class="o_md_command_palette_group_label">
+                                Productos / Products <span class="o_md_command_palette_group_count" t-esc="state.productResults.length"/>
+                            </div>
+                            <t t-foreach="state.productResults" t-as="item" t-key="item.key">
+                                <div t-att-id="item.key"
+                                     role="option"
+                                     t-attf-aria-selected="{{ results.indexOf(item) === state.activeIndex ? 'true' : 'false' }}"
+                                     t-attf-class="o_md_command_palette_item {{ results.indexOf(item) === state.activeIndex ? 'active' : '' }}"
+                                     t-on-click="() => this.onItemClick(item)"
+                                     t-on-mouseenter="() => this.state.activeIndex = results.indexOf(item)">
+                                    <span class="o_md_command_palette_avatar o_md_command_palette_avatar--product">
+                                        <img t-att-src="item.imageUrl" alt=""/>
+                                    </span>
+                                    <span t-esc="item.label"/>
+                                    <span class="o_md_command_palette_chip">
+                                        <t t-esc="item.onHand"/> <t t-esc="item.uom"/> A la mano
+                                    </span>
+                                </div>
+                            </t>
+                        </div>
+                    </t>
+
+                </div>
+                <div class="o_md_command_palette_footer">
+                    <span><kbd>↑</kbd><kbd>↓</kbd> navegar / navigate</span>
+                    <span><kbd>Enter</kbd> abrir / open</span>
+                    <span><kbd>Ctrl</kbd>+<kbd>K</kbd> / <kbd>Alt</kbd>+<kbd>Espacio</kbd></span>
+                </div>
+            </div>
+        </div>
+    </t>
+</templates>

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+        <record id="view_lot_a_la_mano_wizard_form" model="ir.ui.view">
+            <field name="name">A la mano</field>
+            <field name="model">md.lot.a.la.mano.wizard</field>
+            <field name="arch" type="xml">
+                <form string="A la mano">
+                    <group>
+                        <field name="lot_id"/>
+                        <field name="product_id"/>
+                        <field name="cantidad_entrada_a_la_mano" string="A la mano"/>
+                        <field name="ubicacion_destino_id"/>
+                    </group>
+                    <footer>
+                        <button
+                            name="action_apply_a_la_mano"
+                            type="object"
+                            string="A la mano"
+                            class="btn-primary"/>
+                        <button string="Cancelar" class="btn-secondary" special="cancel"/>
+                    </footer>
+                </form>
+            </field>
+        </record>
+    </data>
+</odoo>

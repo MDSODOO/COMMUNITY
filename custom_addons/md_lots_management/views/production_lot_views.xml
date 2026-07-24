@@ -1,0 +1,221 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+        <!-- Kanban del menú principal "Lotes" (Números de serie/lote): hereda
+             stock.view_production_lot_kanban (nativa, sin estilo: solo
+             nombre + producto + properties + actividades) y la rediseña con
+             el mismo lenguaje visual ya aplicado en Inventario > Productos
+             y en "Consulta Handheld": badge "A la mano", color de vencimiento
+             y anillo "Prox. Vencer" (md_expiry_color/md_is_short_expiry,
+             calculados en models/production_lot.py). A diferencia de
+             "Consulta Handheld" (view_production_lot_kanban_handheld), esta
+             vista SI permite crear/editar/eliminar (uso normal de oficina,
+             no el flujo restringido de escaner en bodega) y no incluye la
+             imagen de codigo de barras (innecesaria fuera del contexto de
+             escaneo fisico). -->
+        <record id="view_production_lot_kanban_pos_style" model="ir.ui.view">
+            <field name="name">stock.production.lot.kanban.pos.style</field>
+            <field name="model">stock.lot</field>
+            <field name="inherit_id" ref="stock.view_production_lot_kanban"/>
+            <field name="arch" type="xml">
+                <kanban position="attributes">
+                    <attribute name="class" add="o_md_lot_kanban" separator=" "/>
+                </kanban>
+                <!-- Declaraciones de solo-fetch en la RAIZ del kanban (fuera de
+                     <templates>), no anidadas dentro del template de la card:
+                     el arch base no tiene ningun <field> a nivel raiz para
+                     anclar un position="after", asi que se ancla en
+                     <templates position="before">. Error ya visto antes con
+                     product_variant_count en Inventario > Productos: anclar
+                     dentro del template body + luego reemplazar ese mismo
+                     template descarta la declaracion (TypeError raw_value of
+                     undefined, verificado en vivo). -->
+                <templates position="before">
+                    <field name="qty_a_la_mano"/>
+                    <field name="expiration_date"/>
+                    <field name="md_expiry_color"/>
+                    <field name="md_is_short_expiry"/>
+                    <field name="public_sale_price"/>
+                </templates>
+                <t t-name="card" position="replace">
+                    <t t-name="card">
+                        <div class="o_md_lot_card p-2">
+                            <div t-if="record.md_is_short_expiry.raw_value" class="md-short-expiry-ring" aria-label="Próximo a vencer" aria-hidden="true">
+                                <span class="md-short-expiry-pill">Prox. Vencer</span>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-start">
+                                <field name="name" class="fw-bolder fs-6"/>
+                                <span t-attf-class="o_md_lot_badge o_md_lot_badge--{{record.qty_a_la_mano.raw_value &gt; 0 ? 'ok' : 'low'}}">
+                                    A la mano <field name="qty_a_la_mano"/>
+                                </span>
+                            </div>
+                            <field name="product_id" class="small text-muted d-block"/>
+                            <div class="d-flex justify-content-between align-items-center mt-1">
+                                <span t-attf-class="o_md_lot_expiry o_md_lot_expiry--{{record.md_expiry_color.value}}">
+                                    Vence: <field name="expiration_date"/>
+                                </span>
+                                <span t-if="record.public_sale_price.raw_value" class="fw-bold text-success">
+                                    $<field name="public_sale_price"/>
+                                </span>
+                            </div>
+                            <field name="lot_properties" widget="properties"/>
+                            <field name="activity_ids" widget="kanban_activity"/>
+                        </div>
+                    </t>
+                </t>
+            </field>
+        </record>
+
+        <!-- Vista de Lista: Números de serie/lote -->
+        <record id="view_production_lot_tree_customized" model="ir.ui.view">
+            <field name="name">Lotes - Lista</field>
+            <field name="model">stock.lot</field>
+            <field name="type">list</field>
+            <field name="arch" type="xml">
+                <list string="Números de serie/lote">
+                    <field name="name" string="Número de Serie/Lote" decoration-bf="1" />
+                    <field name="product_id" string="Producto" readonly="1" />
+                    <field name="public_sale_price" string="Precio de Venta" optional="show" />
+                    <field name="public_sale_price_total" string="Precio con Impuestos" optional="hide" />
+                    <field name="public_sale_price_tax_label" string="Impuesto Aplicable" optional="hide" />
+                    <field name="qty_a_la_mano" string="A la Mano (Total)" decoration-danger="qty_a_la_mano == 0" help="Cantidad física total en todos los almacenes. Abre el lote para ver el desglose por sucursal." />
+                    <field name="almacenes_con_stock_ids" string="Sucursales" widget="many2many_tags" optional="show" readonly="1" />
+                    <field name="estado_lote" string="Estado" optional="show" decoration-warning="estado_lote == 'pausado'" decoration-danger="estado_lote == 'agotado'" />
+                    <field name="expiration_date" string="Vencimiento" optional="show" decoration-danger="expiration_date and expiration_date &lt;= current_date" />
+                    <field name="ref" string="Referencia" optional="hide" />
+                    <field name="create_date" string="Creado el" optional="show" />
+                    <field name="usuario_creacion" string="Usuario" optional="hide" />
+                    <field name="partner_ids" string="Transferir a" optional="hide" widget="many2many_tags" invisible="not partner_ids"/>
+                    <field name="activity_ids" string="Actividades" widget="list_activity" optional="show" />
+                </list>
+            </field>
+        </record>
+
+        <!-- Vista de Búsqueda: Lotes de Producción -->
+        <record id="view_production_lot_search_customized" model="ir.ui.view">
+            <field name="name">Lotes - Búsqueda</field>
+            <field name="model">stock.lot</field>
+            <field name="inherit_id" ref="stock.search_product_lot_filter"/>
+            <field name="arch" type="xml">
+                <field name="name" position="attributes">
+                    <attribute name="string">Número de serie/lote</attribute>
+                </field>
+                <!-- Campos de búsqueda adicionales -->
+                <field name="name" position="after">
+                    <field name="codigo_proveedor_externo" string="Código del Proveedor"/>
+                    <field name="referencia_compra" string="Referencia de Compra"/>
+                </field>
+                <!-- Renombrar filtro nativo "A la mano" -->
+                <filter name="on_hand" position="attributes">
+                    <attribute name="string">A la mano</attribute>
+                    <attribute name="domain">[('qty_a_la_mano', '&gt;', 0)]</attribute>
+                </filter>
+                <!-- Filtros por estado del lote -->
+                <filter name="on_hand" position="after">
+                    <separator/>
+                    <filter
+                        name="agotado"
+                        string="Agotados"
+                        domain="[('estado_lote', '=', 'agotado')]"/>
+                    <filter
+                        name="descontinuado"
+                        string="Descontinuados"
+                        domain="[('estado_lote', '=', 'descontinuado')]"/>
+                    <filter
+                        name="vencidos"
+                        string="Vencidos"
+                        domain="[('expiration_date', '!=', False), ('expiration_date', '&lt;', context_today().strftime('%Y-%m-%d'))]"/>
+                    <separator/>
+                    <filter
+                        name="inactive"
+                        string="Archivados"
+                        domain="[('active', '=', False)]"/>
+                </filter>
+                <!-- Ocultar agrupación por empresa (single-company) -->
+                <filter name="group_by_Company" position="attributes">
+                    <attribute name="invisible">1</attribute>
+                </filter>
+                <!-- Limitar por stock de la(s) compañía(s) activa(s), ya que los lotes son
+                     globales/compartidos entre sucursales y sin este filtro se listan todos
+                     los lotes de las 6 sucursales a la vez -->
+                <filter name="on_hand" position="before">
+                    <filter
+                        name="stock_sucursal_activa"
+                        string="Con stock en esta sucursal"
+                        domain="[('quant_ids.company_id', 'in', allowed_company_ids)]"/>
+                </filter>
+                <!-- Agrupaciones personalizadas -->
+                <filter name="group_by_Company" position="after">
+                    <filter
+                        name="group_by_product"
+                        string="Producto"
+                        context="{'group_by': 'product_id'}"/>
+                    <filter
+                        name="group_by_estado"
+                        string="Estado"
+                        context="{'group_by': 'estado_lote'}"/>
+                    <filter
+                        name="group_by_fecha_entrada"
+                        string="Fecha de Entrada"
+                        context="{'group_by': 'fecha_entrada:month'}"/>
+                    <filter
+                        name="group_by_expiration"
+                        string="Mes de Vencimiento"
+                        context="{'group_by': 'expiration_date:month'}"/>
+                </filter>
+            </field>
+        </record>
+
+        <!-- Acción para abrir Lotes -->
+        <record id="action_production_lot_customized" model="ir.actions.act_window">
+            <field name="name">Números de serie/lote</field>
+            <field name="res_model">stock.lot</field>
+            <field name="view_mode">list,form,kanban</field>
+            <field name="search_view_id" ref="view_production_lot_search_customized" />
+            <field name="context">{'search_default_on_hand': 1, 'search_default_stock_sucursal_activa': 1}</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    No hay lotes registrados.
+                </p>
+                <p>
+                    Los lotes permiten rastrear números de serie y lotes de productos.
+                </p>
+            </field>
+        </record>
+
+        <record id="action_production_lot_customized_view_list" model="ir.actions.act_window.view">
+            <field name="sequence" eval="1"/>
+            <field name="view_mode">list</field>
+            <field name="view_id" ref="view_production_lot_tree_customized"/>
+            <field name="act_window_id" ref="action_production_lot_customized"/>
+        </record>
+
+        <record id="action_production_lot_customized_view_form" model="ir.actions.act_window.view">
+            <field name="sequence" eval="2"/>
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="stock.view_production_lot_form"/>
+            <field name="act_window_id" ref="action_production_lot_customized"/>
+        </record>
+
+        <record id="action_production_lot_customized_view_kanban" model="ir.actions.act_window.view">
+            <field name="sequence" eval="3"/>
+            <field name="view_mode">kanban</field>
+            <field name="view_id" ref="stock.view_production_lot_kanban"/>
+            <field name="act_window_id" ref="action_production_lot_customized"/>
+        </record>
+
+        <!-- Menú: Acceso a Lotes -->
+        <menuitem
+            id="menu_production_lot_customized"
+            parent="stock.menu_stock_root"
+            name="Lotes"
+            action="action_production_lot_customized"
+            sequence="10"
+        />
+
+        <!-- Ocultar menú nativo de Odoo para forzar uso exclusivo del menú personalizado -->
+        <record id="stock.menu_action_production_lot_form" model="ir.ui.menu">
+            <field name="active" eval="False"/>
+        </record>
+    </data>
+</odoo>

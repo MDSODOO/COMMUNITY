@@ -1,0 +1,37 @@
+# Translation Template for medicine_depot_website
+# Copyright (C) Medicine Depot
+# This file is distributed under the LGPL-3 license.
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: medicine_depot_website 19.0.1.2.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-05-27 00:00+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#. controllers/api.py
+msgid "El nombre es obligatorio."
+msgstr ""
+
+msgid "El apellido es obligatorio."
+msgstr ""
+
+msgid "Correo electrónico inválido."
+msgstr ""
+
+msgid "El teléfono es obligatorio."
+msgstr ""
+
+msgid "Solicitud recibida. Te contactaremos pronto."
+msgstr ""
+
+msgid "Error interno. Intenta de nuevo más tarde."
+msgstr ""
+
+msgid "Solicitud MedicD recibida. Te contactaremos pronto."
+msgstr ""

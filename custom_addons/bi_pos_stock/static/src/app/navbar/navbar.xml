@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates>
+    <t t-name="Navbar" t-inherit="point_of_sale.Navbar" t-inherit-mode="extension" owl="1">
+        <xpath expr="//div[hasclass('pos-centerheader')]" position="before">
+
+            <!-- ── Button 1: unified quantity screen ── -->
+            <button type="button" class="btn btn-secondary me-1 btn-md-navbar-stock" t-on-click="show_stock_screen">
+                <i class="fa fa-cubes me-1"/>
+                A la mano
+            </button>
+
+            <!-- ── Button 2: e-commerce pending orders ── -->
+            <button type="button" class="btn btn-secondary me-1 btn-md-navbar-ecommerce" t-on-click="show_ecommerce_orders">
+                <i class="fa fa-shopping-cart me-1"/>
+                Pedidos en Línea
+            </button>
+
+            <!-- ── Button 3: refresh pricelist rules without closing the session ── -->
+            <button type="button" class="btn btn-secondary me-1 btn-md-navbar-refresh-prices" t-on-click="refresh_prices">
+                <i class="fa fa-refresh me-1"/>
+                Actualizar precios
+            </button>
+
+        </xpath>
+    </t>
+</templates>

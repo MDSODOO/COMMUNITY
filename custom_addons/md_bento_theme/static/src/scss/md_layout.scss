@@ -1,0 +1,156 @@
+.md-bento-site .md-bento-navbar {
+  background:
+    linear-gradient(135deg, rgba(255,255,255,.86), rgba(255,255,255,.64));
+  border-bottom: 1px solid color-mix(in srgb, var(--md-line), transparent 20%);
+  backdrop-filter: blur(18px);
+}
+
+.md-bento-site .md-bento-navbar .navbar-brand img {
+  max-height: 3.3rem;
+  object-fit: contain;
+  width: auto;
+}
+
+.md-bento-site .md-bento-navbar #top_menu {
+  align-items: center;
+  gap: .35rem;
+}
+
+.md-bento-site .md-bento-navbar #top_menu .nav-link {
+  border-radius: 999px;
+  color: var(--md-text);
+  font-weight: 700;
+  padding-inline: .85rem;
+}
+
+.md-bento-site .md-bento-navbar #top_menu .nav-link:hover {
+  background: color-mix(in srgb, var(--md-blue), transparent 88%);
+  color: var(--md-blue);
+}
+
+.md-bento-site .md-bento-nav-cta {
+  display: flex;
+  margin-left: .5rem;
+}
+
+.md-bento .container {
+  position: relative;
+  z-index: 1;
+}
+
+.md-section-heading {
+  margin-bottom: unquote("clamp(1.25rem, 2.5vw, 2rem)");
+  max-width: 48rem;
+}
+
+.md-section-heading h2 {
+  font-size: unquote("clamp(2rem, 5vw, 4.2rem)");
+  letter-spacing: -.025em;
+  line-height: 1.0;
+  margin: .75rem 0 0;
+}
+
+.md-bento p {
+  color: var(--md-muted);
+}
+
+html:has(:is(.oe_login_form, .oe_signup_form)) main {
+  align-items: center;
+  background:
+    radial-gradient(circle at 15% 10%, rgba($md-blue, .18), transparent 24rem),
+    radial-gradient(circle at 82% 88%, rgba($md-green-600, .16), transparent 25rem),
+    #f4f7f8 !important;
+  display: flex;
+  justify-content: center;
+  min-height: calc(100vh - 4.35rem);
+  overflow: hidden;
+  padding: unquote("clamp(1rem, 3vw, 2.5rem)") !important;
+}
+
+html:has(:is(.oe_login_form, .oe_signup_form)) .oe_website_login_container.md-login-container.glass-login-island {
+  -webkit-backdrop-filter: blur(22px) saturate(155%);
+  backdrop-filter: blur(22px) saturate(155%);
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, .86), rgba(255, 255, 255, .62)) !important;
+  border: 1px solid rgba(255, 255, 255, .72) !important;
+  border-radius: 1.5rem !important;
+  box-shadow:
+    0 28px 80px rgba(20, 49, 61, .18),
+    0 8px 24px rgba($md-blue, .13) !important;
+  color: $md-ink;
+  display: flex;
+  flex-direction: column;
+  margin: 0 auto !important;
+  max-width: 28rem !important;
+  min-height: 0 !important;
+  overflow: hidden;
+  padding: unquote("clamp(1.5rem, 4vw, 2.75rem)") !important;
+  position: relative;
+  width: unquote("min(100%, 28rem)") !important;
+}
+
+html:has(:is(.oe_login_form, .oe_signup_form)) .oe_website_login_container.md-login-container.glass-login-island::before {
+  background-image: url("/logo.png");
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: contain;
+  content: "";
+  display: block;
+  filter: drop-shadow(0 8px 18px rgba(20, 49, 61, .22));
+  height: 4.75rem;
+  margin: 0 auto 1.25rem;
+  width: 100%;
+}
+
+html:has(:is(.oe_login_form, .oe_signup_form)) .oe_website_login_container.md-login-container.glass-login-island::after {
+  background: linear-gradient(90deg, var(--md-blue), var(--md-green), var(--md-lime));
+  border-radius: 999px;
+  content: "";
+  height: .25rem;
+  inset: 0 35% auto;
+  position: absolute;
+}
+
+html:has(:is(.oe_login_form, .oe_signup_form)) .oe_website_login_container.md-login-container.glass-login-island .oe_login_form {
+  gap: .85rem;
+  width: 100%;
+}
+
+html:has(:is(.oe_login_form, .oe_signup_form)) .oe_website_login_container.md-login-container.glass-login-island .oe_login_form .form-control {
+  background: rgba(255, 255, 255, .88);
+  border: 1px solid rgba(20, 49, 61, .14);
+  border-radius: .85rem;
+  min-height: 3rem;
+}
+
+html:has(:is(.oe_login_form, .oe_signup_form)) .oe_website_login_container.md-login-container.glass-login-island .oe_login_form .btn-primary {
+  --bs-btn-bg: var(--md-blue);
+  --bs-btn-border-color: var(--md-blue);
+  --bs-btn-hover-bg: color-mix(in srgb, var(--md-blue), black 12%);
+  --bs-btn-hover-border-color: color-mix(in srgb, var(--md-blue), black 12%);
+  border-radius: .85rem;
+  font-weight: 800;
+  min-height: 3rem;
+}
+
+@media (max-width: 991.98px) {
+  .md-bento-site .md-bento-nav-cta {
+    margin: .75rem 0 0;
+  }
+
+  .md-bento-site .md-bento-nav-cta .btn {
+    width: 100%;
+  }
+}
+
+@media (max-width: 575.98px) {
+  html:has(:is(.oe_login_form, .oe_signup_form)) main {
+    min-height: calc(100vh - 3.75rem);
+    padding: 1rem !important;
+  }
+
+  html:has(:is(.oe_login_form, .oe_signup_form)) .oe_website_login_container.md-login-container.glass-login-island {
+    border-radius: 1.25rem !important;
+    padding: 1.35rem !important;
+  }
+}

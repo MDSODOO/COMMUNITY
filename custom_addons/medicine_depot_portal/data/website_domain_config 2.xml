@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!--
+        Fix CORS: fuerza el dominio canónico del sitio.
+        web.base.url apuntaba a medicinedepot.odoo.com mientras el navegador
+        carga desde medicinedepot.com.mx → el Website Builder abría su iframe
+        de previsualización desde el dominio de Odoo.sh, causando el bloqueo
+        cross-origin "Blocked a frame with origin...".
+        noupdate="0": se reafirma en cada actualización del módulo.
+    -->
+    <data noupdate="0">
+        <function model="ir.config_parameter" name="set_param">
+            <value>web.base.url</value>
+            <value>https://medicinedepot.com.mx</value>
+        </function>
+        <function model="ir.config_parameter" name="set_param">
+            <value>web.canonical.url</value>
+            <value>https://medicinedepot.com.mx</value>
+        </function>
+    </data>
+
+    <!--
+        Fix reCAPTCHA 401: limpia las claves de Google reCAPTCHA.
+        Las claves configuradas solo autorizan medicinedepot.odoo.com;
+        Google devuelve 401 desde medicinedepot.com.mx.
+        Los formularios públicos están protegidos por honeypot (md_hp_field
+        en el formulario de Farmacovigilancia).
+
+        Para re-habilitar reCAPTCHA:
+          1. Crear claves nuevas en console.cloud.google.com/security/recaptcha
+             autorizando medicinedepot.com.mx
+          2. Registrar las claves via Ajustes > Técnico > Parámetros del sistema
+          3. Cambiar noupdate a "1" en este bloque para que la actualización
+             del módulo no vuelva a limpiarlas.
+    -->
+    <data noupdate="0">
+        <function model="ir.config_parameter" name="set_param">
+            <value>google.recaptcha.private.key</value>
+            <value></value>
+        </function>
+        <function model="ir.config_parameter" name="set_param">
+            <value>google.recaptcha.public.key</value>
+            <value></value>
+        </function>
+    </data>
+
+</odoo>

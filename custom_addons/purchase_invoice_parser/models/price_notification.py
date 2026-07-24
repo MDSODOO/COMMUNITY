@@ -1,0 +1,450 @@
+import base64
+import io
+from datetime import timedelta
+
+from odoo import models, fields, api
+from odoo.exceptions import AccessError, UserError
+
+
+def _get_product_line_field_name(env):
+    """Devuelve el field name en product.template que apunta a md.product.line.
+
+    "Línea" (fabricante/laboratorio, p. ej. ACCORD/JALOMA) es un concepto de
+    negocio propio de este proyecto, modelado por `md.product.line` (módulo
+    `md_product_lines`, 97% de productos poblados vía `product_line_id`) y es
+    DISTINTO de `product.category` (taxonomía interna genérica de Odoo, solo
+    6 registros en este entorno, reservada para "otro fin" según el propio
+    manifest de `md_product_lines`).
+
+    Detecta el campo vía metadata real de Odoo (`ir.model.fields`) en lugar
+    de asumir un nombre fijo, replicando el patrón ya desplegado en
+    `pharma_reports/models/physical_inventory_report.py`
+    (`_get_product_line_field_name`). Ver
+    docs/plans/X_LINE_DEPENDENCY_MIGRATION_OPTIONS.md para el análisis
+    completo de esta migración (x_line / product.category → md.product.line).
+    """
+    if 'md.product.line' not in env.registry.models:
+        return False
+
+    line_fields = env['ir.model.fields'].sudo().search([
+        ('model', '=', 'product.template'),
+        ('relation', '=', 'md.product.line'),
+        ('ttype', 'in', ('many2one', 'many2many')),
+    ])
+    if not line_fields:
+        return False
+
+    def score(field):
+        name = (field.name or '').lower()
+        label = (field.field_description or '').lower()
+        text = f'{name} {label}'
+        return (
+            0 if 'line' in text or 'linea' in text or 'línea' in text else 1,
+            0 if 'studio' not in name else 1,
+            field.id,
+        )
+
+    return line_fields.sorted(score)[:1].name
+
+
+def _get_product_line_display(tmpl, line_field):
+    """Lee el valor de `line_field` en `tmpl` y devuelve un display_name seguro.
+
+    Soporta Many2one y Many2many (md.product.line permite ambos según el
+    módulo que lo consuma).
+    """
+    if not line_field or not tmpl or line_field not in tmpl._fields:
+        return ''
+    value = tmpl[line_field]
+    if not value:
+        return ''
+    if hasattr(value, 'mapped'):
+        return ', '.join(value.mapped('display_name'))
+    return value.display_name or ''
+
+
+class PurchasePriceNotification(models.Model):
+    _name = 'purchase.price.notification'
+    _description = 'Notificación de actualización de precio (parser CFDI)'
+    _order = 'create_date desc'
+    _rec_name = 'product_name'
+
+    active = fields.Boolean('Activo', default=True)
+
+    product_id = fields.Many2one('product.product', ondelete='set null', index=True)
+    product_tmpl_id = fields.Many2one(
+        'product.template',
+        string='Plantilla de producto',
+        ondelete='set null',
+        index=True,
+    )
+    product_name = fields.Char(required=True)
+    partner_id = fields.Many2one('res.partner', string='Proveedor', ondelete='set null')
+    partner_name = fields.Char()
+    old_price = fields.Float(digits=(16, 4))
+    new_price = fields.Float(digits=(16, 4))
+    currency_id = fields.Many2one('res.currency')
+    purchase_order_id = fields.Many2one('purchase.order', ondelete='set null')
+    company_id = fields.Many2one('res.company', required=True, default=lambda self: self.env.company)
+    state = fields.Selection(
+        [('unread', 'No leída'), ('read', 'Leída'), ('applied', 'Precio aplicado')],
+        default='unread',
+        index=True,
+    )
+
+    def _check_stock_manager(self):
+        has_access = (
+            self.env.user.has_group('stock.group_stock_manager') or
+            self.env.user.has_group('purchase.group_purchase_user')
+        )
+        if not has_access:
+            raise AccessError("Acceso restringido a Administradores de Inventario y Usuarios de Compras.")
+
+    @api.model
+    def get_unread(self):
+        self._check_stock_manager()
+        company_id = self.env.company.id
+
+        unread = self.search([
+            ('state', '=', 'unread'),
+            ('company_id', '=', company_id),
+        ])
+        recent_done = self.search([
+            ('state', 'in', ['read', 'applied']),
+            ('company_id', '=', company_id),
+        ], limit=15)
+
+        def _serialize(rec):
+            currency_symbol = rec.currency_id.symbol if rec.currency_id else '$'
+            old_fmt = f"{currency_symbol} {rec.old_price:,.2f}" if rec.old_price else "—"
+            new_fmt = f"{currency_symbol} {rec.new_price:,.2f}"
+            return {
+                'id': rec.id,
+                'product_name': rec.product_name,
+                'product_tmpl_id': rec.product_tmpl_id.id if rec.product_tmpl_id else False,
+                'partner_name': rec.partner_name or '',
+                'old_price_fmt': old_fmt,
+                'new_price_fmt': new_fmt,
+                'state': rec.state,
+                'date': fields.Datetime.to_string(rec.create_date),
+                'purchase_order_id': rec.purchase_order_id.id if rec.purchase_order_id else False,
+                'purchase_order_name': rec.purchase_order_id.name if rec.purchase_order_id else '',
+            }
+
+        notifications = [_serialize(r) for r in unread] + [_serialize(r) for r in recent_done]
+        return {'count': len(unread), 'notifications': notifications}
+
+    @api.model
+    def mark_all_read(self):
+        self._check_stock_manager()
+        self.search([
+            ('state', '=', 'unread'),
+            ('company_id', '=', self.env.company.id),
+        ]).write({'state': 'read'})
+
+    @api.model
+    def apply_price_change(self, notification_id):
+        """Aplica el precio nuevo al supplierinfo del producto y marca como aplicado."""
+        self._check_stock_manager()
+        notif = self.browse(notification_id)
+        if not notif.exists():
+            raise UserError("Notificación no encontrada.")
+        if notif.state == 'applied':
+            return {'already_applied': True}
+
+        if not notif.new_price or notif.new_price <= 0:
+            raise UserError("El precio nuevo no es válido.")
+
+        tmpl_id = (
+            notif.product_tmpl_id.id
+            or (notif.product_id.product_tmpl_id.id if notif.product_id else False)
+        )
+        if not tmpl_id or not notif.partner_id:
+            raise UserError("Faltan datos del producto o proveedor.")
+
+        sinfo = self.env['product.supplierinfo'].sudo().search([
+            ('partner_id', '=', notif.partner_id.id),
+            ('product_tmpl_id', '=', tmpl_id),
+        ], limit=1)
+
+        if sinfo:
+            sinfo.write({'price': notif.new_price})
+        else:
+            self.env['product.supplierinfo'].sudo().create({
+                'partner_id': notif.partner_id.id,
+                'product_tmpl_id': tmpl_id,
+                'product_id': notif.product_id.id if notif.product_id else False,
+                'price': notif.new_price,
+                'currency_id': (
+                    notif.currency_id.id
+                    if notif.currency_id
+                    else self.env.company.currency_id.id
+                ),
+                'min_qty': 0.0,
+            })
+
+        notif.write({'state': 'applied'})
+        return {'applied': True, 'product_tmpl_id': tmpl_id}
+
+    @api.model
+    def mark_as_read_or_delete(self, notification_id):
+        """Marca como leída o archiva la notificación según su estado."""
+        self._check_stock_manager()
+        notif = self.browse(notification_id)
+        if notif.exists():
+            if notif.state == 'applied':
+                notif.write({'active': False})
+            else:
+                notif.write({'state': 'read'})
+
+    def action_apply_price_change(self):
+        """Botón del formulario: aplica el precio sobre el registro actual.
+
+        Envoltorio de instancia para `apply_price_change`, que es @api.model y
+        recibe el id por RPC desde el systray OWL. Los botones type="object"
+        no pueden invocar métodos con parámetros obligatorios.
+        """
+        self.ensure_one()
+        return self.apply_price_change(self.id)
+
+    def action_mark_as_read_or_delete(self):
+        """Botón del formulario: marca como leída o elimina el registro actual."""
+        self.ensure_one()
+        return self.mark_as_read_or_delete(self.id)
+
+    @api.model
+    def _cron_cleanup_old_notifications(self, days=60):
+        """Archiva notificaciones leídas o aplicadas con más de `days` días."""
+        cutoff = fields.Datetime.now() - timedelta(days=days)
+        old = self.with_context(active_test=False).search([
+            ('state', 'in', ['read', 'applied']),
+            ('active', '=', True),
+            ('create_date', '<', cutoff),
+        ])
+        old.write({'active': False})
+
+    def action_export_price_change_excel(self, company_ids=None):
+        """Exporta los registros seleccionados (o todos) a un archivo Excel.
+
+        Columnas dinámicas por sucursal (standard_price) igual que Costos por Sucursal.
+        """
+        try:
+            import xlsxwriter
+        except ImportError as exc:
+            raise UserError("xlsxwriter no disponible en el servidor.") from exc
+
+        docs = self or self.search([('company_id', '=', self.env.company.id)])
+        report_model = self.env['report.purchase_invoice_parser.report_price_change_pdf']
+        line_names = report_model._build_line_names(docs)
+
+        companies = (
+            self.env['res.company'].sudo().browse(company_ids)
+            if company_ids
+            else self.env['res.company'].sudo().search([], order='name')
+        )
+
+        # Costos por sucursal (standard_price) — una query por empresa, no por producto
+        tmpls = docs.mapped('product_tmpl_id')
+        costs_matrix = {t.id: {} for t in tmpls}
+        for co in companies:
+            prices = tmpls.with_company(co).mapped('standard_price')
+            for tmpl, price in zip(tmpls, prices):
+                costs_matrix[tmpl.id][co.id] = price
+
+        output = io.BytesIO()
+        wb = xlsxwriter.Workbook(output, {'in_memory': True})
+        ws = wb.add_worksheet('Cambios de Precio')
+
+        hdr = wb.add_format({'bold': True, 'bg_color': '#1F4E79', 'font_color': 'white', 'border': 1, 'font_size': 9})
+        cell = wb.add_format({'border': 1, 'font_size': 9})
+        money = wb.add_format({'border': 1, 'num_format': '#,##0.00', 'font_size': 9})
+        money_max = wb.add_format({'bold': True, 'border': 1, 'num_format': '#,##0.00', 'font_size': 9})
+        red = wb.add_format({'border': 1, 'font_color': '#C00000', 'font_size': 9})
+        green = wb.add_format({'border': 1, 'font_color': '#375623', 'font_size': 9})
+
+        fixed_left = [
+            ('Fecha', 12), ('Código', 16), ('Producto', 32), ('Línea', 18),
+            ('Proveedor', 22), ('Precio Anterior', 14), ('Precio Factura', 14),
+        ]
+        co_cols = [(co.name, 13) for co in companies]
+        fixed_right = [('Costo Mayor', 13), ('Δ % Factura', 10), ('Orden Compra', 14), ('Estado', 11)]
+        all_cols = fixed_left + co_cols + fixed_right
+
+        STATE = {'unread': 'Sin leer', 'read': 'Leída', 'applied': 'Aplicada'}
+
+        for col, (label, width) in enumerate(all_cols):
+            ws.write(0, col, label, hdr)
+            ws.set_column(col, col, width)
+        ws.freeze_panes(1, 0)
+
+        n_fixed = len(fixed_left)
+        n_co = len(companies)
+
+        for row, rec in enumerate(docs, start=1):
+            op = rec.old_price or 0.0
+            np_ = rec.new_price or 0.0
+            diff = ((np_ - op) / op * 100) if op > 0 else 0.0
+            barcode = rec.product_tmpl_id.barcode if rec.product_tmpl_id else ''
+            name_tmp = (rec.product_name or '').split('(')[0].strip()
+            product_simple = (name_tmp.split(']')[1].strip() if ']' in name_tmp else name_tmp)
+            pct_fmt = red if diff > 0 else (green if diff < 0 else cell)
+            tmpl_costs = costs_matrix.get(rec.product_tmpl_id.id, {}) if rec.product_tmpl_id else {}
+            max_cost = max(tmpl_costs.values(), default=0.0)
+
+            ws.write(row, 0, rec.create_date.strftime('%d/%m/%Y') if rec.create_date else '', cell)
+            ws.write(row, 1, barcode or '', cell)
+            ws.write(row, 2, product_simple or '', cell)
+            ws.write(row, 3, line_names.get(rec.id, '') or '', cell)
+            ws.write(row, 4, rec.partner_name or '', cell)
+            ws.write_number(row, 5, op, money)
+            ws.write_number(row, 6, np_, money)
+            for i, co in enumerate(companies):
+                ws.write_number(row, n_fixed + i, tmpl_costs.get(co.id, 0.0), money)
+            ws.write_number(row, n_fixed + n_co, max_cost, money_max)
+            ws.write(row, n_fixed + n_co + 1, f'{diff:+.2f}%' if op else '—', pct_fmt)
+            ws.write(row, n_fixed + n_co + 2, rec.purchase_order_id.name or '', cell)
+            ws.write(row, n_fixed + n_co + 3, STATE.get(rec.state, rec.state), cell)
+
+        wb.close()
+        output.seek(0)
+
+        filename = f"cambios_precio_{fields.Date.context_today(self).strftime('%Y%m%d')}.xlsx"
+        attachment = self.env['ir.attachment'].sudo().create({
+            'name': filename,
+            'type': 'binary',
+            'datas': base64.b64encode(output.read()).decode(),
+            'mimetype': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'res_model': 'purchase.price.notification',
+        })
+        return {
+            'type': 'ir.actions.act_url',
+            'url': f'/web/content/{attachment.id}?download=true',
+            'target': 'new',
+        }
+
+
+class ReportPriceChange(models.AbstractModel):
+    _name = 'report.purchase_invoice_parser.report_price_change_pdf'
+    _description = 'Reporte PDF de cambios de precio'
+
+    def _build_line_names(self, docs):
+        """Construye dict {notification_id: line_name} vía ORM seguro.
+
+        Detecta dinámicamente el campo Many2one/Many2many que apunta a
+        md.product.line (módulo md_product_lines, ver
+        _get_product_line_field_name) en product.template. No hay fallback
+        a categ_id: product.category es un concepto de negocio DISTINTO de
+        "Línea" (taxonomía interna genérica vs. fabricante/laboratorio) y
+        mostrar la categoría bajo la etiqueta "Línea" era el error conceptual
+        de la migración anterior — ver
+        docs/plans/X_LINE_DEPENDENCY_MIGRATION_OPTIONS.md.
+        """
+        result = {}
+        line_field = _get_product_line_field_name(self.env)
+
+        for rec in docs:
+            tmpl = rec.product_tmpl_id
+            result[rec.id] = _get_product_line_display(tmpl, line_field) if tmpl else ''
+
+        return result
+
+    @api.model
+    def _get_report_values(self, docids, data=None):
+        """Entrega los registros al template QWeb.
+
+        Si se imprime desde la lista con registros seleccionados, usa esos.
+        Si se invoca sin selección (p. ej. desde el menú/acción global), cae
+        a todas las notificaciones de la compañía activa para no generar un
+        PDF vacío.
+        """
+        Notification = self.env['purchase.price.notification']
+        docs = Notification.browse(docids) if docids else Notification.search([
+            ('company_id', '=', self.env.company.id),
+        ])
+        company = (docs[:1].company_id or self.env.company).sudo()
+        line_names = self._build_line_names(docs)
+
+        partner_ids = docs.mapped('partner_id').ids
+        tmpl_ids = docs.mapped('product_tmpl_id').ids
+        current_prices = {}
+        if partner_ids and tmpl_ids:
+            sinfos = self.env['product.supplierinfo'].sudo().search([
+                ('partner_id', 'in', partner_ids),
+                ('product_tmpl_id', 'in', tmpl_ids),
+            ])
+            for si in sinfos:
+                key = (si.partner_id.id, si.product_tmpl_id.id)
+                if key not in current_prices:
+                    current_prices[key] = si.price
+
+        return {
+            'doc_ids': docs.ids,
+            'doc_model': 'purchase.price.notification',
+            'docs': docs,
+            'company': company,
+            'report_date': fields.Date.context_today(self).strftime('%d/%m/%Y'),
+            'applied_count': len(docs.filtered(lambda d: d.state == 'applied')),
+            'line_names': line_names,
+            'current_prices': current_prices,
+        }
+
+
+class ReportCostByBranch(models.AbstractModel):
+    _name = 'report.purchase_invoice_parser.report_cost_by_branch_pdf'
+    _description = 'Reporte PDF: Costos por Sucursal'
+
+    @api.model
+    def _get_report_values(self, docids, data=None):
+        data = data or {}
+        line_ids = data.get('line_ids', [])
+        company_ids = data.get('company_ids', [])
+
+        domain = [('active', '=', True)]
+
+        # Filtro por Línea (md.product.line): detecta el campo dinámico en
+        # product.template vía metadata real (ir.model.fields), igual que
+        # pharma_reports. line_ids son IDs de md.product.line (el wizard ya
+        # usa ese modelo para el campo "Línea de Producto" -- ver
+        # price_change_report_wizard.py). Antes, esta misma línea trataba
+        # line_ids como IDs de x_line mientras el wizard mandaba IDs de
+        # product.category: mismatch de semántica que podía disparar
+        # MissingError en el browse() de line_filter más abajo.
+        line_field = _get_product_line_field_name(self.env)
+        if line_ids and line_field:
+            domain.append((line_field, 'in', line_ids))
+
+        products = self.env['product.template'].sudo().search(domain, order='name')
+        companies = (
+            self.env['res.company'].sudo().browse(company_ids)
+            if company_ids
+            else self.env['res.company'].sudo().search([], order='name')
+        )
+
+        # N_compañías queries, no N_productos × N_compañías
+        costs_matrix = {p.id: {} for p in products}
+        for company in companies:
+            prices = products.with_company(company).mapped('standard_price')
+            for prod, price in zip(products, prices):
+                costs_matrix[prod.id][company.id] = price
+
+        rows = []
+        for prod in products:
+            costs_by_co = costs_matrix[prod.id]
+            rows.append({
+                'barcode': prod.barcode or '',
+                'product_name': prod.name,
+                'line_name': _get_product_line_display(prod, line_field),
+                'costs_by_company': costs_by_co,
+                'max_cost': max(costs_by_co.values(), default=0.0),
+            })
+
+        return {
+            'docs': rows,
+            'companies': companies,
+            'company': self.env.company,
+            'report_date': fields.Date.context_today(self).strftime('%d/%m/%Y'),
+            'line_filter': (
+                self.env['md.product.line'].sudo().browse(line_ids).mapped('display_name')
+                if line_ids else []
+            ),
+        }

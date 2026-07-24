@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates>
+    <!--
+        Replica en la card de producto de POS las mismas etiquetas de
+        Forma/Concentracion/Contenido/Envase/Talla que ya se muestran en el
+        kanban de Inventario (md_pharma_regulatory). Misma paleta de colores.
+        Ademas agrega tags de Sustancia Activa (color propio por sustancia)
+        y un boton de detalle regulatorio completo (popup, ver
+        regulatory_detail_popup.xml) para no saturar la card con todos los
+        campos regulatorios a la vez.
+
+        Estos campos viven en product.template (md_pharma_regulatory).
+        En este ProductCard de POS, props.product YA ES un registro de
+        product.template (no product.product): el grid de productos del
+        POS en Odoo 19 se construye a partir de pos.productToDisplayByCateg,
+        que agrupa por plantilla, no por variante (confirmado porque
+        product_screen.xml usa product.id como clave de
+        quantityByProductTmplId). Por eso se leen los campos directo en
+        props.product.CAMPO, sin pasar por product_tmpl_id (ese campo
+        relacional no existe en product.template y siempre da undefined).
+
+        active_substance_ids y product_line_id son relaciones (M2M / M2O)
+        resueltas automaticamente a instancias reales (no solo ids) porque
+        md.active.substance y md.product.line se agregaron a
+        _load_pos_data_models (ver models/pos_session.py); por eso se puede
+        leer props.product.active_substance_ids[i].name / .color directo,
+        igual que ya se hace con product_variant_ids en el core.
+
+        Decision de UX (ver product_card.js para el razonamiento completo):
+        sustancia activa y talla se quedan en la card (son lo que mas ayuda
+        a diferenciar productos parecidos de un vistazo). Linea/marca,
+        registro sanitario, dimensiones y nombre homologado se mueven al
+        popup de detalle para no saturar visualmente la card.
+    -->
+    <t t-name="md_pos_product_labels.ProductCard"
+       t-inherit="point_of_sale.ProductCard"
+       t-inherit-mode="extension"
+       owl="1">
+        <xpath expr="//div[hasclass('product-name')]" position="after">
+            <div class="md-pos-product-tags d-flex flex-wrap gap-1"
+                 t-if="props.product.l10n_mx_forma_farmaceutica or props.product.l10n_mx_concentracion or props.product.l10n_mx_contenido_empaque or props.product.l10n_mx_tipo_envase or props.product.l10n_mx_talla">
+                <span t-if="props.product.l10n_mx_forma_farmaceutica" class="badge rounded-pill md-pos-tag" style="background:#2C8C99;">
+                    <t t-esc="props.product.l10n_mx_forma_farmaceutica"/>
+                </span>
+                <span t-if="props.product.l10n_mx_concentracion" class="badge rounded-pill md-pos-tag" style="background:#7B4B9E;">
+                    <t t-esc="props.product.l10n_mx_concentracion"/>
+                </span>
+                <span t-if="props.product.l10n_mx_contenido_empaque" class="badge rounded-pill md-pos-tag" style="background:#4A5C8C;">
+                    <t t-esc="props.product.l10n_mx_contenido_empaque"/>
+                </span>
+                <span t-if="props.product.l10n_mx_tipo_envase" class="badge rounded-pill md-pos-tag" style="background:#5C8A5C;">
+                    <t t-esc="props.product.l10n_mx_tipo_envase"/>
+                </span>
+                <span t-if="props.product.l10n_mx_talla" class="badge rounded-pill md-pos-tag" style="background:#B0785C;">
+                    <t t-esc="props.product.l10n_mx_talla"/>
+                </span>
+            </div>
+        </xpath>
+
+        <!--
+            Fila de sustancia(s) activa(s): se ancla DESPUES del div anterior
+            (por clase, no por "product-name" de nuevo) para garantizar el
+            orden visual correcto sin depender del orden de aplicacion de
+            xpaths con el mismo anchor.
+        -->
+        <xpath expr="//div[hasclass('md-pos-product-tags')]" position="after">
+            <div class="md-pos-substance-tags d-flex flex-wrap gap-1"
+                 t-if="props.product.active_substance_ids and props.product.active_substance_ids.length">
+                <span t-foreach="substanceBadges.shown" t-as="sub" t-key="sub.id"
+                      class="badge rounded-pill md-pos-substance-tag" t-att-style="sub.style">
+                    <t t-esc="sub.name"/>
+                </span>
+                <span t-if="substanceBadges.extraCount > 0"
+                      class="badge rounded-pill md-pos-substance-tag md-pos-substance-more">
+                    +<t t-esc="substanceBadges.extraCount"/>
+                </span>
+            </div>
+        </xpath>
+
+        <!--
+            Boton (i) de detalle regulatorio; esquina superior IZQUIERDA,
+            teal solido. Se distingue a proposito del boton (i) de lotes
+            FEFO de bi_pos_stock (esquina superior derecha, blanco) para que
+            nunca se confundan ni se superpongan.
+        -->
+        <xpath expr="//article" position="inside">
+            <button t-if="hasRegulatoryDetail"
+                    class="md-pos-reg-info-btn btn btn-sm"
+                    type="button"
+                    title="Ver detalle regulatorio (COFEPRIS)"
+                    t-on-click="openRegulatoryDetail">
+                <i class="fa fa-flask"/>
+            </button>
+        </xpath>
+    </t>
+</templates>

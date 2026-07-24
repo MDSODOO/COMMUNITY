@@ -1,0 +1,1171 @@
+// ══════════════════════════════════════════════════════════════
+//  KEYFRAMES  (7 · 8 · 14 · 15)
+// ══════════════════════════════════════════════════════════════
+
+// #7 — Fade-in + slide de entrada para las tarjetas
+@keyframes md-card-in {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+// #8 — Shimmer skeleton para el badge mientras carga
+@keyframes md-shimmer {
+  0%   { background-position: -200% center; }
+  100% { background-position:  200% center; }
+}
+
+// #12 — Pulse suave del punto del badge
+@keyframes md-dot-pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: .5; }
+}
+
+// ══════════════════════════════════════════════════════════════
+//  TIENDA — LAYOUT GENERAL
+// ══════════════════════════════════════════════════════════════
+
+.md-shop {
+  padding-bottom: Clamp(3rem, 6vw, 6rem);
+}
+
+.md-shop #o_wsale_container {
+  max-width: Min(1440px, calc(100vw - 2rem));
+}
+
+.md-shop .o_wsale_products_main_row {
+  align-items: flex-start;
+  gap: Clamp(.85rem, 2vw, 1.5rem);
+}
+
+.md-shop-banner {
+  align-items: center;
+  display: flex;
+  gap: 1.5rem;
+  justify-content: space-between;
+  margin-bottom: 0 !important;
+  padding: Clamp(1.5rem, 3vw, 2.5rem);
+  width: 100%;
+}
+
+.md-shop-banner h1 {
+  letter-spacing: -.02em;
+  margin: .55rem 0 .75rem;
+}
+
+.md-shop-banner p {
+  margin: 0;
+  max-width: 42rem;
+}
+
+.md-shop-filter-aside {
+  align-self: flex-start;
+  flex: 0 0 Clamp(13.5rem, 19vw, 17.5rem);
+  max-width: Clamp(13.5rem, 19vw, 17.5rem);
+  min-width: 0;
+}
+
+@media (min-width: 992px) {
+  .md-shop-filter-aside {
+    position: sticky;
+    top: Clamp(4.75rem, 6vw, 6.5rem);
+  }
+}
+
+.md-shop-filter-card {
+  height: auto !important;
+  max-height: calc(100dvh - 7.25rem);
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto !important;
+  padding: 1rem;
+  scrollbar-gutter: stable;
+}
+
+.md-shop #products_grid {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding-inline: 0;
+}
+
+// ══════════════════════════════════════════════════════════════
+//  GRID DE PRODUCTOS
+// ══════════════════════════════════════════════════════════════
+
+.md-products-grid {
+  --md-product-gap: Clamp(0.6rem, 2vw, 1.5rem);
+  display: flex;
+  flex-direction: column;
+  gap: Clamp(0.6rem, 1.8vw, 1.5rem);
+}
+
+.md-products-grid .o_wsale_products_grid_table_wrapper {
+  overflow: visible;
+  padding: .125rem .125rem .85rem;
+  width: 100%;
+}
+
+.md-products-grid #o_wsale_products_grid {
+  --o-wsale-products-grid-gap: var(--md-product-gap) !important;
+  align-items: stretch;
+  gap: var(--md-product-gap) !important;
+  min-width: 0;
+}
+
+.md-products-grid #o_wsale_products_grid > .oe_product,
+.md-products-grid .o_wsale_product_grid_wrapper {
+  min-width: 0;
+}
+
+// #7 — Wrapper recibe la animación de entrada
+.md-products-grid .o_wsale_product_grid_wrapper {
+  animation: md-card-in .38s ease both;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+
+  & > form {
+    display: flex !important;
+    flex-direction: column !important;
+    height: 100% !important;
+  }
+}
+
+// #7 — Stagger: delay escalonado por posición en la rejilla
+@for $i from 1 through 20 {
+  .md-products-grid #o_wsale_products_grid > .oe_product:nth-child(#{$i}) .o_wsale_product_grid_wrapper {
+    animation-delay: #{($i - 1) * 45}ms;
+  }
+}
+
+// ══════════════════════════════════════════════════════════════
+//  TARJETA BENTO  —  #3 · #5 · #6 · #10 (shadow, border, focus)
+// ══════════════════════════════════════════════════════════════
+
+.md-product-card {
+  position: relative;
+}
+
+.md-shop #products_grid .md-product-card {
+  --md-product-card-gap: .75rem;
+  --md-product-card-pad: .9rem;
+  --md-product-card-radius: 1rem;
+  --md-product-media-bg: var(--bs-light, #F2F5F7);
+  background: var(--bs-card-bg, #fff) !important;
+  // #3 — Borde con transición de color incluida
+  border: 1px solid var(--bs-border-color) !important;
+  border-radius: var(--md-product-card-radius) !important;
+  // #5 — Sombra multicapa
+  box-shadow:
+    0 1px 2px rgba(20, 49, 61, .04),
+    0 4px 12px rgba(20, 49, 61, .07);
+  color: var(--bs-body-color);
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-width: 0;
+  overflow: visible;
+  padding: 0 !important;
+  position: relative;
+  transition:
+    border-color .2s ease,
+    box-shadow .2s ease,
+    transform .2s ease;
+}
+
+// #3 · #5 — Hover: lift + sombra profunda + borde brand
+.md-shop #products_grid .md-product-card:hover {
+  border-color: color-mix(in srgb, var(--md-blue, #{$md-blue}), transparent 55%) !important;
+  box-shadow:
+    0 2px 4px rgba(20, 49, 61, .06),
+    0 8px 24px rgba(20, 49, 61, .13),
+    0 18px 40px rgba(20, 49, 61, .08);
+  transform: translateY(-4px);
+}
+
+// #9 — Imagen: scale + brightness al hacer hover en la card
+// mix-blend-mode: multiply elimina fondos blancos nativos y fusiona con el fondo
+.md-shop #products_grid .md-product-media img,
+.md-shop #products_grid .oe_product_image_img {
+  background-color: transparent;
+  height: 100%;
+  max-height: 100%;
+  mix-blend-mode: multiply;
+  object-fit: contain !important;
+  transition: transform .3s ease, filter .3s ease;
+  width: 100%;
+}
+
+.md-shop #products_grid .md-product-card:hover .md-product-media img,
+.md-shop #products_grid .md-product-card:hover .oe_product_image_img {
+  filter: brightness(1.04) saturate(1.05);
+  transform: scale(1.06);
+}
+
+// #7 + prefers-reduced-motion
+@media (prefers-reduced-motion: reduce) {
+  .md-products-grid .o_wsale_product_grid_wrapper {
+    animation: none !important;
+  }
+  .md-shop #products_grid .md-product-card,
+  .md-shop #products_grid .md-product-media,
+  .md-shop #products_grid .md-product-media img,
+  .md-shop #products_grid .md-product-card .btn {
+    transition: none !important;
+  }
+}
+
+// ══════════════════════════════════════════════════════════════
+//  ÁREA DE IMAGEN
+// ══════════════════════════════════════════════════════════════
+
+body.md-bento-site .md-shop #products_grid .md-product-media,
+body.md-bento-site .md-shop #products_grid .oe_product_image,
+.md-shop #products_grid .md-product-media,
+.md-shop #products_grid .oe_product_image {
+  align-items: center;
+  aspect-ratio: 1 / 1;
+  // Fondo neutro suave con patrón diagonal sutil para máquinas legacy
+  background-color: $md-gray-100 !important;
+  background-image:
+    repeating-linear-gradient(
+      45deg,
+      transparent,
+      transparent 10px,
+      rgba(255, 255, 255, .02) 10px,
+      rgba(255, 255, 255, .02) 20px
+    );
+  background-size: 100% 100%;
+  border-radius: .875rem;
+  box-sizing: border-box;
+  display: flex;
+  flex: 0 0 auto;
+  justify-content: center;
+  margin: var(--md-product-card-pad) var(--md-product-card-pad) 0;
+  max-width: calc(100% - var(--md-product-card-pad) - var(--md-product-card-pad));
+  min-width: 0;
+  overflow: hidden;
+  padding: .75rem;
+  position: relative;
+  transition: background-color .2s ease, background-image .2s ease;
+  width: calc(100% - var(--md-product-card-pad) - var(--md-product-card-pad)) !important;
+}
+
+.md-shop #products_grid .md-product-media .oe_product_image_link,
+.md-shop #products_grid .oe_product_image .oe_product_image_link {
+  align-items: center;
+  display: flex !important;
+  height: 100%;
+  justify-content: center;
+  width: 100%;
+}
+
+// ══════════════════════════════════════════════════════════════
+//  BADGE "A LA MANO"  —  #8 · #13
+// Glassmorphism: overlay flotante sobre imagen con blur y semi-transparencia
+// Regla de negocio: la etiqueta de unidades debe decir "A la mano".
+// ══════════════════════════════════════════════════════════════
+
+.md-shop #products_grid .md-product-media .o_sqty_stock {
+  -webkit-backdrop-filter: blur(12px);
+  align-items: center;
+  backdrop-filter: blur(12px);
+  background: rgba(240, 253, 244, .92);
+  border: 1px solid rgba(34, 139, 87, .28);
+  border-radius: 999px !important;
+  box-shadow: 0 4px 14px rgba(20, 49, 61, .12);
+  display: inline-flex;
+  gap: .4rem;
+  inset-block-start: .75rem;
+  inset-inline-start: .75rem;
+  max-width: calc(100% - 1.5rem);
+  overflow: hidden;
+  padding: .38rem .65rem !important;
+  pointer-events: none;
+  position: absolute;
+  transition: background .2s ease, border-color .2s ease;
+  white-space: nowrap;
+  z-index: 4;
+}
+
+// #13 — Pocas piezas: fondo ámbar suave
+.md-shop #products_grid .md-product-media .o_sqty_stock.o_sqty_low {
+  background: rgba(255, 247, 230, .95) !important;
+  border-color: rgba(202, 138, 4, .28) !important;
+}
+
+// #13 — Sin stock: fondo rojo suave
+.md-shop #products_grid .md-product-media .o_sqty_stock.o_sqty_empty {
+  background: rgba(255, 241, 241, .95) !important;
+  border-color: rgba(220, 38, 38, .22) !important;
+}
+
+// #8 — Skeleton shimmer mientras carga (AJAX)
+.md-shop #products_grid .md-product-media .o_sqty_stock.o_sqty_loading {
+  background: linear-gradient(
+    90deg,
+    rgba(255,255,255,.6) 25%,
+    rgba(230,237,242,.9) 50%,
+    rgba(255,255,255,.6) 75%
+  ) !important;
+  background-size: 200% 100% !important;
+  animation: md-shimmer 1.4s ease infinite;
+  border-color: rgba(200, 215, 225, .4) !important;
+  min-width: 6rem;
+}
+
+// Badge — texto
+.md-shop #products_grid .md-product-media .o_sqty_stock .o_sqty_label,
+.md-shop #products_grid .md-product-media .o_sqty_stock .o_sqty_unit {
+  color: $md-muted;
+  font-size: .82rem;
+  line-height: 1.1;
+}
+
+.md-shop #products_grid .md-product-media .o_sqty_stock .o_sqty_qty {
+  color: $md-success;
+  font-size: .82rem;
+  font-weight: 800;
+  line-height: 1.1;
+}
+
+.md-shop #products_grid .md-product-media .o_sqty_stock.o_sqty_low .o_sqty_qty {
+  color: color-mix(in srgb, #{$md-warning}, black 22%);
+}
+
+// ══════════════════════════════════════════════════════════════
+//  BADGE % DESCUENTO — esquina opuesta al badge "A la mano"
+//  (que usa inset-block-start/inset-inline-start, ver arriba).
+//  Texto blanco sobre gradiente fijo: legible en claro y oscuro sin
+//  necesitar override en md_dark.scss (mismo criterio que o_sqty_stock).
+// ══════════════════════════════════════════════════════════════
+
+.md-shop #products_grid .md-product-media .o_md_discount_badge {
+  top: auto;
+  right: auto;
+  inset-block-start: .75rem;
+  inset-inline-end: .75rem;
+}
+
+.md-shop #products_grid .md-product-media .o_sqty_stock.o_sqty_empty .o_sqty_qty {
+  color: $md-danger;
+}
+
+// #13 — Dot del badge: pulse en stock normal
+.md-shop #products_grid .md-product-media .o_sqty_stock .o_sqty_dot {
+  animation: md-dot-pulse 2.4s ease-in-out infinite;
+  border-radius: 50%;
+  flex: 0 0 auto;
+  height: 7px;
+  width: 7px;
+}
+
+.md-shop #products_grid .md-product-media .o_sqty_stock.o_sqty_empty .o_sqty_dot {
+  animation: none;
+  background: $md-danger !important;
+}
+
+.md-shop #products_grid .md-product-media .o_sqty_stock.o_sqty_low .o_sqty_dot {
+  animation: none;
+  background: $md-warning !important;
+}
+
+// ══════════════════════════════════════════════════════════════
+//  CUERPO DE LA TARJETA
+// ══════════════════════════════════════════════════════════════
+
+.md-shop #products_grid .md-product-card-body {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: .6rem;
+  min-width: 0;
+  padding: var(--md-product-card-pad) !important;
+}
+
+.md-shop #products_grid .md-product-card .o_wsale_product_info_attributes_wrapper {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: .35rem;
+  min-width: 0;
+}
+
+// #3 — Título: 2 líneas + min-height para alinear cards en rejilla
+.md-shop #products_grid .md-product-card .o_wsale_products_item_title {
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  display: -webkit-box;
+  font-size: .95rem;
+  font-weight: 800;
+  letter-spacing: 0;
+  line-height: 1.25;
+  margin-bottom: 0;
+  min-height: 2.375rem;
+  overflow: hidden;
+}
+
+.md-shop #products_grid .md-product-card .md-product-meta {
+  color: var(--md-muted, #7d8a95);
+  font-size: .88rem;
+  line-height: 1.3;
+  margin-top: .1rem;
+}
+
+.md-shop #products_grid .md-product-card .o_md_active_ingredient_tags {
+  display: none !important;
+}
+
+// #1 — Sub en COLUMNA: precio arriba, CTA full-width abajo
+// justify-content:flex-start anula el space-between nativo de Bootstrap
+.md-shop #products_grid .md-product-card .o_wsale_product_sub {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: .6rem;
+  justify-content: flex-start !important;
+  margin-top: auto;
+  min-width: 0;
+  width: 100%;
+}
+
+// #4 — Precio en azul oscuro contrastado
+// order:-1 neutraliza el Bootstrap order-last (order:6) que Odoo pone en el template nativo
+.md-shop #products_grid .md-product-card .product_price {
+  color: $md-ink;
+  font-size: 1.25rem;
+  font-weight: 800;
+  letter-spacing: -.01em;
+  line-height: 1.15;
+  margin-bottom: 0;
+  order: -1 !important;
+}
+
+.md-shop #products_grid .md-product-card .product_price .oe_currency_value {
+  font-weight: 800;
+}
+
+.md-product-meta {
+  display: block;
+  min-height: 0;
+}
+
+// ══════════════════════════════════════════════════════════════
+//  WISHLIST  —  #11 · #14
+// ══════════════════════════════════════════════════════════════
+
+.md-product-card .o_add_wishlist,
+.md-product-card a.o_add_wishlist,
+.md-product-card button.o_add_wishlist {
+  align-items: center !important;
+  background: rgba(255, 255, 255, .92) !important;
+  border: 0 !important;
+  border-radius: 50% !important;
+  box-shadow: 0 4px 12px rgba(20, 49, 61, .18);
+  color: var(--bs-body-color) !important;
+  display: flex !important;
+  gap: 0 !important;
+  height: 44px !important;
+  justify-content: center !important;
+  line-height: 1 !important;
+  max-height: none !important;
+  min-height: 44px !important;
+  padding: 0 !important;
+  position: absolute !important;
+  right: .75rem !important;
+  top: .75rem !important;
+  transition: background .18s ease, color .18s ease, transform .22s cubic-bezier(.34,1.56,.64,1), box-shadow .18s ease;
+  width: 44px !important;
+  z-index: 10 !important;
+}
+
+.md-product-card .o_add_wishlist i,
+.md-product-card .o_add_wishlist .fa,
+.md-product-card .o_add_wishlist .oi {
+  color: inherit !important;
+  font-size: .82rem !important;
+  line-height: 1 !important;
+  margin: 0 !important;
+}
+
+// #11 — Bounce elástico + rojo al hover
+// FIXME dark-theme: background era white !important — ahora usa token CSS para
+// adaptarse al tema oscuro (dark_theme_audit 2026-07-16, md_shop.scss:492).
+.md-product-card .o_add_wishlist:hover,
+.md-product-card .o_add_wishlist:focus-visible {
+  background: var(--bs-body-bg, white) !important;
+  box-shadow: 0 8px 20px rgba(20, 49, 61, .22) !important;
+  color: $md-danger !important;
+  outline: none;
+  transform: scale(1.15);
+}
+
+.md-product-card .o_add_wishlist.o_in_wishlist,
+.md-product-card .o_add_wishlist.added {
+  color: $md-danger !important;
+}
+
+// ══════════════════════════════════════════════════════════════
+//  FOOTER CTA Y REVEAL
+// ══════════════════════════════════════════════════════════════
+
+.md-shop #products_grid .md-product-card .o_sqty_card_footer {
+  align-items: stretch;
+  background: transparent;
+  border: 0;
+  display: flex;
+  flex-direction: column;
+  gap: .5rem;
+  padding: 0;
+  width: 100%;
+}
+
+// #15 — Reveal: siempre visible, animación slide-in al aparecer
+.md-shop #products_grid .md-product-card .o_sqty_cta_reveal {
+  align-items: stretch;
+  display: flex !important;
+  flex-direction: column;
+  gap: .5rem;
+  margin-top: 0;
+  max-height: none !important;
+  opacity: 1 !important;
+  overflow: visible;
+  pointer-events: auto;
+  transform: none !important;
+  width: 100%;
+}
+
+.md-shop #products_grid .md-product-card .o_wsale_product_btn,
+.md-shop #products_grid .md-product-card .o_shop_qty_selector {
+  min-width: 0;
+  width: 100%;
+}
+
+// ══════════════════════════════════════════════════════════════
+//  BOTONES GENERALES EN CARD
+// ══════════════════════════════════════════════════════════════
+
+// Regla general: aplica a TODOS los btn de la card EXCEPTO wishlist
+.md-shop #products_grid .md-product-card .btn:not(.o_add_wishlist):not(.o_add_compare_placeholder) {
+  align-items: center;
+  border-radius: .5rem !important;
+  display: inline-flex !important;
+  font-size: 1rem;
+  gap: .45rem;
+  height: 40px !important;
+  justify-content: center;
+  line-height: 1.2;
+  max-height: 40px !important;
+  min-height: 40px !important;
+  padding: 0 .75rem !important;
+}
+
+// Wishlist: alta especificidad para sobrevivir al brand gradient y al rule de .btn
+.md-shop #products_grid .md-product-card .o_add_wishlist,
+.md-shop #products_grid .md-product-card .btn.o_add_wishlist,
+.md-shop #products_grid .md-product-card button.o_add_wishlist {
+  background: rgba(255, 255, 255, .92) !important;
+  background-image: none !important;
+  border-radius: 50% !important;
+  height: 44px !important;
+  max-height: 44px !important;
+  min-height: 44px !important;
+  padding: 0 !important;
+  width: 44px !important;
+}
+
+.md-shop #products_grid .md-product-card .o_wsale_product_btn .btn,
+.md-shop #products_grid .md-product-card .o_wsale_product_btn button.btn,
+.md-shop #products_grid .md-product-card .o_wsale_product_btn a.btn,
+.md-shop #products_grid .md-product-card .o_wsale_product_btn .btn-primary {
+  width: 100% !important;
+}
+
+// ══════════════════════════════════════════════════════════════
+//  SELECTOR DE CANTIDAD  —  #15
+// ══════════════════════════════════════════════════════════════
+
+.md-shop #products_grid .md-product-card .o_shop_qty_selector {
+  // #15 — Slide-in cuando el selector se hace visible
+  animation: md-card-in .22s ease both;
+}
+
+.md-shop #products_grid .md-product-card .o_shop_qty_selector .css_quantity {
+  align-items: stretch;
+  display: flex !important;
+  height: 40px;
+  min-height: 40px;
+  width: 100% !important;
+}
+
+.md-shop #products_grid .md-product-card .o_shop_qty_selector .css_quantity > .btn,
+.md-shop #products_grid .md-product-card .o_shop_qty_selector .css_quantity > .form-control,
+.md-shop #products_grid .md-product-card .o_shop_qty_selector .css_quantity > .input-group-text {
+  height: 40px !important;
+  min-height: 40px !important;
+}
+
+.md-shop #products_grid .md-product-card .o_shop_qty_selector .sqty-minus,
+.md-shop #products_grid .md-product-card .o_shop_qty_selector .sqty-plus {
+  flex: 0 0 40px !important;
+  width: 40px !important;
+}
+
+.md-shop #products_grid .md-product-card .o_shop_qty_selector .sqty-display {
+  flex: 1 1 auto !important;
+  max-width: none !important;
+  min-width: 3rem !important;
+  width: auto !important;
+}
+
+.md-shop #products_grid .md-product-card .o_shop_qty_selector .o_sqty_unit {
+  align-items: center;
+  display: flex !important;
+  padding-inline: .75rem !important;
+}
+
+// Combined: footer y btn-wrapper sin stretch extra
+.md-shop #products_grid .md-product-card .o_sqty_card_footer,
+.md-shop #products_grid .md-product-card .o_sqty_cta_reveal .o_wsale_product_btn {
+  flex: 0 0 auto !important;
+  margin-top: 0 !important;
+}
+
+// FIX (audit shop): Odoo 19 nativo aplica position:absolute + pointer-events:none
+// + z-index + aspect-ratio a .o_wsale_product_btn cuando el layout de tienda usa
+// las opciones nativas o_wsale_products_opt_actions_onhover / o_wsale_products_opt_layout_catalog
+// (pensado para superponer el boton sobre la miniatura de imagen). Este tema
+// reubica ese mismo div dentro del footer de la card (bajo el precio), asi que
+// debe fluir en el flex normal -no absoluto- para ser visible y clickeable.
+// Sin este reset, el boton "Agregar" queda desprendido de su posicion real y
+// no recibe clics en todo el catalogo.
+//
+// Ademas: custom_shop_qty_selector fija width/min-width:28px en este wrapper
+// (pensado para un icono compacto sin texto), pero este archivo fuerza el
+// boton interno a width:100% con el texto "Agregar" visible (pill completo).
+// Con el wrapper atrapado en 28px, el pill de ~166px se desborda hacia la
+// izquierda (justify-content:flex-end) y queda flotando sobre el selector de
+// cantidad, interceptando sus clics. auto/fit-content deja que el wrapper
+// mida lo que su contenido real necesita.
+.md-shop #products_grid .md-product-card .o_sqty_cta_reveal .o_wsale_product_btn {
+  position: static !important;
+  inset: auto !important;
+  z-index: auto !important;
+  aspect-ratio: auto !important;
+  pointer-events: auto !important;
+  width: auto !important;
+  min-width: fit-content !important;
+}
+
+// Reveal también con flex 0
+.md-shop #products_grid .md-product-card .o_sqty_cta_reveal {
+  flex: 0 0 auto !important;
+  margin-top: 0 !important;
+}
+
+// ══════════════════════════════════════════════════════════════
+//  BOTÓN "AGREGAR"  —  #2 · #10
+// Gradiente teal-verde con glassmorphism, border-radius 999px
+// Completamente visible, clickeable y accesible
+// ══════════════════════════════════════════════════════════════
+
+.md-shop #products_grid .md-product-card .o_sqty_cta_reveal .o_wsale_product_btn .btn:not(.o_add_wishlist):not(.o_add_compare_placeholder),
+.md-shop #products_grid .md-product-card .o_wsale_product_btn button:not(.o_add_wishlist):not(.o_add_compare_placeholder),
+.md-shop #products_grid .md-product-card .o_wsale_product_btn a.btn:not(.o_add_wishlist):not(.o_add_compare_placeholder) {
+  --bs-btn-border-radius: 999px;
+  background: linear-gradient(135deg, #{$md-success} 0%, #{$md-green-600} 100%) !important;
+  border: 0 !important;
+  border-radius: 999px !important;
+  box-shadow: 0 4px 14px rgba(40, 169, 108, .28) !important;
+  color: #fff !important;
+  cursor: pointer;
+  display: inline-flex !important;
+  font-size: 0 !important;
+  gap: .4rem !important;
+  height: 40px !important;
+  min-height: 40px !important;
+  padding: 0 1.25rem !important;
+  position: relative;
+  transition: filter .18s ease, box-shadow .18s ease, transform .18s ease !important;
+  white-space: nowrap;
+  width: 100% !important;
+  z-index: 2;
+}
+
+// Icono carrito via ::before
+.md-shop #products_grid .md-product-card .o_sqty_cta_reveal .o_wsale_product_btn .btn:not(.o_add_wishlist):not(.o_add_compare_placeholder)::before,
+.md-shop #products_grid .md-product-card .o_wsale_product_btn button:not(.o_add_wishlist):not(.o_add_compare_placeholder)::before,
+.md-shop #products_grid .md-product-card .o_wsale_product_btn a.btn:not(.o_add_wishlist):not(.o_add_compare_placeholder)::before {
+  content: "\f07a";
+  font-family: "FontAwesome", "Font Awesome 5 Free", "Font Awesome 6 Free";
+  font-size: .82rem;
+  font-weight: 900;
+  line-height: 1;
+}
+
+// Texto via ::after
+.md-shop #products_grid .md-product-card .o_sqty_cta_reveal .o_wsale_product_btn .btn:not(.o_add_wishlist):not(.o_add_compare_placeholder)::after,
+.md-shop #products_grid .md-product-card .o_wsale_product_btn button:not(.o_add_wishlist):not(.o_add_compare_placeholder)::after,
+.md-shop #products_grid .md-product-card .o_wsale_product_btn a.btn:not(.o_add_wishlist):not(.o_add_compare_placeholder)::after {
+  content: "Agregar";
+  font-size: .9rem;
+  font-weight: 700;
+}
+
+// #10 — Hover: glow + brighten + scale
+.md-shop #products_grid .md-product-card .o_sqty_cta_reveal .o_wsale_product_btn .btn:not(.o_add_wishlist):not(.o_add_compare_placeholder):hover,
+.md-shop #products_grid .md-product-card .o_wsale_product_btn button:not(.o_add_wishlist):not(.o_add_compare_placeholder):hover,
+.md-shop #products_grid .md-product-card .o_wsale_product_btn a.btn:not(.o_add_wishlist):not(.o_add_compare_placeholder):hover {
+  box-shadow:
+    0 4px 14px rgba(40, 169, 108, .28),
+    0 0 0 3px rgba(40, 169, 108, .18) !important;
+  filter: brightness(1.08) saturate(1.1);
+  transform: scale(1.02);
+}
+
+// #14 — Focus ring accesible
+.md-shop #products_grid .md-product-card .o_sqty_cta_reveal .o_wsale_product_btn .btn:not(.o_add_wishlist):not(.o_add_compare_placeholder):focus-visible,
+.md-shop #products_grid .md-product-card .o_wsale_product_btn .btn:not(.o_add_wishlist):not(.o_add_compare_placeholder):focus-visible {
+  outline: 2px solid var(--md-blue, #{$md-blue});
+  outline-offset: 3px;
+}
+
+.md-product-card .o_add_wishlist:focus-visible,
+.md-product-card a.o_add_wishlist:focus-visible {
+  outline: 2px solid var(--md-blue, #{$md-blue}) !important;
+  outline-offset: 3px !important;
+}
+
+// #12 — Eyebrow: línea se expande al hover en la card
+.md-shop #products_grid .md-product-card .o_md_product_line_eyebrow::before {
+  transition: width .2s ease !important;
+}
+
+.md-shop #products_grid .md-product-card:hover .o_md_product_line_eyebrow::before {
+  width: 22px !important;
+}
+
+// ══════════════════════════════════════════════════════════════
+//  RESPONSIVE
+// ══════════════════════════════════════════════════════════════
+
+@media (max-width: 991.98px) {
+  .md-products-grid {
+    --md-product-gap: Clamp(1rem, 3vw, 1.4rem);
+  }
+
+  .md-shop .o_wsale_products_main_row {
+    display: block;
+  }
+
+  .md-shop #products_grid {
+    width: 100%;
+  }
+}
+
+@media (max-width: 767.98px) {
+  .md-products-grid {
+    --md-product-gap: Clamp(.95rem, 4vw, 1.2rem);
+    gap: 1rem;
+  }
+
+  .md-products-grid .o_wsale_products_grid_table_wrapper {
+    padding: .25rem .25rem .85rem;
+  }
+
+  .md-shop #o_wsale_container {
+    max-width: none;
+    padding-inline: .5rem;
+  }
+
+  .md-shop-banner {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
+
+@media (min-width: 1400px) {
+  .md-products-grid {
+    --md-product-gap: 1.5rem;
+  }
+
+  .md-shop #products_grid .md-product-card {
+    --md-product-card-pad: 1rem;
+  }
+
+  .md-shop #products_grid .md-product-media,
+  .md-shop #products_grid .oe_product_image {
+    padding: 1rem;
+  }
+}
+
+// ══════════════════════════════════════════════════════════════
+//  PÁGINA DE DETALLE DEL PRODUCTO
+// ══════════════════════════════════════════════════════════════
+
+.md-product-page {
+  padding-block: Clamp(2rem, 5vw, 5rem);
+}
+
+.md-product-gallery,
+.md-product-info {
+  padding: Clamp(1rem, 2.4vw, 2rem);
+}
+
+.md-product-info {
+  align-self: flex-start;
+}
+
+// Título transaccional (no hero): jerarquía clara sin dramatismo (item 9).
+.md-product-info h1,
+.md-product-page #product_details h1,
+.md-product-page .o_wsale_product_details_content_section_title h1 {
+  font-size: Clamp(1.5rem, 3vw, 2.4rem);
+  letter-spacing: -.02em;
+  line-height: 1.1;
+  margin-bottom: 0;
+}
+
+.md-trust-card {
+  display: grid;
+  gap: .75rem;
+}
+
+.md-trust-card > div {
+  background: color-mix(in srgb, var(--md-card), transparent 10%);
+  border: 1px solid var(--md-line);
+  border-radius: 1rem;
+  padding: 1rem;
+}
+
+.md-trust-card strong,
+.md-trust-card span {
+  display: block;
+}
+
+.md-trust-card strong {
+  color: var(--md-text);
+}
+
+.md-trust-card span {
+  color: var(--md-muted);
+  font-size: .92rem;
+  margin-top: .25rem;
+}
+
+.md-affiliate-page {
+  padding-block: Clamp(2rem, 5vw, 5rem);
+}
+
+.md-affiliate-card {
+  padding: Clamp(1rem, 2.5vw, 2rem) !important;
+}
+
+.md-affiliate-page .form-control,
+.md-affiliate-page .form-select {
+  border-radius: .9rem;
+}
+
+.md-affiliate-page label {
+  color: var(--md-text);
+  font-weight: 700;
+}
+
+/* Wishlist en página de detalle */
+.md-product-page .o_add_wishlist,
+.md-product-page a.o_add_wishlist,
+.md-product-page button.o_add_wishlist {
+  background: transparent !important;
+  border: 1.5px solid color-mix(in srgb, var(--md-blue), transparent 42%) !important;
+  border-radius: 999px !important;
+  color: var(--md-blue) !important;
+  font-weight: 700;
+  height: 46px !important;
+  min-height: 46px !important;
+  padding: 0 1.25rem !important;
+  transition: background .18s ease, border-color .18s ease, color .18s ease;
+}
+
+.md-product-page .o_add_wishlist:hover,
+.md-product-page .o_add_wishlist:focus-visible {
+  background: color-mix(in srgb, var(--md-blue), transparent 88%) !important;
+  outline: none;
+}
+
+.md-product-page .o_add_wishlist.o_in_wishlist,
+.md-product-page .o_add_wishlist.added {
+  background: color-mix(in srgb, $md-danger, transparent 88%) !important;
+  border-color: color-mix(in srgb, $md-danger, transparent 42%) !important;
+  color: $md-danger !important;
+}
+
+// ══════════════════════════════════════════════════════════════
+//  REFINAMIENTOS PDP — auditoría 19 mejoras (adaptado a Odoo 19)
+//  ─────────────────────────────────────────────────────────────
+//  Todo bajo la raíz semántica .md-product-page (revive al activar
+//  md_product_detail_bento_layout). Mapeado a selectores reales de
+//  este instance; complementa site_unify.scss sin duplicar. Las
+//  variantes-pill se logran por CSS (sin xpath frágil que rompa la
+//  vista). No se añade texto de inventario: la regla "A la mano" la
+//  cubren las plantillas de custom_shop_qty_selector.
+// ══════════════════════════════════════════════════════════════
+
+// Galería: superficie bento con fondo neutro minimalista (items 4, 17).
+.md-product-page .o_wsale_product_images,
+.md-product-page .md-product-gallery {
+  background: var(--md-surface, #f8f9fa);
+  border-radius: 1.25rem;
+}
+
+// Panel de compra sticky en escritorio; estático en mobile (item 3).
+@media (min-width: 992px) {
+  .md-product-page .md-product-info {
+    position: sticky;
+    top: calc(var(--md-nav-height, 96px) + 1.25rem);
+    align-self: flex-start;
+  }
+}
+
+@media (max-width: 991.98px) {
+  .md-product-page .md-product-info {
+    position: static;
+  }
+}
+
+// Ritmo: separar variantes/CTA de la identidad del producto (item 8).
+.md-product-page .js_add_cart_variants {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--md-line, rgba(20, 49, 61, .1));
+}
+
+// Variantes como pills accesibles, vía CSS — sin xpath frágil (item 13).
+.md-product-page .js_add_cart_variants label {
+  cursor: pointer;
+}
+
+.md-product-page .js_add_cart_variants ul.list-inline > li > label,
+.md-product-page .js_add_cart_variants .form-check-label {
+  display: inline-flex;
+  align-items: center;
+  gap: .4rem;
+  padding: .45rem .9rem;
+  border: 1.5px solid color-mix(in srgb, var(--md-blue, #{$md-blue}), transparent 60%);
+  border-radius: 999px;
+  font-weight: 600;
+  transition: border-color .15s ease, background .15s ease, color .15s ease;
+}
+
+.md-product-page .js_add_cart_variants input:checked + label,
+.md-product-page .js_add_cart_variants .form-check-input:checked + label {
+  border-color: var(--md-blue, #{$md-blue});
+  background: color-mix(in srgb, var(--md-blue, #{$md-blue}), transparent 88%);
+  color: var(--md-blue-800, #{$md-blue-800});
+}
+
+// Descripción corta legible, ancho de línea controlado (item 11).
+.md-product-page .product_description_short {
+  max-width: 70ch;
+  margin-bottom: 0;
+}
+
+// CTA: en mobile, pila a ancho completo sin perder amplitud (item 14).
+@media (max-width: 575.98px) {
+  .md-product-page #add_to_cart_wrap,
+  .md-product-page .o_md_product_detail_actions {
+    flex-direction: column !important;
+    align-items: stretch !important;
+  }
+
+  .md-product-page .css_quantity,
+  .md-product-page #add_to_cart,
+  .md-product-page .btn_add_to_cart,
+  .md-product-page .o_we_buy_now {
+    width: 100% !important;
+  }
+}
+
+// ══════════════════════════════════════════════════════════════
+//  DARK MODE
+//  .o_dark_mode/[data-bs-theme] son selectores de backend, nunca
+//  presentes en el frontend — ver
+//  docs/audits/2026-07-01_backend_dark_mode_audit.md. El toggle real
+//  del frontend escribe data-color-scheme="dark" en <body>.
+// ══════════════════════════════════════════════════════════════
+
+body[data-color-scheme="dark"] .md-product-card .o_add_wishlist {
+  background: rgba(0, 0, 0, .48) !important;
+  color: var(--bs-body-color) !important;
+}
+
+body[data-color-scheme="dark"] .md-shop #products_grid .md-product-card {
+  background:
+    linear-gradient(145deg,
+      color-mix(in srgb, var(--bs-card-bg) 74%, transparent),
+      color-mix(in srgb, var(--bs-body-bg) 88%, transparent));
+  box-shadow: 0 18px 60px rgba(0,0,0,.28);
+}
+
+body[data-color-scheme="dark"] .md-shop-filter-card {
+  background: color-mix(in srgb, var(--bs-card-bg) 78%, transparent);
+}
+
+body[data-color-scheme="dark"] .md-shop #products_grid .md-product-media,
+body[data-color-scheme="dark"] .md-shop #products_grid .oe_product_image {
+  background-color: rgba(255, 255, 255, .06) !important;
+}
+
+body[data-color-scheme="dark"] .md-shop #products_grid .md-product-media img,
+body[data-color-scheme="dark"] .md-shop #products_grid .oe_product_image_img {
+  mix-blend-mode: lighten;
+}
+
+// ══════════════════════════════════════════════════════════════
+//  RESTAURACIÓN — diseño de card de producto vigente en main
+//  El rediseño bento (lift de 4px, sombra multicapa, zoom + blend
+//  mode "multiply" sobre la imagen, fondo con patrón diagonal) se
+//  revierte al tratamiento plano/sobrio de producción: sombra de
+//  una sola capa, lift de 2px, imagen sin filtros ni blend-mode.
+//  Solo aplica en modo claro — el dark mode conserva su propio
+//  tratamiento (bloque DARK MODE arriba).
+// ══════════════════════════════════════════════════════════════
+
+body:not([data-color-scheme="dark"]) .md-shop #products_grid .md-product-card {
+  border: 1px solid rgba(58, 165, 201, 0.12) !important;
+  border-radius: 16px !important;
+  box-shadow: 0 14px 34px rgba(25, 53, 72, 0.08) !important;
+  transition: border-color 0.18s ease,
+              box-shadow 0.18s ease,
+              transform 0.18s ease !important;
+}
+
+body:not([data-color-scheme="dark"]) .md-shop #products_grid .md-product-card:hover {
+  border-color: rgba(58, 165, 201, 0.28) !important;
+  box-shadow: 0 20px 42px rgba(25, 53, 72, 0.14) !important;
+  transform: translateY(-2px) !important;
+}
+
+body:not([data-color-scheme="dark"]) .md-shop #products_grid .md-product-media,
+body:not([data-color-scheme="dark"]) .md-shop #products_grid .oe_product_image {
+  background-color: transparent !important;
+  background-image: none !important;
+  background: linear-gradient(180deg, #{$md-gray-50} 0%, #{$md-gray-100} 100%) !important;
+  border-radius: 16px !important;
+  padding: 10px !important;
+}
+
+body:not([data-color-scheme="dark"]) .md-shop #products_grid .md-product-media img,
+body:not([data-color-scheme="dark"]) .md-shop #products_grid .oe_product_image_img {
+  mix-blend-mode: normal !important;
+  transition: none !important;
+}
+
+body:not([data-color-scheme="dark"]) .md-shop #products_grid .md-product-card:hover .md-product-media img,
+body:not([data-color-scheme="dark"]) .md-shop #products_grid .md-product-card:hover .oe_product_image_img {
+  filter: none !important;
+  transform: none !important;
+}
+
+body:not([data-color-scheme="dark"]) .md-shop #products_grid .oe_product_cart.md-product-card {
+  background: rgba(255, 255, 255, 0.98) !important;
+  overflow: hidden !important;
+  padding: 14px 14px 12px !important;
+}
+
+body:not([data-color-scheme="dark"]) .md-shop #products_grid .oe_product_cart.md-product-card .o_wsale_product_grid_wrapper,
+body:not([data-color-scheme="dark"]) .md-shop #products_grid .oe_product_cart.md-product-card .o_wsale_product_grid_wrapper > form {
+  display: flex !important;
+  flex-direction: column !important;
+  height: 100% !important;
+}
+
+body:not([data-color-scheme="dark"]) .md-shop #products_grid .oe_product_cart.md-product-card .md-product-media,
+body:not([data-color-scheme="dark"]) .md-shop #products_grid .oe_product_cart.md-product-card .oe_product_image {
+  aspect-ratio: 1 / 1;
+  display: block !important;
+  height: auto !important;
+  margin: 0 !important;
+  max-width: 100% !important;
+  overflow: hidden;
+  padding: 0 !important;
+  width: 100% !important;
+}
+
+body:not([data-color-scheme="dark"]) .md-shop #products_grid .oe_product_cart.md-product-card .oe_product_image_link {
+  align-items: center;
+  display: flex !important;
+  height: 100%;
+  justify-content: center;
+  padding: 10px;
+  width: 100%;
+}
+
+body:not([data-color-scheme="dark"]) .md-shop #products_grid .oe_product_cart.md-product-card .o_wsale_product_information,
+body:not([data-color-scheme="dark"]) .md-shop #products_grid .oe_product_cart.md-product-card .md-product-card-body {
+  display: flex !important;
+  flex: 1 1 auto;
+  flex-direction: column !important;
+  padding-top: 8px !important;
+}
+
+body:not([data-color-scheme="dark"]) .md-shop #products_grid .oe_product_cart.md-product-card .o_sqty_stock {
+  backdrop-filter: none !important;
+  background: rgba(240, 253, 244, 0.88) !important;
+  border-color: rgba(22, 163, 74, 0.18) !important;
+  border-radius: 8px !important;
+  box-shadow: none !important;
+  inset: auto !important;
+  max-width: 100%;
+  padding: 3px 8px !important;
+  pointer-events: auto;
+  position: static !important;
+  width: fit-content;
+}
+
+@media (hover: hover) and (min-width: 992px) {
+  body:not([data-color-scheme="dark"]) .md-shop #products_grid .oe_product_cart.md-product-card .o_sqty_card_footer {
+    display: grid;
+    gap: 8px;
+    grid-template-columns: minmax(0, 1fr);
+    justify-items: center;
+    text-align: center;
+    width: 100%;
+  }
+
+  body:not([data-color-scheme="dark"]) .md-shop #products_grid .oe_product_cart.md-product-card .o_sqty_cta_reveal {
+    align-items: center;
+    display: grid !important;
+    gap: 6px;
+    grid-template-columns: auto 28px;
+    justify-content: center;
+    margin-top: 0;
+    max-height: none;
+    opacity: 1;
+    pointer-events: auto;
+    transform: none;
+    width: 100%;
+  }
+
+  body:not([data-color-scheme="dark"]) .md-shop #products_grid .oe_product_cart.md-product-card .o_sqty_cta_reveal .o_wsale_product_btn {
+    justify-content: flex-end;
+    min-width: 28px !important;
+    width: 28px !important;
+  }
+
+  body:not([data-color-scheme="dark"]) .md-shop #products_grid .oe_product_cart.md-product-card .o_sqty_cta_reveal .o_wsale_product_btn button.btn,
+  body:not([data-color-scheme="dark"]) .md-shop #products_grid .oe_product_cart.md-product-card .o_sqty_cta_reveal .o_wsale_product_btn a.btn,
+  body:not([data-color-scheme="dark"]) .md-shop #products_grid .oe_product_cart.md-product-card .o_sqty_cta_reveal .o_wsale_product_btn .btn-primary {
+    border-radius: 999px !important;
+    font-size: inherit !important;
+    height: 24px !important;
+    max-height: 24px !important;
+    min-height: 24px !important;
+    min-width: 28px !important;
+    padding-inline: 0 !important;
+    width: 28px !important;
+  }
+
+  body:not([data-color-scheme="dark"]) .md-shop #products_grid .oe_product_cart.md-product-card .o_sqty_cta_reveal .o_wsale_product_btn button.btn::after,
+  body:not([data-color-scheme="dark"]) .md-shop #products_grid .oe_product_cart.md-product-card .o_sqty_cta_reveal .o_wsale_product_btn a.btn::after,
+  body:not([data-color-scheme="dark"]) .md-shop #products_grid .oe_product_cart.md-product-card .o_sqty_cta_reveal .o_wsale_product_btn .btn-primary::after {
+    content: none !important;
+  }
+}

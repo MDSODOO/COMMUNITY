@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="pharma_pos_session_sales_details" inherit_id="point_of_sale.pos_session_sales_details">
+        <xpath expr="//div[@id='sales']" position="replace">
+            <div id="sales" class="o_report_pos">
+                <h6 class="bg-secondary p-1 fw-bold">Ventas por movimiento</h6>
+                <div class="table-responsive">
+                    <table class="table table-sm table-borderless align-middle small">
+                    <thead>
+                        <tr class="border-bottom border-secondary">
+                            <th class="ps-1">Fecha/Hora</th>
+                            <th>Orden POS</th>
+                            <th>Cliente asociado</th>
+                            <th>Producto</th>
+                            <th>Lote</th>
+                            <th>Caducidad</th>
+                            <th class="text-end">Cantidad</th>
+                            <th>Unidad</th>
+                            <th class="text-end">Importe</th>
+                            <th class="text-end">Dto.%</th>
+                            <th class="text-end">Dto. Importe</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr t-if="not pharma_z_report_movements">
+                            <td colspan="11" class="text-center text-muted py-2">
+                                Sin movimientos de venta.
+                            </td>
+                        </tr>
+                        <tr t-foreach="pharma_z_report_movements" t-as="line"
+                            t-att-class="'border-bottom border-secondary table-warning' if line['warning'] else 'border-bottom border-secondary'">
+                            <td class="ps-1 text-nowrap">
+                                <span t-out="line['timestamp']"/>
+                            </td>
+                            <td class="text-nowrap">
+                                <span t-out="line['order_name']"/>
+                            </td>
+                            <td>
+                                <span t-out="line['customer_name']"/>
+                            </td>
+                            <td>
+                                <span t-out="line['product_name']"/>
+                            </td>
+                            <td class="text-nowrap">
+                                <span t-out="line['lot_name']"/>
+                            </td>
+                            <td class="text-nowrap">
+                                <span t-out="line['expiration_date']"/>
+                            </td>
+                            <td class="text-end text-nowrap">
+                                <span t-out="line['qty']"/>
+                            </td>
+                            <td class="text-nowrap">
+                                <span t-out="line['uom']"/>
+                            </td>
+                            <td class="text-end text-nowrap">
+                                <t t-if="currency['position']">
+                                    <span t-out="line['amount_value']" t-options="{'widget': 'float', 'precision': currency['precision']}"/>
+                                    <span t-out='currency["symbol"]'/>
+                                </t>
+                                <t t-else="">
+                                    <span t-out='currency["symbol"]'/>
+                                    <span t-out="line['amount_value']" t-options="{'widget': 'float', 'precision': currency['precision']}"/>
+                                </t>
+                            </td>
+                            <td class="text-end text-nowrap">
+                                <t t-if="line.get('discount_pct')">
+                                    <span t-out="line['discount_pct']" t-options="{'widget': 'float', 'precision': 1}"/>%
+                                </t>
+                            </td>
+                            <td class="text-end text-nowrap">
+                                <t t-if="line.get('discount_amount_value')">
+                                    <t t-if="currency['position']">
+                                        <span t-out="line['discount_amount_value']" t-options="{'widget': 'float', 'precision': currency['precision']}"/>
+                                        <span t-out='currency["symbol"]'/>
+                                    </t>
+                                    <t t-else="">
+                                        <span t-out='currency["symbol"]'/>
+                                        <span t-out="line['discount_amount_value']" t-options="{'widget': 'float', 'precision': currency['precision']}"/>
+                                    </t>
+                                </t>
+                            </td>
+                        </tr>
+                        <tr class="border-top border-dark">
+                            <td class="ps-1 fw-bold" colspan="6">Total</td>
+                            <td class="text-end fw-bold">
+                                <span t-out="pharma_z_report_total_qty"/>
+                            </td>
+                            <td/>
+                            <td class="text-end fw-bold">
+                                <t t-if="currency['position']">
+                                    <span t-out="pharma_z_report_total_amount" t-options="{'widget': 'float', 'precision': currency['precision']}"/>
+                                    <span t-out='currency["symbol"]'/>
+                                </t>
+                                <t t-else="">
+                                    <span t-out='currency["symbol"]'/>
+                                    <span t-out="pharma_z_report_total_amount" t-options="{'widget': 'float', 'precision': currency['precision']}"/>
+                                </t>
+                            </td>
+                            <td/>
+                            <td class="text-end fw-bold">
+                                <t t-if="currency['position']">
+                                    <span t-out="pharma_z_report_total_discount" t-options="{'widget': 'float', 'precision': currency['precision']}"/>
+                                    <span t-out='currency["symbol"]'/>
+                                </t>
+                                <t t-else="">
+                                    <span t-out='currency["symbol"]'/>
+                                    <span t-out="pharma_z_report_total_discount" t-options="{'widget': 'float', 'precision': currency['precision']}"/>
+                                </t>
+                            </td>
+                        </tr>
+                    </tbody>
+                    </table>
+                </div><!-- /.table-responsive -->
+                <p t-if="pharma_z_report_warning_count" class="text-warning small">
+                    <strong>Advertencias de trazabilidad:</strong>
+                    <span t-out="pharma_z_report_warning_count"/>
+                    movimiento(s) requieren revision de lote o caducidad.
+                </p>
+            </div>
+        </xpath>
+        <xpath expr="//div[@id='refunds']" position="replace">
+            <div/>
+        </xpath>
+    </template>
+</odoo>

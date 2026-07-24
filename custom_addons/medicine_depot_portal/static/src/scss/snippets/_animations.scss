@@ -1,0 +1,227 @@
+// Medicine Depot · Animations library
+// Reusable keyframes, easing helpers, scroll-trigger classes, counter, skeleton, ripple.
+
+// ── Easing tokens (custom properties) ────────────────────────────────────────
+:root {
+    --md-ease-out:   cubic-bezier(0.22, 0.61, 0.36, 1);
+    --md-ease-in:    cubic-bezier(0.55, 0, 1, 0.45);
+    --md-ease-inout: cubic-bezier(0.65, 0, 0.35, 1);
+    --md-ease-spring:cubic-bezier(0.34, 1.56, 0.64, 1);
+    --md-ease-linear:linear;
+}
+
+// ── Keyframes ─────────────────────────────────────────────────────────────────
+
+@keyframes md-fade-in {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+
+@keyframes md-fade-out {
+    from { opacity: 1; }
+    to   { opacity: 0; }
+}
+
+@keyframes md-slide-up {
+    from { opacity: 0; transform: translateY(24px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes md-slide-down {
+    from { opacity: 0; transform: translateY(-24px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes md-slide-left {
+    from { opacity: 0; transform: translateX(24px); }
+    to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes md-slide-right {
+    from { opacity: 0; transform: translateX(-24px); }
+    to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes md-scale-in {
+    from { opacity: 0; transform: scale(0.92); }
+    to   { opacity: 1; transform: scale(1); }
+}
+
+@keyframes md-scale-out {
+    from { opacity: 1; transform: scale(1); }
+    to   { opacity: 0; transform: scale(0.9); }
+}
+
+@keyframes md-blur-in {
+    from { opacity: 0; filter: blur(6px); }
+    to   { opacity: 1; filter: blur(0); }
+}
+
+@keyframes md-ui-spin {
+    to { transform: rotate(360deg); }
+}
+
+@keyframes md-skeleton-shimmer {
+    0%   { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
+@keyframes md-counter-tick {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes md-ripple-expand {
+    from { transform: scale(0); opacity: 0.36; }
+    to   { transform: scale(4); opacity: 0; }
+}
+
+@keyframes md-marquee {
+    0%   { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+}
+
+@keyframes md-tooltip-show {
+    from { opacity: 0; transform: translateX(-50%) translateY(4px); }
+    to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+// ── Scroll-trigger animation classes ─────────────────────────────────────────
+// JavaScript adds .is-visible when element enters viewport (Intersection Observer)
+
+.md-reveal {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.5s var(--md-ease-out), transform 0.5s var(--md-ease-out);
+
+    &.is-visible {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.md-reveal--fade {
+    opacity: 0;
+    transition: opacity 0.6s ease;
+
+    &.is-visible { opacity: 1; }
+}
+
+.md-reveal--slide-left {
+    opacity: 0;
+    transform: translateX(28px);
+    transition: opacity 0.5s var(--md-ease-out), transform 0.5s var(--md-ease-out);
+
+    &.is-visible { opacity: 1; transform: translateX(0); }
+}
+
+.md-reveal--slide-right {
+    opacity: 0;
+    transform: translateX(-28px);
+    transition: opacity 0.5s var(--md-ease-out), transform 0.5s var(--md-ease-out);
+
+    &.is-visible { opacity: 1; transform: translateX(0); }
+}
+
+.md-reveal--scale {
+    opacity: 0;
+    transform: scale(0.94);
+    transition: opacity 0.45s ease, transform 0.45s var(--md-ease-spring);
+
+    &.is-visible { opacity: 1; transform: scale(1); }
+}
+
+// Stagger delay helpers (used by JS or manually)
+@for $i from 1 through 12 {
+    .md-stagger-#{$i} {
+        transition-delay: #{($i - 1) * 60}ms;
+    }
+}
+
+// ── Skeleton loading placeholders ────────────────────────────────────────────
+.md-skeleton {
+    background: linear-gradient(
+        90deg,
+        $md-gray-100 25%,
+        $md-gray-50  50%,
+        $md-gray-100 75%
+    );
+    background-size: 400% 100%;
+    animation: md-skeleton-shimmer 1.5s ease-in-out infinite;
+    border-radius: $md-r-card;
+    color: transparent;
+    user-select: none;
+}
+
+.md-skeleton--text {
+    height: 14px;
+    border-radius: 4px;
+    margin-bottom: 8px;
+}
+
+.md-skeleton--title {
+    height: 24px;
+    width: 60%;
+    border-radius: 6px;
+    margin-bottom: 12px;
+}
+
+.md-skeleton--img {
+    aspect-ratio: 4/3;
+    width: 100%;
+    border-radius: $md-r-card;
+}
+
+.md-skeleton--avatar {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    flex: 0 0 auto;
+}
+
+// ── Ripple effect (JS-injected .md-ripple-wave) ───────────────────────────────
+.md-ripple {
+    position: relative;
+    overflow: hidden;
+}
+
+.md-ripple-wave {
+    position: absolute;
+    border-radius: 50%;
+    background: rgba($md-white, 0.36);
+    pointer-events: none;
+    transform: scale(0);
+    animation: md-ripple-expand 0.6s var(--md-ease-out) forwards;
+}
+
+// ── Counter animation ─────────────────────────────────────────────────────────
+.md-counter[data-target] {
+    display: inline-block;
+    transition: transform 0.15s ease;
+}
+
+.md-counter.is-counting {
+    animation: md-counter-tick 0.15s ease forwards;
+}
+
+// ── Spin utility ─────────────────────────────────────────────────────────────
+.md-spin {
+    animation: md-ui-spin 0.8s linear infinite;
+}
+
+// ── prefers-reduced-motion: disable all animations ────────────────────────────
+@media (prefers-reduced-motion: reduce) {
+    .md-reveal,
+    .md-reveal--fade,
+    .md-reveal--slide-left,
+    .md-reveal--slide-right,
+    .md-reveal--scale,
+    .md-skeleton,
+    .md-product-card {
+        animation: none !important;
+        transition-duration: 0.001ms !important;
+        transition-delay: 0ms !important;
+        opacity: 1;
+        transform: none;
+    }
+}

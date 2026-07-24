@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <!-- "Order summary" en /shop/cart aparece sin traducir a pesar de que
+             website_sale/i18n/es.po SÍ trae "Order summary" -> "Resumen del pedido":
+             el sitio corre con lang es_MX y ese módulo no trae i18n/es_MX.po propio,
+             así que este término puntual no quedó cargado para esa variante regional
+             (el resto del carrito sí se ve en español). Se corrige heredando la vista
+             core `website_sale.cart` (no se edita el core) en vez de tocar traducciones
+             a ciegas. Ver docs/audits/2026-07-21_shop_visual_review.md Hallazgo #5. -->
+        <record id="website_sale_cart_order_summary_es" model="ir.ui.view">
+            <field name="name">website_sale.cart - Order summary en español (es_MX)</field>
+            <field name="inherit_id" ref="website_sale.cart"/>
+            <field name="arch" type="xml">
+                <xpath expr="//div[@id='shop_cart']//h4[@class='mb-0']" position="replace">
+                    <h4 class="mb-0">Resumen del pedido</h4>
+                </xpath>
+            </field>
+        </record>
+
+    </data>
+</odoo>

@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <template id="s_md_podcast" name="MD · Podcast">
+        <div class="s_md_podcast md-tile md-tile--dark">
+            <div class="s_md_podcast-copy">
+                <span class="md-eyebrow md-eyebrow--light">Escucha ahora</span>
+                <h3>Pláticas Farmacéuticas</h3>
+                <p class="md-lead">
+                    Un podcast donde aprenderás acerca de normatividad,
+                    ventas y estrategias para tu farmacia.
+                </p>
+                <a href="https://medicinedepot.com.mx/platicas-farmaceuticas/"
+                   target="_blank"
+                   rel="noopener"
+                   class="md-btn md-btn--primary s_md_podcast-link">¡Descúbrelo aquí!</a>
+            </div>
+            <div class="s_md_podcast-player" aria-label="Resumen de Pláticas Farmacéuticas">
+                <div class="s_md_podcast-art" aria-hidden="true">
+                    <span>PF</span>
+                </div>
+                <div class="s_md_podcast-track">
+                    <span>Contenido para tu farmacia</span>
+                    <strong>Normatividad, ventas y operación en mostrador</strong>
+                    <p>Episodios prácticos para aplicar en tu farmacia</p>
+                </div>
+                <div class="s_md_podcast-meter" aria-hidden="true">
+                    <span></span>
+                </div>
+            </div>
+        </div>
+    </template>
+
+</odoo>

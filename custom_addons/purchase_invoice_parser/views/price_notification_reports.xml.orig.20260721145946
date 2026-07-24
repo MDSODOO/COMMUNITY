@@ -1,0 +1,315 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ===================================================================== -->
+    <!-- FORMATO DE PAPEL: márgenes compactos para reporte sin header externo  -->
+    <!-- El formato estándar de compañía reserva ~32 mm para el header QWeb;  -->
+    <!-- este formato usa 10 mm uniforme, sin línea de cabecera.              -->
+    <!-- ===================================================================== -->
+    <record id="paperformat_price_change_report" model="report.paperformat">
+        <field name="name">Cambios de Precio A4</field>
+        <field name="default" eval="False"/>
+        <field name="format">A4</field>
+        <field name="page_height" eval="0"/>
+        <field name="page_width" eval="0"/>
+        <field name="orientation">Portrait</field>
+        <field name="margin_top" eval="10"/>
+        <field name="margin_bottom" eval="12"/>
+        <field name="margin_left" eval="10"/>
+        <field name="margin_right" eval="10"/>
+        <field name="header_line" eval="False"/>
+        <field name="header_spacing" eval="0"/>
+        <field name="dpi" eval="90"/>
+    </record>
+
+    <!-- ===================================================================== -->
+    <!-- REPORTE PDF: Cambios de Precio                                       -->
+    <!-- ===================================================================== -->
+    <record id="action_purchase_price_change_report" model="ir.actions.report">
+        <field name="name">Reporte de Cambios de Precio</field>
+        <field name="model">purchase.price.notification</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">purchase_invoice_parser.report_price_change_pdf</field>
+        <field name="report_file">purchase_invoice_parser.report_price_change_pdf</field>
+        <field name="binding_model_id" ref="model_purchase_price_notification"/>
+        <field name="binding_type">report</field>
+        <field name="print_report_name">'Reporte Cambios de Precio - %s' % (context_today().strftime('%Y-%m-%d'))</field>
+        <field name="paperformat_id" ref="paperformat_price_change_report"/>
+    </record>
+
+    <!-- ===================================================================== -->
+    <!-- LAYOUT MÍNIMO: Wrapper sin header de compañía                        -->
+    <!-- No llama a web.external_layout para evitar que el layout striped     -->
+    <!-- inyecte el header con logo+dirección+RFC de la empresa.              -->
+    <!-- El footer replica el estándar de Odoo: nombre, RFC, paginación.      -->
+    <!-- ===================================================================== -->
+    <template id="price_change_minimal_layout">
+        <div class="article" style="margin-top: 0; padding-top: 0;">
+            <div class="page" style="margin-top: 0; padding-top: 0;">
+                <t t-raw="0"/>
+            </div>
+            <div class="footer o_standard_footer">
+                <div class="d-flex justify-content-between align-items-center">
+                    <span class="text-muted" style="font-size: 0.75rem;">
+                        <t t-esc="company.name"/>
+                        <t t-if="company.vat"> · RFC: <t t-esc="company.vat"/></t>
+                        <t t-if="company.phone"> · <t t-esc="company.phone"/></t>
+                    </span>
+                    <span style="font-size: 0.75rem;">
+                        Pág. <span class="page"/> / <span class="topage"/>
+                    </span>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <!-- ===================================================================== -->
+    <!-- TEMPLATE QWEB: Cuerpo del Reporte (diseño pharma_reports)            -->
+    <!-- Usa price_change_minimal_layout (propio) en lugar de                 -->
+    <!-- web.external_layout para evitar el doble header: el layout striped   -->
+    <!-- tiene un div con t-attf-class dinámico que no puede suprimirse       -->
+    <!-- vía XPath de herencia estándar.                                      -->
+    <!-- ===================================================================== -->
+    <template id="report_price_change_pdf">
+        <t t-call="web.html_container">
+            <t t-call="purchase_invoice_parser.price_change_minimal_layout">
+                <div class="pharma-doc-page">
+
+                    <!-- HEADER pharma: logo + doc-info + franja + meta-banda -->
+                    <div class="pharma-full-header">
+                        <div class="d-flex align-items-start justify-content-between pharma-doc-header">
+                            <div class="pharma-logo-shell">
+                                <img t-if="company.logo"
+                                     class="md-logo"
+                                     t-att-src="image_data_uri(company.logo)"
+                                     alt="Logo"/>
+                            </div>
+                            <div class="pharma-doc-info text-end">
+                                <span class="pharma-doc-type">Reporte</span>
+                                <span class="pharma-doc-num">Cambios de Precio</span>
+                                <span class="pharma-doc-date" t-esc="report_date"/>
+                            </div>
+                        </div>
+                        <div class="pharma-stripe">
+                            <span class="pharma-stripe-band pharma-stripe-band-brand"/>
+                            <span class="pharma-stripe-band pharma-stripe-band-teal"/>
+                            <span class="pharma-stripe-band pharma-stripe-band-lime"/>
+                        </div>
+                        <div class="row g-0 pharma-meta-band">
+                            <div class="col-4 pharma-meta-cell">
+                                <span class="pharma-meta-label">Compañía</span>
+                                <span class="pharma-meta-val" t-esc="company.name"/>
+                            </div>
+                            <div class="col-4 pharma-meta-cell">
+                                <span class="pharma-meta-label">Notificaciones</span>
+                                <span class="pharma-meta-val" t-esc="len(docs)"/>
+                            </div>
+                            <div class="col-4 pharma-meta-cell">
+                                <span class="pharma-meta-label">Aplicadas</span>
+                                <span class="pharma-meta-val" t-esc="applied_count"/>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- TABLA principal: Replicar estructura de "Costo por Sucursal" -->
+                    <div class="pharma-section-ttl">Detalle de cambios de precio</div>
+                    <table class="pharma-lines table-sm">
+                        <colgroup>
+                            <col style="width:8%;"/>
+                            <col style="width:20%;"/>
+                            <col style="width:15%;"/>
+                            <col style="width:15%;"/>
+                            <col style="width:8%;"/>
+                            <col style="width:11%;"/>
+                            <col style="width:11%;"/>
+                            <col style="width:6%;"/>
+                            <col style="width:4%;"/>
+                            <col style="width:2%;"/>
+                        </colgroup>
+                        <thead>
+                            <tr>
+                                <th class="text-start text-nowrap" style="font-size: 0.8rem;">Fecha</th>
+                                <th class="text-start text-nowrap" style="font-size: 0.8rem;">Código</th>
+                                <th class="text-start text-nowrap" style="font-size: 0.8rem;">Producto</th>
+                                <th class="text-start text-nowrap" style="font-size: 0.8rem;">Línea</th>
+                                <th class="text-start text-nowrap" style="font-size: 0.8rem;">Proveedor</th>
+                                <th class="text-end text-nowrap" style="font-size: 0.8rem;">Precio anterior</th>
+                                <th class="text-end text-nowrap" style="font-size: 0.8rem;">Precio actual</th>
+                                <th class="text-end text-nowrap" style="font-size: 0.8rem;">Δ %</th>
+                                <th style="font-size: 0.8rem;">OC</th>
+                                <th style="font-size: 0.8rem;">Estado</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <t t-foreach="docs" t-as="rec">
+                                <t t-set="op" t-value="rec.old_price or 0"/>
+                                <t t-set="_cp_key" t-value="(rec.partner_id.id, rec.product_tmpl_id.id) if rec.partner_id and rec.product_tmpl_id else None"/>
+                                <t t-set="cp" t-value="current_prices.get(_cp_key, rec.new_price or 0) if _cp_key else (rec.new_price or 0)"/>
+                                <t t-set="diff" t-value="((cp - op) / op * 100) if op &gt; 0 else 0"/>
+                                <t t-set="_product_barcode" t-value="rec.product_tmpl_id.barcode if rec.product_tmpl_id and rec.product_tmpl_id.exists() else ''"/>
+                                <!-- Nombre de producto simplificado (sin código barras ni paréntesis) para columna PRODUCTO -->
+                                <!-- Ej: "[7506022301789] PHARBEN 100MG C/20 (BENZONATATO)" → "PHARBEN 100MG C/20" -->
+                                <t t-set="_product_line_temp" t-value="(rec.product_name or '').split('(')[0].strip()"/>
+                                <t t-set="_product_simplified" t-value="(_product_line_temp.split(']')[1].strip() if ']' in _product_line_temp else _product_line_temp) if _product_line_temp else ''"/>
+                                <!-- Línea / Laboratorio: pre-computado en Python (_get_report_values) -->
+                                <!-- Evita AttributeError por campos Studio inciertos en QWeb -->
+                                <t t-set="_product_line" t-value="line_names.get(rec.id, '')"/>
+                                <t t-set="_partner_rfc" t-value="rec.partner_id.vat if rec.partner_id and rec.partner_id.vat else ''"/>
+                                <tr>
+                                    <td style="font-size: 0.8rem;">
+                                        <span t-if="rec.create_date" t-field="rec.create_date" t-options='{"widget": "date"}'/>
+                                        <t t-else="">—</t>
+                                    </td>
+                                    <td class="text-start" style="font-size: 0.8rem; padding: 4px;">
+                                        <span t-esc="_product_barcode or '—'"/>
+                                    </td>
+                                    <td class="pharma-product-cell" style="font-size: 0.8rem;">
+                                        <strong t-esc="_product_simplified or '—'"/>
+                                    </td>
+                                    <td class="text-start text-muted" style="font-size: 0.8rem; padding: 4px;">
+                                        <span t-esc="_product_line or '—'"/>
+                                    </td>
+                                    <td class="text-start" style="font-size: 0.8rem;">
+                                        <strong t-esc="rec.partner_name or '—'"/>
+                                    </td>
+                                    <td class="text-end" style="font-size: 0.8rem;" t-esc="'{:,.2f}'.format(op) if op else '—'"/>
+                                    <td class="text-end fw-bold" style="font-size: 0.8rem;" t-esc="'{:,.2f}'.format(cp)"/>
+                                    <td class="text-end" t-att-class="'text-danger' if diff &gt; 0 else ('text-success' if diff &lt; 0 else '')" style="font-size: 0.8rem;">
+                                        <t t-esc="'{:+.2f}%'.format(diff) if op else '—'"/>
+                                    </td>
+                                    <td style="font-size: 0.8rem;">
+                                        <span t-esc="rec.purchase_order_id.name or '—'"/>
+                                    </td>
+                                    <td style="font-size: 0.8rem;">
+                                        <span t-if="rec.state == 'unread'" class="badge bg-warning text-dark">Sin leer</span>
+                                        <span t-elif="rec.state == 'read'" class="badge bg-info">Leída</span>
+                                        <span t-else="" class="badge bg-success">Aplicada</span>
+                                    </td>
+                                </tr>
+                            </t>
+                            <tr t-if="not docs">
+                                <td colspan="10" class="text-center text-muted">
+                                    No hay notificaciones de cambio de precio.
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                </div>
+            </t>
+        </t>
+    </template>
+
+    <!-- ===================================================================== -->
+    <!-- ACCIÓN: Reporte de Costos por Sucursal (lanzado desde wizard)        -->
+    <!-- ===================================================================== -->
+    <record id="action_cost_by_branch_report" model="ir.actions.report">
+        <field name="name">Costos por Sucursal</field>
+        <field name="model">purchase.price.notification</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">purchase_invoice_parser.report_cost_by_branch_pdf</field>
+        <field name="report_file">purchase_invoice_parser.report_cost_by_branch_pdf</field>
+        <field name="print_report_name">'Costos por Sucursal - %s' % (context_today().strftime('%Y-%m-%d'))</field>
+        <field name="paperformat_id" ref="paperformat_price_change_report"/>
+    </record>
+
+    <!-- ===================================================================== -->
+    <!-- TEMPLATE QWEB: Costos por Sucursal                                   -->
+    <!-- Columnas dinámicas por compañía generadas con t-foreach.             -->
+    <!-- La fuente de datos es product.template.standard_price (company_dep). -->
+    <!-- ===================================================================== -->
+    <template id="report_cost_by_branch_pdf">
+        <t t-call="web.html_container">
+            <t t-call="purchase_invoice_parser.price_change_minimal_layout">
+                <div class="pharma-doc-page">
+
+                    <!-- HEADER pharma: logo + doc-info + franja + meta-banda -->
+                    <div class="pharma-full-header">
+                        <div class="d-flex align-items-start justify-content-between pharma-doc-header">
+                            <div class="pharma-logo-shell">
+                                <img t-if="company.logo"
+                                     class="md-logo"
+                                     t-att-src="image_data_uri(company.logo)"
+                                     alt="Logo"/>
+                            </div>
+                            <div class="pharma-doc-info text-end">
+                                <span class="pharma-doc-type">Reporte</span>
+                                <span class="pharma-doc-num">Costos por Sucursal</span>
+                                <span class="pharma-doc-date" t-esc="report_date"/>
+                            </div>
+                        </div>
+                        <div class="pharma-stripe">
+                            <span class="pharma-stripe-band pharma-stripe-band-brand"/>
+                            <span class="pharma-stripe-band pharma-stripe-band-teal"/>
+                            <span class="pharma-stripe-band pharma-stripe-band-lime"/>
+                        </div>
+                        <div class="row g-0 pharma-meta-band">
+                            <div class="col-4 pharma-meta-cell">
+                                <span class="pharma-meta-label">Compañía</span>
+                                <span class="pharma-meta-val" t-esc="company.name"/>
+                            </div>
+                            <div class="col-4 pharma-meta-cell">
+                                <span class="pharma-meta-label">Productos</span>
+                                <span class="pharma-meta-val" t-esc="len(docs)"/>
+                            </div>
+                            <div class="col-4 pharma-meta-cell">
+                                <span class="pharma-meta-label">Sucursales</span>
+                                <span class="pharma-meta-val" t-esc="len(companies)"/>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Título de sección con filtro de categoría activo -->
+                    <div class="pharma-section-ttl">
+                        Costos por Sucursal
+                        <t t-if="line_filter">
+                            — <span class="text-muted" t-esc="', '.join(line_filter)"/>
+                        </t>
+                    </div>
+
+                    <!-- TABLA con columnas dinámicas por sucursal -->
+                    <table class="pharma-lines table-sm" style="table-layout: auto; width: 100%;">
+                        <thead>
+                            <tr>
+                                <th>Código</th>
+                                <th>Producto</th>
+                                <th>Línea</th>
+                                <t t-foreach="companies" t-as="co">
+                                    <th class="text-end" t-esc="co.name"/>
+                                </t>
+                                <th class="text-end">Costo Mayor</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <t t-foreach="docs" t-as="row">
+                                <tr>
+                                    <td t-esc="row['barcode'] or '—'"/>
+                                    <td class="pharma-product-cell">
+                                        <strong t-esc="row['product_name']"/>
+                                    </td>
+                                    <td class="text-muted small" t-esc="row['categ']"/>
+                                    <t t-foreach="companies" t-as="co">
+                                        <td class="text-end">
+                                            <t t-esc="'{:,.2f}'.format(row['costs_by_company'].get(co.id, 0.0))"/>
+                                        </td>
+                                    </t>
+                                    <td class="text-end fw-bold">
+                                        <t t-esc="'{:,.2f}'.format(row['max_cost'])"/>
+                                    </td>
+                                </tr>
+                            </t>
+                            <tr t-if="not docs">
+                                <td t-att-colspan="3 + len(companies) + 1"
+                                    class="text-center text-muted">
+                                    No hay productos para los filtros seleccionados.
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                </div>
+            </t>
+        </t>
+    </template>
+
+</odoo>

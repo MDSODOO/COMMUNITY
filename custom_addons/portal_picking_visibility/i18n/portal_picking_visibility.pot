@@ -1,0 +1,64 @@
+# Translation Template for portal_picking_visibility
+# Copyright (C) Medicine Depot
+# This file is distributed under the LGPL-3 license.
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: portal_picking_visibility 19.0.1.1.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-05-27 00:00+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#. models/sale_order.py
+msgid "Sin envío"
+msgstr ""
+
+msgid "Cancelado"
+msgstr ""
+
+msgid "Entregado"
+msgstr ""
+
+msgid "Parcialmente entregado"
+msgstr ""
+
+msgid "Listo para enviar"
+msgstr ""
+
+msgid "Confirmado"
+msgstr ""
+
+msgid "Preparando"
+msgstr ""
+
+#. models/stock_picking.py
+msgid "desconocido"
+msgstr ""
+
+#. controllers/portal.py
+msgid "Fecha programada"
+msgstr ""
+
+msgid "Referencia"
+msgstr ""
+
+msgid "Estado"
+msgstr ""
+
+msgid "Todos"
+msgstr ""
+
+msgid "En progreso"
+msgstr ""
+
+#. views/portal_templates.xml — selection labels
+msgid "Sin envío"
+msgstr ""
+
+msgid "Estado de Envío"
+msgstr ""

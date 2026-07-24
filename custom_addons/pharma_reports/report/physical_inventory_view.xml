@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--
+      ════════════════════════════════════════════════════════════════════
+      Mejoras UI — Vista de Inventario Físico (stock.quant tree view)
+      Hereda: stock.view_stock_quant_tree_inventory_editable
+
+      REGLA CRÍTICA: "A la mano" SIEMPRE.
+
+      Cambios:
+        1. Renombrar campo `quantity` → "A la mano"
+           (se corrige con string=)
+        2. Mostrar `product_categ_id` visible por defecto
+           (útil para agrupación farmacéutica por categoría)
+        3. priority=20 para aplicar DESPUÉS de inherencias nativas
+           (product_expiry ID 3456, stock.account ID 1801, etc.)
+      ════════════════════════════════════════════════════════════════════
+    -->
+    <record id="view_stock_quant_inventory_pharma_inherit" model="ir.ui.view">
+        <field name="name">stock.quant.inventory.list.pharma.inherit</field>
+        <field name="model">stock.quant</field>
+        <field name="inherit_id" ref="stock.view_stock_quant_tree_inventory_editable"/>
+        <field name="priority">20</field>
+        <field name="arch" type="xml">
+            <!--
+              1. Renombrar columna de cantidad física → "A la mano".
+                 Ancla por @name='quantity' (estable, nunca parte de cadenas t-if/elif).
+                 position="attributes" sólo modifica el atributo string sin tocar
+                 el widget ni las decoration-* nativas.
+            -->
+            <xpath expr="//field[@name='quantity']" position="attributes">
+                <attribute name="string">A la mano</attribute>
+            </xpath>
+
+            <!--
+              2. Categoría de Producto — mostrar por defecto.
+                 El nativo la tiene con optional="hide"; la cambiamos a "show"
+                 para facilitar la agrupación por categoría farmacéutica.
+                 Útil para conteos por línea terapéutica (antibióticos, etc.).
+            -->
+            <xpath expr="//field[@name='product_categ_id']" position="attributes">
+                <attribute name="optional">show</attribute>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

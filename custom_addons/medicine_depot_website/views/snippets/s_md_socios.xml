@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <template id="s_md_socios" name="MD · Socios Logo Cloud">
+        <div class="s_md_socios">
+            <p class="s_md_socios-label">Socios comerciales</p>
+            <t t-set="md_partner_logos"
+               t-value="[
+                   {'name': 'Bayer', 'src': '/medicine_depot_website/static/src/img/partners/bayer.svg'},
+                   {'name': 'Apotex', 'src': '/medicine_depot_website/static/src/img/partners/apotex.svg'},
+                   {'name': 'Collins', 'src': '/medicine_depot_website/static/src/img/partners/collins.svg'},
+                   {'name': 'Jayor', 'src': '/medicine_depot_website/static/src/img/partners/jayor.svg'},
+                   {'name': 'Loeffler', 'src': '/medicine_depot_website/static/src/img/partners/loeffler.svg'},
+                   {'name': 'Ultra', 'src': '/medicine_depot_website/static/src/img/partners/ultra.svg'},
+                   {'name': 'ADN Pharma', 'src': '/medicine_depot_website/static/src/img/partners/adn-pharma.svg'},
+                   {'name': 'Biomep', 'src': '/medicine_depot_website/static/src/img/partners/biomep.svg'},
+                   {'name': 'Pharmagen', 'src': '/medicine_depot_website/static/src/img/partners/pharmagen.svg'},
+                   {'name': 'Quimpharma', 'src': '/medicine_depot_website/static/src/img/partners/quimpharma.svg'},
+                   {'name': 'Genoma', 'src': '/medicine_depot_website/static/src/img/partners/genoma.svg'},
+                   {'name': 'DKT', 'src': '/medicine_depot_website/static/src/img/partners/dkt.svg'},
+               ]"/>
+            <div class="s_md_socios-marquee" aria-label="Socios comerciales Medicine Depot">
+                <div class="s_md_socios-track">
+                    <t t-foreach="[0, 1]" t-as="loop_pass">
+                        <t t-foreach="md_partner_logos" t-as="partner">
+                            <span class="s_md_socios-logo">
+                                <img t-att-src="partner['src']"
+                                     t-att-alt="partner['name']"
+                                     width="156"
+                                     height="56"
+                                     loading="lazy"/>
+                                <strong t-esc="partner['name']"/>
+                            </span>
+                        </t>
+                    </t>
+                </div>
+            </div>
+        </div>
+    </template>
+
+</odoo>

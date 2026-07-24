@@ -1,0 +1,90 @@
+# Spanish (Mexico) translation for purchase_invoice_parser
+# Copyright (C) 2026 Medicine Depot
+# License: LGPL-3
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 19.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-06-10 00:00+0000\n"
+"PO-Revision-Date: 2026-06-10 00:00+0000\n"
+"Last-Translator: Daniel Cervera <daniel.cervera.2029@gmail.com>\n"
+"Language-Team: Spanish (Mexico) <noreply@medicinedepot.mx>\n"
+"Language: es_MX\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#. module: purchase_invoice_parser
+msgid "Crear OC desde CFDI XML"
+msgstr "Crear OC desde CFDI XML"
+
+#. module: purchase_invoice_parser
+msgid "CFDI XML del proveedor"
+msgstr "CFDI XML del proveedor"
+
+#. module: purchase_invoice_parser
+msgid "Conceptos CFDI"
+msgstr "Conceptos CFDI"
+
+#. module: purchase_invoice_parser
+msgid "Formato de Proveedor"
+msgstr "Formato de Proveedor"
+
+#. module: purchase_invoice_parser
+msgid "Caducidad"
+msgstr "Caducidad"
+
+#. module: purchase_invoice_parser
+msgid "Confianza"
+msgstr "Confianza"
+
+#. module: purchase_invoice_parser
+msgid "Avisos del parser"
+msgstr "Avisos del parser"
+
+#. module: purchase_invoice_parser
+msgid "Aviso IEPS"
+msgstr "Aviso IEPS"
+
+#. module: purchase_invoice_parser
+msgid "CFDI con Retenciones"
+msgstr "CFDI con Retenciones"
+
+#. module: purchase_invoice_parser
+msgid "Factor IVA"
+msgstr "Factor IVA"
+
+#. module: purchase_invoice_parser
+msgid "IVA en XML"
+msgstr "IVA en XML"
+
+#. module: purchase_invoice_parser
+msgid "Descuento PDF"
+msgstr "Descuento PDF"
+
+#. module: purchase_invoice_parser
+msgid "Cód. Proveedor"
+msgstr "Cód. Proveedor"
+
+#. module: purchase_invoice_parser
+msgid "Fecha CFDI"
+msgstr "Fecha CFDI"
+
+#. module: purchase_invoice_parser
+msgid "Folio"
+msgstr "Folio"
+
+#. module: purchase_invoice_parser
+msgid "Condiciones de pago"
+msgstr "Condiciones de pago"
+
+#. module: purchase_invoice_parser
+msgid "Compañía destino"
+msgstr "Compañía destino"
+
+#. module: purchase_invoice_parser
+msgid "Importe"
+msgstr "Importe"
+

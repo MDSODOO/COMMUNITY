@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <template id="md_affiliate_bento_cards"
+              inherit_id="medicine_depot_portal.afiliacion_page"
+              name="Medicine Depot Bento Affiliate Page"
+              priority="260">
+        <xpath expr="//section[hasclass('md_affiliacion_page_wrap')]" position="attributes">
+            <attribute name="class" add="md-bento md-affiliate-page" separator=" "/>
+        </xpath>
+
+        <xpath expr="//form[@id='afiliacion_form']" position="attributes">
+            <attribute name="class" add="md-bento-affiliate-form" separator=" "/>
+        </xpath>
+
+        <xpath expr="//form[@id='afiliacion_form']/input[@name='csrf_token']" position="after">
+            <h1 class="visually-hidden">Integra tu cuenta con validación documental.</h1>
+        </xpath>
+
+        <xpath expr="//section[@data-aff-step='1']" position="attributes">
+            <attribute name="class" add="md-bento-card bento-glass-card md-affiliate-card" separator=" "/>
+        </xpath>
+
+        <xpath expr="//section[@data-aff-step='2']" position="attributes">
+            <attribute name="class" add="md-bento-card bento-glass-card md-affiliate-card" separator=" "/>
+        </xpath>
+
+        <xpath expr="//section[@data-aff-step='3']" position="attributes">
+            <attribute name="class" add="md-bento-card bento-glass-card md-affiliate-card" separator=" "/>
+        </xpath>
+
+        <xpath expr="//section[@data-aff-step='4']" position="attributes">
+            <attribute name="class" add="md-bento-card bento-glass-card md-affiliate-card" separator=" "/>
+        </xpath>
+
+        <xpath expr="//section[hasclass('md_affiliacion_state_card')]" position="attributes">
+            <attribute name="class" add="md-bento-card bento-glass-card md-affiliate-card" separator=" "/>
+        </xpath>
+
+        <xpath expr="//h2[hasclass('md_affiliacion_section_title') and normalize-space()='Datos Generales']" position="replace">
+            <h2 class="md_affiliacion_section_title">Datos generales</h2>
+        </xpath>
+
+        <xpath expr="//h2[hasclass('md_affiliacion_section_title') and normalize-space()='COFEPRIS']" position="replace">
+            <h2 class="md_affiliacion_section_title">Documentación sanitaria</h2>
+        </xpath>
+
+        <xpath expr="//h2[hasclass('md_affiliacion_section_title') and normalize-space()='Documentos Legales']" position="replace">
+            <h2 class="md_affiliacion_section_title">Documentos legales</h2>
+        </xpath>
+
+        <xpath expr="//h2[hasclass('md_affiliacion_section_title') and normalize-space()='Revisión final y privacidad']" position="replace">
+            <h2 class="md_affiliacion_section_title">Confirmación y envío</h2>
+        </xpath>
+    </template>
+
+</odoo>

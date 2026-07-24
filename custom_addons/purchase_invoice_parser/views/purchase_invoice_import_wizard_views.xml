@@ -1,0 +1,282 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_cfdi_import_wizard_form" model="ir.ui.view">
+        <field name="name">purchase.invoice.import.wizard.form</field>
+        <field name="model">purchase.invoice.import.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Importar XML de Proveedor">
+                <field name="state" invisible="1"/>
+                <field name="pdf_parsed" invisible="1"/>
+                <field name="has_retenciones" invisible="1"/>
+                <field name="supplier_format" invisible="1"/>
+                <field name="zip_total_pairs" invisible="1"/>
+                <field name="zip_current_pair_index" invisible="1"/>
+                <field name="zip_remaining_pairs_json" invisible="1"/>
+                <field name="zip_created_po_ids_json" invisible="1"/>
+
+                <!-- PASO 1: Carga del archivo — Bento Style -->
+                <div invisible="state != 'upload'">
+
+                    <!-- Bento: cabecera con título, modo y proveedor -->
+                    <div class="pip_bento_card pip_bento_card--header">
+                        <i class="fa fa-cloud-upload fa-3x text-primary mb-2"
+                           title="Importar CFDI" aria-label="Importar CFDI" aria-hidden="true"/>
+                        <h3 class="mb-1">Importar XML de Proveedor</h3>
+                        <p class="text-muted small mb-3">
+                            Selecciona archivos individuales o un ZIP del proveedor con múltiples CFDI.
+                        </p>
+                        <field name="upload_mode" widget="radio" nolabel="1"/>
+                        <!-- Proveedor (solo modo individual) -->
+                        <div class="mt-3 text-start" invisible="upload_mode != 'individual'">
+                            <div class="fw-semibold small text-muted text-uppercase mb-1">Proveedor</div>
+                            <field name="partner_id" nolabel="1"/>
+                        </div>
+                    </div>
+
+                    <!-- Bento: grid XML + PDF (modo individual) -->
+                    <div class="pip_bento_grid" invisible="upload_mode != 'individual'">
+
+                        <!-- Zona XML -->
+                        <div class="pip_bento_card">
+                            <field name="xml_file" widget="cfdi_upload"
+                                   filename="xml_filename" nolabel="1"
+                                   options="{'label': 'CFDI (.xml)', 'icon': 'fa fa-file-code-o', 'accept': '.xml'}"/>
+                            <field name="xml_filename" invisible="1"/>
+                        </div>
+
+                        <!-- Zona PDF -->
+                        <div class="pip_bento_card">
+                            <field name="pdf_file" widget="cfdi_upload"
+                                   filename="pdf_filename" nolabel="1"
+                                   options="{'label': 'PDF de la factura', 'icon': 'fa fa-file-pdf-o', 'accept': '.pdf'}"/>
+                            <field name="pdf_filename" invisible="1"/>
+                            <p class="text-danger small mt-2 mb-0 fw-semibold"
+                               invisible="supplier_format != 'quifamesa' or not partner_id">
+                                Requerido para QUIFAMESA
+                            </p>
+                            <p class="text-muted small mt-2 mb-0"
+                               invisible="supplier_format == 'quifamesa' and partner_id">
+                                Opcional — necesario para lotes
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Bento: zona ZIP (modo zip) -->
+                    <div class="pip_bento_card" invisible="upload_mode != 'zip'">
+                        <field name="zip_file" widget="cfdi_upload"
+                               filename="zip_filename" nolabel="1"
+                               options="{'label': 'ZIP del proveedor', 'icon': 'fa fa-file-archive-o', 'accept': '.zip'}"/>
+                        <field name="zip_filename" invisible="1"/>
+                    </div>
+
+                </div>
+
+                <div invisible="state != 'review' or not zip_total_pairs"
+                     class="alert alert-info mb-3" role="status">
+                    <strong>Factura ZIP:</strong>
+                    <field name="zip_current_pair_index" readonly="1" class="oe_inline"/>
+                    de
+                    <field name="zip_total_pairs" readonly="1" class="oe_inline"/>
+                </div>
+                <div invisible="not zip_pair_summary" class="mb-3">
+                    <field name="zip_pair_summary" readonly="1"/>
+                </div>
+
+                <!-- Alerta de Retenciones -->
+                <div class="alert alert-warning mb-3" role="alert"
+                     invisible="not has_retenciones or state == 'upload'">
+                    <i class="fa fa-exclamation-triangle me-1"
+                       title="Advertencia de retenciones"
+                       aria-label="Advertencia de retenciones"
+                       aria-hidden="true"/>
+                    <strong>CFDI con Retenciones:</strong>
+                    Este CFDI contiene retenciones de impuestos. Revisa la contabilidad manualmente
+                    ya que las retenciones no se trasladan automáticamente a la orden de compra.
+                </div>
+
+                <!-- Alerta de IEPS -->
+                <div class="alert alert-warning mb-3" role="alert"
+                     invisible="not ieps_warning or state == 'upload'">
+                    <i class="fa fa-exclamation-triangle me-1"
+                       title="Advertencia de IEPS"
+                       aria-label="Advertencia de IEPS"
+                       aria-hidden="true"/>
+                    <field name="ieps_warning" readonly="1" class="oe_inline"/>
+                </div>
+
+                <!-- F6: Info inline para BRUDIFARMA — lotes desde XML (sin PDF) -->
+                <div class="alert alert-success mb-3" role="status"
+                     invisible="state != 'review' or emisor_rfc != 'BRU971010227'">
+                    <i class="fa fa-check-circle me-1"
+                       title="BRUDIFARMA: lotes automáticos desde XML"
+                       aria-label="BRUDIFARMA: lotes automáticos desde XML"
+                       aria-hidden="true"/>
+                    <strong>BRUDIFARMA:</strong>
+                    Los lotes y caducidades se extraen automáticamente de la Addenda XML.
+                    No es necesario cargar un PDF para este proveedor.
+                </div>
+
+                <!-- Carga de PDF para lotes (solo para no-BRUDIFARMA) -->
+                <div invisible="state != 'review' or emisor_rfc == 'BRU971010227'"
+                     class="o_horizontal_separator mt-2 mb-2">
+                    <h3>Lotes desde PDF de la factura (opcional)</h3>
+                </div>
+                <group invisible="state != 'review' or emisor_rfc == 'BRU971010227'">
+                    <group>
+                        <field name="pdf_file" widget="binary" filename="pdf_filename"
+                               string="PDF de la factura"/>
+                        <field name="pdf_filename" invisible="1"/>
+                        <field name="pdf_provider_key" readonly="1"
+                               invisible="not pdf_provider_key"
+                               string="Parser activo"/>
+                    </group>
+                </group>
+                <div invisible="state != 'review' or emisor_rfc == 'BRU971010227'"
+                     class="mb-3">
+                    <button string="Extraer lotes del PDF"
+                            name="action_parse_pdf"
+                            type="object"
+                            class="btn-success me-2"
+                            icon="fa-file-pdf-o"
+                            invisible="not pdf_file or pdf_parsed"/>
+                </div>
+                <div invisible="not lots_summary" class="mb-3">
+                    <field name="lots_summary" readonly="1"/>
+                </div>
+
+                <!-- PASO 2: Revisión de datos extraídos — Bento Style -->
+                <div class="pip_bento_grid pip_bento_grid--review" invisible="state == 'upload'">
+                    <div class="pip_bento_card pip_bento_card--compact">
+                        <div class="fw-semibold small text-muted text-uppercase mb-2">Datos del CFDI</div>
+                        <group>
+                            <field name="cfdi_uuid"/>
+                            <field name="cfdi_version" invisible="not cfdi_version"/>
+                            <field name="cfdi_folio"/>
+                            <field name="cfdi_fecha"/>
+                            <field name="cfdi_condiciones"/>
+                            <field name="cfdi_moneda"/>
+                            <field name="cfdi_subtotal"/>
+                            <field name="cfdi_total"/>
+                        </group>
+                    </div>
+                    <div class="pip_bento_card pip_bento_card--compact">
+                        <div class="fw-semibold small text-muted text-uppercase mb-2">Proveedor</div>
+                        <group>
+                            <field name="emisor_rfc" readonly="1"/>
+                            <field name="emisor_nombre" readonly="1"/>
+                            <field name="partner_id"
+                                   domain="[('supplier_rank', '>', 0)]"/>
+                            <field name="target_company_id"/>
+                            <field name="supplier_format" readonly="1" string="Formato detectado"/>
+                            <field name="partner_match_method" string="Match" readonly="1"/>
+                        </group>
+                    </div>
+                </div>
+
+                <!-- Avisos de parsing -->
+                <div class="alert alert-warning mb-3" role="alert" aria-live="polite"
+                     invisible="not parse_warnings">
+                    <i class="fa fa-exclamation-triangle me-1"
+                       title="Advertencia" aria-label="Advertencia" aria-hidden="true"/>
+                    <strong>Avisos del parser:</strong>
+                    <field name="parse_warnings" readonly="1"/>
+                </div>
+
+                <!-- F5: Hint sobre líneas en rojo -->
+                <div class="alert alert-info" role="alert"
+                     invisible="state == 'upload'">
+                    <i class="fa fa-info-circle me-1"
+                       title="Información"
+                       aria-label="Información"
+                       aria-hidden="true"/>
+                    Las líneas en <strong class="text-danger">rojo</strong> requieren que asignes
+                    el <strong>Producto</strong> manualmente — haz clic en la columna Producto
+                    de la línea para editarla.
+                </div>
+
+                <!-- Tabla de conceptos CFDI — Bento Style -->
+                <div class="pip_bento_card pip_bento_card--table" invisible="state == 'upload'">
+                    <field name="line_ids">
+                        <list editable="bottom"
+                              decoration-warning="needs_review and product_id"
+                              decoration-danger="needs_review and not product_id">
+                            <field name="no_identificacion" string="Cód. Proveedor"
+                                   readonly="1"/>
+                            <field name="descripcion" readonly="1"/>
+                            <field name="product_id"/>
+                            <field name="cantidad" readonly="1"/>
+                            <field name="valor_unitario" readonly="1"/>
+                            <field name="tasa_iva" widget="percentage" readonly="1"/>
+                            <field name="importe" readonly="1"/>
+                            <field name="lots_display" string="Lotes (PDF)" readonly="1"/>
+                            <field name="importe_iva" string="IVA" readonly="1"
+                                   optional="hide"/>
+                            <field name="clave_unidad" readonly="1" optional="hide"/>
+                            <field name="product_match_method" readonly="1"
+                                   optional="hide"/>
+                            <field name="needs_review" invisible="1"/>
+                        </list>
+                        <form>
+                            <group>
+                                <field name="no_identificacion" readonly="1"/>
+                                <field name="descripcion" readonly="1"/>
+                                <field name="product_id"/>
+                                <field name="cantidad" readonly="1"/>
+                            </group>
+                            <field name="lot_ids">
+                                <list editable="bottom"
+                                      decoration-danger="state == 'missing'"
+                                      decoration-success="state == 'found'">
+                                    <field name="name"/>
+                                    <field name="expiration_date"/>
+                                    <field name="quantity"/>
+                                    <field name="cbarra" readonly="1" optional="hide"/>
+                                    <field name="discount" string="Desc. PDF"
+                                           optional="show"/>
+                                    <field name="existing_lot_id" readonly="1"/>
+                                    <field name="state"/>
+                                </list>
+                            </field>
+                        </form>
+                    </field>
+                </div>
+
+                <!-- Campos ocultos de control -->
+                <field name="partner_confidence" invisible="1"/>
+
+                <footer>
+                    <button string="Importar"
+                            name="action_parse_xml"
+                            type="object"
+                            class="btn-primary"
+                            icon="fa-cloud-upload"
+                            invisible="state != 'upload' or upload_mode != 'individual'"/>
+                    <button string="Importar ZIP"
+                            name="action_parse_zip"
+                            type="object"
+                            class="btn-primary"
+                            icon="fa-file-archive-o"
+                            invisible="state != 'upload' or upload_mode != 'zip'"/>
+                    <button string="Crear Orden de Compra"
+                            name="action_create_purchase_order"
+                            type="object"
+                            class="btn-primary"
+                            confirm="Verifica que los lotes, caducidades y cantidades del CFDI son correctos antes de crear la Orden de Compra."
+                            invisible="state != 'review'"/>
+                    <button string="Cancelar"
+                            class="btn-secondary"
+                            special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_cfdi_import_wizard" model="ir.actions.act_window">
+        <field name="name">Importar XML de Proveedor</field>
+        <field name="res_model">purchase.invoice.import.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+</odoo>

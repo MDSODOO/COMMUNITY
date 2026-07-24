@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--
+        Elimina el atributo no estándar `interactive-widget=resizes-visual` del
+        viewport meta del POS.
+
+        CAUSA RAÍZ:
+          Odoo 19 añadió interactive-widget=resizes-visual al viewport del POS
+          para evitar que el teclado virtual en móvil redimensione el visual
+          viewport. Sin embargo, este atributo es un borrador de la especificación
+          "Visual Viewport API" que Chrome implementó de forma experimental. Firefox
+          y Safari lo rechazan con una advertencia en consola:
+            "Error: Unrecognized feature: 'interactive-widget'"
+          Chrome mismo lo marcará como deprecated próximamente.
+
+        IMPACTO DEL FIX:
+          En tablets/móviles con teclado virtual, el viewport puede reducirse al
+          abrir el teclado. Si esto es un problema en el hardware de la caja POS,
+          revierta este override. En cajas de escritorio (uso habitual en farmacia)
+          no hay impacto visual.
+
+        XPath: //meta[@name='viewport'] coincide exactamente con la etiqueta
+        de Odoo 19 en point_of_sale/views/point_of_sale.xml.
+    -->
+    <template id="pos_viewport_interactive_widget_fix"
+              inherit_id="point_of_sale.index"
+              name="POS Viewport: remove interactive-widget">
+        <xpath expr="//meta[@name='viewport']" position="attributes">
+            <attribute name="content">width=device-width, initial-scale=1</attribute>
+        </xpath>
+    </template>
+</odoo>

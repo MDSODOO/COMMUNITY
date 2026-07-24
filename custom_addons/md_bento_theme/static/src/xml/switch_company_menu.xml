@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <!--
+        Herencia del menú de empresas del systray.
+        El botón original muestra fa-building solo en móvil (d-lg-none)
+        y el nombre en texto en desktop (d-none d-lg-block).
+        Aquí hacemos el ícono siempre visible y eliminamos el texto.
+    -->
+    <t t-inherit="web.SwitchCompanyMenu" t-inherit-mode="extension">
+        <!-- Hacer el ícono visible en todos los breakpoints -->
+        <xpath expr="//i[hasclass('fa-building')]" position="attributes">
+            <attribute name="class">fa fa-building</attribute>
+        </xpath>
+        <!-- Eliminar el span con el nombre de la empresa -->
+        <xpath expr="//span[hasclass('oe_topbar_name')]" position="replace"/>
+    </t>
+</templates>

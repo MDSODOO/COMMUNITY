@@ -1,0 +1,97 @@
+.pip_price_notification {
+    position: relative;
+
+    .o_nav_entry {
+        cursor: pointer;
+        color: inherit;
+
+        &:hover {
+            color: inherit;
+            background: rgba(0, 0, 0, 0.05);
+            border-radius: 4px;
+        }
+    }
+
+    .pip_badge {
+        font-size: 10px;
+        min-width: 16px;
+        height: 16px;
+        line-height: 16px;
+        padding: 0 4px;
+    }
+
+    .pip_dropdown {
+        position: absolute;
+        top: calc(100% + 4px);
+        right: 0;
+        left: auto;
+        width: 360px;
+        max-height: 480px;
+        overflow-y: auto;
+        z-index: 1050;
+        border-radius: 8px;
+    }
+
+    .pip_item {
+        transition: background 0.15s;
+
+        &:hover {
+            background: rgba(0, 0, 0, 0.03);
+        }
+
+        &:last-child {
+            border-bottom: none !important;
+        }
+    }
+
+    .pip_unread {
+        background: rgba(231, 76, 60, 0.06);
+    }
+
+    .pip_applied {
+        opacity: 0.6;
+    }
+
+    .pip_old {
+        color: #e74c3c;
+        text-decoration: line-through;
+    }
+
+    .pip_new {
+        color: #27ae60;
+    }
+
+    .pip_product_link {
+        color: var(--bs-body-color, inherit);
+
+        &:hover {
+            color: var(--bs-primary, #017e84);
+            text-decoration: underline !important;
+        }
+    }
+
+    .pip_apply_btn {
+        font-size: 10px;
+        padding: 1px 6px;
+        line-height: 1.4;
+        border-radius: 4px;
+        white-space: nowrap;
+
+        &:disabled {
+            cursor: wait;
+        }
+    }
+
+    .pip_mark_read {
+        cursor: pointer;
+
+        &:hover {
+            color: #e74c3c !important;
+        }
+    }
+}
+
+// El override de dark mode vive en backend_dark.scss (bundle
+// web.assets_web_dark, que Odoo 19 solo carga con el tema oscuro activo).
+// Un gate local con html[data-bs-theme="dark"] nunca coincide con el DOM
+// real — ver docs/audits/2026-07-01_backend_dark_mode_audit.md.

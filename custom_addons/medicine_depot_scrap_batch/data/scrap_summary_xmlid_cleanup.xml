@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <function model="ir.model.data" name="write">
+        <value model="ir.model.data"
+               search="[('module', '=', 'medicine_depot_scrap_batch'),
+                        ('model', '=', 'medicine.depot.scrap.summary.2025'),
+                        ('noupdate', '=', False)]"/>
+        <value eval="{'noupdate': True}"/>
+    </function>
+</odoo>

@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!--
+        Medicine Depot - Product Detail Page Bento Layout & Customizations
+        =================================================================
+        Wraps the PDP under a unified semantic Bento structure:
+          - Gallery gets col-lg-7 and .md-product-gallery .md-bento-card classes.
+          - Purchase details column gets col-lg-5 and .md-product-info .md-bento-card classes.
+    -->
+    <template id="md_product_detail_bento_active"
+              inherit_id="website_sale.product"
+              name="Medicine Depot Product Detail Bento Active"
+              priority="550">
+        <xpath expr="//div[@id='wrap']" position="attributes">
+            <attribute name="class" add="md-bento md-product-page" separator=" "/>
+        </xpath>
+
+        <xpath expr="//div[@id='product_detail_main']" position="attributes">
+            <attribute name="class" add="row g-4 g-xl-5 align-items-start" separator=" "/>
+        </xpath>
+
+        <xpath expr="//div[contains(@t-attf-class, 'o_wsale_product_images')]" position="attributes">
+            <attribute name="t-attf-class" add="col-12 col-lg-7 md-product-gallery md-bento-card bento-glass-card" separator=" "/>
+        </xpath>
+
+        <xpath expr="//div[@id='product_details']" position="attributes">
+            <attribute name="class" add="col-12 col-lg-5 md-product-info md-bento-card bento-glass-card" separator=" "/>
+        </xpath>
+    </template>
+
+    <!--
+        Medicine Depot - Product Variant Pills Customization
+        ====================================================
+        Overrides the native radio buttons for variants to display them as
+        modern button pills, consistent with the brand theme.
+    -->
+    <template id="md_product_variant_pills"
+              inherit_id="website_sale.variants"
+              name="Medicine Depot Product Variant Pills"
+              priority="560">
+        <xpath expr="//ul[contains(@t-attf-class, 'o_wsale_product_page_variants')]" position="attributes">
+            <attribute name="class" add="md-variant-pills d-grid gap-3 mt-3 pt-3 border-top" separator=" "/>
+        </xpath>
+
+        <xpath expr="//ul[contains(@t-attf-class, 'o_wsale_product_page_variants')]//li[@name='variant_attribute']" position="attributes">
+            <attribute name="class" add="d-flex flex-wrap gap-2" separator=" "/>
+        </xpath>
+
+        <xpath expr="//ul[contains(@t-attf-class, 'o_wsale_product_page_variants')]//input[contains(@t-attf-class, 'js_variant_change') or @type='radio']" position="attributes">
+            <attribute name="class" add="btn-check" separator=" "/>
+            <attribute name="autocomplete">off</attribute>
+        </xpath>
+
+        <xpath expr="//ul[contains(@t-attf-class, 'o_wsale_product_page_variants')]//label" position="attributes">
+            <attribute name="class" add="btn btn-outline-primary rounded-pill px-3 py-2 fw-semibold" separator=" "/>
+        </xpath>
+    </template>
+
+    <!--
+        Medicine Depot - Carrusel de Productos Alternativos
+        ====================================================
+        Hereda de website_sale.alternative_products (template nativo de Odoo 19)
+        para mostrar las opciones recomendadas/alternativas únicamente si el
+        producto actual no cuenta con stock "A la mano" (qty_available <= 0).
+    -->
+    <template id="md_product_alternatives_carousel"
+              inherit_id="website_sale.alternative_products"
+              name="Medicine Depot Alternatives Carousel"
+              priority="555">
+        <xpath expr="//div[@id='oe_structure_website_sale_recommended_products']" position="attributes">
+            <attribute name="t-if">product.alternative_product_ids and (not product_variant or not product_variant.is_storable or product_variant.sudo().qty_available &lt;= 0)</attribute>
+        </xpath>
+        <xpath expr="//section[contains(@class, 's_dynamic_snippet_title')]//h4" position="replace">
+            <h4 class="fw-semibold">Sin producto a la mano — opciones similares</h4>
+        </xpath>
+    </template>
+
+
+    <!--
+        Medicine Depot - Carrusel de Productos Similares por Categoría
+        ==============================================================
+        Marquee infinito (mismo patrón que s_md_socios) que aparece al final
+        de la PDP únicamente si el producto no tiene stock "A la mano".
+        Solo muestra productos disponibles (qty_available > 0 o tipo no almacenable).
+        Incluye nombre, precio, cantidad disponible y categoría.
+    -->
+    <template id="md_similar_products_marquee"
+              inherit_id="website_sale.product"
+              name="Medicine Depot Similar Products Marquee"
+              priority="556">
+        <xpath expr="//div[@id='oe_structure_website_sale_product_2']" position="after">
+            <t t-set="md_similar" t-value="product._get_md_similar_products()"/>
+            <div t-if="md_similar and (not product_variant or not product_variant.is_storable or product_variant.sudo().qty_available &lt;= 0)"
+                 class="md-similar-section py-5">
+                <div class="container mb-4">
+                    <t t-set="md_pub_categ" t-value="product.public_categ_ids[:1]"/>
+                    <div class="md-sim-header">
+                        <div class="md-sim-header__text">
+                            <p class="md-similar-eyebrow">Sin producto a la mano</p>
+                            <h4 class="fw-bold mb-0">Opciones similares</h4>
+                        </div>
+                        <a t-att-href="'/shop/category/%s' % md_pub_categ.id if md_pub_categ else '/shop'"
+                           class="md-sim-categ-pill">
+                            <t t-esc="md_pub_categ.display_name if md_pub_categ else product.categ_id.complete_name"/>
+                        </a>
+                    </div>
+                </div>
+                <div class="md-similar-marquee" aria-label="Productos similares">
+                    <div class="md-similar-track">
+                        <t t-foreach="[0, 1]" t-as="loop_pass">
+                            <t t-foreach="md_similar" t-as="sp">
+                                <a t-att-href="sp.website_url" class="md-sim-card text-decoration-none">
+                                    <!-- Imagen + badge de categoría -->
+                                    <div class="md-sim-card__img">
+                                        <span class="md-sim-badge-categ" t-esc="sp.categ_id.complete_name"/>
+                                        <img t-att-src="'/web/image/product.template/%s/image_512' % sp.id"
+                                             t-att-alt="sp.name"
+                                             width="220" height="220"
+                                             loading="lazy"/>
+                                    </div>
+                                    <!-- Cuerpo de la card -->
+                                    <div class="md-sim-card__body">
+                                        <span class="md-sim-card__name" t-esc="sp.name"/>
+                                        <span class="md-sim-card__price">
+                                            <t t-esc="sp.currency_id.symbol"/>&#160;<t t-esc="'%.2f' % sp.list_price"/>
+                                        </span>
+                                        <div class="md-sim-card__footer">
+                                            <!-- Disponibilidad -->
+                                            <span class="md-sim-stock">
+                                                <t t-if="sp.type == 'product'">
+                                                    <t t-esc="int(sp.sudo().qty_available)"/> a la mano
+                                                </t>
+                                                <t t-else="">A la mano</t>
+                                            </span>
+                                            <span class="md-sim-card__cta">Ver &#8594;</span>
+                                        </div>
+                                    </div>
+                                </a>
+                            </t>
+                        </t>
+                    </div>
+                </div>
+            </div>
+        </xpath>
+    </template>
+
+</odoo>

@@ -1,0 +1,303 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="pharma_meta_band">
+        <!--
+          IMPORTANTE: derivar _company de _rec.company_id en lugar de usar
+          la variable `company` directamente. `company` la setea
+          web.external_layout localmente y NO siempre propaga a través de
+          la cadena de t-call cuando pharma_full_header se invoca desde el
+          body del documento (vs. desde el header del external_layout).
+          Provoca KeyError: 'company' al renderizar la OC/RFQ/Sale/Albarán.
+        -->
+        <t t-set="_rec" t-value="o if o else doc"/>
+        <t t-set="_company" t-value="_rec.company_id.sudo() if _rec else False"/>
+        <div class="w-100 clearfix mt-4">
+            <div class="row g-0 pharma-meta-band">
+            <div class="col-4 pharma-meta-cell">
+                <span class="pharma-meta-label">
+                    <t t-if="_rec and _rec._name == 'purchase.order'">Comprador</t>
+                    <t t-if="not _rec or _rec._name != 'purchase.order'">Vendedor</t>
+                </span>
+                <span class="pharma-meta-val">
+                    <t t-if="_rec and _rec._name == 'sale.order'">
+                        <t t-esc="_rec.user_id.name or '—'"/>
+                    </t>
+                    <t t-if="_rec and _rec._name == 'stock.picking'">
+                        <t t-esc="(_rec.sale_id.user_id.name if _rec.sale_id else False) or _rec.create_uid.name or '—'"/>
+                    </t>
+                    <t t-if="_rec and _rec._name == 'purchase.order'">
+                        <t t-esc="_rec.user_id.name or '—'"/>
+                    </t>
+                    <t t-if="not _rec or _rec._name not in ('sale.order', 'stock.picking', 'purchase.order')">—</t>
+                </span>
+            </div>
+            <div class="col-4 pharma-meta-cell">
+                <span class="pharma-meta-label">RFC Emisor</span>
+                <span class="pharma-meta-val">
+                    <t t-esc="(_company and _company.vat) or (_company and _company.partner_id.vat) or '—'"/>
+                </span>
+            </div>
+            <div class="col-4 pharma-meta-cell">
+                <span class="pharma-meta-label">Contacto</span>
+                <span class="pharma-meta-val pharma-meta-val-sm">
+                    <t t-esc="(_company and _company.email) or (_company and _company.partner_id.email) or '—'"/>
+                </span>
+            </div>
+        </div>
+        </div>
+    </template>
+
+    <!--
+      Bloque "doc-info" del header (esquina superior derecha del mockup):
+      label "Orden de Venta" + número grande + fecha.
+      Render condicionado por modelo (sale.order vs stock.picking).
+    -->
+    <template id="pharma_doc_info">
+        <t t-set="_rec" t-value="o if o else doc"/>
+        <t t-set="_is_sale_quote_ctx" t-value="_rec and _rec._name == 'sale.order' and (_rec.state in ('draft', 'sent') or _rec.env.context.get('proforma'))"/>
+        <div class="pharma-doc-info text-end"
+             t-if="_rec and _rec._name in ('sale.order', 'stock.picking', 'purchase.order')">
+            <span class="pharma-doc-type">
+                <t t-if="_is_sale_quote_ctx">Cotización</t>
+                <t t-if="_rec._name == 'sale.order' and not _is_sale_quote_ctx">Orden de Venta</t>
+                <t t-if="_rec._name == 'stock.picking'">Albarán</t>
+                <t t-if="_rec._name == 'purchase.order' and _rec.state in ('draft', 'sent', 'to approve')">Solicitud de Compra</t>
+                <t t-if="_rec._name == 'purchase.order' and _rec.state not in ('draft', 'sent', 'to approve')">Orden de Compra</t>
+            </span>
+            <span class="pharma-doc-num" t-esc="_rec.name or ''"/>
+            <span class="pharma-doc-date">
+                <t t-if="_rec._name == 'sale.order' and _rec.date_order">
+                    <span t-field="_rec.date_order" t-options='{"widget": "date"}'/>
+                </t>
+                <t t-if="_rec._name == 'stock.picking' and _rec.scheduled_date">
+                    <span t-field="_rec.scheduled_date" t-options='{"widget": "date"}'/>
+                </t>
+                <t t-if="_rec._name == 'purchase.order' and _rec.date_order">
+                    <span t-field="_rec.date_order" t-options='{"widget": "date"}'/>
+                </t>
+            </span>
+        </div>
+    </template>
+
+    <!--
+      Address-grid (Sucursal | Cliente). NO incluye meta-band ni stripe;
+      esos viven a nivel header (full-width) en pharma_layout_*.
+    -->
+    <template id="pharma_company_address_block">
+        <t t-if="pharma_doc and pharma_doc._name in ('stock.picking', 'sale.order', 'purchase.order')">
+            <t t-set="pharma_customer" t-value="pharma_doc.partner_id or (pharma_doc.sale_id.partner_id if pharma_doc._name == 'stock.picking' and pharma_doc.sale_id else False)"/>
+            <t t-set="pharma_partner_label" t-value="'Proveedor' if pharma_doc._name == 'purchase.order' else 'Cliente'"/>
+            <!--
+              pharma_show_customer controla si se renderiza la columna Cliente.
+              Default True (Sale Order). Delivery lo setea a False porque el
+              cliente ya se muestra en el bloque nativo del delivery slip y
+              duplicarlo estorba.
+            -->
+            <t t-if="pharma_show_customer is None or pharma_show_customer">
+                <t t-set="pharma_sucursal_class" t-value="'col-6 pe-4 pharma-addr-col'"/>
+            </t>
+            <t t-if="pharma_show_customer is not None and not pharma_show_customer">
+                <t t-set="pharma_sucursal_class" t-value="'col-12 pharma-addr-col'"/>
+            </t>
+            <div class="pharma-doc pharma-addr-grid">
+                <div class="row g-0">
+                    <div t-att-class="pharma_sucursal_class">
+                        <span class="pharma-addr-label">Sucursal</span>
+                        <div class="pharma-addr-name">
+                            <span t-field="pharma_company.partner_id.name"/>
+                        </div>
+                        <div class="pharma-addr-lines"
+                             t-field="pharma_company.partner_id"
+                             t-options='{"widget": "contact", "fields": ["address"], "no_marker": True}'/>
+                        <span class="pharma-addr-rfc">
+                            RFC: <span t-esc="pharma_company.vat or pharma_company.partner_id.vat or '—'"/>
+                        </span>
+                    </div>
+                    <div t-if="pharma_show_customer is None or pharma_show_customer"
+                         class="col-6 ps-4 pharma-addr-col pharma-addr-divider">
+                        <span class="pharma-addr-label" t-esc="pharma_partner_label"/>
+                        <div class="pharma-addr-name">
+                            <span t-esc="pharma_customer.name if pharma_customer else '—'"/>
+                        </div>
+                        <div t-if="pharma_doc.partner_id"
+                             class="pharma-addr-lines"
+                             t-field="pharma_doc.partner_id"
+                             t-options='{"widget": "contact", "fields": ["address"], "no_marker": True}'/>
+                        <div t-if="not pharma_doc.partner_id and pharma_doc._name == 'stock.picking' and pharma_doc.sale_id and pharma_doc.sale_id.partner_id"
+                             class="pharma-addr-lines"
+                             t-field="pharma_doc.sale_id.partner_id"
+                             t-options='{"widget": "contact", "fields": ["address"], "no_marker": True}'/>
+                        <span class="pharma-addr-rfc">
+                            RFC: <span t-esc="pharma_customer.vat if pharma_customer and pharma_customer.vat else '—'"/>
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </t>
+    </template>
+
+    <!--
+      Header completo del mockup:
+        [logo]                        [Orden de Venta / S02706 / fecha]
+        ─── stripe (brand→teal→lime) ──────────────────────────────────
+        [meta-band: Vendedor | RFC Emisor | Contacto]                full-width
+        [addr-grid: Sucursal | Cliente]                              full-width
+    -->
+    <template id="pharma_full_header">
+        <t t-set="_rec" t-value="o if o else doc"/>
+        <!--
+          Derivar _company de _rec (no de `company`): cuando este template
+          se invoca desde el body del documento, la variable `company` que
+          setea web.external_layout puede no estar en scope a través de la
+          cadena de t-call → KeyError. _rec.company_id es siempre seguro
+          en sale/purchase/picking.
+        -->
+        <t t-set="_company" t-value="_rec.company_id.sudo() if _rec else False"/>
+        <div t-if="_rec and _rec._name in ('sale.order', 'stock.picking', 'purchase.order')" class="pharma-full-header">
+            <div class="d-flex align-items-start justify-content-between pharma-doc-header">
+                <div class="pharma-logo-shell">
+                    <img t-if="_company and _company.logo" class="md-logo" t-att-src="image_data_uri(_company.logo)" alt="Logo"/>
+                    <div t-if="_company and _company.report_header and not (_rec and _rec._name == 'purchase.order')"
+                         t-field="_company.report_header"
+                         class="o_company_tagline fw-bold mt-1"/>
+                </div>
+                <t t-call="pharma_reports.pharma_doc_info"/>
+            </div>
+            <div class="pharma-stripe">
+                <span class="pharma-stripe-band pharma-stripe-band-brand"/>
+                <span class="pharma-stripe-band pharma-stripe-band-teal"/>
+                <span class="pharma-stripe-band pharma-stripe-band-lime"/>
+            </div>
+            <t t-call="pharma_reports.pharma_meta_band"/>
+        </div>
+    </template>
+
+    <!--
+      NOTA arquitectura (2026-05-24):
+      pharma_full_header se invoca como PRIMER BLOQUE del .page en cada
+      document template (sale_order_report.xml, purchase_order_report.xml,
+      stock_delivery_report.xml). Anteriormente se inyectaba vía xpath sobre
+      web.external_layout_* (//div[hasclass('row') and .//*[@name='company_address']])
+      pero ese selector no siempre matchea en Odoo 19 → el header quedaba sin
+      inyectar y el meta-band aparecía fuera de flujo al final del body.
+
+      Estos overrides de external_layout_* sólo se conservan para OCULTAR
+      los elementos nativos del header (logo, company_address, h2 título)
+      cuando el documento es sale/picking/purchase. NO inyectan nada.
+    -->
+    <!--
+      Guards de external_layout para sale/picking/purchase (priority 999).
+      custom_invoice_format suprime account.move en los mismos layouts a priority 1000.
+      El selector h2|h3 con @t-out|@t-esc captura todas las variantes conocidas
+      de Odoo 19 sin depender de la etiqueta o atributo exacto del core.
+    -->
+    <template id="pharma_layout_standard_hide"
+              inherit_id="web.external_layout_standard"
+              priority="999">
+        <xpath expr="//div[hasclass('d-flex') and (.//img[hasclass('o_company_logo_small')] or .//img[hasclass('o_company_logo')])]" position="attributes">
+            <attribute name="t-if">not ((o and o._name in ('sale.order', 'stock.picking', 'purchase.order', 'purchase.price.notification', 'stock.scrap.batch')) or (doc and doc._name in ('sale.order', 'stock.picking', 'purchase.order', 'purchase.price.notification', 'stock.scrap.batch')))</attribute>
+        </xpath>
+        <xpath expr="//div[hasclass('row') and .//*[@name='company_address']]" position="attributes">
+            <attribute name="t-if">not ((o and o._name in ('sale.order', 'stock.picking', 'purchase.order', 'purchase.price.notification', 'stock.scrap.batch')) or (doc and doc._name in ('sale.order', 'stock.picking', 'purchase.order', 'purchase.price.notification', 'stock.scrap.batch')))</attribute>
+        </xpath>
+        <xpath expr="//h2[@t-out='layout_document_title' or @t-esc='layout_document_title'] | //h3[@t-out='layout_document_title' or @t-esc='layout_document_title']" position="attributes">
+            <attribute name="t-if">not ((o and o._name in ('sale.order', 'stock.picking', 'purchase.order', 'purchase.price.notification', 'stock.scrap.batch')) or (doc and doc._name in ('sale.order', 'stock.picking', 'purchase.order', 'purchase.price.notification', 'stock.scrap.batch')))</attribute>
+        </xpath>
+    </template>
+
+    <template id="pharma_layout_bold_hide"
+              inherit_id="web.external_layout_bold"
+              priority="999">
+        <xpath expr="//div[hasclass('row') and .//*[@name='company_address']]" position="attributes">
+            <attribute name="t-if">not ((o and o._name in ('sale.order', 'stock.picking', 'purchase.order', 'purchase.price.notification', 'stock.scrap.batch')) or (doc and doc._name in ('sale.order', 'stock.picking', 'purchase.order', 'purchase.price.notification', 'stock.scrap.batch')))</attribute>
+        </xpath>
+        <xpath expr="//h2[@t-out='layout_document_title' or @t-esc='layout_document_title'] | //h3[@t-out='layout_document_title' or @t-esc='layout_document_title']" position="attributes">
+            <attribute name="t-if">not ((o and o._name in ('sale.order', 'stock.picking', 'purchase.order', 'purchase.price.notification', 'stock.scrap.batch')) or (doc and doc._name in ('sale.order', 'stock.picking', 'purchase.order', 'purchase.price.notification', 'stock.scrap.batch')))</attribute>
+        </xpath>
+    </template>
+
+    <template id="pharma_layout_boxed_hide"
+              inherit_id="web.external_layout_boxed"
+              priority="999">
+        <xpath expr="//div[hasclass('row') and .//*[@name='company_address']]" position="attributes">
+            <attribute name="t-if">not ((o and o._name in ('sale.order', 'stock.picking', 'purchase.order', 'purchase.price.notification', 'stock.scrap.batch')) or (doc and doc._name in ('sale.order', 'stock.picking', 'purchase.order', 'purchase.price.notification', 'stock.scrap.batch')))</attribute>
+        </xpath>
+        <xpath expr="//h2[@t-out='layout_document_title' or @t-esc='layout_document_title'] | //h3[@t-out='layout_document_title' or @t-esc='layout_document_title']" position="attributes">
+            <attribute name="t-if">not ((o and o._name in ('sale.order', 'stock.picking', 'purchase.order', 'purchase.price.notification', 'stock.scrap.batch')) or (doc and doc._name in ('sale.order', 'stock.picking', 'purchase.order', 'purchase.price.notification', 'stock.scrap.batch')))</attribute>
+        </xpath>
+    </template>
+
+    <template id="pharma_layout_striped_hide"
+              inherit_id="web.external_layout_striped"
+              priority="999">
+        <xpath expr="//div[hasclass('d-flex') and .//*[@name='company_address']]" position="attributes">
+            <attribute name="t-if">not ((o and o._name in ('sale.order', 'stock.picking', 'purchase.order', 'purchase.price.notification', 'stock.scrap.batch')) or (doc and doc._name in ('sale.order', 'stock.picking', 'purchase.order', 'purchase.price.notification', 'stock.scrap.batch')))</attribute>
+        </xpath>
+        <xpath expr="//h2[@t-out='layout_document_title' or @t-esc='layout_document_title'] | //h3[@t-out='layout_document_title' or @t-esc='layout_document_title']" position="attributes">
+            <attribute name="t-if">not ((o and o._name in ('sale.order', 'stock.picking', 'purchase.order', 'purchase.price.notification', 'stock.scrap.batch')) or (doc and doc._name in ('sale.order', 'stock.picking', 'purchase.order', 'purchase.price.notification', 'stock.scrap.batch')))</attribute>
+        </xpath>
+    </template>
+
+    <template id="pharma_layout_wave_hide"
+              inherit_id="web.external_layout_wave"
+              priority="999">
+        <xpath expr="//div[contains(concat(' ', normalize-space(@class), ' '), ' header ') or contains(concat(' ', normalize-space(@t-attf-class), ' '), ' header ')]" position="attributes">
+            <attribute name="t-if">not ((o and o._name in ('sale.order', 'stock.picking', 'purchase.order', 'purchase.price.notification', 'stock.scrap.batch')) or (doc and doc._name in ('sale.order', 'stock.picking', 'purchase.order', 'purchase.price.notification', 'stock.scrap.batch')))</attribute>
+        </xpath>
+        <xpath expr="//h2[@t-out='layout_document_title']" position="attributes">
+            <attribute name="t-if">not ((o and o._name in ('sale.order', 'stock.picking', 'purchase.order', 'purchase.price.notification', 'stock.scrap.batch')) or (doc and doc._name in ('sale.order', 'stock.picking', 'purchase.order', 'purchase.price.notification', 'stock.scrap.batch')))</attribute>
+        </xpath>
+    </template>
+
+    <template id="pharma_layout_bubble_hide"
+              inherit_id="web.external_layout_bubble"
+              priority="999">
+        <xpath expr="//div[contains(concat(' ', normalize-space(@class), ' '), ' header ') or contains(concat(' ', normalize-space(@t-attf-class), ' '), ' header ')]" position="attributes">
+            <attribute name="t-if">not ((o and o._name in ('sale.order', 'stock.picking', 'purchase.order', 'purchase.price.notification', 'stock.scrap.batch')) or (doc and doc._name in ('sale.order', 'stock.picking', 'purchase.order', 'purchase.price.notification', 'stock.scrap.batch')))</attribute>
+        </xpath>
+        <xpath expr="//h2[@t-out='layout_document_title']" position="attributes">
+            <attribute name="t-if">not ((o and o._name in ('sale.order', 'stock.picking', 'purchase.order', 'purchase.price.notification', 'stock.scrap.batch')) or (doc and doc._name in ('sale.order', 'stock.picking', 'purchase.order', 'purchase.price.notification', 'stock.scrap.batch')))</attribute>
+        </xpath>
+    </template>
+
+    <!-- Suprimir address/information_block nativos de sale.order. -->
+    <template id="report_saleorder_pharma_addresses"
+              inherit_id="sale.report_saleorder_document"
+              priority="99">
+        <xpath expr="//t[@t-set='address']" position="replace">
+            <t t-set="address"/>
+        </xpath>
+        <xpath expr="//t[@t-set='information_block']" position="replace">
+            <t t-set="information_block"/>
+        </xpath>
+    </template>
+
+    <!--
+      En Odoo 19, purchase.report_purchaseorder_document sí expone
+      address + information_block. El template padre no contiene ese nodo,
+      por eso el xpath correcto para compra es este nivel del _document.
+      Así el layout de OC queda alineado con la RFQ y no duplica el header.
+    -->
+    <template id="report_purchaseorder_pharma_addresses"
+              inherit_id="purchase.report_purchaseorder_document"
+              priority="99">
+        <xpath expr="//t[@t-set='address']" position="replace">
+            <t t-set="address"/>
+        </xpath>
+        <xpath expr="//t[@t-set='information_block']" position="replace">
+            <t t-set="information_block"/>
+        </xpath>
+    </template>
+
+    <template id="report_delivery_pharma_addresses"
+              inherit_id="stock.report_delivery_document"
+              priority="99">
+        <xpath expr="//t[@t-set='address']" position="replace">
+            <t t-set="address"/>
+        </xpath>
+        <xpath expr="//t[@t-set='information_block']" position="replace">
+            <t t-set="information_block"/>
+        </xpath>
+    </template>
+
+</odoo>

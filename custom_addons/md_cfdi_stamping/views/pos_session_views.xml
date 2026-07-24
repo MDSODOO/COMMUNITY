@@ -1,0 +1,21 @@
+<odoo>
+    <record id="view_pos_session_form_cfdi" model="ir.ui.view">
+        <field name="name">pos.session.form.cfdi</field>
+        <field name="model">pos.session</field>
+        <field name="inherit_id" ref="point_of_sale.view_pos_session_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//sheet" position="inside">
+                <group string="Factura Global CFDI (público en general)">
+                    <button name="action_generate_global_invoice_xml" type="object"
+                            string="Generar Factura Global" class="oe_highlight"
+                            invisible="l10n_mx_cfdi_state == 'signed'"/>
+                    <field name="l10n_mx_cfdi_state" widget="badge"
+                           decoration-success="l10n_mx_cfdi_state == 'stamped'"
+                           decoration-info="l10n_mx_cfdi_state == 'signed'"
+                           decoration-danger="l10n_mx_cfdi_state == 'error'"/>
+                    <field name="l10n_mx_cfdi_error" invisible="not l10n_mx_cfdi_error"/>
+                </group>
+            </xpath>
+        </field>
+    </record>
+</odoo>

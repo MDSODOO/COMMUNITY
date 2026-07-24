@@ -1,0 +1,446 @@
+// ════════════════════════════════════════════════════════════════════════
+// product_kanban_pos_style.scss — Kanban de Inventario, estilo POS
+// ────────────────────────────────────────────────────────────────────────
+// Replica el lenguaje visual de bi_pos_stock/static/src/scss/
+// pos_product_card.scss (badge semaforo de existencia + anillo de
+// vencimiento corto) sobre la card de product_visual_views.xml
+// (view_product_template_kanban_pharma_reg), usando los CSS custom
+// properties del backend (medicine_depot_portal/backend_tokens.scss,
+// cargado antes en el mismo bundle web.assets_backend).
+//
+// --md-expiry no existe en backend_tokens.scss (solo en el bundle de POS,
+// pos_custom_layout.scss) -- se declara aqui con el MISMO valor (#875A7B)
+// para mantener paridad exacta de color entre POS e Inventario.
+//
+// --md-success/--md-warning/--md-danger SI existen en backend_tokens.scss,
+// pero con hex DISTINTO al de pos_custom_layout.scss (son tokens semanticos
+// independientes del backend, usados en botones/alertas de todo el ERP).
+// Para que el badge "A la mano" sea una replica EXACTA del semaforo del POS
+// -- no solo "un semaforo parecido" -- este archivo declara su propio set
+// de colores (md-pos-success/warning/danger) con los valores literales de
+// pos_custom_layout.scss, y el badge los consume a ellos, NO a los tokens
+// genericos del backend. Confirmado en vivo (2026-07-21): verde POS
+// #1F9D55 vs backend #198754, amarillo POS #D9822B vs backend #f59f00,
+// rojo POS #D3222A vs backend #e30613 -- las tres discrepantes.
+//
+// IMPORTANTE (corregido 2026-07-21): el POS real NO corre con el tema claro
+// de pos_custom_layout.scss/pos_product_card.scss -- corre con
+// pos_glass_bento.scss (vidrio oscuro FIJO), que se carga al final del
+// bundle y gana la cascada. El campo iface_theme que activaria el escape
+// hatch a modo claro (body.pos-force-light) NI SIQUIERA EXISTE en esta
+// version de Odoo (confirmado: 'iface_theme' not in
+// env['pos.config']._fields), asi que ese escape hatch nunca se activa.
+// Decision del usuario: el Kanban de Inventario se mantiene en el tema
+// claro Bento del backend (consistente con el resto de kanbans), NO copia
+// el vidrio oscuro del POS -- pero se corrige FORMA/COMPORTAMIENTO para
+// que sea fiel a lo que el cajero realmente ve (badge en pastilla, card SI
+// tiene hover), traducido a la paleta clara del backend en vez de a los
+// valores oscuros literales del glass bento.
+// ════════════════════════════════════════════════════════════════════════
+
+.o_web_client {
+    --md-expiry:     #875A7B;
+    --md-expiry-rgb: 135, 90, 123;
+
+    --md-pos-success: #1F9D55;
+    --md-pos-warning: #D9822B;
+    --md-pos-danger:  #D3222A;
+
+    // Tokens del portal (medicine_depot_portal/_tokens.scss, bundle de
+    // website, NO visible aqui via SCSS $var) traidos como valores
+    // literales para que la card de Inventario adopte el mismo lenguaje
+    // visual que .md-product-card de la tienda (2026-07-21, a pedido del
+    // usuario: "las cards no se estan basando en nuestro diseño inspirado
+    // en la seccion de portal"). Solo radio y precio: la sombra/vidrio de
+    // la card usa los tokens PROPIOS del backend (--md-shadow-glass,
+    // backend_tokens.scss) -- ver comentario en la regla de la card, mas
+    // fiel al idioma glassmorphism ya establecido ahi que a portar el
+    // shadow-sm/md del portal (segunda pasada, 2026-07-21).
+    --md-portal-r-card:   16px;
+    --md-portal-blue-800: #0B5E7A;
+}
+
+// ── Badge "A la mano" ──────────────────────────────────────────────────────
+// Forma corregida (2026-07-21): el POS real (pos_glass_bento.scss, activo
+// SIEMPRE) le agrega a .qty-*-label un border-radius: var(--pg-radius-pill)
+// (999px, pastilla completa) + borde translucido -- NO el border-radius:5px
+// "caja" de stock.css, que es la version que pos_glass_bento sobreescribe.
+// Colores semaforo via clases --danger/--warning/--success (mismo criterio
+// que stockColorClass en product_card.js), usando los hex EXACTOS del POS
+// (--md-pos-*, no los tokens genericos --md-danger/--md-warning/--md-success
+// del backend, que tienen otro hex).
+.md-onhand-badge {
+    position: absolute;
+    top: 5px;
+    left: 5px;
+    z-index: 4;
+    font-size: 0.68rem;
+    font-weight: 700;
+    border-radius: var(--md-radius-pill);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    color: #fff;
+    min-width: 20px;
+    height: auto;
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    line-height: 1;
+    padding: 2px 8px;
+    white-space: nowrap;
+
+    &.md-onhand-badge--danger  { background-color: var(--md-pos-danger); }
+    &.md-onhand-badge--warning { background-color: var(--md-pos-warning); }
+    &.md-onhand-badge--success { background-color: var(--md-pos-success); }
+
+    // Variante inline (auditoría UX 2026-07-21): total "A la mano" junto al
+    // desglose de lotes, en vez de la esquina superior absoluta -- esa
+    // posición es del badge de productos SIN lote y no debe competir con el
+    // precio. Mismos colores/tipografía, solo se resetea el posicionamiento.
+    &.md-onhand-badge--inline {
+        position: static;
+        top: auto;
+        left: auto;
+        z-index: auto;
+        flex-shrink: 0;
+    }
+}
+
+// ── Card — glassmorphism REAL del portal (mixin md-liquid-glass) ─────────
+// (Corregido 2026-07-21, tercera pasada) Las dos pasadas anteriores usaban
+// el glass "tibio" que backend_bento.scss aplica a .o_control_panel/.o_chatter
+// (blur 10-12px, sombra plana) razonando que era mas "coherente con el
+// backend". Auditoria de fidelidad (2026-07-21): la card real de producto
+// del portal (.md-product-card, medicine_depot_portal/_cards.scss) NO usa
+// glass -- es solida. El glassmorphism real del portal vive en el mixin
+// md-liquid-glass (_tokens.scss), usado en tiles hero/formularios/navbar/
+// cards de sucursal, NO en la card de producto individual. Como el pedido
+// explicito es "glassmorphism de la seccion del portal", se aplica aqui el
+// mixin md-liquid-glass tal cual (valores de .md-tile--glass: opacity .62,
+// blur 18px -- el paralelo mas cercano a "superficie flotando sobre
+// contenido"), reproducido a mano porque este archivo no tiene acceso Sass
+// a _tokens.scss (solo a las custom properties --md-* que expone via :root,
+// que no incluyen el mixin). Radio/hover-tilt SI vienen de .md-product-card
+// (esos se mantienen sin cambio desde la primera pasada).
+//
+// Blur budget de 10px (pasadas anteriores): era una restriccion de
+// bi_pos_stock/pos_glass_bento.scss especifica de TABLETS de caja del POS.
+// Inventario se usa en equipos de oficina/admin, no en esas tablets -- esa
+// restriccion no aplicaba aqui y se cargo por error de contexto.
+//
+// Sombra en reposo/hover: $md-shadow-sm / $md-shadow-xl exactos de
+// .md-product-card (_cards.scss), no un valor aproximado.
+//
+// Borde: rgba(255,255,255,.72) -- el borde "luminoso" del propio mixin
+// md-liquid-glass, no el tinte azul del backend usado en la pasada anterior.
+//
+// Barra de acento izquierda: NO se declara aqui a proposito. La aporta
+// md_lots_management/product_kanban_card.scss (border-left: 3px solid
+// var(--md-primary)) sobre este MISMO selector con MAYOR especificidad
+// (su regla usa el prefijo .o_web_client, esta no) -- confirmado en el
+// bundle compilado que esa regla gana y el acento SI se ve. No duplicar:
+// si algun dia se quita ese modulo, el acento desaparece tambien aqui y
+// habria que restaurarlo explicitamente.
+.o_kanban_view .o_kanban_record.o_md_product_kanban_card {
+    border-radius: var(--md-portal-r-card);
+    border-top: 1px solid rgba(255, 255, 255, 0.72);
+    border-right: 1px solid rgba(255, 255, 255, 0.72);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.72);
+    // border-left: deliberadamente omitido, ver comentario arriba.
+    background: rgba(255, 255, 255, 0.94); // fallback solido (igual al @supports not del mixin)
+    box-shadow: 0 4px 14px rgba(20, 30, 60, 0.05); // $md-shadow-sm exacto
+    transition: transform 0.22s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.22s ease, background 0.22s ease;
+
+    @supports (backdrop-filter: blur(1px)) {
+        background:
+            linear-gradient(165deg, rgba(255, 255, 255, 0.55), rgba(255, 255, 255, 0.12) 42%, rgba(255, 255, 255, 0.02) 72%),
+            rgba(255, 255, 255, 0.62);
+        backdrop-filter: blur(18px) saturate(1.45);
+        -webkit-backdrop-filter: blur(18px) saturate(1.45);
+        box-shadow:
+            0 0 0 1px rgba(7, 58, 76, 0.04),
+            0 24px 60px rgba(7, 58, 76, 0.10),
+            0 6px 18px rgba(7, 58, 76, 0.05),
+            inset 0 1px 0 rgba(255, 255, 255, 0.9);
+    }
+
+    &:hover {
+        transform: translateY(-4px) perspective(600px) rotateY(1deg);
+        box-shadow: 0 32px 60px -8px rgba(7, 58, 76, 0.22), 0 18px 28px -8px rgba(7, 58, 76, 0.12); // $md-shadow-xl exacto
+    }
+}
+
+// ── Nombre del producto — tipografia exacta de .md-product-card__name ────
+// Hallazgo de la auditoria UX (INVENTORY_KANBAN_UX_PLAN.md, punto 1.1): el
+// nombre no tenia clase propia (span suelto dentro del div.h5 nativo de
+// Odoo), sin control de salto de linea -- rompia a media palabra. Se agrega
+// clase dedicada via xpath en product_visual_views.xml. font-family declara
+// Source Sans Pro/3 igual que .md-kanban-price (misma decision ya tomada:
+// no forzar la carga de la fuente en el bundle backend, cae a sans-serif
+// del sistema si no esta disponible).
+.md-kanban-product-name {
+    font-family: 'Source Sans Pro', 'Source Sans 3', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    line-height: 1.3;
+    color: var(--md-color-ink, #152330);
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+// ── Fondo ambient detrás del grid — mismo mixin que md-liquid-ambient ────
+// (medicine_depot_portal/_tokens.scss). Sobre el gris plano nativo del
+// Kanban (bg-view) el glass de la card no tenia nada que refractar y se
+// veia casi identico a una card solida -- este gradiente radial con tintes
+// de marca le da esa "superficie" al vidrio, igual que en el portal. Scope
+// exclusivo a ESTA vista via la clase en la raiz <kanban>
+// (o_kanban_pharma_reg_products, ver xpath en product_visual_views.xml) --
+// NO se toca .o_kanban_renderer a secas, eso afectaria TODOS los kanbans
+// del backend (Contactos, Proyectos, CRM, etc.).
+// Valores hex tomados literal de _tokens.scss ($md-blue, $md-green,
+// $md-blue-200, $md-gray-50/100) -- este archivo no tiene acceso Sass a esas
+// variables (solo a los custom properties --md-* que expone backend_tokens
+// via :root), asi que se reproduce el valor calculado a mano.
+.o_kanban_pharma_reg_products .o_kanban_renderer {
+    background:
+        radial-gradient(48rem 32rem at 6% -6%, rgba(22, 166, 217, 0.14), transparent 60%),
+        radial-gradient(42rem 30rem at 98% 8%, rgba(151, 215, 0, 0.12), transparent 62%),
+        radial-gradient(36rem 28rem at 50% 112%, rgba(164, 219, 232, 0.22), transparent 64%),
+        linear-gradient(180deg, #F8F9FA, #F2F5F7);
+}
+
+// ── Anillo "Prox. Vencer" (< 180 dias) ────────────────────────────────────
+// Mismo patron que .short-expiry-ring/.short-expiry-pill en
+// pos_product_card.scss, adaptado a la card de Inventario (position:relative
+// ya lo aporta .o_kanban_record de forma nativa en el backend).
+// border-radius: var(--md-portal-r-card) (16px, no un 8px fijo) para que seguir
+// el contorno redondeado de la card tras el segundo pase de glassmorphism —
+// con un valor distinto al de la card se veía una esquina cuadrada asomando.
+.md-short-expiry-ring {
+    position: absolute;
+    inset: 0;
+    border: 2px solid var(--md-expiry);
+    border-radius: var(--md-portal-r-card);
+    pointer-events: none;
+    z-index: 5;
+    box-shadow:
+        0 0 0 3px rgba(var(--md-expiry-rgb), 0.15),
+        inset 0 0 0 1px rgba(var(--md-expiry-rgb), 0.08);
+}
+
+.md-short-expiry-pill {
+    position: absolute;
+    bottom: 4px;
+    right: 4px;
+    font-size: 0.6rem;
+    font-weight: 700;
+    line-height: 1;
+    padding: 2px 5px;
+    border-radius: 3px;
+    background: var(--md-expiry);
+    color: #fff;
+    letter-spacing: 0.3px;
+    white-space: nowrap;
+    pointer-events: none;
+}
+
+// ── Chips de desglose de lotes (FEFO) ─────────────────────────────────────
+// Generados server-side en product_template.py (_md_render_lot_breakdown),
+// mismos iconos calendario/cubos que el lot-card-footer del POS.
+.md-lot-chip {
+    font-size: 0.62rem;
+    font-weight: 500;
+    padding: 0.2rem 0.45rem;
+}
+
+// ── Botón COFEPRIS (equivalente al botón "(i)" de la ProductCard del POS) ──
+// Base (blanco translucido + icono oscuro + borde sutil): copiada 1:1 de
+// bi_pos_stock/static/src/css/stock.css .lot-info-btn -- esa parte SI es
+// fiel porque .pos .modal-content/botones base no cambian entre light/dark.
+// Hover (corregido 2026-07-21): revertido a los tokens propios del backend
+// (--md-primary-dark/--md-primary-2) en vez de los hex del hover de
+// stock.css (#0B5E7A/#59CBE8) -- ese hover de stock.css es la version CLARA
+// del boton, pero el POS real jamas la muestra (pos_glass_bento.scss, activo
+// siempre, la sobreescribe con su propio hover oscuro rgba(255,255,255,.18)
+// + var(--pg-blue-highlight) #59CBE8 sobre fondo oscuro). Como el usuario
+// decidio mantener esta card en el tema claro Bento del backend (no el
+// vidrio oscuro), no tiene sentido copiar un hover claro que ningun cajero
+// ve en produccion -- se usa la paleta clara PROPIA del backend en su lugar.
+// Posición/color EXACTOS de .md-pos-reg-info-btn (md_pos_product_labels,
+// static/src/scss/product_card.scss) -- confirmado contra el POS EN VIVO vía
+// Playwright (sesión MDS CAMPECHE 1): top:3px, left:3px, 20x20, fondo sólido
+// #2C8C99 (no translúcido), borde rgba(255,255,255,.6), sombra
+// 0 1px 3px rgba(0,0,0,.25), hover #256f79. Ícono fa-flask (ver xpath en
+// product_visual_views.xml). Esquina IZQUIERDA a propósito -- ver comentario
+// de ese mismo archivo fuente: nunca debe compartir esquina con el botón de
+// lotes (.md-lot-detail-btn, ahora en la esquina derecha, más abajo).
+.md-cofepris-btn {
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    z-index: 6;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #2C8C99;
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    color: #fff;
+    font-size: 0.6rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+    text-decoration: none;
+    cursor: pointer;
+    transition: background 0.15s;
+
+    &:hover {
+        background: #256f79;
+    }
+
+    // Anillo de foco (auditoría UX 2026-07-21): sin esto, navegar con Tab
+    // hasta este botón no mostraba ningún indicador visual -- violación de
+    // WCAG 2.4.7 (Focus Visible). Mismo azul que ya usa el hover translúcido
+    // de .md-lot-detail-btn (var(--md-primary-dark)) para que ambos botones
+    // de la card compartan un solo lenguaje de "foco", no uno por botón.
+    &:focus-visible {
+        outline: 2px solid var(--md-primary-dark);
+        outline-offset: 2px;
+    }
+}
+
+// ── Botón "detalle de lotes FEFO" (widget md_lot_detail_button) ───────────
+// Posición EXACTA de .lot-info-btn (bi_pos_stock, pos_glass_bento.scss):
+// esquina superior DERECHA, círculo blanco translúcido, 22x22 -- la esquina
+// contraria al botón regulatorio de arriba, mismo criterio "nunca se
+// confunden ni se superponen" que documenta md_pos_product_labels. Antes
+// vivía inline junto a los chips de lote (ya ocultos a pedido del usuario,
+// ver product_visual_views.xml); al quedar solo, flota en la esquina como
+// en el POS real -- posicionamiento absoluto, no importa en qué parte del
+// DOM esté anidado (.o_kanban_record ya aporta position:relative nativo).
+.md-lot-detail-btn {
+    position: absolute;
+    top: 3px;
+    right: 3px;
+    z-index: 6;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.88);
+    border: 1px solid rgba(0, 0, 0, 0.12);
+    color: var(--md-color-text-dark);
+    font-size: 0.68rem;
+    padding: 0;
+    cursor: pointer;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.90), 0 1px 3px rgba(0, 0, 0, 0.12);
+    transition: background 0.15s, box-shadow 0.15s, color 0.15s;
+
+    &:hover {
+        background: rgba(255, 255, 255, 1);
+        color: var(--md-primary-dark);
+        border-color: var(--md-primary-2);
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.90), 0 2px 6px rgba(22, 166, 217, 0.20);
+    }
+
+    // Mismo motivo que el anillo de foco de .md-cofepris-btn arriba (WCAG
+    // 2.4.7): auditoría 2026-07-21 confirmó que ningún botón circular de
+    // esta card mostraba foco visible al navegar con teclado.
+    &:focus-visible {
+        outline: 2px solid var(--md-primary-dark);
+        outline-offset: 2px;
+    }
+}
+
+// ── Botón "Ajustar A la mano" (action_open_quants nativo) ─────────────────
+// Esquina inferior derecha: única libre en ambos casos (con/sin lote).
+// Mismo lenguaje visual translúcido que .md-lot-detail-btn (acción
+// utilitaria, no de marca como COFEPRIS) para no sumar un tercer idioma
+// visual de botón a la card.
+.md-adjust-qty-btn {
+    position: absolute;
+    bottom: 3px;
+    right: 3px;
+    z-index: 6;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.88);
+    border: 1px solid rgba(0, 0, 0, 0.12);
+    color: var(--md-color-text-dark);
+    font-size: 0.6rem;
+    text-decoration: none;
+    cursor: pointer;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.90), 0 1px 3px rgba(0, 0, 0, 0.12);
+    transition: background 0.15s, box-shadow 0.15s, color 0.15s;
+
+    &:hover {
+        background: rgba(255, 255, 255, 1);
+        color: var(--md-primary-dark);
+        border-color: var(--md-primary-2);
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.90), 0 2px 6px rgba(22, 166, 217, 0.20);
+    }
+}
+
+// ── MdKanbanLotDetailPopup — diálogo estándar del backend (claro) ─────────
+// Decisión del usuario: el popup NO copia el vidrio oscuro del POS real
+// (pos_glass_bento.scss) — usa el Dialog claro nativo de Odoo, consistente
+// con el modal COFEPRIS que abre al lado. Se conserva la MISMA lógica/
+// estructura FEFO (leyenda, tabla, fila destacada, estrella "1°"), pero el
+// acento verde de "fila FEFO/vender primero" se adapta a la paleta clara
+// del backend (--md-success) en vez del verde lima #B9EA43 que solo
+// funciona sobre el fondo oscuro del POS real — sobre blanco ese verde
+// neón pierde contraste como texto.
+.md-lot-fefo-badge {
+    background: rgba(25, 135, 84, 0.12);
+    color: var(--md-success);
+    border-radius: var(--md-radius-pill);
+    font-weight: 800;
+}
+
+.md-fefo-first-row {
+    background-color: rgba(25, 135, 84, 0.08) !important;
+    border-left: 3px solid var(--md-success);
+}
+
+// ── Precio — tratamiento de .md-product-card__price (portal) ─────────────
+// Antes: verde (text-success), .95rem, sin peso de marca. El precio del
+// portal es azul (--md-portal-blue-800, no --md-success -- el verde en el
+// portal se reserva para badges "Nuevo", no para precio), 18px, peso 900.
+// Fuente de marca (Source Sans Pro/3) NO se importa aqui a proposito: solo
+// se carga vía Google Fonts en paginas publicas del portal
+// (public_pages_inherit.xml) -- añadirla tambien al backend significaria
+// una dependencia de red externa para TODA la interfaz de administracion,
+// no solo esta card. Se declara igual en la pila de fuentes (por si el
+// navegador ya la tiene cacheada de visitar la tienda) pero cae a
+// sans-serif del backend si no.
+.md-kanban-price {
+    font-family: 'Source Sans Pro', 'Source Sans 3', sans-serif;
+    font-size: 1.125rem;
+    font-weight: 900;
+    color: var(--md-portal-blue-800);
+}
+
+.md-kanban-price-iva {
+    color: #fd7e14;
+    font-weight: 700;
+    font-size: 0.75rem;
+    display: block;
+}
+
+// ── Etiquetas de clasificación — tratamiento .md-product-badge (portal) ───
+// Antes: pill con peso 500, sin mayúsculas. El portal usa mayúsculas +
+// peso 900 en sus badges (discount/new/outofstock) — se aplica el mismo
+// tratamiento tipográfico aquí, conservando el color propio de cada
+// categoría (línea/forma/concentración/etc.) ya establecido.
+.md-portal-tag {
+    font-weight: 900 !important;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+}

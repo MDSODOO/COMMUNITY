@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="520" height="220" viewBox="0 0 520 220" role="img" aria-label="DGH">
+  <title>DGH</title>
+  <g fill="none" fill-rule="evenodd">
+    <rect x="63" y="62" width="116" height="116" rx="30" fill="#EEF4FF"/>
+    <path fill="#2457A6" d="M86 91h33c27 0 45 17 45 40s-18 40-45 40H86V91Zm32 57c13 0 22-7 22-17s-9-17-22-17h-9v34h9Z"/>
+    <text x="318" y="128" fill="#18375F" font-family="Arial, Helvetica, sans-serif" font-size="76" font-weight="800" text-anchor="middle">DGH</text>
+    <text x="318" y="160" fill="#5F7287" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="700" text-anchor="middle" letter-spacing="4">LABORATORIO</text>
+  </g>
+</svg>

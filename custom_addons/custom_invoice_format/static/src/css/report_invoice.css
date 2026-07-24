@@ -1,0 +1,517 @@
+/* ============================================================
+   custom_invoice_format — Sólo overrides invoice-específicos.
+   El diseño base (header, stripe, meta-band, address-grid, tabla
+   pharma, totales) lo provee sale_lot_report/pharma_report.scss.
+   ============================================================ */
+
+/* Ocultar bloques nativos cuyo contenido reemplazamos. NO se pueden
+   eliminar por XPath: l10n_mx_edi.report_invoice_document (primary)
+   tiene XPaths buscando elementos dentro de #informations,
+   #right-elements y el bloque t-set='address'. */
+.inv-active,
+.inv-active * {
+    font-family: "Source Sans Pro", "Helvetica Neue", Arial, sans-serif !important;
+}
+
+/* Ocultar via position:absolute en vez de display:none para evitar el bug de
+   wkhtmltopdf donde float:left con display:none deja un footprint invisible que
+   desplaza el contenido siguiente a la derecha (complemento CFDI y totales). */
+.inv-active #informations,
+.inv-active #right-elements {
+    position: absolute !important;
+    left: -9999px !important;
+    top: 0 !important;
+    width: 0 !important;
+    height: 0 !important;
+    overflow: hidden !important;
+    visibility: hidden !important;
+    float: none !important;
+}
+
+.inv-active #payment_term,
+.inv-active [name="payment_term"],
+.inv-active [name="payment_communication"] {
+    display: none !important;
+}
+
+/* La cabecera custom ya reemplaza el título nativo; si se deja visible,
+   vendor bills siguen saliendo con "Vendor Bill / Factura de Proveedor"
+   y el diseño deja de ser homogéneo con la factura cliente. */
+.inv-active .article h2,
+.inv-active .article h3 {
+    display: none !important;
+}
+
+.inv-active > h1,
+.inv-active > h2,
+.inv-active > h3,
+.article[data-oe-model="account.move"] > h1,
+.article[data-oe-model="account.move"] > h2,
+.article[data-oe-model="account.move"] > h3 {
+    display: none !important;
+}
+
+/*
+   pharma_invoice_sat_footer renderiza el complemento CFDI 4.0.
+   Suprimir cualquier QR nativo de l10n_mx_edi que no lleve la clase
+   .inv-cfdi-qr-img (marcador que pone pharma_invoice_sat_footer en su <img>).
+   Esto evita que aparezca un segundo bloque QR duplicado de l10n_mx_edi
+   junto a nuestro bloque personalizado.
+*/
+.inv-active img[src*="barcode_type=QR"]:not(.inv-cfdi-qr-img) {
+    display: none !important;
+}
+
+/*
+   Suprimir el bloque de datos CFDI nativo de l10n_mx_edi.
+   La versión 19.0.1.9.0 re-activó las vistas heredadas de l10n_mx_edi sobre
+   account.report_invoice_document, lo que causa que se rendericen DOS
+   complementos CFDI: el nativo y el custom pharma_invoice_sat_footer.
+   Estos selectores apuntan al bloque nativo usando sus atributos/clases
+   documentados en la localización MX de Odoo 19.
+*/
+.inv-active [class*="l10n_mx_edi_cfdi"],
+.inv-active [id*="l10n_mx_edi_cfdi"],
+.inv-active [name*="l10n_mx_edi_cfdi"],
+.inv-active [class*="o_field_cfdi"],
+.inv-active [id*="cfdi_qr"],
+.inv-active [name*="cfdi_qr"] {
+    display: none !important;
+}
+
+/*
+   Suprimir el bloque SAT nativo completo. l10n_mx_edi en Odoo 19 inyecta
+   su complemento dentro de un div con clase specific o dentro de la sección
+   "o_account_invoice_extra_data". Al ocultar estos contenedores, solo queda
+   visible nuestro .inv-sat-footer custom.
+*/
+.inv-active .o_account_invoice_extra_data > *:not(.inv-sat-footer):not(.inv-totals-wrapper),
+.inv-active .o_editable_qr,
+.inv-active [data-oe-field="l10n_mx_edi_cfdi_sat_state"],
+.inv-active [data-oe-field*="cfdi"],
+.inv-active table[class*="l10n_mx"],
+.inv-active div[class*="l10n_mx"]:not(.inv-sat-footer):not(.inv-sat-table):not(.inv-sat-chains):not(.inv-sat-qr):not(.inv-sat-title) {
+    display: none !important;
+}
+
+
+
+.inv-active table[id*="lot"]:not(.pharma-lines),
+.inv-active table[name*="lot"]:not(.pharma-lines),
+.inv-active table[class*="lot"]:not(.pharma-lines),
+.inv-active table[id*="serial"]:not(.pharma-lines),
+.inv-active table[name*="serial"]:not(.pharma-lines),
+.inv-active table[class*="serial"]:not(.pharma-lines),
+.inv-active table[id*="snln"]:not(.pharma-lines),
+.inv-active table[name*="snln"]:not(.pharma-lines),
+.inv-active table[class*="snln"]:not(.pharma-lines),
+.inv-active table[id*="expiry"]:not(.pharma-lines),
+.inv-active table[name*="expiry"]:not(.pharma-lines),
+.inv-active table[class*="expiry"]:not(.pharma-lines) {
+    display: none !important;
+}
+
+/*
+   Cualquier nodo hermano de .inv-active (fuera del page) sigue siendo
+   sospechoso de fuga (header/footer residual del external_layout) y se
+   oculta. El bloque CFDI nativo de l10n_mx_edi vive DENTRO del .page,
+   no como sibling, asi que esta regla no lo afecta.
+*/
+.inv-active ~ * {
+    display: none !important;
+}
+
+.inv-active #right-elements #total,
+.inv-active #right-elements > .mb-2,
+.inv-active #right-elements .o_total_table {
+    display: none !important;
+}
+
+.inv-active .header .address,
+.inv-active .header address,
+.inv-active .o_company_1_layout .address,
+.inv-active .o_company_2_layout .address,
+.inv-active .o_company_3_layout .address,
+.inv-active .o_company_4_layout .address {
+    display: none !important;
+}
+
+/* Código de barras y descuento de factura de proveedor.
+   table-layout: auto para que la tabla se redistribuya cuando se ocultan
+   las columnas SAT de l10n_mx_edi (ClaveProdServ / ClaveUnidad). */
+.pharma-lines {
+    width: 100%;
+    table-layout: auto;
+    margin-top: 6px !important;
+    margin-bottom: 10px !important;
+}
+
+/*
+   Columnas — orden final:
+     1 CLAVE | 2 Description | 3 ClaveProdServ | 4 Quantity |
+     5 PriceUnit | 6 ClaveUnidad | 7 [Discount?] | 8 Taxes | 9 Subtotal
+
+   Todas las columnas SAT se muestran. Fuente 0.68rem / 7.5pt para
+   que las 9 columnas quepan en el ancho de pagina PDF.
+*/
+
+.pharma-lines th,
+.pharma-lines td {
+    vertical-align: top;
+    line-height: 1.3;
+    padding: 4px 5px !important;
+}
+
+.pharma-lines th {
+    white-space: normal !important;
+    font-size: 0.68rem;
+}
+
+.pharma-lines td {
+    font-size: 0.68rem;
+}
+
+.pharma-lines th > span {
+    display: block;
+}
+
+.inv-active table.pharma-lines thead th {
+    background-color: #3aa5c9 !important;
+    background-image: -webkit-linear-gradient(left, #3aa5c9 0%, #4db39c 50%, #8dc63f 100%) !important;
+    background-image: linear-gradient(90deg, #3aa5c9 0%, #4db39c 50%, #8dc63f 100%) !important;
+    color: #ffffff !important;
+    font-size: 0.68rem !important;
+    line-height: 1.2 !important;
+    padding: 5px 5px !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+}
+
+/* Titulos de seccion ("Lineas de Producto", "Totales") al MISMO
+   baseline 0.76rem que el cuerpo de las tablas. La jerarquia se
+   preserva via font-weight: 700 + letter-spacing, no via tamano. */
+.inv-active .pharma-section-ttl {
+    margin: 12px 0 5px !important;
+    padding: 3px 0 !important;
+    font-size: 0.76rem !important;
+    font-weight: 700;
+    letter-spacing: 0.4px;
+    text-transform: uppercase;
+}
+
+/* Address-shell del cuerpo: reducir separación con la tabla. */
+.inv-active .pharma-body-address-shell {
+    margin-bottom: 10px;
+}
+
+/* Columnas adicionales (Barcode / Descuento): tipografia compacta. */
+.inv-th-barcode,
+.inv-td-barcode {
+    min-width: 52px;
+    font-size: 0.68rem;
+    word-break: break-word;
+}
+
+.inv-td-barcode {
+    color: #234759;
+    font-weight: 700;
+}
+
+.inv-th-discount,
+.inv-td-discount {
+    min-width: 42px;
+    font-size: 0.68rem;
+    white-space: nowrap;
+}
+
+/* Columnas SAT inyectadas manualmente para vendor bill (in_invoice/in_refund).
+   Replican el ancho/tipografía de las inyectadas por l10n_mx_edi en out_invoice. */
+.inv-th-claveprodserv,
+.inv-td-claveprodserv,
+.inv-th-claveunidad,
+.inv-td-claveunidad {
+    min-width: 46px;
+    font-size: 0.68rem;
+    white-space: nowrap;
+}
+
+.inv-td-claveprodserv,
+.inv-td-claveunidad {
+    color: #234759;
+    font-weight: 600;
+}
+
+.pharma-lines th[name="th_priceunit"],
+.pharma-lines td[name="td_price_unit"] {
+    min-width: 58px;
+}
+
+.pharma-lines th[name="th_quantity"],
+.pharma-lines td[name="td_quantity"] {
+    min-width: 44px;
+}
+
+.pharma-lines th[name="th_taxes"],
+.pharma-lines td[name="td_taxes"] {
+    min-width: 52px;
+}
+
+.pharma-lines th[name="th_subtotal"],
+.pharma-lines td[name="td_subtotal"] {
+    min-width: 62px;
+    white-space: nowrap;
+}
+
+.pharma-lines td[name="account_invoice_line_name"] {
+    color: #24313f;
+    font-weight: 700;
+    word-break: normal;
+    overflow-wrap: anywhere;
+    line-height: 1.35;
+}
+
+/* Prefijo [barcode] inline en celda de descripción — mismo estilo que OC */
+.inv-product-code {
+    font-size: 0.78rem;
+    color: #374151;
+    margin-right: 3px;
+    font-weight: 400;
+}
+
+.inv-line-lots {
+    margin-top: 4px;
+    font-size: 0.68rem;
+    line-height: 1.25;
+    font-weight: 500;
+    color: #6b7280 !important;
+}
+
+.inv-line-lots strong {
+    font-weight: 700;
+    color: #4b5563;
+}
+
+/* ════════════════════════════════════════════════════════════════
+   Tabla de totales full-width — IDENTICO lenguaje visual a .pharma-lines.
+   Header con gradiente brand (#3aa5c9 → #4db39c → #8dc63f), cuerpo con
+   padding 6/8px y font-size 0.76rem. Filas con borde inferior tenue
+   para coincidir con el body de .pharma-lines.
+   ════════════════════════════════════════════════════════════════ */
+
+/* Wrapper: clear:both + display:block + width:100% para escapar floats
+   residuales (l10n_mx_edi right-elements / overflow-hidden) que estaban
+   atrapando la tabla en la mitad derecha de la pagina. */
+.inv-active .inv-totals-wrapper {
+    clear: both !important;
+    display: block !important;
+    width: 100% !important;
+    float: none !important;
+    position: static !important;
+    page-break-inside: avoid;
+}
+
+table.inv-total-table.inv-total-fullwidth {
+    width: 100%;
+    border-collapse: collapse;
+    background: #ffffff;
+    font-size: 0.76rem;
+    margin-top: 6px;
+    margin-bottom: 0;
+    table-layout: fixed;
+}
+
+/* Header: replica EXACTA de .pharma-lines thead th — gradiente brand,
+   MAYUSCULAS, letter-spacing 0.04em, font 0.76rem, weight 700. */
+.inv-active table.inv-total-table.inv-total-fullwidth thead th {
+    background-color: #3aa5c9 !important;
+    background-image: -webkit-linear-gradient(left, #3aa5c9 0%, #4db39c 50%, #8dc63f 100%) !important;
+    background-image: linear-gradient(90deg, #3aa5c9 0%, #4db39c 50%, #8dc63f 100%) !important;
+    color: #ffffff !important;
+    font-size: 0.76rem !important;
+    font-weight: 700 !important;
+    line-height: 1.25 !important;
+    padding: 7px 9px !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.04em !important;
+    white-space: nowrap !important;
+    border: 0 !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+}
+
+.inv-active table.inv-total-table.inv-total-fullwidth thead th.text-start {
+    text-align: left !important;
+}
+
+.inv-active table.inv-total-table.inv-total-fullwidth thead th.text-end {
+    text-align: right !important;
+}
+
+table.inv-total-table.inv-total-fullwidth td {
+    padding: 6px 8px !important;
+    border: 0 !important;
+    border-bottom: 1px solid #e2e8f0 !important;
+    font-size: 0.76rem !important;
+    color: #1f2937;
+    line-height: 1.35;
+    vertical-align: middle;
+    text-transform: uppercase;
+}
+
+table.inv-total-table.inv-total-fullwidth td:last-child {
+    font-weight: 600;
+    color: #0f172a;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+
+/* Subtotal: fondo gris azulado, separador inferior. */
+table.inv-total-table.inv-total-fullwidth tr:first-child td {
+    background-color: #eef2f5 !important;
+    font-weight: 600;
+    color: #1a2332;
+    border-bottom: 1px solid #cbd5e1 !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+}
+
+/* Impuestos: fondo blanco, separador sutil entre filas. */
+table.inv-total-table.inv-total-fullwidth tr.o_tax_row td,
+table.inv-total-table.inv-total-fullwidth tr.tax-line td {
+    background-color: #ffffff !important;
+    border-bottom: 1px solid #eef2f5 !important;
+    color: #475569;
+}
+
+/* Total: navy brand, MISMO font-size 0.76rem que el resto de la
+   tabla. La prominencia visual proviene del bg navy + weight 700 +
+   letter-spacing, no del tamano. Preserva el baseline mas pequeno. */
+table.inv-total-table.inv-total-fullwidth tr.o_total_row td {
+    background-color: #234759 !important;
+    color: #ffffff !important;
+    font-size: 0.76rem !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.3px;
+    padding: 7px 8px !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+}
+
+/* Pagos: legible, fondo blanco, monto en verde brand. */
+table.inv-total-table.inv-total-fullwidth tr.total-paid td {
+    background: #ffffff !important;
+    color: #4b5563 !important;
+    font-weight: 500 !important;
+    border-top: 1px solid #cbd5e1 !important;
+}
+
+table.inv-total-table.inv-total-fullwidth tr.total-paid td:last-child {
+    color: #166534 !important;
+    font-weight: 600 !important;
+}
+
+/* Cantidad por pagar (saldo residual): cyan brand. */
+table.inv-total-table.inv-total-fullwidth tr.total-residual td {
+    background-color: #3aa5c9 !important;
+    color: #ffffff !important;
+    font-weight: 700 !important;
+    padding: 6px 8px !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+}
+
+/* Importe con letra: integrado como ultima fila full-span de la tabla,
+   italic muted con borde superior sutil. */
+table.inv-total-table.inv-total-fullwidth tr.inv-amount-words-row td {
+    background: #ffffff !important;
+    border-top: 1px solid #cbd5e1 !important;
+    padding: 6px 8px !important;
+    font-weight: 400 !important;
+    color: inherit !important;
+}
+
+.inv-amount-words {
+    display: inline-block;
+    font-size: 0.7rem;
+    color: #64748b;
+    font-style: italic;
+    line-height: 1.35;
+    word-break: normal;
+    overflow-wrap: anywhere;
+}
+
+.inv-amount-words em {
+    font-style: normal;
+    font-weight: 600;
+    color: #475569;
+}
+
+/* Régimen fiscal del receptor (CFDI 4.0). */
+.inv-addr-regime {
+    font-weight: 500 !important;
+    font-size: 0.7rem !important;
+}
+
+/* ════════════════════════════════════════════════════════════════
+   Complemento Fiscal CFDI 4.0 — reglas estructurales.
+   El diseño detallado usa estilos inline en el template para
+   máxima fiabilidad en wkhtmltopdf. Estas reglas garantizan
+   clear, width y supresión del QR nativo de l10n_mx_edi.
+   ════════════════════════════════════════════════════════════════ */
+.inv-active .inv-sat-footer,
+.inv-sat-footer {
+    clear: both !important;
+    float: none !important;
+    display: table !important;
+    table-layout: fixed !important;
+    border-collapse: collapse !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin-left: 0 !important;
+    margin-right: auto !important;
+    margin-top: 16px;
+    page-break-inside: avoid;
+}
+
+.inv-active table.inv-sat-table,
+table.inv-sat-table {
+    width: 100% !important;
+    max-width: 100% !important;
+    border-collapse: collapse !important;
+    table-layout: fixed !important;
+    float: none !important;
+    margin-left: 0 !important;
+    margin-right: auto !important;
+}
+
+/* Exento de la regla que suprime el QR nativo de l10n_mx_edi. */
+img.inv-cfdi-qr-img {
+    display: block !important;
+    max-width: 105px;
+    height: auto;
+}
+
+/* Compactacion PDF: 7.5pt (~0.68rem) para que las 9 columnas quepan
+   sin overflow. Jerarquia visual via bg + weight, no via tamano. */
+@media print {
+    .inv-active .pharma-lines th,
+    .inv-active .pharma-lines td {
+        padding: 4px 5px !important;
+        font-size: 7.5pt !important;
+        line-height: 1.25 !important;
+    }
+    .inv-active .pharma-section-ttl {
+        margin: 12px 0 5px !important;
+        font-size: 7.5pt !important;
+    }
+    .inv-active table.inv-total-table.inv-total-fullwidth thead th,
+    .inv-active table.inv-total-table.inv-total-fullwidth td {
+        font-size: 8.5pt !important;
+    }
+    .inv-active table.inv-total-table.inv-total-fullwidth tr.o_total_row td {
+        font-size: 8.5pt !important;
+    }
+    .inv-active .pharma-body-address-shell {
+        margin-bottom: 10px;
+    }
+}

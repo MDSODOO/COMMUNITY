@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="seq_medicine_depot_pharmacovigilance_report" model="ir.sequence">
+        <field name="name">Medicine Depot Pharmacovigilance Report</field>
+        <field name="code">medicine.depot.pharmacovigilance.report</field>
+        <field name="prefix">PV/%(year)s/%(month)s/</field>
+        <field name="padding">4</field>
+    </record>
+</odoo>

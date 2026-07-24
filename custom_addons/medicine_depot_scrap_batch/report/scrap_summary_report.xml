@@ -1,0 +1,258 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="action_report_scrap_summary_2025" model="ir.actions.report">
+        <field name="name">Acumulado del mes - PDF</field>
+        <field name="model">medicine.depot.scrap.summary.2025</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">medicine_depot_scrap_batch.report_scrap_summary</field>
+        <field name="report_file">medicine_depot_scrap_batch.report_scrap_summary</field>
+        <field name="binding_model_id" ref="model_medicine_depot_scrap_summary_2025"/>
+        <field name="binding_type">report</field>
+        <field name="print_report_name">'Acumulado del mes'</field>
+    </record>
+
+    <!-- ═══════════════════════════════════════════════════════════════════
+         HEADER PHARMA PARA EL NIVEL DE LAYOUT
+
+         Inyecta el header estándar pharma dentro del div.header del layout
+         para mantener coherencia visual con otros reportes.
+    ════════════════════════════════════════════════════════════════════════ -->
+    <template id="pharma_scrap_summary_layout_header">
+        <t t-set="_sb" t-value="o if o else doc"/>
+        <t t-if="_sb and _sb._name == 'medicine.depot.scrap.summary.2025'">
+            <t t-set="_sb_co" t-value="_sb.company_id.sudo()"/>
+            <div class="pharma-full-header">
+                <div class="d-flex align-items-start justify-content-between pharma-doc-header">
+                    <div class="pharma-logo-shell">
+                        <img t-if="_sb_co.logo" class="md-logo"
+                             t-att-src="image_data_uri(_sb_co.logo)" alt="Logo"/>
+                        <div t-if="_sb_co.report_header"
+                             t-field="_sb_co.report_header"
+                             class="o_company_tagline fw-bold mt-1"/>
+                    </div>
+                    <div class="pharma-doc-info text-end">
+                        <span class="pharma-doc-type">Reporte de Bajas</span>
+                        <span class="pharma-doc-date">
+                            <span t-esc="datetime.datetime.now().strftime('%Y-%m-%d')"/>
+                        </span>
+                    </div>
+                </div>
+                <div class="pharma-stripe">
+                    <span class="pharma-stripe-band pharma-stripe-band-brand"/>
+                    <span class="pharma-stripe-band pharma-stripe-band-teal"/>
+                    <span class="pharma-stripe-band pharma-stripe-band-lime"/>
+                </div>
+                <div class="row g-0 pharma-meta-band">
+                    <div class="col-3 pharma-meta-cell">
+                        <span class="pharma-meta-label">Período</span>
+                        <span class="pharma-meta-val" t-esc="_sb.periodo and _sb.periodo.strftime('%B %Y') or '—'"/>
+                    </div>
+                    <div class="col-3 pharma-meta-cell">
+                        <span class="pharma-meta-label">Sucursal</span>
+                        <span class="pharma-meta-val" t-esc="_sb.sucursal or '—'"/>
+                    </div>
+                    <div class="col-3 pharma-meta-cell">
+                        <span class="pharma-meta-label">Mes</span>
+                        <span class="pharma-meta-val" t-esc="dict(_sb._fields['mes'].selection).get(_sb.mes) or '—'"/>
+                    </div>
+                    <div class="col-3 pharma-meta-cell">
+                        <span class="pharma-meta-label">Compañía</span>
+                        <span class="pharma-meta-val" t-esc="_sb_co.name or '—'"/>
+                    </div>
+                </div>
+            </div>
+        </t>
+    </template>
+
+    <!-- ═══════════════════════════════════════════════════════════════════
+         OVERRIDES DE LAYOUT — prioridad 1001
+    ════════════════════════════════════════════════════════════════════════ -->
+
+    <!-- Layout STANDARD ─────────────────────────────────────────────────── -->
+    <template id="scrap_summary_suppress_header_standard"
+              inherit_id="web.external_layout_standard"
+              priority="1001">
+        <xpath expr="//div[contains(concat(' ', normalize-space(@class), ' '), ' header ') or contains(concat(' ', normalize-space(@t-attf-class), ' '), ' header ')]" position="attributes">
+            <attribute name="t-if">not ((o and o._name == 'medicine.depot.scrap.summary.2025') or (doc and doc._name == 'medicine.depot.scrap.summary.2025'))</attribute>
+        </xpath>
+        <xpath expr="//div[contains(concat(' ', normalize-space(@class), ' '), ' header ') or contains(concat(' ', normalize-space(@t-attf-class), ' '), ' header ')]" position="after">
+            <t t-call="medicine_depot_scrap_batch.pharma_scrap_summary_layout_header"/>
+        </xpath>
+        <xpath expr="//h2[@t-out='layout_document_title']" position="attributes">
+            <attribute name="t-if">not ((o and o._name == 'medicine.depot.scrap.summary.2025') or (doc and doc._name == 'medicine.depot.scrap.summary.2025'))</attribute>
+        </xpath>
+    </template>
+
+    <!-- Layout BOLD ─────────────────────────────────────────────────────── -->
+    <template id="scrap_summary_suppress_header_bold"
+              inherit_id="web.external_layout_bold"
+              priority="1001">
+        <xpath expr="//div[contains(concat(' ', normalize-space(@class), ' '), ' header ') or contains(concat(' ', normalize-space(@t-attf-class), ' '), ' header ')]" position="attributes">
+            <attribute name="t-if">not ((o and o._name == 'medicine.depot.scrap.summary.2025') or (doc and doc._name == 'medicine.depot.scrap.summary.2025'))</attribute>
+        </xpath>
+        <xpath expr="//div[contains(concat(' ', normalize-space(@class), ' '), ' header ') or contains(concat(' ', normalize-space(@t-attf-class), ' '), ' header ')]" position="after">
+            <t t-call="medicine_depot_scrap_batch.pharma_scrap_summary_layout_header"/>
+        </xpath>
+        <xpath expr="//h2[@t-out='layout_document_title']" position="attributes">
+            <attribute name="t-if">not ((o and o._name == 'medicine.depot.scrap.summary.2025') or (doc and doc._name == 'medicine.depot.scrap.summary.2025'))</attribute>
+        </xpath>
+    </template>
+
+    <!-- Layout BOXED ────────────────────────────────────────────────────── -->
+    <template id="scrap_summary_suppress_header_boxed"
+              inherit_id="web.external_layout_boxed"
+              priority="1001">
+        <xpath expr="//div[contains(concat(' ', normalize-space(@class), ' '), ' header ') or contains(concat(' ', normalize-space(@t-attf-class), ' '), ' header ')]" position="attributes">
+            <attribute name="t-if">not ((o and o._name == 'medicine.depot.scrap.summary.2025') or (doc and doc._name == 'medicine.depot.scrap.summary.2025'))</attribute>
+        </xpath>
+        <xpath expr="//div[contains(concat(' ', normalize-space(@class), ' '), ' header ') or contains(concat(' ', normalize-space(@t-attf-class), ' '), ' header ')]" position="after">
+            <t t-call="medicine_depot_scrap_batch.pharma_scrap_summary_layout_header"/>
+        </xpath>
+        <xpath expr="//h2[@t-out='layout_document_title']" position="attributes">
+            <attribute name="t-if">not ((o and o._name == 'medicine.depot.scrap.summary.2025') or (doc and doc._name == 'medicine.depot.scrap.summary.2025'))</attribute>
+        </xpath>
+    </template>
+
+    <!-- Layout STRIPED ──────────────────────────────────────────────────── -->
+    <template id="scrap_summary_suppress_header_striped"
+              inherit_id="web.external_layout_striped"
+              priority="1001">
+        <xpath expr="//div[contains(concat(' ', normalize-space(@class), ' '), ' header ') or contains(concat(' ', normalize-space(@t-attf-class), ' '), ' header ')]" position="attributes">
+            <attribute name="t-if">not ((o and o._name == 'medicine.depot.scrap.summary.2025') or (doc and doc._name == 'medicine.depot.scrap.summary.2025'))</attribute>
+        </xpath>
+        <xpath expr="//div[contains(concat(' ', normalize-space(@class), ' '), ' header ') or contains(concat(' ', normalize-space(@t-attf-class), ' '), ' header ')]" position="after">
+            <t t-call="medicine_depot_scrap_batch.pharma_scrap_summary_layout_header"/>
+        </xpath>
+        <xpath expr="//h2[@t-out='layout_document_title']" position="attributes">
+            <attribute name="t-if">not ((o and o._name == 'medicine.depot.scrap.summary.2025') or (doc and doc._name == 'medicine.depot.scrap.summary.2025'))</attribute>
+        </xpath>
+    </template>
+
+    <!-- Layout FOLDER ───────────────────────────────────────────────────── -->
+    <template id="scrap_summary_suppress_header_folder"
+              inherit_id="web.external_layout_folder"
+              priority="1001">
+        <xpath expr="//div[contains(concat(' ', normalize-space(@class), ' '), ' header ') or contains(concat(' ', normalize-space(@t-attf-class), ' '), ' header ')]" position="attributes">
+            <attribute name="t-if">not ((o and o._name == 'medicine.depot.scrap.summary.2025') or (doc and doc._name == 'medicine.depot.scrap.summary.2025'))</attribute>
+        </xpath>
+        <xpath expr="//div[contains(concat(' ', normalize-space(@class), ' '), ' header ') or contains(concat(' ', normalize-space(@t-attf-class), ' '), ' header ')]" position="after">
+            <t t-call="medicine_depot_scrap_batch.pharma_scrap_summary_layout_header"/>
+        </xpath>
+    </template>
+
+    <!-- Layout WAVE ─────────────────────────────────────────────────────── -->
+    <template id="scrap_summary_suppress_header_wave"
+              inherit_id="web.external_layout_wave"
+              priority="1001">
+        <xpath expr="//div[contains(concat(' ', normalize-space(@class), ' '), ' header ') or contains(concat(' ', normalize-space(@t-attf-class), ' '), ' header ')]" position="attributes">
+            <attribute name="t-if">not ((o and o._name == 'medicine.depot.scrap.summary.2025') or (doc and doc._name == 'medicine.depot.scrap.summary.2025'))</attribute>
+        </xpath>
+        <xpath expr="//div[contains(concat(' ', normalize-space(@class), ' '), ' header ') or contains(concat(' ', normalize-space(@t-attf-class), ' '), ' header ')]" position="after">
+            <t t-call="medicine_depot_scrap_batch.pharma_scrap_summary_layout_header"/>
+        </xpath>
+    </template>
+
+    <!-- Layout BUBBLE ───────────────────────────────────────────────────── -->
+    <template id="scrap_summary_suppress_header_bubble"
+              inherit_id="web.external_layout_bubble"
+              priority="1001">
+        <xpath expr="//div[contains(concat(' ', normalize-space(@class), ' '), ' header ') or contains(concat(' ', normalize-space(@t-attf-class), ' '), ' header ')]" position="attributes">
+            <attribute name="t-if">not ((o and o._name == 'medicine.depot.scrap.summary.2025') or (doc and doc._name == 'medicine.depot.scrap.summary.2025'))</attribute>
+        </xpath>
+        <xpath expr="//div[contains(concat(' ', normalize-space(@class), ' '), ' header ') or contains(concat(' ', normalize-space(@t-attf-class), ' '), ' header ')]" position="after">
+            <t t-call="medicine_depot_scrap_batch.pharma_scrap_summary_layout_header"/>
+        </xpath>
+    </template>
+
+    <!-- ═══════════════════════════════════════════════════════════════════
+         TEMPLATE PRINCIPAL
+
+         Tabla consolidada del acumulado de bajas por período, sucursal y
+         compañía. Incluye cantidad A la mano y costos totales.
+    ════════════════════════════════════════════════════════════════════════ -->
+    <template id="report_scrap_summary">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="web.external_layout">
+                    <t t-set="address" t-value="''"/>
+                    <t t-set="information_block" t-value="''"/>
+                    <div class="page pharma-doc-page">
+
+                        <!-- ═══ TABLA DE RESUMEN ═════════════════════════════ -->
+                        <div class="pharma-section-ttl">Acumulado de bajas por período</div>
+                        <table class="table table-sm pharma-lines">
+                            <thead>
+                                <tr>
+                                    <th>Período</th>
+                                    <th>Sucursal</th>
+                                    <th class="text-end">Líneas</th>
+                                    <th class="text-end">Cantidad A la mano</th>
+                                    <th class="text-end">Costo (MXN)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr t-foreach="docs" t-as="record">
+                                    <td>
+                                        <span t-esc="record.periodo and record.periodo.strftime('%B %Y') or '—'"/>
+                                    </td>
+                                    <td>
+                                        <span t-esc="record.sucursal or '—'"/>
+                                    </td>
+                                    <td class="text-end">
+                                        <span t-esc="record.line_count or 0"/>
+                                    </td>
+                                    <td class="text-end">
+                                        <span t-esc="'{:.2f}'.format(record.scrap_qty or 0)"/>
+                                    </td>
+                                    <td class="text-end">
+                                        <span t-field="record.costo" t-options='{"widget": "monetary", "display_currency": record.currency_id}'/>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <!-- ═══ TOTALES ══════════════════════════════════ -->
+                        <div class="pharma-section-ttl mt-4">Resumen consolidado</div>
+                        <div name="total" class="pharma-total-block">
+                            <table>
+                                <tbody>
+                                    <tr>
+                                        <td>Total de registros</td>
+                                        <td class="text-end">
+                                            <span t-esc="len(docs)"/>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>Total de líneas</td>
+                                        <td class="text-end">
+                                            <span t-esc="sum(docs.mapped('line_count')) or 0"/>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>Total Cantidad A la mano</td>
+                                        <td class="text-end">
+                                            <span t-esc="'{:.2f}'.format(sum(docs.mapped('scrap_qty')) or 0)"/>
+                                        </td>
+                                    </tr>
+                                    <tr class="o_total_row">
+                                        <td>Costo Total (MXN)</td>
+                                        <td class="text-end">
+                                            <span t-esc="'{:.2f}'.format(sum(docs.mapped('costo')) or 0)"/>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="text-muted mt-3" style="font-size: 0.7rem;">
+                            Reporte generado por
+                            <span t-esc="user.name"/> ·
+                            <span t-esc="datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')"/>
+                        </div>
+
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+</odoo>

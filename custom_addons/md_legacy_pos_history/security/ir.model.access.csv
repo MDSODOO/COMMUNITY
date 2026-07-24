@@ -1,0 +1,6 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_md_legacy_pos_order_user,md.legacy.pos.order.user,model_md_legacy_pos_order,base.group_user,1,0,0,0
+access_md_legacy_pos_order_system,md.legacy.pos.order.system,model_md_legacy_pos_order,base.group_system,1,1,1,1
+access_md_legacy_pos_order_line_user,md.legacy.pos.order.line.user,model_md_legacy_pos_order_line,base.group_user,1,0,0,0
+access_md_legacy_pos_order_line_system,md.legacy.pos.order.line.system,model_md_legacy_pos_order_line,base.group_system,1,1,1,1
+access_md_pos_order_unified_user,md.pos.order.unified.user,model_md_pos_order_unified,base.group_user,1,0,0,0

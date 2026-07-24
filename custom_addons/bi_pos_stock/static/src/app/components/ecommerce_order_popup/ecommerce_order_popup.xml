@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <!--
+        EcommerceOrderPopup — dialog that appears when a new website order arrives.
+
+        Uses the standard Odoo Dialog wrapper for correct positioning/backdrop.
+        Footer has two buttons: close (dismiss) and view-orders (navigate to list).
+    -->
+    <t t-name="bi_pos_stock.EcommerceOrderPopup">
+        <Dialog size="'sm'" title="'🛒 Nuevo Pedido en Línea'">
+
+            <!-- Body -->
+            <div class="text-center py-2">
+                <!-- Icon -->
+                <div style="font-size:3rem; color:var(--md-blue-800); margin-bottom:12px;">
+                    <i class="fa fa-shopping-cart"/>
+                </div>
+
+                <!-- Order name -->
+                <h5 class="fw-bold mb-1" style="color:var(--md-blue-800);">
+                    <t t-esc="props.orderName"/>
+                </h5>
+
+                <!-- Customer -->
+                <p class="text-muted mb-2">
+                    <i class="fa fa-user me-1"/>
+                    <t t-esc="props.partnerName"/>
+                </p>
+
+                <!-- Amount + products -->
+                <div class="d-flex justify-content-center gap-4 mt-3">
+                    <div class="text-center">
+                        <div class="fw-bold fs-5" style="color:var(--md-blue-800);">
+                            <t t-esc="currencySymbol"/>
+                            <t t-esc="props.amountTotal.toFixed(2)"/>
+                        </div>
+                        <small class="text-muted">Total</small>
+                    </div>
+                    <div class="text-center">
+                        <div class="fw-bold fs-5" style="color:var(--md-blue-800);">
+                            <t t-esc="props.productCount"/>
+                        </div>
+                        <small class="text-muted">Producto(s)</small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <t t-set-slot="footer">
+                <button class="btn btn-secondary" t-on-click="props.close">
+                    Cerrar
+                </button>
+                <button class="btn btn-primary ms-2" t-on-click="viewOrders"
+                        style="background-color:var(--md-blue-800); border-color:var(--md-blue-800);">
+                    <i class="fa fa-list me-1"/>
+                    Ver Pedidos en Línea
+                </button>
+            </t>
+
+        </Dialog>
+    </t>
+</templates>

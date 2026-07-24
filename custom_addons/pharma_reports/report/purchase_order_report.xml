@@ -1,0 +1,189 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ═══════════════════════════════════════════════════════════════
+         ORDEN DE COMPRA — hereda purchase.report_purchaseorder_document
+         Header pharma (logo + stripe + meta-band) inyectado por el layout
+         vía report_layout_overrides.xml — NO duplicar aquí.
+    ════════════════════════════════════════════════════════════════════ -->
+    <template
+        id="custom_report_purchaseorder_document"
+        inherit_id="purchase.report_purchaseorder_document"
+        name="Custom Purchase Order Format — Medicine Depot"
+        priority="99">
+
+        <xpath expr="//div[hasclass('page')]" position="attributes">
+            <attribute name="class" add="pharma-doc-page po-active" separator=" "/>
+        </xpath>
+
+        <xpath expr="//div[hasclass('page')]" position="before">
+            <t t-set="display_discount" t-value="True"/>
+        </xpath>
+
+        <!-- Suprime el título nativo del layout (h2 "Orden de Compra"). -->
+        <xpath expr="//t[@t-set='layout_document_title']" position="replace">
+            <t t-set="layout_document_title" t-value="''"/>
+        </xpath>
+
+        <!-- Oculta el bloque "informations" nativo (Fecha, Comprador, etc.). -->
+        <xpath expr="//div[@id='informations']" position="attributes">
+            <attribute name="style">display:none</attribute>
+        </xpath>
+
+        <!--
+          Header pharma inyectado COMO PRIMER BLOQUE del body (.page).
+          Antes vivía en web.external_layout_* vía xpath sobre el row de
+          company_address, pero en Odoo 19 ese selector no siempre matchea
+          y el header queda sin inyectarse — provocaba que el meta-band
+          terminara fuera de flujo y el address-grid se mostrara antes del
+          logo/stripe. Inyectarlo aquí garantiza el orden visual:
+            logo+doc-info → stripe → meta-band → addr-grid → tabla.
+        -->
+        <xpath expr="//table[hasclass('o_main_table')]" position="before">
+            <t t-call="pharma_reports.pharma_full_header"/>
+            <div class="pharma-body-address-shell">
+                <t t-set="pharma_doc" t-value="o"/>
+                <t t-set="pharma_company" t-value="o.company_id.sudo()"/>
+                <t t-set="pharma_show_customer" t-value="True"/>
+                <t t-call="pharma_reports.pharma_company_address_block"/>
+            </div>
+            <div class="pharma-section-ttl">LÍNEAS DE PRODUCTO</div>
+        </xpath>
+
+        <xpath expr="//table[hasclass('o_main_table')]" position="attributes">
+            <attribute name="class" add="pharma-lines table-sm" separator=" "/>
+        </xpath>
+
+        <!-- colgroup fija el ancho de la columna de descripción para que
+             el texto de lotes/caducidades no aplaste las columnas numéricas. -->
+        <xpath expr="//table[hasclass('o_main_table')]/thead" position="before">
+            <colgroup>
+                <col style="width:44%;"/>
+                <col style="width:8%;"/>
+                <col style="width:8%;"/>
+                <col style="width:14%;"/>
+                <col style="width:8%;"/>
+                <col style="width:18%;"/>
+            </colgroup>
+        </xpath>
+
+        <!-- Clase pharma-product-cell en la celda de descripción
+             NOTA: el template nativo de OC en Odoo 19 NO tiene atributos
+             name en los <th>, por eso no se renombran con xpath — usaríamos
+             posición frágil. El estilo pharma-lines cubre la apariencia. -->
+        <xpath expr="//table[hasclass('o_main_table')]//tbody//tr//td[1]" position="attributes">
+            <attribute name="class" add="pharma-product-cell" separator=" "/>
+        </xpath>
+
+        <!--
+          Lote + Caducidad inline dentro de la celda de descripción —
+          igual que en la factura: "Lote: X | Caducidad: Y" como segunda
+          línea bajo el nombre del producto.
+        -->
+        <xpath expr="//table[hasclass('o_main_table')]//tbody//tr//td[1]" position="inside">
+            <t t-if="line.lot_id">
+                <br/>
+                <span class="pharma-lot-inline">
+                    Lote: <span t-esc="line.lot_id.name"/>
+                    <t t-if="line.lot_id.expiration_date"> | Caducidad: <span t-field="line.lot_id.expiration_date" t-options='{"widget": "date"}'/></t>
+                </span>
+            </t>
+        </xpath>
+
+        <xpath expr="//div[@id='total']" position="attributes">
+            <attribute name="class">row justify-content-end mt-n3</attribute>
+        </xpath>
+        <xpath expr="//div[@id='total']/div[1]" position="attributes">
+            <attribute name="class">col-12 col-md-4 ms-auto</attribute>
+        </xpath>
+
+    </template>
+
+
+    <!-- ═══════════════════════════════════════════════════════════════
+         SOLICITUD DE COTIZACIÓN (RFQ) — hereda purchase.report_purchasequotation_document
+         NOTA ARQUITECTURA ODOO 19:
+         El template de RFQ es COMPLETAMENTE INDEPENDIENTE del de OC.
+         Vive en purchase_quotation_templates.xml, usa la variable
+         `order_line` (no `line`) y su tabla NO tiene precios ni totales.
+         Columnas nativas: th_description | th_expected_date | th_quantity
+         El header pharma (logo + stripe + meta-band) lo inyecta el layout
+         vía report_layout_overrides.xml — NO duplicar aquí.
+    ════════════════════════════════════════════════════════════════════ -->
+    <template
+        id="custom_report_purchasequotation_document"
+        inherit_id="purchase.report_purchasequotation_document"
+        name="Custom RFQ Format — Medicine Depot"
+        priority="99">
+
+        <!-- 1. Marcar el .page con clases de control -->
+        <xpath expr="//div[hasclass('page')]" position="attributes">
+            <attribute name="class" add="pharma-doc-page po-active" separator=" "/>
+        </xpath>
+
+        <!-- 2. Ocultar el título nativo -->
+        <xpath expr="//t[@t-set='layout_document_title']" position="replace">
+            <t t-set="layout_document_title" t-value="''"/>
+        </xpath>
+
+        <!-- 3. Header pharma + bloque de dirección + título de sección antes de la tabla.
+             pharma_full_header se inyecta aquí (no en external_layout) por la misma
+             razón que la OC: el xpath sobre web.external_layout_* es frágil en O19. -->
+        <xpath expr="//table" position="before">
+            <t t-call="pharma_reports.pharma_full_header"/>
+            <div class="pharma-body-address-shell">
+                <t t-set="pharma_doc" t-value="o"/>
+                <t t-set="pharma_company" t-value="o.company_id.sudo()"/>
+                <t t-set="pharma_show_customer" t-value="True"/>
+                <t t-call="pharma_reports.pharma_company_address_block"/>
+            </div>
+            <div class="pharma-section-ttl">LÍNEAS DE PRODUCTO</div>
+        </xpath>
+
+        <!-- 4. Estilo pharma en la tabla + tamaño compacto -->
+        <xpath expr="//table" position="attributes">
+            <attribute name="class" add="pharma-lines table-sm" separator=" "/>
+        </xpath>
+
+        <!-- colgroup: descripción ancha para no aplastar fecha y cantidad -->
+        <xpath expr="//table/thead" position="before">
+            <colgroup>
+                <col style="width:60%;"/>
+                <col style="width:20%;"/>
+                <col style="width:20%;"/>
+            </colgroup>
+        </xpath>
+
+        <!-- 5. Cabeceras en español -->
+        <xpath expr="//th[@name='th_description']" position="replace">
+            <th name="th_description" class="text-start">Descripción</th>
+        </xpath>
+        <xpath expr="//th[@name='th_expected_date']" position="replace">
+            <th name="th_expected_date" class="text-end text-nowrap">Fecha esperada</th>
+        </xpath>
+        <xpath expr="//th[@name='th_quantity']" position="replace">
+            <th name="th_quantity" class="text-end text-nowrap">Cantidad</th>
+        </xpath>
+
+        <!-- 6. Clase pharma-product-cell en la celda de descripción -->
+        <xpath expr="//tbody//tr//td[@id='product']" position="attributes">
+            <attribute name="class" add="pharma-product-cell" separator=" "/>
+        </xpath>
+
+        <!--
+          7. Lote + Caducidad inline dentro de la celda de descripción —
+          igual que en la factura y orden de venta. Sin columnas separadas.
+        -->
+        <xpath expr="//tbody//tr//td[@id='product']" position="inside">
+            <t t-if="order_line.lot_id">
+                <br/>
+                <span class="pharma-lot-inline">
+                    Lote: <span t-esc="order_line.lot_id.name"/>
+                    <t t-if="order_line.lot_id.expiration_date"> | Caducidad: <span t-field="order_line.lot_id.expiration_date" t-options='{"widget": "date"}'/></t>
+                </span>
+            </t>
+        </xpath>
+
+    </template>
+
+</odoo>

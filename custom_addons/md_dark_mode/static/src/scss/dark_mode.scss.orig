@@ -1,0 +1,489 @@
+// Modo oscuro propio (LGPL-3), sin depender de web_enterprise.
+// Se activa agregando la clase .o_md_dark_mode al <html> (ver dark_mode_toggle.js).
+// Cobertura: fondo general, navbar, sheets/formularios, listas, kanban, inputs,
+// dropdowns/modales, chatter, ajustes.
+//
+// Paleta calibrada contra el modo oscuro real de la base de pruebas (Odoo
+// Enterprise, https://medicinedepot-test-34712642.dev.odoo.com), inspeccionada
+// via Playwright (getComputedStyle sobre navbar/body/botones/bordes reales):
+// fondo body rgb(27,29,38), navbar rgb(38,42,54), texto rgb(228,228,228),
+// borde de tabla rgb(60,62,75), acento primario rgb(22,166,217).
+//
+// Nota importante: Bootstrap 5.3 themea tablas/tarjetas vía variables CSS
+// propias (--bs-table-bg, --bs-table-striped-bg, --bs-card-bg, etc.) que
+// tienen más especificidad que un simple background-color en la clase de
+// Odoo -- por eso ademas de los overrides directos, redefinimos esas
+// variables a nivel raíz.
+
+$md-dark-bg: #1b1d26;
+$md-dark-bg-alt: #262a36;
+$md-dark-surface: #21242e;
+$md-dark-surface-alt: #2c303d;
+$md-dark-border: #3c3e4b;
+$md-dark-text: #e4e4e4;
+$md-dark-text-muted: #9a9ba8;
+$md-dark-link: #4fc3e0;
+$md-dark-accent: #16a6d9;
+
+html.o_md_dark_mode {
+    background-color: $md-dark-bg;
+    color-scheme: dark;
+
+    // Variables de Bootstrap: esto arregla tablas (list view), tarjetas,
+    // y cualquier componente que use el sistema de theming de Bootstrap
+    // en vez de background-color directo.
+    --bs-body-bg: #{$md-dark-bg};
+    --bs-body-color: #{$md-dark-text};
+    --bs-border-color: #{$md-dark-border};
+    --bs-secondary-bg: #{$md-dark-surface};
+    --bs-tertiary-bg: #{$md-dark-surface-alt};
+    --bs-emphasis-color: #{$md-dark-text};
+    --bs-table-bg: #{$md-dark-surface};
+    --bs-table-color: #{$md-dark-text};
+    --bs-table-striped-bg: #{$md-dark-surface-alt};
+    --bs-table-striped-color: #{$md-dark-text};
+    --bs-table-hover-bg: #{$md-dark-surface-alt};
+    --bs-table-hover-color: #{$md-dark-text};
+    --bs-table-border-color: #{$md-dark-border};
+    --bs-card-bg: #{$md-dark-surface};
+    --bs-card-color: #{$md-dark-text};
+    --bs-card-border-color: #{$md-dark-border};
+    --bs-dropdown-bg: #{$md-dark-surface};
+    --bs-dropdown-color: #{$md-dark-text};
+    --bs-dropdown-link-color: #{$md-dark-text};
+    --bs-modal-bg: #{$md-dark-surface};
+    --bs-modal-color: #{$md-dark-text};
+
+    body,
+    .o_action_manager,
+    .o_content,
+    .o_web_client {
+        background-color: $md-dark-bg !important;
+        color: $md-dark-text;
+    }
+
+    // Utilidades de fondo de Bootstrap (no son variables, son estáticas)
+    .bg-white,
+    .bg-light,
+    .bg-body,
+    .bg-body-secondary,
+    .bg-body-tertiary,
+    .bg-view,
+    .bg-100,
+    .bg-200,
+    .bg-secondary-subtle {
+        background-color: $md-dark-surface !important;
+        color: $md-dark-text;
+    }
+
+    // Bootstrap 5.3 "subtle backgrounds + emphasis text" (bg-*-subtle /
+    // text-*-emphasis): patron muy usado en Odoo 19 para KPI tiles, alerts
+    // y badges (ej. o_purchase_dashboard: "No reconocido"/"Recepcion
+    // atrasada"). Sin cubrir hasta ahora salvo secondary -- se veian como
+    // parches pastel claros (cian/rosa) encima del resto ya oscuro.
+    // Confirmado en vivo (2026-07-21) en Compras > dashboard de KPIs.
+    .bg-info-subtle     { background-color: rgba(22, 166, 217, 0.16) !important; }
+    .bg-success-subtle  { background-color: rgba(25, 135, 84, 0.16) !important; }
+    .bg-warning-subtle  { background-color: rgba(245, 159, 0, 0.16) !important; }
+    .bg-danger-subtle   { background-color: rgba(227, 6, 19, 0.16) !important; }
+    .bg-primary-subtle  { background-color: rgba(22, 166, 217, 0.16) !important; }
+    .text-info-emphasis    { color: #59cbe8 !important; }
+    .text-success-emphasis { color: #6fd19a !important; }
+    .text-warning-emphasis { color: #ffc966 !important; }
+    .text-danger-emphasis  { color: #ff8b93 !important; }
+    .text-primary-emphasis { color: #59cbe8 !important; }
+
+    // Chips de filtros activos en el buscador
+    .o_searchview_facet {
+        background-color: $md-dark-surface-alt !important;
+        color: $md-dark-text;
+    }
+
+    // Fondo del kanban (detrás de las tarjetas) y dashboards de resumen
+    // (ej. Compras/Facturación tienen una franja de KPIs arriba)
+    .o_kanban_renderer,
+    .o_purchase_dashboard,
+    .o_dashboard_common {
+        background-color: $md-dark-bg !important;
+        color: $md-dark-text;
+    }
+
+    // Botones secundarios de Bootstrap (ej. accion rapida en tarjetas kanban)
+    .btn-secondary:not(.bg-info):not(.bg-warning) {
+        background-color: $md-dark-surface-alt !important;
+        border-color: $md-dark-border !important;
+        color: $md-dark-text !important;
+    }
+
+    // Botones primarios: la base de pruebas usa un cian translucido (no el
+    // morado por defecto de Odoo) en modo oscuro.
+    .btn-primary {
+        background-color: rgba(22, 166, 217, 0.16) !important;
+        border-color: rgba(22, 166, 217, 0.4) !important;
+        color: #59cbe8 !important;
+
+        &:hover, &:focus {
+            background-color: rgba(22, 166, 217, 0.28) !important;
+            color: #7ddaf0 !important;
+        }
+    }
+
+    // Barra superior
+    .o_main_navbar {
+        background-color: $md-dark-bg-alt !important;
+        border-color: $md-dark-border !important;
+
+        .o_menu_brand,
+        .dropdown-toggle,
+        a,
+        span {
+            color: $md-dark-text !important;
+        }
+
+        // Cada pestaña de sección (Operaciones, Productos...) trae su propio
+        // fondo morado fijo -- las que son enlace simple usan .o_nav_entry,
+        // las que abren submenu (Operaciones, Reportes...) son en realidad
+        // un .o-dropdown.dropdown-toggle con su propio bg morado fijo. En la
+        // base de pruebas ambas van transparentes sobre la navbar oscura,
+        // con un resalte sutil solo en hover/activo.
+        .o_nav_entry,
+        .o-dropdown.dropdown-toggle {
+            background-color: transparent !important;
+
+            &:hover, &.active, &.show {
+                background-color: rgba(22, 166, 217, 0.16) !important;
+                color: #59cbe8 !important;
+            }
+        }
+    }
+
+    // Menus desplegables / listas de apps
+    .dropdown-menu,
+    .o_popover,
+    .o_dropdown_menu {
+        background-color: $md-dark-surface !important;
+        color: $md-dark-text;
+        border-color: $md-dark-border !important;
+
+        .dropdown-item {
+            color: $md-dark-text;
+
+            &:hover, &:focus {
+                background-color: $md-dark-surface-alt !important;
+                color: $md-dark-text;
+            }
+        }
+    }
+
+    // Sheets / formularios
+    .o_form_view,
+    .o_form_sheet,
+    .o_form_sheet_bg {
+        background-color: $md-dark-bg !important;
+        color: $md-dark-text;
+    }
+    .o_form_sheet {
+        background-color: $md-dark-surface !important;
+        border-color: $md-dark-border !important;
+    }
+
+    // Statusbar (fila de botones + estado tipo Cotizacion > Cotizacion
+    // enviada > Orden de venta): Bootstrap fija rgba(255,255,255,.82) fijo,
+    // no cubierto hasta ahora. Los botones internos (.btn-secondary/
+    // .o_arrow_button) ya heredaban bien el color oscuro por otras reglas,
+    // solo faltaba el fondo del contenedor. Confirmado en vivo (2026-07-21).
+    .o_form_statusbar {
+        background-color: $md-dark-bg !important;
+        border-color: $md-dark-border !important;
+    }
+
+    // Grupos de campos (grid de 2 columnas: label + input). Es un contenedor
+    // de layout puro -- nunca deberia tener su propio fondo opaco, solo
+    // heredar el de .o_form_sheet -- pero Bootstrap/Odoo le fija
+    // background-color:#fff en algunos contextos (confirmado en vivo: el
+    // wizard "Programar actividad", o_mail_activity_schedule_wizard, dejaba
+    // el grid de Resumen/Fecha limite/Asignada a en un panel blanco fijo
+    // encima del resto del modal ya oscuro). Se fuerza transparente en vez
+    // de un color solido para no romper el caso en que SI hereda bien.
+    .o_group {
+        background-color: transparent !important;
+    }
+
+    // Pestañas del formulario (Información general, Regulación COFEPRIS...):
+    // Bootstrap fija background-color:#fff directo en <ul class="nav-tabs">
+    // y en cada .nav-link.active, sin heredar de ningun ancestro con
+    // !important -- quedaba como una franja blanca fija (no un parpadeo de
+    // carga) encima del resto de la vista ya oscura. Confirmado en vivo
+    // (2026-07-21): rgb(255,255,255) en ambos elementos.
+    .o_notebook_headers .nav-tabs,
+    .o_notebook_headers .nav-link.active {
+        background-color: $md-dark-surface !important;
+    }
+    .o_notebook_headers {
+        border-bottom-color: $md-dark-border !important;
+    }
+
+    // Odoo fija color de texto explicito en labels/inputs/titulo (no heredan
+    // del .o_form_view), por lo que el `color` del bloque de arriba no les
+    // llega -- hay que pisarlos uno por uno.
+    //
+    // :not(.o_tag) en los selectores span/div: sin esta exclusion, este
+    // !important pisaba tambien el color: var(--color) que Odoo core ya
+    // calcula por chip (many2many_tags con color_field) para contrastar
+    // contra su propio fondo pastel -- los tags de "Sustancia Activa"
+    // quedaban con texto casi blanco sobre fondo amarillo/rosa pastel,
+    // practicamente ilegibles. Confirmado en vivo (2026-07-21): el color
+    // nativo calculado por Odoo era rgb(47,39,9) (buen contraste), pero el
+    // computado final era rgb(228,228,228) por este selector generico.
+    .o_form_sheet h1,
+    .o_form_sheet h1 input,
+    .o_form_sheet h2,
+    .o_form_sheet h3,
+    .o_form_label,
+    .o_field_widget,
+    .o_field_widget input,
+    .o_field_widget textarea,
+    .o_field_widget select,
+    .o_input,
+    .o_form_sheet > div > span,
+    .o_field_widget span:not(.o_tag),
+    .o_field_widget div:not(.o_tag),
+    .oe_title,
+    .oe_title input,
+    // Odoo 19 usa una grilla de "cells" para las etiquetas en vez de
+    // .o_form_label en muchas vistas (Cliente, RFC, Departamento, etc.)
+    .o_cell,
+    .o_cell.o_wrap_label,
+    .o_cell span:not(.o_tag),
+    // Smart buttons (Oportunidades, Facturado, Historial...) tambien fijan
+    // su propio color de texto.
+    .oe_stat_button,
+    .oe_stat_button *,
+    .o_stat_info,
+    .o_stat_text,
+    .o_field_statinfo {
+        color: $md-dark-text !important;
+    }
+    .oe_stat_button {
+        border-color: $md-dark-border !important;
+    }
+    .o_form_sheet input,
+    .o_form_sheet textarea,
+    .o_form_sheet select,
+    .o_form_sheet .o_input {
+        background-color: $md-dark-surface-alt !important;
+        border-color: $md-dark-border !important;
+    }
+    // placeholders e inputs deshabilitados/readonly: mantener distinguibles
+    .o_form_sheet input::placeholder,
+    .o_form_sheet textarea::placeholder {
+        color: $md-dark-text-muted !important;
+    }
+    .o_form_sheet .o_field_widget[readonly] input,
+    .o_form_sheet input:disabled,
+    .o_form_sheet input[readonly] {
+        background-color: transparent !important;
+        color: $md-dark-text !important;
+    }
+
+    // Listas
+    .o_list_view,
+    .o_list_renderer,
+    .o_list_table,
+    table.table {
+        background-color: $md-dark-surface !important;
+        color: $md-dark-text;
+
+        thead {
+            background-color: $md-dark-bg-alt !important;
+        }
+        tbody tr:hover {
+            background-color: $md-dark-surface-alt !important;
+
+            td, th { background-color: $md-dark-surface-alt !important; }
+        }
+        td, th {
+            border-color: $md-dark-border !important;
+            color: $md-dark-text;
+        }
+    }
+
+    // Odoo pone background-color blanco directo en cada <td> (para soportar
+    // columnas fijas al hacer scroll horizontal), lo que gana sobre el fondo
+    // de la tabla/tr. Hay que pisarlo celda por celda.
+    .o_list_table td,
+    .o_list_table th,
+    .o_data_cell,
+    .o_list_record_selector,
+    td.o_list_record_selector {
+        background-color: $md-dark-surface !important;
+        color: $md-dark-text;
+    }
+
+    // Kanban
+    .o_kanban_view {
+        background-color: $md-dark-bg !important;
+
+        .o_kanban_record {
+            background-color: $md-dark-surface !important;
+            border-color: $md-dark-border !important;
+            color: $md-dark-text;
+
+            // Bootstrap fija un color oscuro explicito en los headings (.h1-.h6),
+            // incluida la clase de utilidad ".h5" que Odoo usa para el titulo del
+            // producto en la card kanban (ej. product_template_kanban_view y la
+            // card rediseñada de md_pharma_regulatory). Ese color no se hereda del
+            // .o_kanban_record de arriba, hay que pisarlo explicitamente igual que
+            // se hizo con .oe_title/.o_cell en formularios.
+            .h1, .h2, .h3, .h4, .h5, .h6,
+            .h1 span, .h2 span, .h3 span, .h4 span, .h5 span, .h6 span {
+                color: $md-dark-text !important;
+            }
+        }
+    }
+
+    // Inputs / campos
+    input, textarea, select,
+    .o_input,
+    .o_field_widget input,
+    .o_field_widget textarea {
+        background-color: $md-dark-surface-alt !important;
+        color: $md-dark-text !important;
+        border-color: $md-dark-border !important;
+    }
+
+    // Texto muted de bootstrap
+    .text-muted {
+        color: $md-dark-text-muted !important;
+    }
+
+    // Modales
+    .modal-content {
+        background-color: $md-dark-surface !important;
+        color: $md-dark-text;
+    }
+
+    // App de Conversaciones (Discuss): tiene su propio arbol de componentes
+    // OWL con clases o-mail-* que no heredan nada del resto del backend.
+    .o-mail-Discuss,
+    .o-mail-Discuss-content,
+    .o-mail-Thread,
+    .o-mail-Message,
+    .o-mail-Composer,
+    .o-mail-ActionPanel,
+    .o-mail-DiscussContent,
+    .o-mail-DiscussContent-core,
+    .o-mail-DiscussContent-main,
+    .o-mail-DiscussSidebar-resizablePanelContainer,
+    .o-mail-DiscussSidebar,
+    // Barra de busqueda de conversaciones y header del panel de contenido:
+    // bg blanco fijo, no cubiertos por la lista original de clases o-mail-*.
+    // Confirmado en vivo (2026-07-21).
+    .o-mail-DiscussSearch,
+    .o-mail-DiscussSearch-inputContainer,
+    .o-mail-DiscussContent-header {
+        background-color: $md-dark-bg !important;
+        color: $md-dark-text;
+        border-color: $md-dark-border !important;
+    }
+    .o-mail-DiscussSidebarChannel,
+    .o-mail-DiscussSidebarCategory-item {
+        color: $md-dark-text;
+
+        &:hover, &.o-active {
+            background-color: $md-dark-surface-alt !important;
+        }
+    }
+    .o-mail-Composer-input {
+        background-color: $md-dark-surface-alt !important;
+        color: $md-dark-text !important;
+    }
+    // Bootstrap .border-secondary (usado en varios separadores del arbol
+    // o-mail-*, ej. el borde superior de .o-mail-Discuss) resuelve a un gris
+    // claro pensado para fondo claro -- se ve como una linea blanca fina
+    // sobre el resto ya oscuro. Confirmado en vivo (2026-07-21).
+    .o-mail-Discuss.border-secondary,
+    .o-mail-DiscussSidebar.border-secondary,
+    [class*="o-mail-"].border-secondary {
+        border-color: $md-dark-border !important;
+    }
+    // Las burbujas de mensaje tienen variantes de color por remitente
+    // (.o-blue, .o-green, etc, ej. rgb(232,246,248) para .o-blue) pensadas
+    // para fondo claro -- en oscuro se veian como parches de color pastel
+    // con texto negro encima. Confirmado en vivo (2026-07-21). Se unifica a
+    // un solo tratamiento neutro en vez de replicar cada variante de color.
+    .o-mail-Message-bubble {
+        background-color: $md-dark-surface-alt !important;
+        border-color: $md-dark-border !important;
+    }
+    .o-mail-Message-bubble,
+    .o-mail-Message-content {
+        color: $md-dark-text !important;
+    }
+
+    // Chatter / breadcrumb
+    .o_breadcrumb, .o_control_panel {
+        background-color: $md-dark-bg !important;
+        color: $md-dark-text;
+    }
+    .o_Chatter, .o-mail-Chatter {
+        background-color: $md-dark-bg !important;
+        color: $md-dark-text;
+    }
+
+    // Ajustes (Settings): sidebar de categorías + tarjetas de cada sección
+    .settings_tab,
+    .settings,
+    .o_setting_box,
+    .o_setting_container {
+        background-color: $md-dark-bg !important;
+        color: $md-dark-text;
+        border-color: $md-dark-border !important;
+    }
+    .settings_tab .selected,
+    .settings_tab li:hover,
+    .settings_tab .tab:hover {
+        background-color: $md-dark-surface-alt !important;
+    }
+    // El selector original (.settings_tab li a) nunca coincidia: en Odoo 19
+    // real la estructura es <div class="settings_tab"><a class="tab">...</a></div>,
+    // sin <li> intermedio -- confirmado en vivo (2026-07-21), color computado
+    // rgb(33,37,41) (casi negro, texto de Bootstrap claro) sobre fondo oscuro,
+    // practicamente ilegible. Se agrega el selector real ".tab" mantenidos
+    // los anteriores por si alguna vista si usa <li>.
+    .settings_tab li,
+    .settings_tab li a,
+    .settings_tab a,
+    .settings_tab .tab,
+    .settings_tab .settings_tab_title {
+        color: $md-dark-text !important;
+    }
+    // Encabezados de sección dentro de cada pestaña de Ajustes (ej. "Usuarios",
+    // "Idiomas", "Empresas"): Odoo los pinta con un bg-100 claro fijo.
+    .settings h2,
+    .o_setting_container h2 {
+        background-color: $md-dark-surface-alt !important;
+        color: $md-dark-text !important;
+        border-color: $md-dark-border !important;
+    }
+
+    // Enlaces
+    a:not(.btn) {
+        color: $md-dark-link;
+    }
+
+    // Separadores/bordes genéricos
+    hr, .o_horizontal_separator {
+        border-color: $md-dark-border !important;
+    }
+}
+
+.o_md_dark_mode_toggle {
+    cursor: pointer;
+    color: inherit;
+    opacity: 0.85;
+
+    &:hover {
+        opacity: 1;
+    }
+}

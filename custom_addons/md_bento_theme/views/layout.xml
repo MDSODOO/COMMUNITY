@@ -1,0 +1,318 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="menu_medicine_depot_shop" model="website.menu">
+        <field name="name">Tienda</field>
+        <field name="url">/shop</field>
+        <field name="website_id" ref="website.default_website"/>
+        <field name="parent_id" search="[('url', '=', '/default-main-menu'), ('website_id', '=', ref('website.default_website'))]"/>
+        <field name="sequence" type="int">8</field>
+    </record>
+
+    <template id="md_layout_bento_shell"
+              inherit_id="website.layout"
+              name="Medicine Depot Bento Layout Shell"
+              priority="520">
+        <!-- web.layout usa atributos dinámicos (t-att-class / t-attf-class) en
+             body, #wrapwrap y #top; la inyección estática de @class es ignorada
+             por el motor QWeb. Inyectamos sobre t-attf-class para que las clases
+             del shell Bento sí lleguen al DOM renderizado. -->
+        <xpath expr="//body" position="attributes">
+            <attribute name="t-att-class"/>
+            <attribute name="t-attf-class">#{body_classname or ''} md-bento-site</attribute>
+        </xpath>
+
+        <xpath expr="//div[@id='wrapwrap']" position="attributes">
+            <attribute name="t-attf-class" add="md-bento-wrapwrap" separator=" "/>
+        </xpath>
+
+        <xpath expr="//header[@id='top']" position="attributes">
+            <attribute name="t-attf-class" add="md-bento-navbar shadow-sm" separator=" "/>
+        </xpath>
+
+        <xpath expr="//body" position="inside">
+            <style id="md_bento_critical_public_css" type="text/css">
+html:has(:is(.oe_login_form, .oe_signup_form)) main {
+  align-items: center;
+  background:
+    radial-gradient(42rem 28rem at 88% -12%, rgba(151, 215, 0, 0.12), transparent 64%),
+    radial-gradient(38rem 24rem at 6% 108%, rgba(22, 166, 217, 0.12), transparent 62%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(231, 247, 251, 0.82)),
+    #E7F7FB !important;
+  display: flex;
+  justify-content: center;
+  min-height: calc(100vh - 4.35rem);
+  overflow: hidden;
+  padding: clamp(1rem, 3vw, 2.5rem) !important;
+}
+html:has(:is(.oe_login_form, .oe_signup_form)) .oe_website_login_container {
+  max-width: 28rem !important;
+  width: 100% !important;
+  margin: 0 auto !important;
+}
+html:has(:is(.oe_login_form, .oe_signup_form)) .card {
+  -webkit-backdrop-filter: blur(18px) saturate(1.45) !important;
+  backdrop-filter: blur(18px) saturate(1.45) !important;
+  background:
+    linear-gradient(165deg, rgba(255, 255, 255, 0.55), rgba(255, 255, 255, 0.12) 42%, rgba(255, 255, 255, 0.02) 72%),
+    rgba(255, 255, 255, 0.65) !important;
+  border: 1px solid rgba(255, 255, 255, 0.72) !important;
+  border-radius: 1.5rem !important;
+  box-shadow:
+    0 0 0 1px rgba(7, 58, 76, 0.04),
+    0 24px 60px rgba(7, 58, 76, 0.10),
+    0 6px 18px rgba(7, 58, 76, 0.05),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9) !important;
+  color: #243038 !important;
+  overflow: hidden;
+  position: relative;
+  width: 100% !important;
+  animation: md-glass-login-fade-in 0.6s cubic-bezier(0.23, 1, 0.32, 1) both;
+}
+@keyframes md-glass-login-fade-in {
+  from { opacity: 0; transform: translateY(24px) scale(0.96); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+html:has(:is(.oe_login_form, .oe_signup_form)) .card-body {
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  padding: clamp(2rem, 4vw, 3rem) !important;
+  display: flex;
+  flex-direction: column;
+}
+html:has(:is(.oe_login_form, .oe_signup_form)) .card-body::before {
+  background-image: url("/logo.png");
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: contain;
+  content: "";
+  display: block;
+  filter: drop-shadow(0 8px 20px rgba(7, 51, 74, 0.20));
+  height: 5rem;
+  margin: 0 auto 1.5rem;
+  width: 100%;
+}
+html:has(:is(.oe_login_form, .oe_signup_form)) .card::after {
+  background: linear-gradient(90deg, var(--md-blue), var(--md-green), var(--md-lime));
+  border-radius: 999px;
+  content: "";
+  height: .25rem;
+  inset: 0 35% auto;
+  position: absolute;
+}
+html:has(:is(.oe_login_form, .oe_signup_form)) .card-body > .text-center:first-child,
+html:has(:is(.oe_login_form, .oe_signup_form)) .card-body > img,
+html:has(:is(.oe_login_form, .oe_signup_form)) .o_login_auth_title,
+html:has(:is(.oe_login_form, .oe_signup_form)) .o_login_header {
+  display: none !important;
+}
+html:has(:is(.oe_login_form, .oe_signup_form)) :is(.oe_login_form, .oe_signup_form) {
+  gap: 1rem;
+  width: 100%;
+}
+html:has(:is(.oe_login_form, .oe_signup_form)) :is(.oe_login_form, .oe_signup_form) .form-control {
+  background: rgba(255, 255, 255, 0.75) !important;
+  border: 1px solid rgba(255, 255, 255, 0.5) !important;
+  border-radius: 1rem !important;
+  min-height: 3.2rem;
+  padding: 0.75rem 1.25rem;
+  font-weight: 500;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+html:has(:is(.oe_login_form, .oe_signup_form)) :is(.oe_login_form, .oe_signup_form) .form-control:focus {
+  background: rgba(255, 255, 255, 0.95) !important;
+  border-color: rgba(22, 166, 217, 0.5) !important;
+  box-shadow: 0 8px 20px rgba(22, 166, 217, 0.12) !important;
+  transform: translateY(-1px);
+}
+html:has(:is(.oe_login_form, .oe_signup_form)) :is(.oe_login_form, .oe_signup_form) .btn-primary {
+  --bs-btn-bg: var(--md-blue);
+  --bs-btn-border-color: var(--md-blue);
+  background: linear-gradient(135deg, var(--md-blue), var(--md-green)) !important;
+  border: 0 !important;
+  border-radius: 1rem !important;
+  font-weight: 800;
+  min-height: 3.2rem;
+  box-shadow: 0 10px 25px rgba(22, 166, 217, 0.25) !important;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+html:has(:is(.oe_login_form, .oe_signup_form)) :is(.oe_login_form, .oe_signup_form) .btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 30px rgba(22, 166, 217, 0.35) !important;
+  filter: saturate(1.1);
+}
+@media (max-width: 575.98px) {
+  html:has(:is(.oe_login_form, .oe_signup_form)) main {
+    min-height: calc(100vh - 3.75rem);
+    padding: 1rem !important;
+  }
+  html:has(:is(.oe_login_form, .oe_signup_form)) .card {
+    border-radius: 1.5rem !important;
+  }
+  html:has(:is(.oe_login_form, .oe_signup_form)) .card-body {
+    padding: 1.5rem !important;
+  }
+}
+html.o_dark_mode:has(:is(.oe_login_form, .oe_signup_form)) .card,
+[data-bs-theme="dark"] html:has(:is(.oe_login_form, .oe_signup_form)) .card {
+  background: linear-gradient(135deg, rgba(7, 28, 34, 0.65), rgba(7, 28, 34, 0.35)) !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+  color: #f4f7f8 !important;
+}
+html.o_dark_mode:has(:is(.oe_login_form, .oe_signup_form)) :is(.oe_login_form, .oe_signup_form) .form-control,
+[data-bs-theme="dark"] html:has(:is(.oe_login_form, .oe_signup_form)) :is(.oe_login_form, .oe_signup_form) .form-control {
+  background: rgba(0, 0, 0, 0.4) !important;
+  border-color: rgba(255, 255, 255, 0.15) !important;
+  color: #ffffff !important;
+}
+
+#footer-copyright,
+.o_footer_copyright {
+  display: none !important;
+}
+
+
+
+            </style>
+        </xpath>
+
+        <xpath expr="//div[@id='footer']" position="replace">
+            <div id="footer"
+                 class="oe_structure oe_structure_solo text-break md-bento-footer"
+                 t-ignore="true"
+                 t-if="not no_footer"
+                 style="--box-border-left-width: 0px; --box-border-right-width: 0px;">
+                <section class="s_text_block"
+                         data-snippet="s_text_block"
+                         data-name="Medicine Depot Footer">
+                    <div class="md-bento-container">
+                        <!-- Gradient accent line -->
+                        <div class="md-bento-footer-accent" aria-hidden="true"/>
+                        <div class="md-bento-footer-grid">
+                            <!-- Tarjeta 1: Logo + Tagline + Redes sociales -->
+                            <div class="md-bento-footer-brand-col bento-glass-card">
+                                <a href="/" class="md-bento-footer-logo" aria-label="Medicine Depot inicio">
+                                    <t t-set="md_website_id" t-value="request.website.id if request.website else False"/>
+                                    <t t-set="md_company_id"
+                                       t-value="(request.website.company_id.id if request.website and request.website.company_id else request.env.company.id)"/>
+                                    <img t-if="md_website_id"
+                                         class="md-bento-footer-logo-img"
+                                         t-att-src="'/web/image/website/%s/logo' % md_website_id"
+                                         alt="Medicine Depot"
+                                         width="180"
+                                         height="56"
+                                         loading="lazy"/>
+                                    <img t-else=""
+                                         class="md-bento-footer-logo-img"
+                                         t-att-src="'/logo.png?company=%s' % md_company_id"
+                                         alt="Medicine Depot"
+                                         width="180"
+                                         height="56"
+                                         loading="lazy"/>
+                                </a>
+                                <p class="md-bento-footer-tagline">Confianza y bienestar en un solo lugar.</p>
+                                <div class="s_social_media text-start o_not_editable"
+                                     data-snippet="s_social_media"
+                                     data-name="Social Media"
+                                     contenteditable="false">
+                                    <h5 class="s_social_media_title d-none" contenteditable="true">Redes</h5>
+                                    <a href="https://www.facebook.com/MedicineDepotMX"
+                                       class="s_social_media_facebook"
+                                       target="_blank"
+                                       rel="noopener"
+                                       aria-label="Facebook">
+                                        <i class="fa fa-facebook rounded-circle shadow-sm o_editable_media"/>
+                                    </a>
+                                    <a href="https://www.instagram.com/medicinedepotmx/"
+                                       class="s_social_media_instagram"
+                                       target="_blank"
+                                       rel="noopener"
+                                       aria-label="Instagram">
+                                        <i class="fa fa-instagram rounded-circle shadow-sm o_editable_media"/>
+                                    </a>
+                                    <a href="https://www.linkedin.com/company/medicine-depot/"
+                                       class="s_social_media_linkedin"
+                                       target="_blank"
+                                       rel="noopener"
+                                       aria-label="LinkedIn">
+                                        <i class="fa fa-linkedin rounded-circle shadow-sm o_editable_media"/>
+                                    </a>
+                                </div>
+                            </div>
+                            <!-- Tarjeta 2: Enlaces -->
+                            <div class="bento-glass-card">
+                                <h5 class="md-bento-footer-title">Enlaces</h5>
+                                <ul class="list-unstyled md-bento-footer-list">
+                                    <li><a href="/">Inicio</a></li>
+                                    <li><a href="/shop">Tienda</a></li>
+                                    <li><a href="/sucursales">Sucursales</a></li>
+                                    <!-- TODO: la pagina real de Aviso de Privacidad no existe en el sitio
+                                         (ver diagnostico QA 2026-07). Redirige temporalmente a /contactus
+                                         para evitar el 404 hasta contar con el contenido legal real. -->
+                                    <li><a href="/contactus">Aviso de privacidad</a></li>
+                                    <li><a href="/terms">Terminos</a></li>
+                                    <li><a href="/contactus">Contacto</a></li>
+                                </ul>
+                            </div>
+                            <!-- Tarjeta 3: Sobre nosotros -->
+                            <div class="bento-glass-card">
+                                <h5 class="md-bento-footer-title">Sobre Nosotros</h5>
+                                <p>Distribuidor farmacéutico para farmacias y profesionales de salud.
+                                <br/><br/>Atención especializada, sucursales regionales y soporte para operar con mayor claridad.</p>
+                            </div>
+                            <!-- Tarjeta 4: Contacto -->
+                            <div class="bento-glass-card">
+                                <h5 class="md-bento-footer-title">Contacto</h5>
+                                <ul class="list-unstyled md-bento-footer-list">
+                                    <li><i class="fa fa-comment fa-fw me-2"/><a href="/contactus">Contáctanos</a></li>
+                                    <li><i class="fa fa-map-marker fa-fw me-2"/><a href="/sucursales">Ver sucursales</a></li>
+                                    <li><i class="fa fa-envelope fa-fw me-2"/><a href="mailto:info@medicinedepotsureste.mx">info@medicinedepotsureste.mx</a></li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="md-bento-footer-bottom">
+                            <span>© 2026 Medicine Depot. Todos los derechos reservados.</span>
+                            <span>Confianza y bienestar en un solo lugar.</span>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </xpath>
+        <xpath expr="//*[contains(@class, 'o_footer_copyright') or @id='footer-copyright' or @id='footer_copyright']" position="replace" raise_on_not_found="False"/>
+    </template>
+
+
+    <template id="md_shop_force_bento_header"
+              inherit_id="website.layout"
+              name="MD · Legacy disabled shop Bento navbar"
+              active="False"
+              priority="420">
+        <xpath expr="//header[@id='top']" position="before">
+            <t t-if="False"/>
+        </xpath>
+    </template>
+
+    <template id="md_header_cta_affiliate"
+              inherit_id="website.header_call_to_action"
+              name="Medicine Depot Header CTA"
+              priority="520">
+        <xpath expr="//li" position="attributes">
+            <attribute name="class" add="md-bento-nav-cta" separator=" "/>
+        </xpath>
+
+        <xpath expr="//a[hasclass('btn_cta')]" position="replace">
+            <a t-if="request.env.user._is_public()"
+               href="/web/login"
+               class="btn btn-outline-primary rounded-pill px-3 me-2 md-bento-header-account"
+               aria-label="Ingresar o crear cuenta">
+                <i class="fa fa-user-circle-o me-1" aria-hidden="true"/>Ingresar / Registrarse
+            </a>
+            <a href="/afiliacion"
+               class="oe_unremovable btn btn-primary btn_cta rounded-pill shadow-sm px-4 md-bento-header-cta">
+                Afíliate
+            </a>
+        </xpath>
+    </template>
+
+</odoo>

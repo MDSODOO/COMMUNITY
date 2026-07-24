@@ -1,0 +1,57 @@
+<odoo>
+  <!-- Cabecera + bento grid del carrito, inspirado en el mockup hifi
+       "Carrito B2B con escaner QR" (glass/bento), adaptado al fondo claro
+       real del sitio en vez del gradiente oscuro del mockup. Todo escondido
+       tras groups="base.group_portal": solo clientes B2B lo ven. -->
+  <template id="cart_barcode_scanner_bento" inherit_id="website_sale.cart">
+
+      <!-- Titulo: "Order summary" (nativo, en) -> copy propio en espanol -->
+      <xpath expr="//h4[hasclass('mb-0')]" position="replace">
+          <div class="o_md_cart_header_text" groups="base.group_portal">
+              <p class="o_md_cart_header_subtitle" t-out="request.env.user.partner_id.commercial_company_name or request.env.user.partner_id.name"/>
+              <h4 class="o_md_cart_header_title mb-0">Carrito de Compras</h4>
+          </div>
+          <h4 class="mb-0" groups="!base.group_portal">Order summary</h4>
+      </xpath>
+
+      <!-- Ancla real verificada en website_sale/views/templates.xml: el div
+           d-flex que envuelve el titulo + boton de quick-reorder. Debajo se
+           inserta el bento grid: boton escanear (tile ancho) + 2 tiles de
+           estadisticas (articulos / total estimado). -->
+      <xpath expr="//div[@id='shop_cart']/div[hasclass('d-flex')][1]" position="after">
+          <div class="o_md_scanner_bento" groups="base.group_portal">
+              <button type="button" class="o_md_bento_scan_btn" data-md-scan-barcode-btn="1">
+                  <span class="o_md_bento_scan_icon"><i class="fa fa-camera" aria-hidden="true"/></span>
+                  <span class="o_md_bento_scan_text">
+                      <span class="o_md_bento_scan_title">Escanear Producto</span>
+                      <span class="o_md_bento_scan_subtitle">Añade artículos con la cámara</span>
+                  </span>
+                  <i class="fa fa-chevron-right o_md_bento_scan_chevron" aria-hidden="true"/>
+              </button>
+              <div class="o_md_bento_stat o_md_bento_stat--items">
+                  <p class="o_md_bento_stat_value" t-out="int(website_sale_order.cart_quantity) if website_sale_order else 0"/>
+                  <p class="o_md_bento_stat_label">Artículos en el carrito</p>
+              </div>
+              <div class="o_md_bento_stat o_md_bento_stat--total">
+                  <p class="o_md_bento_stat_value"
+                     t-out="website_sale_order.amount_total if website_sale_order else 0"
+                     t-options="{'widget': 'monetary', 'display_currency': website_sale_order.currency_id if website_sale_order else None}"/>
+                  <p class="o_md_bento_stat_label">Total estimado</p>
+              </div>
+          </div>
+      </xpath>
+  </template>
+
+  <!-- Badge "A la mano" por linea de producto en el carrito. -->
+  <template id="cart_barcode_scanner_on_hand_badge" inherit_id="website_sale.cart_lines">
+      <xpath expr="//h6[hasclass('text-wrap') and hasclass('mb-1')]" position="after">
+          <t t-if="line._is_sellable() and line.product_id.is_storable" groups="base.group_portal">
+              <t t-set="md_on_hand" t-value="line._md_qty_a_la_mano()"/>
+              <span t-if="md_on_hand is not None"
+                    t-attf-class="o_md_on_hand_badge #{'o_md_on_hand_low' if md_on_hand &lt;= 10 else 'o_md_on_hand_ok'}">
+                  <t t-out="md_on_hand"/> A la mano
+              </span>
+          </t>
+      </xpath>
+  </template>
+</odoo>

@@ -1,0 +1,871 @@
+// Medicine Depot · Portal — Floating pill navbar + data cards.
+
+$md-text: $md-text-md;
+
+// Paleta avatar Odoo (12 slots) replicada como fallback.
+$md-avatar-palette: (#875A7B, #ED5F59, #F4A460, #F7CD1F, #6CC1ED,
+                     #2C8397, #475577, #D6145F, #30C381, #9365B8,
+                     #1F0F09, #C7C7C3);
+
+// ── Hide del sidebar nativo del portal ───────────────────────────────
+// El row padre del bento queda etiquetado con .md_bento_row vía XPath
+// (ver portal_templates.xml). El XML remueve el detalle lateral nativo;
+// esta regla solo conserva al Bento como hijo visible del layout.
+.md_bento_row {
+    &.portal-dashboard-active > *:not(.md_bento_portal) {
+        display: none !important;
+    }
+}
+
+body.md-route-portal #wrapwrap {
+    background:
+        radial-gradient(42rem 28rem at 88% -12%, rgba($md-green, 0.12), transparent 64%),
+        radial-gradient(38rem 24rem at 6% 108%, rgba($md-blue, 0.12), transparent 62%),
+        linear-gradient(180deg, rgba($md-white, 0.94), rgba($md-blue-100, 0.82)),
+        $md-blue-100 !important;
+}
+
+.md_bento_portal {
+    --md-nav-accent: #{nth($md-avatar-palette, 1)};
+    width: 100%;
+    max-width: none;
+    background: transparent;
+    color: $md-ink;
+    padding: 1.5rem 1rem 3rem;
+    min-height: 70vh;
+}
+
+.md_aff_docs_alert {
+    max-width: 1280px;
+    margin: 0 auto 1rem;
+    border-radius: $md-radius;
+    border: 0;
+    background: linear-gradient(90deg, #FFF7D6 0%, #FFEAB5 100%);
+    color: #6b4b00;
+    box-shadow: 0 8px 18px rgba(120, 89, 0, 0.12);
+
+    .btn {
+        white-space: nowrap;
+    }
+}
+
+// Inyecta accent dinámico desde partner.color (0-11).
+@for $i from 0 through 11 {
+    .md_nav_c-#{$i} {
+        --md-nav-accent: #{nth($md-avatar-palette, $i + 1)};
+    }
+}
+
+// ── Floating pill navbar ─────────────────────────────────────────────
+// Identidad: degradado teal → verde (mismo del footer corporativo).
+// Texto blanco; píldoras translúcidas con vidrio (glassmorphism) para
+// mantener contraste sobre el degradado sin ensuciarlo.
+.md_floating_nav {
+    position: sticky;
+    top: 1rem;
+    z-index: 5;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin: 0 auto 1.75rem;
+    max-width: 1200px;
+    padding: 0.5rem 0.75rem 0.5rem 1rem;
+    background: $md-brand-gradient;
+    color: #FFFFFF;
+    border-radius: 999px;
+    box-shadow: 0 14px 34px rgba($md-blue, 0.28),
+                0 4px 10px rgba($md-green, 0.18);
+
+    .md_nav_brand {
+        display: flex;
+        align-items: center;
+        gap: 0.65rem;
+        min-width: 0;
+        flex: 1 1 auto;
+        color: #FFFFFF;
+    }
+    .md_nav_avatar {
+        width: 38px; height: 38px;
+        border-radius: 50%;
+        display: grid; place-items: center;
+        font-weight: 700;
+        color: $md-blue-700;
+        background: #FFFFFF;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+        flex: 0 0 auto;
+    }
+    .md_nav_id {
+        display: flex; flex-direction: column;
+        min-width: 0; line-height: 1.15;
+    }
+    .md_nav_name {
+        font-size: 0.92rem; font-weight: 600;
+        color: #FFFFFF;
+        white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .md_nav_email {
+        font-size: 0.78rem; opacity: 0.85;
+        color: #FFFFFF;
+        white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+
+    .md_nav_actions {
+        display: flex; align-items: center; gap: 0.35rem;
+        flex: 0 0 auto;
+    }
+    .md_nav_pill {
+        display: inline-flex; align-items: center; gap: 0.4rem;
+        padding: 0.55rem 0.8rem;
+        border-radius: 999px;
+        color: #FFFFFF;
+        background: rgba(255, 255, 255, 0.18);
+        text-decoration: none;
+        font-weight: 600; font-size: 0.85rem;
+        transition: background 0.18s ease,
+                    box-shadow 0.18s ease,
+                    color 0.18s ease,
+                    transform 0.18s ease;
+
+        &:hover {
+            background: rgba(255, 255, 255, 0.32);
+            box-shadow: 0 8px 18px rgba(0, 0, 0, 0.12);
+            color: #FFFFFF;
+            text-decoration: none;
+            transform: translateY(-1px);
+        }
+        &:active { transform: translateY(0); }
+        i { font-size: 1rem; transition: transform 0.18s ease; }
+        &:hover i { transform: scale(1.08); }
+        span { display: none; }
+    }
+    .md_nav_pill--active {
+        background: #FFFFFF;
+        color: $md-blue-700;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+        span { display: inline; }
+
+        &:hover {
+            background: #FFFFFF;
+            color: $md-blue-800;
+        }
+    }
+
+    @media (max-width: 576px) {
+        .md_nav_email { display: none; }
+        .md_nav_name { font-size: 0.85rem; }
+    }
+}
+
+// ── Cards grid (1 hero rompe simetría con span 2) ────────────────────
+.md_cards_grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: $md-gap;
+    width: 100%;
+    max-width: 1280px;
+    margin: 0 auto;
+
+    @media (max-width: 992px) { grid-template-columns: repeat(3, 1fr); }
+
+    // Móvil: pila vertical, sin saltos de simetría, gap más compacto.
+    @media (max-width: 768px) {
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
+        max-width: 100%;
+        padding: 0 0.25rem;
+    }
+    @media (max-width: 480px) {
+        gap: 0.6rem;
+    }
+}
+
+.md_cards_grid .md_data_card {
+    @include md-liquid-glass(0.65, 18px);
+    color: $md-ink;
+
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 1.1rem 1.2rem;
+    border-radius: $md-radius;
+    text-decoration: none;
+    transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease;
+    min-height: 130px;
+    will-change: transform;
+
+    &:hover {
+        transform: translateY(-5px) scale(1.015);
+        box-shadow: 0 22px 44px rgba($md-blue-900, 0.12),
+                    0 8px 18px rgba($md-blue-900, 0.08);
+        text-decoration: none;
+    }
+    &:active { transform: translateY(-2px) scale(1.005); }
+
+    .md_card_head {
+        display: flex; align-items: center; gap: 0.55rem;
+        font-weight: 700; font-size: 0.82rem;
+        color: rgba($md-ink, 0.8); text-transform: uppercase; letter-spacing: 0;
+        i { font-size: 1.1rem; }
+    }
+    .md_card_kpi {
+        display: flex; align-items: baseline; gap: 0.4rem;
+        margin-top: 0.2rem;
+        strong { font-size: 2rem; font-weight: 900; line-height: 1; color: $md-dark; }
+        small { color: rgba($md-ink, 0.7); font-size: 0.85rem; font-weight: 600; }
+    }
+    .md_card_meta {
+        margin: 0; font-size: $md-text; color: rgba($md-ink, 0.75);
+        &--ok { font-weight: 700; color: $md-success; }
+        &--solo { margin-top: auto; }
+    }
+    .md_card_dim { color: rgba($md-ink, 0.5); font-style: italic; font-size: $md-text; }
+
+    // ── HERO: span 2 + accent dinámico ───────────────────────────
+    &--hero {
+        grid-column: span 2;
+        grid-row: span 2;
+        .md_card_head { color: rgba($md-ink, 0.9); }
+        .md_card_kpi strong { font-size: 3rem; }
+        .md_card_meta { color: rgba($md-ink, 0.85); }
+
+        @media (max-width: 768px) { grid-column: span 1; grid-row: auto; }
+    }
+
+    &--invoice {
+        background: linear-gradient(165deg, rgba($md-green, 0.18), rgba($md-green, 0.05) 50%, rgba($md-white, 0.3)), rgba($md-white, 0.58);
+        border-color: rgba($md-green, 0.28);
+        .md_card_head i { color: $md-green-900; }
+        .md_card_kpi strong { color: $md-green-900; }
+    }
+
+    &--quote {
+        background: linear-gradient(165deg, rgba($md-blue-300, 0.18), rgba($md-blue-300, 0.05) 50%, rgba($md-white, 0.3)), rgba($md-white, 0.58);
+        border-color: rgba($md-blue-300, 0.3);
+        .md_card_head i { color: $md-blue-800; }
+        .md_card_kpi strong { color: $md-blue-800; }
+    }
+
+    &--picking {
+        background: linear-gradient(165deg, rgba($md-dark, 0.12), rgba($md-dark, 0.03) 50%, rgba($md-white, 0.3)), rgba($md-white, 0.58);
+        border-color: rgba($md-dark, 0.2);
+        .md_card_head i { color: $md-dark; }
+        .md_card_kpi strong { color: $md-dark; }
+    }
+
+    &--favorites {
+        background: linear-gradient(165deg, rgba($md-blue, 0.15), rgba($md-blue, 0.05) 50%, rgba($md-white, 0.3)), rgba($md-white, 0.58);
+        border-color: rgba($md-blue, 0.25);
+        .md_card_head i { color: $md-blue-800; }
+    }
+
+    // Sus órdenes en su versión NO-hero (cuando ya no ocupa el slot grande).
+    &--orders {
+        background: linear-gradient(165deg, rgba($md-blue, 0.15), rgba($md-blue, 0.05) 50%, rgba($md-white, 0.3)), rgba($md-white, 0.58);
+        border-color: rgba($md-blue, 0.25);
+        .md_card_head i { color: $md-blue-800; }
+        .md_card_kpi strong { color: $md-blue-800; }
+    }
+
+    // Opciones nativas del portal integradas al Bento.
+    &--native {
+        min-height: 130px;
+    }
+
+    &--native-pickings {
+        background: linear-gradient(165deg, rgba($md-dark, 0.12), rgba($md-dark, 0.03) 50%, rgba($md-white, 0.3)), rgba($md-white, 0.58);
+        border-color: rgba($md-dark, 0.2);
+        grid-column: span 2;
+        .md_card_head i { color: $md-dark; }
+
+        @media (max-width: 768px) {
+            grid-column: span 1;
+        }
+    }
+
+    &--native-addresses {
+        background: linear-gradient(165deg, rgba($md-blue, 0.15), rgba($md-blue, 0.05) 50%, rgba($md-white, 0.3)), rgba($md-white, 0.58);
+        border-color: rgba($md-blue, 0.25);
+        .md_card_head i { color: $md-blue-800; }
+    }
+
+    &--native-security {
+        background: linear-gradient(165deg, rgba($md-purple, 0.15), rgba($md-purple, 0.04) 50%, rgba($md-white, 0.3)), rgba($md-white, 0.58);
+        border-color: rgba($md-purple, 0.25);
+        .md_card_head i { color: $md-purple; }
+    }
+
+    &--native-documents {
+        background: linear-gradient(165deg, rgba($md-green, 0.18), rgba($md-green, 0.05) 50%, rgba($md-white, 0.3)), rgba($md-white, 0.58);
+        border-color: rgba($md-green, 0.28);
+        .md_card_head i { color: $md-green-900; }
+    }
+
+    // "Mi cuenta": comparte la identidad del navbar (degradado teal→verde)
+    // para reforzar el vínculo "esta tarjeta = el usuario logueado".
+    &--account {
+        background: linear-gradient(165deg, rgba($md-blue, 0.1), rgba($md-green, 0.1) 50%, rgba($md-white, 0.3)), rgba($md-white, 0.58);
+        border-color: rgba($md-blue, 0.25);
+        .md_card_head i { color: $md-blue-800; }
+    }
+
+    // ── LIST: card sin KPI, con lista de favoritos ───────────────
+    &--list {
+        cursor: default;
+    }
+
+    // Cuando Favoritos toma el slot HERO: respeta el tamaño del hero
+    // (span 2x2) pero conserva el color/identidad de favoritos.
+    // El orden de definición (–-favorites después de --hero) hace que
+    // --md-card-bg de favoritos gane sobre el del hero. Solo necesitamos
+    // dar más respiro a la lista.
+    //
+    // UX 2026-05-10 rev2: lista en UNA sola columna (item full-width)
+    // para mejorar lectura de nombres largos de producto.
+    &--hero.md_data_card--favorites {
+        .md_fav_list--hero {
+            display: flex;
+            flex-direction: column;
+            gap: 0.45rem;
+            margin-top: 0.6rem;
+        }
+        .md_fav_item { width: 100%; }
+        .md_fav_link { width: 100%; }
+        .md_fav_name { font-size: 0.95rem; }
+    }
+}
+
+// ── Lista de favoritos dentro de md_data_card--list ──────────────────
+.md_fav_list {
+    list-style: none;
+    padding: 0;
+    margin: 0.4rem 0 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+}
+.md_fav_item .md_fav_link {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    padding: 0.45rem 0.65rem;
+    border-radius: 0.65rem;
+    background: rgba($md-white, 0.45);
+    border: 1px solid rgba($md-blue, 0.12);
+    color: $md-ink;
+    text-decoration: none;
+    transition: background 0.18s ease, border-color 0.18s ease;
+
+    &:hover { background: rgba($md-white, 0.85); border-color: rgba($md-blue, 0.25); text-decoration: none; }
+}
+.md_fav_name {
+    font-weight: 600;
+    font-size: 0.85rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    min-width: 0;
+}
+.md_fav_chip {
+    font-weight: 700;
+    font-size: 0.75rem;
+    padding: 0.15rem 0.5rem;
+    border-radius: 999px;
+    background: rgba($md-blue, 0.12);
+    color: $md-blue-800;
+    white-space: nowrap;
+    flex: 0 0 auto;
+}
+
+// ── Responsive global (móvil) ────────────────────────────────────────
+// Estrategia: <=768px una sola columna, navbar estática y compacta;
+// <=480px tipografía y paddings aún más reducidos; <=360px (gama baja)
+// fallback de seguridad. En todos los casos forzamos box-sizing y
+// min-width:0 para evitar overflow horizontal por nodos inline largos
+// (códigos de barras, emails, nombres de producto, etc.).
+
+// Salvavidas global anti-overflow horizontal del bento.
+.md_bento_portal,
+.md_bento_portal * {
+    box-sizing: border-box;
+    min-width: 0;
+}
+.md_bento_portal {
+    overflow-x: hidden;
+}
+
+// ── Tablet / phablet ──────────────────────────────────────────────────
+@media (max-width: 768px) {
+    .md_bento_portal {
+        padding: 1rem 0.5rem 2rem;
+    }
+    .md_floating_nav {
+        position: static;
+        flex-wrap: wrap;
+        border-radius: 1rem;
+        padding: 0.6rem 0.75rem;
+        margin-bottom: 1rem;
+        gap: 0.5rem;
+        max-width: 100%;
+
+        .md_nav_brand { flex: 1 1 100%; }
+        .md_nav_actions { flex: 1 1 100%; flex-wrap: wrap; justify-content: flex-start; }
+        .md_nav_pill { padding: 0.5rem 0.7rem; font-size: 0.8rem; }
+        .md_nav_pill--active span { display: inline; }
+    }
+    .md_cards_grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        width: 100%;
+        max-width: 100%;
+    }
+    .md_cards_grid .md_data_card {
+        min-height: 110px;
+        padding: 1rem;
+        word-break: break-word;
+        overflow-wrap: anywhere;
+
+        .md_card_head { font-size: 0.78rem; }
+        .md_card_kpi strong { font-size: 1.7rem; }
+        .md_card_kpi small { font-size: 0.78rem; }
+        .md_card_meta { font-size: 0.85rem; }
+
+        // El hero ya no abarca 2x2 en móvil (definido en &--hero), así
+        // que normalizamos su KPI al tamaño del resto.
+        &--hero .md_card_kpi strong { font-size: 2rem; }
+    }
+}
+
+// ── Smartphone ────────────────────────────────────────────────────────
+@media (max-width: 480px) {
+    .md_bento_portal {
+        padding: 0.75rem 0.4rem 1.75rem;
+    }
+    .md_floating_nav {
+        padding: 0.5rem 0.6rem;
+        gap: 0.4rem;
+
+        .md_nav_avatar { width: 32px; height: 32px; font-size: 0.85rem; }
+        .md_nav_name { font-size: 0.82rem; }
+        .md_nav_email { display: none; }
+        .md_nav_pill {
+            padding: 0.45rem 0.6rem;
+            font-size: 0.75rem;
+            gap: 0.3rem;
+            i { font-size: 0.9rem; }
+        }
+        .md_nav_pill span { display: none; }
+        .md_nav_pill--active span { display: inline; }
+    }
+    .md_cards_grid {
+        gap: 0.55rem;
+    }
+    .md_cards_grid .md_data_card {
+        min-height: 92px;
+        padding: 0.85rem 0.9rem;
+        gap: 0.35rem;
+
+        .md_card_head {
+            font-size: 0.72rem;
+            letter-spacing: 0;
+            i { font-size: 0.9rem; }
+        }
+        .md_card_kpi strong { font-size: 1.5rem; }
+        .md_card_kpi small { font-size: 0.72rem; }
+        .md_card_meta { font-size: 0.78rem; }
+
+        &--hero .md_card_kpi strong { font-size: 1.7rem; }
+    }
+    // Lista de favoritos hero: items más compactos.
+    .md_data_card--hero.md_data_card--favorites {
+        .md_fav_link { padding: 0.4rem 0.55rem; }
+        .md_fav_name { font-size: 0.82rem; }
+        .md_fav_chip { font-size: 0.68rem; padding: 0.1rem 0.4rem; }
+    }
+}
+
+// ── Gama baja / pantallas muy estrechas ──────────────────────────────
+@media (max-width: 360px) {
+    .md_floating_nav {
+        .md_nav_brand { gap: 0.45rem; }
+        .md_nav_name { font-size: 0.78rem; }
+        .md_nav_pill {
+            padding: 0.4rem 0.5rem;
+            span { display: none; }
+        }
+        .md_nav_pill--active span { display: none; }
+    }
+    .md_cards_grid .md_data_card {
+        padding: 0.75rem 0.8rem;
+        .md_card_kpi strong { font-size: 1.35rem; }
+    }
+}
+
+// ── Patrón CSRF (referencia para formularios futuros) ────────────────
+// Este módulo NO define formularios <form method="post"> ni endpoints
+// auth='public'/auth='user' con type='http' que reciban POST. Si en el
+// futuro se agrega uno, el formulario QWeb DEBE incluir:
+//
+//     <form method="post" action="...">
+//         <input type="hidden" name="csrf_token"
+//                t-att-value="request.csrf_token()"/>
+//         ...
+//     </form>
+//
+// Para llamadas fetch/XHR desde JS:
+//
+//     fetch(url, {
+//         method: "POST",
+//         headers: { "X-CSRF-Token": odoo.csrf_token,
+//                    "Content-Type": "application/json" },
+//         body: JSON.stringify(payload),
+//     });
+//
+// // Nunca usar `csrf=False` en @http.route salvo en webhooks externos
+// (y siempre con validación HMAC u otra autenticación de origen).
+
+// ── Bento Profile Cards ──────────────────────────────────────────────
+.bento-card {
+    @include md-liquid-glass(0.62, 18px);
+    border-radius: 0.9rem;
+    padding: 1.25rem 1.4rem;
+    margin-bottom: var(--md-gap-bento, #{$md-gap-bento});
+    color: $md-ink;
+    transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease;
+
+    &:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--md-shadow-2, 0 12px 40px rgba(20, 30, 60, 0.1));
+    }
+
+    .bento-card-title {
+        font-family: $md-font-title;
+        font-size: 1.12rem;
+        font-weight: 700;
+        margin-bottom: 1.25rem;
+        color: $md-dark !important;
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+        border-bottom: 1.5px solid rgba($md-blue, 0.15);
+        padding-bottom: 0.6rem;
+
+        i {
+            font-size: 1.2rem;
+            color: $md-blue-800;
+        }
+    }
+
+    .form-label {
+        font-weight: 600;
+        font-size: 0.88rem;
+        color: rgba($md-ink, 0.72) !important;
+        margin-bottom: 0.35rem;
+    }
+
+    .form-control, .form-select {
+        height: 42px;
+        border-radius: 0.65rem;
+        border: 1px solid var(--bs-border-color);
+        background: rgba($md-white, 0.5);
+        color: $md-ink !important;
+        font-size: $md-type-body;
+        box-shadow: none;
+        transition: border-color 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+
+        &:focus {
+            border-color: $md-blue;
+            box-shadow: 0 0 0 3px rgba($md-blue, 0.14);
+            background: rgba($md-white, 0.7);
+            outline: 0;
+        }
+    }
+}
+
+// Hide native Odoo website header on Portal & Shop routes to allow screen space for custom navbars
+.md-route-portal #wrapwrap > header#top,
+.md-route-shop #wrapwrap > header#top {
+    display: none !important;
+}
+
+// ── QR widget skeleton dimensions ────────────────────────────────────
+.md-qr-widget {
+    .md-skeleton--img {
+        width: 96px;
+        height: 96px;
+    }
+}
+
+// ── Logos ticker overflow container ──────────────────────────────────
+.md-logos-overflow {
+    overflow: hidden;
+    padding: 0 0 unquote("clamp(32px, 4vw, 48px)");
+}
+
+// ── Accesibilidad: foco visible de alto contraste (item 61) ──────────
+// Solo aplica con navegación por teclado (:focus-visible), no con clic de ratón,
+// para no introducir outlines indeseados en interacciones de puntero.
+.o_portal,
+.bento-card,
+.md_cards_grid {
+    a:focus-visible,
+    button:focus-visible,
+    [tabindex]:focus-visible,
+    .btn:focus-visible,
+    .form-control:focus-visible,
+    .form-select:focus-visible {
+        outline: 3px solid var(--md-color-primary, #{$md-blue});
+        outline-offset: 2px;
+        border-radius: var(--md-r-xs, #{$md-r-xs});
+    }
+}
+
+// ── Dark mode: atenuar sombras de tarjetas Bento ─────────────────────
+// .o_dark_mode/[data-bs-theme] son selectores del backend de Odoo, nunca
+// presentes en el frontend público — ver
+// docs/audits/2026-07-01_backend_dark_mode_audit.md. El toggle real del
+// frontend (public_animations.js:initDarkModeToggle) escribe
+// data-color-scheme="dark" en .md-bento-public si existe, o en <body> si no
+// (esta página vive en portal.portal_my_home, sin .md-bento-public) — de ahí
+// el selector sobre body[data-color-scheme="dark"], que cubre ambos casos.
+body[data-color-scheme="dark"] .md_cards_grid .md_data_card--account {
+    --md-card-shadow: rgba(22, 166, 217, 0.16);
+}
+
+body[data-color-scheme="dark"] .md_cards_grid .md_data_card {
+    --md-card-border: rgba(255, 255, 255, 0.08);
+    --md-card-shadow: rgba(0, 0, 0, 0.28);
+}
+
+// ── Portal document list pages (/my/orders, /my/invoices, /my/pickings) ─
+// Aplica Liquid Glass al contenedor de las listas y re-colorea los badges
+// de estado para armonizar con la paleta de marca.
+body.md-route-portal {
+
+    // Encabezado de sección (título "Mis Órdenes", "Facturas", etc.)
+    .o_portal_my_details h2,
+    .o_portal_my_details .h2 {
+        font-family: $md-font-title;
+        font-weight: 900;
+        font-size: clamp(1.4rem, 2.5vw, 1.9rem);
+        color: $md-ink;
+        letter-spacing: -0.02em;
+        margin-bottom: 1.25rem;
+    }
+
+    // Panel glassmorphism para todas las sub-páginas de detalle/listado
+    .o_portal_my_details_wrapper,
+    .o_portal_my_details > .container,
+    .o_portal_my_details > .container-fluid {
+        @include md-liquid-glass(0.60, 14px);
+        border-radius: $md-radius;
+        padding: 1.5rem 1.75rem;
+        margin-bottom: 1.5rem;
+    }
+
+    // Tabla de documentos: subtle row hover con accent brand
+    .table-hover > tbody > tr:hover > * {
+        background-color: rgba($md-blue, 0.05) !important;
+    }
+    .table > thead {
+        border-bottom: 2px solid rgba($md-blue, 0.15);
+        th { font-size: 0.75rem; font-weight: 700; text-transform: uppercase;
+             letter-spacing: 0; color: rgba($md-ink, 0.65); padding-block: 0.65rem; }
+    }
+    .table > tbody > tr > td {
+        font-size: 0.88rem;
+        vertical-align: middle;
+        color: $md-ink;
+        border-color: rgba($md-blue, 0.06);
+    }
+
+    // ── Status badges — paleta de marca ──────────────────────────────
+    // Odoo emite .badge con clases Bootstrap (bg-info, bg-success, bg-secondary,
+    // bg-danger, bg-warning, bg-primary). Re-coloreamos con la paleta MD.
+    .badge {
+        font-size: 0.72rem;
+        font-weight: 700;
+        padding: 0.3em 0.75em;
+        border-radius: 999px;
+        letter-spacing: 0;
+    }
+
+    // Borrador / Cotización → azul MD (tono información)
+    .badge.bg-info,
+    .badge.text-bg-info {
+        background: rgba($md-blue, 0.15) !important;
+        color: $md-blue-700 !important;
+        border: 1px solid rgba($md-blue, 0.25) !important;
+    }
+
+    // Confirmado / Enviado → teal (señal de proceso activo)
+    .badge.bg-secondary,
+    .badge.text-bg-secondary {
+        background: rgba($md-blue-300, 0.2) !important;
+        color: $md-blue-800 !important;
+        border: 1px solid rgba($md-blue-300, 0.35) !important;
+    }
+
+    // Pagado / Validado / Hecho → verde MD
+    .badge.bg-success,
+    .badge.text-bg-success {
+        background: rgba($md-green, 0.18) !important;
+        color: $md-green-900 !important;
+        border: 1px solid rgba($md-green, 0.3) !important;
+    }
+
+    // Cancelado / Error → rojo con tono MD
+    .badge.bg-danger,
+    .badge.text-bg-danger {
+        background: rgba(214, 20, 95, 0.12) !important;
+        color: #a30045 !important;
+        border: 1px solid rgba(214, 20, 95, 0.22) !important;
+    }
+
+    // En espera / Warning → ámbar neutro
+    .badge.bg-warning,
+    .badge.text-bg-warning {
+        background: rgba(247, 205, 31, 0.2) !important;
+        color: #735c00 !important;
+        border: 1px solid rgba(247, 205, 31, 0.35) !important;
+    }
+
+    // Primario (genérico Odoo) → azul MD
+    .badge.bg-primary,
+    .badge.text-bg-primary {
+        background: rgba($md-blue, 0.18) !important;
+        color: $md-blue-700 !important;
+        border: 1px solid rgba($md-blue, 0.28) !important;
+    }
+
+    // ── Paginación portal ──────────────────────────────────────────────
+    .o_portal_pager {
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+        margin-top: 1.5rem;
+
+        .page-link {
+            border-radius: $md-r-pill !important;
+            padding: 0.4rem 0.85rem;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: $md-blue-700;
+            border: 1px solid rgba($md-blue, 0.18);
+            background: rgba($md-white, 0.7);
+            transition: all 0.18s ease;
+
+            &:hover {
+                background: rgba($md-blue, 0.1);
+                border-color: rgba($md-blue, 0.3);
+                color: $md-blue-800;
+                text-decoration: none;
+            }
+        }
+        .page-item.active .page-link {
+            background: $md-blue;
+            border-color: $md-blue;
+            color: $md-white;
+            box-shadow: 0 4px 12px rgba($md-blue, 0.3);
+        }
+    }
+
+    // ── Breadcrumb portal ──────────────────────────────────────────────
+    .o_portal_wrap .breadcrumb {
+        font-size: 0.82rem;
+        background: transparent;
+        padding: 0;
+        margin-bottom: 1rem;
+
+        .breadcrumb-item + .breadcrumb-item::before { color: rgba($md-ink, 0.4); }
+        a { color: $md-blue-700; text-decoration: none; font-weight: 600;
+            &:hover { color: $md-blue-800; text-decoration: underline; } }
+    }
+}
+
+// ── Portal Security Page styling ─────────────────────────────────────
+body.md-route-portal {
+    .o_portal_security_body {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+        gap: 1.5rem;
+        max-width: 1200px;
+        margin: 0 auto;
+        align-items: start;
+
+        // Apply glassmorphism card styles to all direct children
+        > div, > section, > form {
+            @include md-liquid-glass(0.62, 18px);
+            border-radius: 0.9rem;
+            padding: 1.25rem 1.4rem;
+            color: $md-ink;
+            transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease;
+            box-sizing: border-box;
+
+            &:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 12px 40px rgba(20, 30, 60, 0.1);
+            }
+
+            // Headers inside cards
+            h3, h4, .h3, .h4, h5, .h5 {
+                font-family: $md-font-title;
+                font-size: 1.12rem;
+                font-weight: 700;
+                margin-top: 0;
+                margin-bottom: 1.25rem;
+                color: $md-dark !important;
+                display: flex;
+                align-items: center;
+                gap: 0.6rem;
+                border-bottom: 1.5px solid rgba($md-blue, 0.15);
+                padding-bottom: 0.6rem;
+            }
+        }
+
+        // Custom buttons for security actions (2FA, Revoke sessions)
+        .btn-secondary,
+        .btn-default,
+        .btn-light,
+        button {
+            &:not(.btn-primary) {
+                background: rgba($md-white, 0.6) !important;
+                color: $md-blue-800 !important;
+                border: 1px solid rgba($md-blue, 0.2) !important;
+                border-radius: $md-r-pill !important;
+                padding: 8px 18px !important;
+                font-weight: 700 !important;
+                font-size: 0.88rem !important;
+                box-shadow: var(--md-shadow-sm) !important;
+                transition: all 0.2s ease !important;
+
+                &:hover {
+                    background: $md-blue-100 !important;
+                    border-color: $md-blue !important;
+                    transform: translateY(-1px);
+                }
+            }
+        }
+
+        // Custom styling for alerts inside security
+        .alert {
+            border-radius: $md-radius;
+            border: 1px solid rgba($md-blue, 0.12);
+            padding: 0.75rem 1rem;
+            font-size: 0.88rem;
+            margin-bottom: 1.25rem;
+            
+            &.alert-warning, &.alert-info {
+                background: linear-gradient(90deg, #FFF7D6 0%, #FFEAB5 100%) !important;
+                color: #6b4b00 !important;
+                border-color: rgba(120, 89, 0, 0.15) !important;
+            }
+            &.alert-success {
+                background: linear-gradient(90deg, #E6F6ED 0%, #D1EFE0 100%) !important;
+                color: $md-green-900 !important;
+                border-color: rgba($md-green, 0.2) !important;
+            }
+        }
+    }
+}

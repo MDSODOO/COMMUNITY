@@ -1,0 +1,407 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!--
+        Fragmento reutilizable: un pin ADN animado.
+        Parámetros: pin_x, pin_y, pin_city, pin_state, pin_state_key, tooltip_w
+    -->
+    <template id="s_md_dna_pin" name="MD · DNA Pin fragment">
+        <t t-set="_pw" t-value="tooltip_w or 68"/>
+        <g class="md-dna-pin"
+           t-attf-transform="translate(#{pin_x or 0},#{pin_y or 0})"
+           t-attf-aria-label="#{pin_city or ''}, #{pin_state or ''}"
+           t-attf-data-pin-city="#{pin_city or ''}"
+           t-attf-data-pin-state="#{pin_state_key or ''}"
+           role="button"
+           tabindex="0">
+            <circle class="pin-glow" cx="0" cy="0" r="16"/>
+            <g class="helix-body">
+                <path class="dna-strand strand-a"
+                      d="M 0,0 C 7,-10 -7,-20 0,-30 C 7,-40 -7,-50 0,-60"/>
+                <path class="dna-strand strand-b"
+                      d="M 0,0 C -7,-10 7,-20 0,-30 C -7,-40 7,-50 0,-60"/>
+                <line class="dna-base" x1="-6" y1="-15" x2="6" y2="-15"/>
+                <line class="dna-base" x1="-6" y1="-30" x2="6" y2="-30"/>
+                <line class="dna-base" x1="-6" y1="-45" x2="6" y2="-45"/>
+            </g>
+            <circle class="pin-dot" cx="0" cy="0" r="5"/>
+            <circle class="pin-pulse" cx="0" cy="0" r="5"/>
+            <g class="pin-tooltip" transform="translate(8,-74)">
+                <rect class="pin-tooltip-bg" x="0" y="0"
+                      t-att-width="_pw" height="32" rx="5"/>
+                <text class="pin-tooltip-city" x="6" y="14">
+                    <t t-esc="pin_city or ''"/>
+                </text>
+                <text class="pin-tooltip-state" x="6" y="26">
+                    <t t-esc="pin_state or ''"/>
+                </text>
+            </g>
+        </g>
+    </template>
+
+    <!--
+        s_md_branches · Mapa (SVG fallback + Google Maps) + tarjetas bento.
+        Fases 3 + 4: interactividad pin↔card, tabs por estado, DNA pins en GMap.
+    -->
+    <template id="s_md_branches" name="MD · Sucursales">
+        <section class="s_md_branches s_md_branches--bento o_colored_level"
+                 data-snippet="s_md_branches" data-name="MD Branches">
+
+            <!-- ── Grid Bento responsivo: mapa (col-lg-8) + panel (col-lg-4) ── -->
+            <div class="md-bento-grid">
+
+            <!-- ── Bento box del mapa: rounded-4 + shadow-sm + overflow-hidden ── -->
+            <div class="md-bento-map-card">
+            <!-- ── Mapa interactivo (canvas GMap + fallback SVG con pines ADN) ── -->
+            <div class="md-branches-map-hero">
+                <div class="md-gmap-container"
+                     t-att-data-maps-key="request.env['ir.config_parameter'].sudo().get_param('google.maps.api_key', 'missing')"
+                     t-att-data-maps-id="request.env['ir.config_parameter'].sudo().get_param('google.maps.map_id', 'DEMO_MAP_ID')"
+                     data-center-lat="19.8"
+                     data-center-lng="-89.4"
+                     data-zoom="7"
+                     t-att-data-branches="branch_cards_json or '[]'">
+
+                <!-- Canvas Google Maps (JS lo activa cuando API carga) -->
+                <div class="md-gmap-canvas" hidden=""
+                     role="application"
+                     aria-label="Mapa interactivo de sucursales MedicineDepot en la Península de Yucatán"/>
+
+                <!-- Fallback SVG (visible por defecto) -->
+                <div class="md-gmap-fallback md-peninsula-wrapper">
+                    <svg class="md-peninsula-svg"
+                         viewBox="0 0 800 560"
+                         preserveAspectRatio="xMidYMid meet"
+                         xmlns="http://www.w3.org/2000/svg"
+                         role="img"
+                         aria-labelledby="md-peninsula-title md-peninsula-desc">
+                        <title id="md-peninsula-title">Mapa de la Península de Yucatán</title>
+                        <desc id="md-peninsula-desc">Ubicaciones de las <t t-esc="len(branch_cards) if branch_cards else 6"/> sucursales MedicineDepot en Yucatán, Campeche y Quintana Roo con pines de ADN animados.</desc>
+
+                        <defs>
+                            <radialGradient id="md-ocean-grad" cx="50%" cy="55%" r="65%">
+                                <stop offset="0%"   stop-color="#C8EEF8"/>
+                                <stop offset="100%" stop-color="#8ED6EC"/>
+                            </radialGradient>
+
+                            <!-- Heatmap coverage gradients (~80km radius per state) -->
+                            <radialGradient id="md-heat-yucatan" cx="50%" cy="50%" r="50%">
+                                <stop offset="0%"   stop-color="#16A6D9" stop-opacity="0.28"/>
+                                <stop offset="60%"  stop-color="#16A6D9" stop-opacity="0.10"/>
+                                <stop offset="100%" stop-color="#16A6D9" stop-opacity="0"/>
+                            </radialGradient>
+                            <radialGradient id="md-heat-campeche" cx="50%" cy="50%" r="50%">
+                                <stop offset="0%"   stop-color="#97D700" stop-opacity="0.24"/>
+                                <stop offset="60%"  stop-color="#97D700" stop-opacity="0.08"/>
+                                <stop offset="100%" stop-color="#97D700" stop-opacity="0"/>
+                            </radialGradient>
+                            <radialGradient id="md-heat-qroo" cx="50%" cy="50%" r="50%">
+                                <stop offset="0%"   stop-color="#16A6D9" stop-opacity="0.22"/>
+                                <stop offset="60%"  stop-color="#16A6D9" stop-opacity="0.07"/>
+                                <stop offset="100%" stop-color="#16A6D9" stop-opacity="0"/>
+                            </radialGradient>
+                        </defs>
+
+                        <rect width="800" height="560" fill="url(#md-ocean-grad)" rx="12"/>
+
+                        <path class="md-state md-state--campeche"
+                              d="M 10,220 C 55,155 85,105 120,70 Q 185,30 260,10 L 383,441 L 383,548 Q 280,548 180,525 Q 90,490 35,432 Q 5,385 10,220 Z"/>
+                        <path class="md-state md-state--yucatan"
+                              d="M 260,10 Q 450,-6 640,0 L 383,441 Z"/>
+                        <path class="md-state md-state--qroo"
+                              d="M 640,0 Q 722,22 792,82 Q 815,215 802,388 Q 790,483 742,534 Q 682,552 540,548 Q 445,548 383,548 L 383,441 Z"/>
+
+                        <line class="md-state-divider" x1="260" y1="10"  x2="383" y2="441"/>
+                        <line class="md-state-divider" x1="640" y1="0"   x2="383" y2="441"/>
+                        <line class="md-state-divider" x1="383" y1="441" x2="383" y2="548"/>
+
+                        <path class="md-peninsula-border"
+                              d="M 10,220 C 55,155 85,105 120,70 Q 185,30 260,10 Q 450,-6 640,0 Q 722,22 792,82 Q 815,215 802,388 Q 790,483 742,534 Q 682,552 540,548 Q 445,548 383,548 Q 280,548 180,525 Q 90,490 35,432 Q 5,385 10,220 Z"/>
+
+                        <text class="md-state-label" x="145" y="295">Campeche</text>
+                        <text class="md-state-label" x="390" y="185">Yucatán</text>
+                        <text class="md-state-label" x="645" y="310">Q. Roo</text>
+
+                        <!-- Heatmap coverage ellipses (~80km radius equivalent) -->
+                        <ellipse class="md-heatmap-yucatan" cx="313" cy="90"  rx="130" ry="110" aria-hidden="true"/>
+                        <ellipse class="md-heatmap-yucatan" cx="328" cy="172" rx="90"  ry="80"  aria-hidden="true"/>
+                        <ellipse class="md-heatmap-campeche" cx="162" cy="249" rx="110" ry="100" aria-hidden="true"/>
+                        <ellipse class="md-heatmap-qroo"    cx="730" cy="62"  rx="95"  ry="80"  aria-hidden="true"/>
+                        <ellipse class="md-heatmap-qroo"    cx="710" cy="138" rx="80"  ry="70"  aria-hidden="true"/>
+                        <ellipse class="md-heatmap-qroo"    cx="534" cy="430" rx="85"  ry="75"  aria-hidden="true"/>
+
+                        <g role="list" aria-label="Sucursales MedicineDepot">
+                            <t t-call="medicine_depot_portal.s_md_dna_pin">
+                                <t t-set="pin_x"        t-value="313"/>
+                                <t t-set="pin_y"        t-value="90"/>
+                                <t t-set="pin_city"     t-value="'Mérida'"/>
+                                <t t-set="pin_state"    t-value="'Yucatán'"/>
+                                <t t-set="pin_state_key" t-value="'yucatan'"/>
+                                <t t-set="tooltip_w"    t-value="68"/>
+                            </t>
+                            <t t-call="medicine_depot_portal.s_md_dna_pin">
+                                <t t-set="pin_x"        t-value="328"/>
+                                <t t-set="pin_y"        t-value="172"/>
+                                <t t-set="pin_city"     t-value="'Ticul'"/>
+                                <t t-set="pin_state"    t-value="'Yucatán'"/>
+                                <t t-set="pin_state_key" t-value="'yucatan'"/>
+                                <t t-set="tooltip_w"    t-value="56"/>
+                            </t>
+                            <t t-call="medicine_depot_portal.s_md_dna_pin">
+                                <t t-set="pin_x"        t-value="162"/>
+                                <t t-set="pin_y"        t-value="249"/>
+                                <t t-set="pin_city"     t-value="'Campeche'"/>
+                                <t t-set="pin_state"    t-value="'Campeche'"/>
+                                <t t-set="pin_state_key" t-value="'campeche'"/>
+                                <t t-set="tooltip_w"    t-value="78"/>
+                            </t>
+                            <t t-call="medicine_depot_portal.s_md_dna_pin">
+                                <t t-set="pin_x"        t-value="730"/>
+                                <t t-set="pin_y"        t-value="62"/>
+                                <t t-set="pin_city"     t-value="'Cancún'"/>
+                                <t t-set="pin_state"    t-value="'Q. Roo'"/>
+                                <t t-set="pin_state_key" t-value="'qroo'"/>
+                                <t t-set="tooltip_w"    t-value="64"/>
+                            </t>
+                            <t t-call="medicine_depot_portal.s_md_dna_pin">
+                                <t t-set="pin_x"        t-value="710"/>
+                                <t t-set="pin_y"        t-value="138"/>
+                                <t t-set="pin_city"     t-value="'Playa del Carmen'"/>
+                                <t t-set="pin_state"    t-value="'Q. Roo'"/>
+                                <t t-set="pin_state_key" t-value="'qroo'"/>
+                                <t t-set="tooltip_w"    t-value="110"/>
+                            </t>
+                            <t t-call="medicine_depot_portal.s_md_dna_pin">
+                                <t t-set="pin_x"        t-value="534"/>
+                                <t t-set="pin_y"        t-value="430"/>
+                                <t t-set="pin_city"     t-value="'Chetumal'"/>
+                                <t t-set="pin_state"    t-value="'Q. Roo'"/>
+                                <t t-set="pin_state_key" t-value="'qroo'"/>
+                                <t t-set="tooltip_w"    t-value="74"/>
+                            </t>
+                        </g>
+                    </svg>
+                </div><!-- /md-gmap-fallback -->
+
+                <div class="md-map-legend" aria-hidden="true">
+                    <span><i class="md-map-key md-map-key--yucatan"></i>Yucatán</span>
+                    <span><i class="md-map-key md-map-key--campeche"></i>Campeche</span>
+                    <span><i class="md-map-key md-map-key--qroo"></i>Q. Roo</span>
+                </div>
+                </div><!-- /md-gmap-container -->
+            </div><!-- /md-branches-map-hero -->
+            </div><!-- /md-bento-map-card -->
+
+            <!-- ── QR Codes: escanea para navegar a cada sucursal ── -->
+            <div class="md-qr-section">
+                <p class="md-qr-section-label">Escanea para navegar</p>
+                <div class="md-qr-items">
+                    <t t-if="branch_cards">
+                        <t t-foreach="branch_cards" t-as="branch">
+                            <t t-if="branch.get('maps_url')">
+                                <div class="md-qr-item">
+                                    <div class="md-qr-widget"
+                                         t-att-data-md-qr="branch['maps_url']"
+                                         data-md-qr-size="80"
+                                         t-att-aria-label="'Código QR para navegar a ' + branch['name']">
+                                        <div class="md-skeleton md-skeleton--img"/>
+                                    </div>
+                                    <span class="md-qr-item-label">
+                                        <t t-esc="branch.get('city', branch['name'])"/>
+                                    </span>
+                                </div>
+                            </t>
+                        </t>
+                    </t>
+                </div>
+            </div><!-- /md-qr-section -->
+
+            <!-- ── Panel Bento adyacente: filtros y tarjetas ── -->
+            <div class="md-branches-panel md-bento-panel-card">
+                <div class="md-branches-panel-head">
+                    <h3 class="md-branches-title">Localiza la sucursal más cercana</h3>
+                    <p class="md-branches-subtitle">Visita cualquier sucursal o escríbenos por WhatsApp.</p>
+                    <div class="md-branches-meta" aria-label="Cobertura de sucursales">
+                        <span><t t-esc="len(branch_cards) if branch_cards else 6"/> sucursales</span>
+                        <span>Retail y mostrador</span>
+                        <span>Ruta directa</span>
+                    </div>
+                    <!-- Geolocation button -->
+                    <button class="md-btn md-btn--ghost mt-2"
+                            type="button"
+                            data-md-geolocate="1"
+                            aria-label="Usar mi ubicación para encontrar la sucursal más cercana">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M1 12h4M19 12h4"/></svg>
+                        Usar mi ubicación
+                    </button>
+                    <p hidden="" data-md-geo-error="" class="md-small-note text-danger"></p>
+                </div>
+
+                <!-- Tabs filtro (M8) -->
+                <div class="md-branches-toolbar" role="region" aria-label="Filtros de sucursales">
+                    <div class="md-branches-state-tabs" role="tablist" aria-label="Filtrar sucursales por estado">
+                        <button class="is-active" data-filter-type="state" data-state="all" role="tab" aria-selected="true">Todos</button>
+                        <button data-filter-type="state" data-state="yucatan" role="tab" aria-selected="false">
+                            <i></i>Yucatán
+                        </button>
+                        <button data-filter-type="state" data-state="campeche" role="tab" aria-selected="false">
+                            <i></i>Campeche
+                        </button>
+                        <button data-filter-type="state" data-state="qroo" role="tab" aria-selected="false">
+                            <i></i>Q. Roo
+                        </button>
+                    </div>
+                    <div class="md-branches-city-tabs" role="tablist" aria-label="Filtrar sucursales por ciudad">
+                        <t t-if="branch_cards">
+                            <t t-foreach="branch_cards" t-as="branch">
+                                <button data-filter-type="city"
+                                        t-att-data-city="branch.get('city', branch['name'])"
+                                        role="tab"
+                                        aria-selected="false">
+                                    <t t-esc="branch.get('city', branch['name'])"/>
+                                </button>
+                            </t>
+                        </t>
+                    </div>
+                </div>
+
+                <div class="md-branch-cards-grid" role="list">
+                    <t t-if="branch_cards">
+                        <t t-foreach="branch_cards" t-as="branch">
+                            <article class="md-branch-card md-will-animate"
+                                     role="article"
+                                     data-md-branch-card="1"
+                                     t-att-data-branch-name="branch['name']"
+                                     t-att-data-branch-city="branch.get('city', branch['name'])"
+                                     t-att-data-branch-state="branch.get('state_key', '')"
+                                     t-att-data-branch-lat="branch.get('lat', '')"
+                                     t-att-data-branch-lng="branch.get('lng', '')">
+
+                                <!-- Imagen placeholder (M16) -->
+                                <div class="md-branch-img" aria-hidden="true">
+                                    <t t-esc="branch['name'][0:1].upper()"/>
+                                </div>
+
+                                <div class="md-branch-card-top">
+                                    <span class="md-branch-kicker">
+                                        <t t-esc="branch.get('city', branch['name'])"/>
+                                    </span>
+                                    <h4 class="md-branch-name" t-att-id="'branch-name-' + str(branch_index)">
+                                        <t t-esc="branch['name']"/>
+                                    </h4>
+                                    <!-- Badge abierto/cerrado (M11) -->
+                                    <span class="md-branch-status"
+                                          t-att-data-open="branch.get('open_time', '09:00')"
+                                          t-att-data-close="branch.get('close_time', '19:00')"
+                                          t-att-data-open-sat="branch.get('open_sat', '')"
+                                          t-att-data-close-sat="branch.get('close_sat', '')"
+                                          t-att-data-open-sun="branch.get('open_sun', '')"
+                                          t-att-data-close-sun="branch.get('close_sun', '')"
+                                          aria-live="polite">
+                                    </span>
+                                </div>
+
+                                <div class="md-branch-data-grid">
+                                    <div class="md-branch-data md-branch-data--address">
+                                        <span class="md-branch-data-label">Dirección</span>
+                                        <address class="md-branch-address">
+                                            <t t-esc="branch['address']"/>
+                                        </address>
+                                        <!-- Copiar dirección (M13) -->
+                                        <button class="md-branch-copy-btn"
+                                                type="button"
+                                                t-att-data-address="branch['address']"
+                                                aria-label="Copiar dirección al portapapeles">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                                            Copiar
+                                        </button>
+                                    </div>
+                                    <div class="md-branch-data md-branch-data--hours">
+                                        <span class="md-branch-data-label">Horario</span>
+                                        <ul class="md-branch-hours" aria-label="Horario de atención">
+                                            <li>
+                                                <span>Lun-Vie</span>
+                                                <strong>
+                                                    <t t-esc="branch.get('hours_weekday_label', '09:00 - 19:00')"/>
+                                                </strong>
+                                            </li>
+                                            <li>
+                                                <span>Sáb</span>
+                                                <strong>
+                                                    <t t-esc="branch.get('hours_sat_label') or 'Cerrado'"/>
+                                                </strong>
+                                            </li>
+                                            <li>
+                                                <span>Dom</span>
+                                                <strong>
+                                                    <t t-esc="branch.get('hours_sun_label') or 'Cerrado'"/>
+                                                </strong>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+
+                                <t t-if="branch.get('phone')">
+                                    <a class="md-branch-phone"
+                                       t-att-href="'tel:%s' % branch['phone'].replace(' ', '')"
+                                       t-attf-aria-label="Llamar a sucursal #{branch['name']}: #{branch['phone']}">
+                                        <i class="fa fa-phone" aria-hidden="true"/>
+                                        <t t-esc="branch['phone']"/>
+                                    </a>
+                                </t>
+
+                                <div class="md-branch-card-actions">
+                                    <t t-if="branch.get('whatsapp_url')">
+                                        <a class="md-btn md-btn--primary"
+                                           t-att-href="branch['whatsapp_url']"
+                                           target="_blank" rel="noopener"
+                                           t-attf-aria-label="WhatsApp sucursal #{branch['name']}">
+                                            <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z"/></svg>
+                                            WhatsApp
+                                        </a>
+                                    </t>
+                                    <a class="md-btn md-btn--ghost"
+                                       t-att-href="branch['maps_url']"
+                                       target="_blank" rel="noopener"
+                                       t-attf-aria-label="Cómo llegar a sucursal #{branch['name']}">
+                                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 22s-8-4.5-8-11.8A8 8 0 0 1 12 2a8 8 0 0 1 8 8.2c0 7.3-8 11.8-8 11.8z"/><circle cx="12" cy="10" r="3"/></svg>
+                                        Cómo llegar
+                                    </a>
+                                    <!-- Compartir (M27) -->
+                                    <button class="md-branch-share-btn md-btn md-btn--ghost"
+                                            type="button"
+                                            t-att-data-share-title="branch['name']"
+                                            t-att-data-share-text="branch['address']"
+                                            t-att-data-share-url="branch['maps_url']"
+                                            aria-label="Compartir ubicación de esta sucursal">
+                                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+                                    </button>
+                                </div>
+                            </article>
+                        </t>
+                    </t>
+                    <t t-else="">
+                        <p class="md-branches-empty">Información de sucursales no publicada temporalmente.</p>
+                    </t>
+                </div><!-- /md-branch-cards-grid -->
+            </div><!-- /md-branches-panel -->
+
+            </div><!-- /md-bento-grid -->
+
+        </section>
+    </template>
+
+    <record id="s_md_branches_snippet" model="ir.ui.view">
+        <field name="name">MD · Sucursales (registro snippet)</field>
+        <field name="type">qweb</field>
+        <field name="mode">extension</field>
+        <field name="inherit_id" ref="website.snippets"/>
+        <field name="arch" type="xml">
+            <xpath expr="//snippets[@id='snippet_structure']" position="inside">
+                <t t-snippet="medicine_depot_portal.s_md_branches"
+                   t-thumbnail="/medicine_depot_portal/static/img/snippets/s_md_branches.svg"/>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

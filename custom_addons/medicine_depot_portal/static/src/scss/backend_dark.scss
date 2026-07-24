@@ -1,0 +1,119 @@
+// ════════════════════════════════════════════════════════════════════════
+// backend_dark.scss — Tokens de dark mode para Medicine Depot (backend)
+// ────────────────────────────────────────────────────────────────────────
+// Registrado en web.assets_web_dark: Odoo 19 inyecta este bundle
+// ÚNICAMENTE cuando el dark mode está activo (preferencia de usuario).
+// No se necesitan selectores .o_dark_mode ni [data-bs-theme]: este
+// archivo solo se carga en modo oscuro.
+// ════════════════════════════════════════════════════════════════════════
+
+.o_web_client {
+    // ── Superficies ───────────────────────────────────────────────────────
+    --md-card-bg:              #1a1f2e;
+    --md-paper:                #13172a;
+    --md-border:               rgba(255, 255, 255, 0.10);
+
+    // ── Tipografía ────────────────────────────────────────────────────────
+    --md-color-text-primary:   #e8eaf0;
+    --md-color-text-secondary: #b0b8cc;
+    --md-color-text-muted:     #6b7490;
+    --md-color-text-dark:      #e8eaf0;
+    --md-ink:                  #e8eaf0;
+    --md-ink-2:                #b0b8cc;
+    --md-muted:                #6b7490;
+
+    // ── Colores de acción (soft) ──────────────────────────────────────────
+    --md-primary-soft:         rgba(22, 166, 217, 0.12);
+    --md-action-soft:          rgba(151, 215, 0, 0.12);
+    --md-danger-soft:          rgba(227, 6, 19, 0.12);
+    --md-warning-soft:         rgba(245, 159, 0, 0.12);
+
+    // ── Dropdowns ─────────────────────────────────────────────────────────
+    --md-dropdown-bg:          rgba(26, 31, 46, 1);
+    --md-dropdown-color:       #e8eaf0;
+    --md-dropdown-border:      rgba(255, 255, 255, 0.10);
+    --md-dropdown-hover-bg:    rgba(22, 166, 217, 0.12);
+    --md-dropdown-hover-color: #16A6D9;
+
+    // ── Bridge a variables nativas de Bootstrap 5 ─────────────────────────
+    --bs-body-bg:              var(--md-paper);
+    --bs-body-color:           var(--md-color-text-primary);
+    --bs-secondary-color:      var(--md-color-text-secondary);
+    --bs-heading-color:        var(--md-color-text-primary);
+    --bs-card-bg:              var(--md-card-bg);
+    --bs-border-color:         var(--md-border);
+
+    // ── Control panel ─────────────────────────────────────────────────────
+    .o_control_panel {
+        background: rgba(26, 31, 46, 0.92) !important;
+        border-bottom-color: rgba(255, 255, 255, 0.08) !important;
+
+        @supports (backdrop-filter: blur(1px)) {
+            background: rgba(19, 23, 42, 0.88) !important;
+        }
+    }
+
+    // ── Chatter y grupos del sheet (antes en backend_bento.scss, gateados
+    // por .o_dark_mode/[data-bs-theme] — nunca coincidían con el DOM real) ──
+    .o_chatter { background: rgba(26, 31, 46, 0.60) !important; }
+
+    .o_form_view .o_form_sheet > .o_group {
+        background: var(--md-card-bg);
+        border-color: var(--md-border);
+    }
+
+    // ── Botones de header/statusbar: sin contraste en oscuro (bug fix) ─────
+    // backend_bento.scss (.btn.btn-primary) pinta un gradiente turquesa→lima
+    // pensado para fondo claro; --md-primary/--md-action no se redefinen
+    // aquí, así que en oscuro el botón queda demasiado saturado y sin
+    // suficiente contraste con el texto nativo de Bootstrap. Se sustituye
+    // por el mismo tratamiento "ghost" ya validado en
+    // medicine_depot_scrap_batch/dashboard_dark.scss (contraste ~7:1).
+    .btn.btn-primary {
+        background: rgba(22, 166, 217, 0.16) !important;
+        border-color: rgba(22, 166, 217, 0.40) !important;
+        color: #59cbe8 !important;
+        box-shadow: none !important;
+
+        &:hover {
+            background: rgba(22, 166, 217, 0.24) !important;
+            filter: none;
+        }
+    }
+
+    // .btn-secondary no tenía tratamiento propio en oscuro: heredaba el
+    // fondo nativo de Bootstrap, que no casa con --md-card-bg (#1a1f2e).
+    .btn.btn-secondary {
+        background: rgba(255, 255, 255, 0.06) !important;
+        border-color: rgba(255, 255, 255, 0.12) !important;
+        color: #94a3b8 !important;
+
+        &:hover {
+            background: rgba(255, 255, 255, 0.10) !important;
+            color: #e2e8f0 !important;
+        }
+    }
+
+    // ── Statusbar: flechas de pipeline (o_statusbar_status) ────────────────
+    .o_form_statusbar {
+        background: rgba(26, 31, 46, 0.82) !important;
+
+        .o_arrow_button {
+            background: rgba(255, 255, 255, 0.04) !important;
+            color: #64748b !important;
+            border-color: transparent !important;
+
+            &:hover:not(:disabled) {
+                background: rgba(255, 255, 255, 0.08) !important;
+                color: #94a3b8 !important;
+            }
+        }
+
+        .o_arrow_button.o_arrow_button_current,
+        .o_statusbar_status .o_arrow_button_current {
+            background: #16a6d9 !important;
+            color: #fff !important;
+            border-color: transparent !important;
+        }
+    }
+}

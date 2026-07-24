@@ -1,0 +1,109 @@
+// Reemplaza el listado de texto plano del menu de apps (Community) por una
+// cuadricula de iconos + etiqueta, como el Home Menu de Enterprise/odoo.sh.
+// No modifica el core: solo reestiliza el mismo Dropdown que Odoo ya arma
+// con menuService.getApps(), reutilizando el webIconData que cada app ya trae.
+//
+// Nota: el Dropdown de Odoo "porta" su .dropdown-menu fuera de nuestro
+// contenedor original (lo monta en .o-overlay-container), asi que NO se
+// puede escopar por ancestria (".o_md_home_menu .algo" nunca matchea).
+// Por eso todo aqui usa las clases o_md_* directamente (son lo bastante
+// especificas para no chocar con nada mas de la UI), y :has() solo para
+// limitar el layout de grid al dropdown que realmente contiene nuestros tiles.
+
+$md-app-tile-size: 84px;
+$md-app-icon-size: 52px;
+
+.dropdown-menu:has(> .o_md_app_tile) {
+    display: grid !important;
+    grid-template-columns: repeat(6, minmax($md-app-tile-size, 1fr));
+    gap: 12px;
+    padding: 20px;
+    max-width: 620px;
+    max-height: 70vh;
+    overflow-y: auto;
+    border-radius: 12px;
+
+    @media (max-width: 900px) {
+        grid-template-columns: repeat(4, minmax($md-app-tile-size, 1fr));
+    }
+}
+
+.o_md_app_tile {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 6px;
+    padding: 10px 4px;
+    border-radius: 10px;
+    text-decoration: none;
+    text-align: center;
+    transition: background-color .15s ease, transform .1s ease;
+
+    &:hover, &:focus {
+        background-color: rgba(0, 0, 0, 0.06);
+        transform: translateY(-1px);
+    }
+
+    &.focus {
+        background-color: rgba(113, 75, 103, 0.12);
+    }
+}
+
+img.o_md_app_icon {
+    width: $md-app-icon-size;
+    height: $md-app-icon-size;
+    min-width: $md-app-icon-size;
+    min-height: $md-app-icon-size;
+    max-width: $md-app-icon-size;
+    max-height: $md-app-icon-size;
+    border-radius: 14px;
+    object-fit: contain;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
+}
+
+.o_md_app_icon_fallback {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: $md-app-icon-size;
+    height: $md-app-icon-size;
+    border-radius: 14px;
+    background: #714b67;
+    color: #fff;
+    font-size: 22px;
+}
+
+.o_md_app_label {
+    font-size: 12px;
+    line-height: 1.2;
+    max-width: $md-app-tile-size;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: inherit;
+}
+
+// Modo oscuro: usamos la misma paleta que md_dark_mode (html.o_md_dark_mode)
+html.o_md_dark_mode {
+    .dropdown-menu:has(> .o_md_app_tile) {
+        background-color: #2a2a3c;
+        border-color: #3f3f57;
+    }
+
+    .o_md_app_tile {
+        color: #e4e4ef;
+
+        &:hover, &:focus {
+            background-color: #33334a;
+        }
+
+        &.focus {
+            background-color: #3f3f57;
+        }
+    }
+
+    img.o_md_app_icon {
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+    }
+}
