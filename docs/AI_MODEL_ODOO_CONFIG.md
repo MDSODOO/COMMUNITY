@@ -93,7 +93,7 @@ Dos reservas importantes, no es un "sí" sin matices:
 | Auditoría de compatibilidad de módulos (ya en uso) | 4096 | 0.1 | `json` | Igual que hoy — output estructurado y parseable. |
 | Consultas de inventario en lenguaje natural ('A la mano') | 2048 | 0.0–0.1 | `json` | Pregunta corta + resultado de una consulta real a Odoo (no el modelo "inventando" cantidades) — el modelo solo traduce lenguaje natural a una consulta estructurada y luego redacta la respuesta con el dato real. Temperatura casi cero: es la peor categoría posible para alucinar (cantidades físicas / dinero). |
 | Análisis de reportes financieros / detección de anomalías | 8192 | 0.2 | `json` para hallazgos, texto libre para el resumen | Puede requerir tablas más largas (ej. cientos de líneas de productos, como el caso de las caídas de precio del 27/07). Temperatura ligeramente más alta para permitir redacción de resumen, pero los hallazgos estructurados (qué producto, qué cambio, qué %) deben ir en JSON separado del resumen narrativo, nunca mezclados. |
-| Extracción de productos desde imagen (visión) | según modelo (2048–4096) | 0.0 | `json` | Cero tolerancia a redacción libre: el output debe ser una lista JSON de `{texto_detectado, cantidad_detectada}` cruda, sin que el modelo intente adivinar cuál producto de Odoo es — ese matching lo hace `ProductMatcher` (determinista), no el LLM. |
+| Extracción de productos desde imagen (visión) | según modelo (2048–4096) | 0.0 | **JSON Schema real** (objeto, no el string `"json"`) — ver §5.3 v3 | Cero tolerancia a redacción libre: el output debe ser una lista JSON de `{texto_detectado, cantidad_detectada}` cruda, sin que el modelo intente adivinar cuál producto de Odoo es — ese matching lo hace `ProductMatcher` (determinista), no el LLM. **Probado empíricamente:** `format: "json"` genérico no fue suficiente (v2 falló con pérdida silenciosa de datos); `format: <schema>` sí funcionó (v3). |
 
 **Regla transversal:** en ningún prompt de estos el modelo debe **inventar** una cantidad física ('A la mano') o un precio — solo puede (a) traducir lenguaje natural a una consulta estructurada que Odoo ejecuta con datos reales, o (b) redactar/resumir un resultado que Odoo ya calculó. El LLM nunca es la fuente de verdad de un número de inventario o dinero.
 
@@ -135,23 +135,54 @@ No expliques cada fila en prosa — el resumen narrativo va aparte, en un campo 
 ```
 
 ### 5.3 Prompt — Extracción de productos desde imagen de cotización
+
+**Historial de versiones (las 3 probadas empíricamente contra `qwen2.5vl:7b`, misma imagen sintética):**
+
+- **v1** (usaba `format: "json"` genérico): el modelo devolvió un objeto único con las cantidades agrupadas en un arreglo aparte en vez de un objeto por línea.
+- **v2** (2026-07-27, seguía usando `format: "json"` genérico, solo cambió el texto del prompt para pedir explícitamente "un objeto por renglón" con ejemplo incluido): **probada y falló de forma más peligrosa que v1.** El modelo devolvió un único objeto JSON con la clave `texto_detectado` **repetida 3 veces** (una por renglón). `json.loads()` en Python no lanza error con claves duplicadas — silenciosamente se queda solo con el último valor, **descartando 2 de las 3 líneas sin ningún aviso**. Conclusión: pedir el schema en el texto del prompt, sin importar qué tan explícito, no es confiable con este modelo — hace falta forzar el schema a nivel de la API, no solo describirlo en prosa.
+- **v3 (2026-07-27) — funcionó.** Cambio clave: usar el parámetro `format` de la API de Ollama con un **JSON Schema real** (structured output/grammar-constrained decoding), no el string genérico `"json"`, combinado con un ejemplo few-shot en el prompt (el schema por sí solo, sin ejemplo, devolvió un array vacío `[]` válido pero vacío — cumple el schema pero no intenta extraer nada). Con ambos juntos: 3/3 líneas correctas, cantidades bien separadas del texto del producto, en 20.17s (más rápido que v1/v2, probablemente por la eficiencia del grammar-constrained decoding). Único detalle menor: no detectó "x1" como `cantidad_detectada: 1` en un renglón (lo dejó `null`) — imprecisión de lectura, no una falla de formato/schema.
+
+**Prompt v3 (texto):**
 ```
 Vas a recibir una imagen con una lista de productos escrita o impresa por un cliente
 de una farmacia, para generar una cotización.
 
-Tu única tarea es transcribir lo que ves, SIN intentar adivinar a qué producto exacto
-del catálogo se refiere y SIN inventar cantidades. Devuelve exclusivamente JSON:
+Transcribe CADA renglón de texto que veas en la imagen como un elemento separado de la
+lista. Si un renglón incluye una cantidad (ej. "x2", "x1"), separa el texto del producto
+de la cantidad numérica.
 
-[{"texto_detectado": "<tal cual aparece en la imagen>", "cantidad_detectada": <numero o null>}]
+Ejemplo: si la imagen dice "PARACETAMOL 500MG C/20 TAB x2" y "LOSARTAN 50MG C/30 TABS",
+la respuesta debe tener 2 elementos:
+- texto_detectado: "PARACETAMOL 500MG C/20 TAB", cantidad_detectada: 2
+- texto_detectado: "LOSARTAN 50MG C/30 TABS", cantidad_detectada: null
+
+No devuelvas una lista vacía si hay texto legible en la imagen. No adivines el producto
+exacto del catálogo, solo transcribe.
 
 Si algún renglón menciona una cantidad física de inventario existente (poco común en
-este flujo, pero si ocurre), refiérete a ella únicamente como "A la mano" (On Hand).
-Nunca uses "disponible", "stock" o "existencias".
-
-Si no puedes leer un renglón con confianza, inclúyelo igual con "texto_detectado" tal
-cual lo percibes y un campo adicional "confianza_baja": true — no lo omitas ni lo
-completes con una suposición.
+este flujo), refiérete a ella únicamente como "A la mano" (On Hand). Nunca uses
+"disponible", "stock" ni "existencias".
 ```
+
+**Schema JSON (parámetro `format` de la API, NO el string `"json"`):**
+```json
+{
+  "type": "array",
+  "minItems": 1,
+  "items": {
+    "type": "object",
+    "properties": {
+      "texto_detectado": {"type": "string"},
+      "cantidad_detectada": {"type": ["integer", "null"]}
+    },
+    "required": ["texto_detectado", "cantidad_detectada"]
+  }
+}
+```
+
+**Lección general para §4/§5 de este documento:** cualquier caso de uso que necesite output estructurado confiable (no solo este) debería usar `format: <json_schema>` en vez de `format: "json"` — la diferencia entre v2 y v3 lo demuestra empíricamente, no es una preferencia teórica. **Regla de ingeniería derivada de este hallazgo:** nunca confiar en que `json.loads()` no lance excepción como señal de éxito — hay que validar además que el resultado sea del tipo esperado (`isinstance(parsed, list)`) y de longitud plausible antes de usarlo; si no, tratarlo como fallo de extracción y enviar a revisión humana, no como dato válido.
+
+**Sigue pendiente:** validar v3 con letra manuscrita real (esta prueba fue con texto impreso sintético, el caso fácil) — sigue siendo la única prueba que responde de verdad la pregunta abierta §9.2.
 
 ### 5.4 Prompts ya formalizados en `docs/OLLAMA_MIGRATION_PLAN.md` §4/§11 (sin cambios)
 - Generación de scripts ETL (`xmlrpc.client`) — reutilizar tal cual, ya incluye la regla 'A la mano'.
@@ -173,32 +204,41 @@ completes con una suposición.
 ### 6.2 Por qué un módulo Odoo y no exponer Ollama directamente
 - Ollama ya está correctamente aislado en `127.0.0.1:11434` — debe seguir así. El navegador del cliente/usuario **nunca** debe hablarle a Ollama directamente.
 - El repo ya tiene una convención establecida de controladores (`type='jsonrpc'`/`type='json'`, `auth='public'` o `auth='user'` según el caso) en `custom_shop_qty_selector`, `md_cart_barcode_scanner`, `medicine_depot_website` — `local_ai_connector` sigue el mismo patrón, no inventa uno nuevo.
-- Regla de seguridad ya escrita en el repo (`medicine_depot_portal`): nunca `csrf=False` salvo webhooks externos, siempre con autenticación de origen. Los endpoints de `local_ai_connector` para consultas internas usan `auth='user'` (staff autenticado) — **no son públicos** en esta primera fase, incluyendo el de cotización por imagen (ver §8, decisión pendiente de confirmar).
+- Regla de seguridad ya escrita en el repo (`medicine_depot_portal`): nunca `csrf=False` salvo webhooks externos, siempre con autenticación de origen. Con la decisión ya tomada (§9.1), los endpoints de `local_ai_connector` tienen DOS niveles de acceso distintos, no uno solo:
+  - **Consultas de inventario NL y análisis de reportes**: `auth='user'` (staff autenticado) — sin cambios, uso interno.
+  - **Cotización por imagen**: `auth='public'` (decisión del usuario, 2026-07-27) — requiere el mismo tratamiento que `/afiliacion`/`/web/afiliacion/submit`: rate limiting DB-backed, validación de tamaño/mimetype de archivo, MÁS un límite de concurrencia de inferencia (§8) porque el costo por solicitud es mucho más alto que un formulario normal. No usar `csrf=False` salvo que el flujo real sea multipart sin sesión (igual que `/web/afiliacion/submit`) — justificarlo explícitamente si aplica, no copiarlo por costumbre.
 
 ### 6.3 Diagrama de flujo / Flow diagram
 
+**Nota sobre la corrección de §9.1:** con el endpoint de cotización por imagen ya definido como público, el "usuario" deja de ser una sola persona en los dos flujos. Un **cliente público anónimo** nunca debe ser quien "confirma" un match de producto sugerido por el modelo — ese paso de revisión humana lo sigue haciendo **staff interno**, igual que ya funciona en `purchase_invoice_parser` con las facturas CFDI. El cliente solo sube la imagen y (más tarde, async) recibe el resultado ya revisado.
+
 ```mermaid
 sequenceDiagram
-    participant U as Usuario (staff, backend)
+    participant S as Staff (backend, auth='user')
+    participant C as Cliente (público, auth='public')
     participant O as Odoo (local_ai_connector)
     participant AI as Ollama (127.0.0.1:11434)
     participant DB as Odoo ORM (stock.quant, product.*, sale.order)
 
-    U->>O: Pregunta en lenguaje natural / imagen de cotización
-    O->>AI: Prompt + contexto (system prompt de §5)
-    AI-->>O: JSON estructurado (consulta o extracción cruda)
-    alt Consulta de inventario
-        O->>DB: search_read stock.quant (cantidad "A la mano" real)
-        DB-->>O: Cantidad real
-        O->>AI: Resultado real -> pide redacción breve
-        AI-->>O: Respuesta en texto ("A la mano: N unidades")
-    else Cotización por imagen
-        O->>O: ProductMatcher (determinista, ya existe en purchase_invoice_parser)
-        O-->>U: Wizard de revisión humana (igual que flujo CFDI)
-        U->>O: Confirma/corrige matches
-        O->>DB: create sale.order
-    end
-    O-->>U: Respuesta final
+    S->>O: Pregunta de inventario en lenguaje natural
+    O->>AI: Prompt + contexto (system prompt de §5.1)
+    AI-->>O: JSON estructurado (consulta)
+    O->>DB: search_read stock.quant (cantidad "A la mano" real)
+    DB-->>O: Cantidad real
+    O->>AI: Resultado real -> pide redacción breve
+    AI-->>O: Respuesta en texto ("A la mano: N unidades")
+    O-->>S: Respuesta final
+
+    Note over C,O: Cotización por imagen (público) — flujo async, no instantáneo
+    C->>O: Sube imagen (rate limit + validación de archivo, igual que /afiliacion)
+    O-->>C: "Recibido, te contactamos pronto" (no espera en pantalla)
+    O->>AI: Prompt v3 + schema JSON (§5.3) — cola de 1 solicitud a la vez (§8)
+    AI-->>O: Lista de renglones extraídos (20-90s)
+    O->>O: ProductMatcher (determinista, ya existe en purchase_invoice_parser)
+    O-->>S: Entra a cola de revisión (wizard, igual que flujo CFDI)
+    S->>O: Confirma/corrige matches
+    O->>DB: create sale.order (cotización)
+    O-->>C: Notificación (email/portal) con la cotización lista
 ```
 
 ---
@@ -207,24 +247,31 @@ sequenceDiagram
 
 ```
 custom_addons/local_ai_connector/
-├── __manifest__.py                 # depends: base, stock, sale, purchase_invoice_parser (reutiliza ProductMatcher)
+├── __manifest__.py                 # depends: base, stock, sale, mail, purchase_invoice_parser (reutiliza ProductMatcher)
 ├── controllers/
-│   └── ai_api.py                   # /ai/inventory_query (auth='user'), /ai/quote_from_image (auth='user')
+│   └── ai_api.py                   # /ai/inventory_query (auth='user'), /ai/quote_from_image (auth='public', §9.1)
 ├── services/
-│   ├── ollama_client.py            # wrapper HTTP a 127.0.0.1:11434, timeouts, manejo de errores
-│   ├── prompt_templates.py         # las plantillas de §5 como constantes versionadas
-│   └── inventory_nl_resolver.py    # traduce el JSON del modelo -> domain de stock.quant real
-├── wizards/
-│   └── image_quote_review_wizard.py   # mismo patrón de revisión que purchase_invoice_import_wizard
+│   ├── ollama_client.py            # wrapper HTTP a 127.0.0.1:11434, timeouts, manejo de errores,
+│   │                                #   cola de 1 solicitud concurrente (§8), format=JSON Schema no "json" (§5.3 v3)
+│   ├── prompt_templates.py         # las plantillas de §5 (v3 para imagen) como constantes versionadas
+│   ├── inventory_nl_resolver.py    # traduce el JSON del modelo -> domain de stock.quant real
+│   └── image_quote_rate_limit.py   # DB-backed, mismo patrón que affiliation_rate_limit.py de
+│                                    #   medicine_depot_portal -- NO reinventar, reutilizar/heredar ese modelo
 ├── models/
-│   └── ai_query_log.py             # auditoría: qué se preguntó, qué prompt/versión, qué respondió Odoo (no solo el modelo)
+│   ├── ai_query_log.py             # auditoría: qué se preguntó, qué prompt/versión, qué respondió Odoo
+│   └── image_quote_request.py      # cola de cotizaciones por imagen: pendiente -> en revisión -> confirmada,
+│                                    #   con el cliente/email de origen para la notificación final
+├── wizards/
+│   └── image_quote_review_wizard.py   # revisión de STAFF (nunca del cliente público), mismo patrón que
+│                                        #   purchase_invoice_import_wizard
 ├── security/
-│   └── ir.model.access.csv
+│   └── ir.model.access.csv         # image_quote_request: sin acceso público de lectura/escritura directo,
+│                                    #   solo vía el controller (sudo() acotado, como affiliation_rate_limit)
 └── tests/
     └── test_inventory_nl_resolver.py   # sin llamar a Ollama real en CI -- mockear la respuesta del modelo
 ```
 
-**Nota de gobernanza:** igual que con los scripts ETL, cada versión de `prompt_templates.py` debe commitearse antes de usarse contra datos reales, y `ai_query_log` deja rastro de cada interacción — mismo principio de auditabilidad que ya rige el resto del proyecto (evitar el problema de los 33,725 registros `POS-*` sin script versionado).
+**Nota de gobernanza:** igual que con los scripts ETL, cada versión de `prompt_templates.py` debe commitearse antes de usarse contra datos reales, y `ai_query_log` deja rastro de cada interacción — mismo principio de auditabilidad que ya rige el resto del proyecto (evitar el problema de los 33,725 registros `POS-*` sin script versionado). El rate limiter del endpoint público **no se reescribe desde cero**: `medicine_depot_portal` ya tiene uno DB-backed funcionando y verificado bajo `workers=5` (`medicine.depot.affiliation.attempt`, corregido el 2026-07-27 tras comprobar que la versión en memoria no servía) — este módulo debe seguir ese mismo patrón, con un límite más estricto dado el costo de cómputo por solicitud (§9.1).
 
 ---
 
@@ -238,7 +285,8 @@ custom_addons/local_ai_connector/
 
 ## 9. Preguntas Abiertas / Open Questions
 
-1. **¿El flujo de cotización por imagen es solo para staff interno, o también para clientes finales vía portal público?** Este documento asume **staff interno** (`auth='user'`, mismo patrón que `purchase_invoice_parser`) como punto de partida seguro. Si se decide exponerlo a clientes finales, se necesita re-diseñar con las mismas protecciones que ya se aplicaron a `/afiliacion` (rate limiting, validación de archivos, límites de tamaño) — no asumir que un endpoint público hacia un LLM es seguro por defecto.
-   - **Contexto factual encontrado (2026-07-27, no decide la pregunta, solo la informa):** el repo ya tiene precedente de ambos patrones conviviendo. Endpoints **públicos** que ya reciben adjuntos de clientes sin login, con protecciones concretas: `/web/afiliacion/submit` y `/web/medicd/submit` (`medicine_depot_website/controllers/api.py`, límite 6MB/archivo, whitelist de mimetypes PDF/JPEG/PNG, `csrf=False` justificado), y `/afiliacion` (rate limiting real vía modelo Postgres). Endpoints **autenticados** también existen (`scan_barcode_add_to_cart`, portal `/my`). No hay integración de WhatsApp API — solo enlaces "click-to-chat" (`wa.me/...`). Si el negocio ya recibe estas cotizaciones por WhatsApp hoy (fuera de Odoo), ese es un dato relevante para decidir el canal de entrada que el usuario debe aportar.
-2. **Precisión real de OCR de escritura a mano en productos farmacéuticos** — **2 PoC ejecutados (2026-07-27):** `moondream:1.8b` falló por completo (alucinó en vez de transcribir); `qwen2.5vl:7b` **sí leyó correctamente** las 3 líneas de texto impreso sintético, pero en 76.45s y con 6.72GB de RAM pico (detalle completo en §3.2). Se descarta `moondream:1.8b`; `qwen2.5vl:7b` queda como candidato viable pero **todavía sin validar con letra manuscrita real** (la prueba fue con texto impreso, el caso fácil) — sigue pendiente conseguir imágenes reales de cotizaciones del negocio para la prueba definitiva. También queda pendiente decidir si el flujo se diseña asíncrono desde el inicio, dada la latencia de ~76s por imagen en este hardware.
-3. **¿Hay presupuesto de RAM/CPU dedicado para IA, o sigue compartiendo host con `dev`/`test` indefinidamente?** Afecta directamente si vale la pena escalar a `qwen2.5vl:7b` — con el fallo de `moondream:1.8b`, este punto se vuelve más urgente: la única alternativa de visión evaluada hasta ahora que queda en pie (`qwen2.5vl:7b`) es también la más pesada en RAM.
+1. ~~¿El flujo de cotización por imagen es solo para staff interno, o también para clientes finales vía portal público?~~ **RESUELTO por el usuario (2026-07-27): público.** Razonamiento del usuario: la demanda esperada es baja, tomando en cuenta el volumen promedio de pedidos diarios que ya recibe el sitio — no se espera un pico masivo de solicitudes. Requisito explícito: debe validar cualquier tipo de letra (no solo texto impreso).
+   - **Implicación de diseño (derivada, no una nueva pregunta abierta):** "público" con este modelo específico es más caro que un formulario normal — cada solicitud amarra ~20-90s de CPU y hasta 6.72GB de RAM (medido en §3.2/§5.3), en un servidor que ya comparte `dev`+`test`. El endpoint **debe** llevar las mismas protecciones que ya se aplicaron a `/afiliacion` (`medicine_depot_portal/controllers/portal.py`): rate limiting **DB-backed** (no en memoria — ya se comprobó en este mismo proyecto que un limitador en memoria no sirve con `workers=5`, ver §10 de `docs/OLLAMA_MIGRATION_PLAN.md`), más validación de archivo (tamaño/mimetype, mismo patrón que `/web/afiliacion/submit`: límite de tamaño, whitelist JPEG/PNG). Pero además necesita algo que `/afiliacion` no necesitaba: un **límite de concurrencia de inferencia** (máx. 1 imagen procesándose a la vez, ver §8) y un rate limit más estricto que 5/15min (ej. 3 solicitudes/hora por IP), porque el costo por solicitud es mucho mayor que guardar un registro en Postgres — un atacante no necesita muchas solicitudes para saturar la CPU del servidor durante minutos.
+   - **Contexto factual ya recolectado (2026-07-27):** el repo ya tiene precedente de endpoints públicos con adjuntos sin login y protecciones concretas: `/web/afiliacion/submit` y `/web/medicd/submit` (`medicine_depot_website/controllers/api.py`, límite 6MB/archivo, whitelist de mimetypes PDF/JPEG/PNG, `csrf=False` justificado), y `/afiliacion` (rate limiting real vía modelo Postgres, patrón a reutilizar tal cual). No hay integración de WhatsApp API — solo enlaces "click-to-chat" (`wa.me/...`).
+2. **Precisión real de OCR de escritura a mano en productos farmacéuticos** — **4 PoC ejecutados (2026-07-27):** `moondream:1.8b` falló por completo (alucinó en vez de transcribir, descartado). `qwen2.5vl:7b` con prompt v1 leyó el texto pero con schema JSON mal formado; v2 (mismo `format:"json"` genérico, solo mejor redactado) **falló peor** — JSON con claves duplicadas que `json.loads()` acepta sin error pero descarta silenciosamente 2 de 3 líneas; v3 (usando `format: <JSON Schema real>` de la API de Ollama, no el string genérico, + ejemplo few-shot) **funcionó correctamente**, 3/3 líneas bien formadas, en 20.17s (más rápido que los intentos anteriores). Detalle completo en §5.3. Con esto, `qwen2.5vl:7b` + prompt/schema v3 es el candidato viable y ya no solo "leyó el texto" sino que "devolvió un JSON usable" — pero **todavía sin validar con letra manuscrita real** (todas las pruebas fueron con texto impreso sintético, el caso fácil) — sigue pendiente conseguir imágenes reales de cotizaciones del negocio para la prueba definitiva. También queda pendiente decidir si el flujo se diseña asíncrono desde el inicio, dada la latencia observada (20-90s según la prueba) en este hardware.
+3. **Presupuesto de RAM/CPU dedicado para IA — la aritmética ya está hecha, falta la decisión de negocio.** No cabe con lo que hay hoy: `qwen2.5vl:7b` mide 6.72GB de pico (§3.2, medido) + `dev` límite ~2.5GB + `test` límite ~1.5GB = **10.72GB sobre 15GB totales del host**, sin contar el propio Postgres de ambos entornos ni el modelo de texto `qwen2.5-coder:7b` si corre en simultáneo. **Recomendación concreta (no solo pregunta abierta):** el modelo de visión NO debe quedar residente en memoria — usar `OLLAMA_KEEP_ALIVE` bajo (ej. `60s`, ya sugerido en §8) para que se descargue de RAM entre usos, y tratar el caso de "cotización por imagen" como asíncrono/bajo demanda, nunca como un servicio siempre-activo, mientras el host siga siendo compartido con `dev`/`test`. Lo que sigue siendo decisión exclusiva del usuario es si vale la pena **presupuestar un servidor separado o más RAM** para este caso de uso a mediano plazo, o si el modo "bajo demanda, descargado entre usos" es aceptable de forma permanente.
