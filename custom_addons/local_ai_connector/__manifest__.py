@@ -1,6 +1,6 @@
 {
     'name': 'MDS - Conector de IA Local',
-    'summary': 'Copiloto interno (Ollama, 127.0.0.1) para consultas de inventario en lenguaje natural.',
+    'summary': 'Copiloto interno (Ollama, en el host) para consultas de inventario en lenguaje natural.',
     'version': '19.0.1.0.0',
     'category': 'Tools',
     'author': 'MedicineDepot Sureste',
@@ -14,6 +14,13 @@
     'data': [
         'security/ir.model.access.csv',
     ],
+    'assets': {
+        'web.assets_backend': [
+            'local_ai_connector/static/src/js/ai_inventory_query_dialog.js',
+            'local_ai_connector/static/src/js/ai_inventory_query_systray.js',
+            'local_ai_connector/static/src/xml/ai_inventory_query.xml',
+        ],
+    },
     'installable': True,
     'application': False,
 }

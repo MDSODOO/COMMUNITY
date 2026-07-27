@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+
+    <t t-name="local_ai_connector.SystrayIcon">
+        <div class="o_ai_inventory_query_toggle d-flex align-items-center justify-content-center px-2"
+             t-on-click="openDialog" role="button" title="Copiloto de inventario (IA local)">
+            <i class="fa fa-comments-o fa-lg"/>
+        </div>
+    </t>
+
+    <t t-name="local_ai_connector.AiInventoryQueryDialog">
+        <Dialog size="'md'" title="'Copiloto de inventario (IA local)'">
+
+            <p class="text-muted small">
+                Pregunta sobre cantidades <strong>A la mano</strong> de un producto, en lenguaje
+                natural. La respuesta la calcula Odoo con datos reales; el modelo de IA solo
+                identifica a que producto te refieres.
+            </p>
+
+            <div class="d-flex gap-2 mb-3">
+                <input type="text"
+                       class="form-control"
+                       placeholder="ej. cuanto paracetamol hay a la mano?"
+                       t-model="state.question"
+                       t-on-keydown="onKeydown"
+                       t-att-disabled="state.loading"/>
+                <button class="btn btn-primary"
+                        t-on-click="ask"
+                        t-att-disabled="state.loading || !state.question.trim()">
+                    <i t-if="state.loading" class="fa fa-spinner fa-spin"/>
+                    <t t-else="">Preguntar</t>
+                </button>
+            </div>
+
+            <div t-if="state.result" t-attf-class="alert {{resultClass}}" role="alert">
+                <t t-esc="state.result.message"/>
+            </div>
+
+            <t t-set-slot="footer">
+                <button class="btn btn-secondary" t-on-click="props.close">Cerrar</button>
+            </t>
+
+        </Dialog>
+    </t>
+
+</templates>

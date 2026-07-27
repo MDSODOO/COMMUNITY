@@ -290,9 +290,10 @@ Se construyó y validó end-to-end la parte de **consultas de inventario en leng
 
 ## 8. Gobernanza de Recursos / Resource Governance
 
-- **No cargar el modelo de visión de forma permanente.** Usar `OLLAMA_KEEP_ALIVE=60s` (o similar) para que Ollama libere RAM entre solicitudes, dado que el host ya está al límite con `dev`+`test`.
-- **Cola de una sola solicitud a la vez.** Con CPU compartido, procesar solicitudes de IA en serie (un lock simple en `ollama_client.py`) para no degradar la respuesta de `dev`/`test` durante un pico de uso.
+- **No cargar el modelo de visión de forma permanente.** ~~Usar `OLLAMA_KEEP_ALIVE=60s`~~ **Ya configurado y verificado (2026-07-27)** — override systemd en `/etc/systemd/system/ollama.service.d/override.conf` (`OLLAMA_HOST=0.0.0.0:11434` + `OLLAMA_KEEP_ALIVE=60s`, este archivo vive en el servidor, no en el repo). Confirmado con `ollama ps`: el modelo se descarga de RAM ~60s después de la última consulta.
+- **Cola de una sola solicitud a la vez.** Con CPU compartido, procesar solicitudes de IA en serie (un lock simple en `ollama_client.py`) para no degradar la respuesta de `dev`/`test` durante un pico de uso. **Implementado** en `services/ollama_client.py` (`threading.Lock`).
 - **Ningún caso de uso nuevo debe correr en el mismo momento que una migración de módulo o un test suite completo** — coordinar manualmente hasta que haya métricas reales de contención.
+- **Ollama ya no escucha solo en `127.0.0.1`** (necesario para que el contenedor de Odoo lo alcance, ver §7.1) — se abrió a `0.0.0.0:11434` y se cerró con reglas `iptables` explícitas (solo `127.0.0.1` + subred privada de Docker `172.16.0.0/12`), persistidas con `netfilter-persistent`. **Pendiente de que el usuario confirme en el panel de IONOS** que el firewall a nivel de proveedor tampoco expone ese puerto (fuera del alcance de este documento — requiere acceso a la cuenta del proveedor).
 
 ---
 
