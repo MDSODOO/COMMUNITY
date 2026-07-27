@@ -31,6 +31,13 @@ services:
         condition: service_healthy
     ports:
       - "${ODOO_PORT:-8069}:8069"
+    # Ollama corre en el host (127.0.0.1:11434, fuera de Docker) para el
+    # modulo local_ai_connector -- 127.0.0.1 dentro del contenedor es el
+    # propio contenedor, no el host. host.docker.internal resuelve al
+    # gateway del host de forma portable (funciona igual en Docker Desktop
+    # y en Linux gracias a host-gateway).
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     environment:
       HOST: db
       PORT: 5432
