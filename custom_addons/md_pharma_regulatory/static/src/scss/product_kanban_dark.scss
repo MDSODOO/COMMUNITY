@@ -2,13 +2,14 @@
 // product_kanban_dark.scss — Tono oscuro REAL del POS para el Kanban de
 // Inventario (card de producto, md_pharma_regulatory).
 // ────────────────────────────────────────────────────────────────────────
-// Registrado en web.assets_web_dark (NO en web.assets_backend): Odoo 19
-// inyecta este bundle ÚNICAMENTE cuando el dark mode del backend está
-// activo -- mismo patrón ya validado en
-// medicine_depot_portal/backend_dark.scss (su propio comentario de
-// cabecera documenta que intentos previos con selectores .o_dark_mode /
-// [data-bs-theme] NUNCA coincidían con el DOM real; el bundle dedicado es
-// la única señal confiable).
+// CORREGIDO 2026-07-27: vivía en web.assets_web_dark, asumiendo que Odoo 19
+// lo inyecta "únicamente cuando el dark mode del backend está activo".
+// Falso en Community: IrHttp.color_scheme() está hardcodeado a "light"
+// (verificado en odoo/addons/web/models/ir_http.py) — ese bundle NUNCA
+// carga aquí. Se migra a web.assets_backend, gateado con el selector que sí
+// funciona: html.o_md_dark_mode / html[data-bs-theme="dark"] (mismo
+// mecanismo que custom_addons/md_dark_mode y el resto de módulos migrados
+// el mismo día).
 //
 // Origen de los valores: bi_pos_stock/static/src/scss/pos_glass_bento.scss,
 // selector ".pos .rightpane .product" (la card de producto real del POS en
@@ -17,6 +18,9 @@
 // reproduce aquí porque este archivo no comparte bundle/scope Sass con
 // bi_pos_stock (otro módulo, otra carga de assets_pos vs assets_backend).
 // ════════════════════════════════════════════════════════════════════════
+
+html.o_md_dark_mode,
+html[data-bs-theme="dark"] {
 
 .o_web_client .o_kanban_view .o_kanban_record.o_md_product_kanban_card {
     // --pg-bg-card / --pg-bg-card-border en pos_glass_bento.scss
@@ -111,4 +115,5 @@
 // ve el cajero hoy detrás de cada card en el POS.
 .o_web_client .o_kanban_pharma_reg_products .o_kanban_renderer {
     background: linear-gradient(180deg, #073A4C 0%, #152330 100%) !important;
+}
 }

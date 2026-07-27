@@ -38,11 +38,11 @@
             'md_pharma_regulatory/static/src/kanban_lot_detail/kanban_lot_detail_popup.xml',
             'md_pharma_regulatory/static/src/kanban_lot_detail/md_lot_detail_button.js',
             'md_pharma_regulatory/static/src/kanban_lot_detail/md_lot_detail_button.xml',
-        ],
-        # Solo se inyecta cuando el dark mode del backend está activo (mismo
-        # patrón que medicine_depot_portal/backend_dark.scss) -- aplica el
-        # tono oscuro real del POS (pos_glass_bento.scss) a esta card.
-        'web.assets_web_dark': [
+            # product_kanban_dark.scss va al final: gateado por
+            # html.o_md_dark_mode/[data-bs-theme], migrado desde
+            # web.assets_web_dark (2026-07-27) -- ese bundle nunca carga en
+            # Odoo 19 Community. Aplica el tono oscuro real del POS
+            # (pos_glass_bento.scss) a esta card.
             'md_pharma_regulatory/static/src/scss/product_kanban_dark.scss',
         ],
     },

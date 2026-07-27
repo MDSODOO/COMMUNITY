@@ -25,9 +25,9 @@
         'web.assets_backend': [
             # variables.scss es importado por dashboard.scss — no registrar directamente
             'medicine_depot_scrap_batch/static/src/scss/dashboard.scss',
-        ],
-        'web.assets_web_dark': [
-            # Se carga SOLO en modo oscuro — sin selectores adicionales requeridos
+            # dashboard_dark.scss va al final: gateado por html.o_md_dark_mode/
+            # [data-bs-theme], migrado desde web.assets_web_dark (2026-07-27)
+            # -- ese bundle nunca carga en Odoo 19 Community.
             'medicine_depot_scrap_batch/static/src/scss/dashboard_dark.scss',
         ],
     },

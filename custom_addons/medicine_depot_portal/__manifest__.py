@@ -37,6 +37,7 @@ nombra siempre 'A la mano' — nunca 'Disponible'.
         'data/auth_signup_config.xml',
         'data/website_domain_config.xml',
         'data/pharmacovigilance_sequence.xml',
+        'data/affiliation_rate_limit_cron.xml',
         'views/snippets/s_md_hero_bento.xml',
         'views/snippets/s_md_audit_grid.xml',
         'views/snippets/s_md_service_grid.xml',
@@ -97,10 +98,11 @@ nombra siempre 'A la mano' — nunca 'Disponible'.
             # properties (--md-*) que backend_bento.scss consume.
             'medicine_depot_portal/static/src/scss/backend_tokens.scss',
             'medicine_depot_portal/static/src/scss/backend_bento.scss',
-        ],
-        # Odoo 19 carga este bundle SOLO cuando el dark mode está activo.
-        # No se necesitan selectores .o_dark_mode ni [data-bs-theme].
-        'web.assets_web_dark': [
+            # backend_dark.scss va AL FINAL: sus reglas (gateadas por
+            # html.o_md_dark_mode/[data-bs-theme]) deben cargar despues de
+            # backend_bento.scss para ganar en empate de especificidad.
+            # Migrado desde web.assets_web_dark (2026-07-27) -- ese bundle
+            # nunca carga en Odoo 19 Community, ver cabecera del archivo.
             'medicine_depot_portal/static/src/scss/backend_dark.scss',
         ],
     },

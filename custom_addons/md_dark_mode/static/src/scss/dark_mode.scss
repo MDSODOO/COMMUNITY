@@ -55,6 +55,23 @@ html[data-bs-theme="dark"] {
     --bs-modal-bg: #{$md-dark-surface};
     --bs-modal-color: #{$md-dark-text};
 
+    // Variables CSS propias (--md-dark-*): fuente única de verdad de esta
+    // paleta para que otros módulos (ej. los que traen su propio CSS de
+    // dark mode para componentes específicos) referencien estos valores en
+    // vez de duplicar hex codes. Deben gatearse bajo este MISMO selector
+    // (html.o_md_dark_mode / html[data-bs-theme="dark"]) — es el único
+    // mecanismo de dark mode que realmente carga en este Odoo 19 Community
+    // (ver nota sobre web.assets_web_dark/color_scheme() más abajo).
+    --md-dark-bg: #{$md-dark-bg};
+    --md-dark-bg-alt: #{$md-dark-bg-alt};
+    --md-dark-surface: #{$md-dark-surface};
+    --md-dark-surface-alt: #{$md-dark-surface-alt};
+    --md-dark-border: #{$md-dark-border};
+    --md-dark-text: #{$md-dark-text};
+    --md-dark-text-muted: #{$md-dark-text-muted};
+    --md-dark-link: #{$md-dark-link};
+    --md-dark-accent: #{$md-dark-accent};
+
     body,
     .o_action_manager,
     .o_content,

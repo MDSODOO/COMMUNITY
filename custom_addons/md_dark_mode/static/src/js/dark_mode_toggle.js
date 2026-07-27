@@ -11,6 +11,14 @@ function isDarkStored() {
 
 function applyDarkClass(dark) {
     document.documentElement.classList.toggle("o_md_dark_mode", dark);
+    // Tambien se fija [data-bs-theme] (convencion nativa de Bootstrap 5.3)
+    // para que CSS de terceros/futuro escrito contra ese selector estandar
+    // tambien funcione, sin depender solo de la clase propietaria.
+    if (dark) {
+        document.documentElement.setAttribute("data-bs-theme", "dark");
+    } else {
+        document.documentElement.removeAttribute("data-bs-theme");
+    }
 }
 
 // Aplicar de inmediato al cargar el script (antes de montar OWL) para evitar

@@ -34,10 +34,9 @@
             'purchase_invoice_parser/static/src/xml/price_notification_menu.xml',
             'purchase_invoice_parser/static/src/js/price_notification_menu.js',
             'purchase_invoice_parser/static/src/js/tours/purchase_parser_tour.js',
-        ],
-        # Odoo 19 carga este bundle SOLO cuando el dark mode está activo.
-        # No se necesitan selectores .o_dark_mode ni [data-bs-theme].
-        'web.assets_web_dark': [
+            # backend_dark.scss va al final: gateado por html.o_md_dark_mode/
+            # [data-bs-theme], migrado desde web.assets_web_dark (2026-07-27)
+            # -- ese bundle nunca carga en Odoo 19 Community.
             'purchase_invoice_parser/static/src/scss/backend_dark.scss',
         ],
     },

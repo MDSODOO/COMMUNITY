@@ -1,12 +1,18 @@
 // ════════════════════════════════════════════════════════════════════════
 // backend_dark.scss — Tokens de dark mode para Medicine Depot (backend)
 // ────────────────────────────────────────────────────────────────────────
-// Registrado en web.assets_web_dark: Odoo 19 inyecta este bundle
-// ÚNICAMENTE cuando el dark mode está activo (preferencia de usuario).
-// No se necesitan selectores .o_dark_mode ni [data-bs-theme]: este
-// archivo solo se carga en modo oscuro.
+// CORREGIDO 2026-07-27: este archivo vivía en el bundle web.assets_web_dark,
+// asumiendo que Odoo 19 lo carga "únicamente cuando el dark mode está
+// activo". Falso en Community: IrHttp.color_scheme() está hardcodeado a
+// "light" (verificado en odoo/addons/web/models/ir_http.py) — ese bundle
+// NUNCA carga en esta instancia. Se migra a web.assets_backend (bundle que
+// sí carga siempre) y se gatea explícitamente con el selector que sí
+// funciona: html.o_md_dark_mode / html[data-bs-theme="dark"], el mismo que
+// usa custom_addons/md_dark_mode/static/src/scss/dark_mode.scss.
 // ════════════════════════════════════════════════════════════════════════
 
+html.o_md_dark_mode,
+html[data-bs-theme="dark"] {
 .o_web_client {
     // ── Superficies ───────────────────────────────────────────────────────
     --md-card-bg:              #1a1f2e;
@@ -116,4 +122,5 @@
             border-color: transparent !important;
         }
     }
+}
 }
