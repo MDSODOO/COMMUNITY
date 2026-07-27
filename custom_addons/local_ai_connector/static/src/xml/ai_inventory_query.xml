@@ -32,7 +32,8 @@
                 </button>
             </div>
 
-            <div t-if="state.result" t-attf-class="alert {{resultClass}}" role="alert">
+            <div t-if="state.result" t-attf-class="alert {{resultClass}}" role="alert"
+                 style="white-space: pre-line;">
                 <t t-esc="state.result.message"/>
             </div>
 

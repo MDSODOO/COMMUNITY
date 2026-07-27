@@ -84,10 +84,17 @@ def resolve_inventory_query(env, question):
         }
 
     if len(products) > 1:
-        options = "; ".join(products.mapped("display_name"))
+        # Lista con salto de linea, no un bloque de texto separado por ';' --
+        # un usuario real reporto que el formato anterior "se sentia como que
+        # no encontro nada" aunque tecnicamente si habia matches (2026-07-27).
+        options = "\n".join("- {}".format(p) for p in products.mapped("display_name"))
         return {
             "status": "clarify",
-            "message": "Encontre varios productos que podrian coincidir: {}. ¿Cual te interesa?".format(options),
+            "message": (
+                'Encontre {} productos que podrian coincidir con "{}". '
+                "¿Cual te interesa? Vuelve a preguntar siendo mas especifico "
+                "(ej. usando el codigo entre corchetes):\n{}"
+            ).format(len(products), mentioned, options),
             "product_id": None,
             "on_hand": None,
             "raw_model_output": parsed,
