@@ -3,6 +3,8 @@
 !.env.*.example
 config/odoo.conf
 !config/odoo.conf.example
+config/odoo_test.conf
+!config/odoo_test.conf.example
 *.log
 __pycache__/
 *.pyc
@@ -13,3 +15,11 @@ oca_addons/*/
 custom_addons/.graphify/
 backups/*.dump
 backups/*.tar.gz
+
+# Playwright E2E
+e2e_tests/node_modules/
+e2e_tests/.auth/
+e2e_tests/test-results/
+e2e_tests/playwright-report/
+e2e_tests/screenshots/
+e2e_tests/.env

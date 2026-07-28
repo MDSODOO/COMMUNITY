@@ -1,0 +1,16 @@
+{
+  "name": "purchase-invoice-parser-e2e",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Playwright UI stress tests for the purchase_invoice_parser Odoo module / Pruebas UI de estres para el modulo purchase_invoice_parser",
+  "scripts": {
+    "test": "playwright test",
+    "test:headed": "playwright test --headed",
+    "test:ui": "playwright test --ui",
+    "report": "playwright show-report"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.48.0",
+    "dotenv": "^16.4.5"
+  }
+}

@@ -306,6 +306,13 @@ class PurchaseInvoiceImportWizard(models.TransientModel):
 
         ieps_lines_count = 0
         lines_vals = []
+        # Cache intra-factura: si dos conceptos del MISMO CFDI comparten un
+        # codigo de proveedor sin match, el segundo reutiliza el producto que
+        # el primero acaba de auto-crear en vez de duplicarlo.
+        # Intra-invoice cache: if two concepts in the SAME CFDI share an
+        # unmatched supplier code, the second reuses the product the first
+        # one just auto-created instead of duplicating it.
+        auto_created_cache = {}
         for cfdi_line in cfdi_lines:
             product = False
             prod_conf = 0.0
@@ -325,6 +332,7 @@ class PurchaseInvoiceImportWizard(models.TransientModel):
                     partner_id=partner.id if partner else None,
                     supplier_rfc=doc.emisor_rfc,
                 )
+            addenda_cbarra = ''
             if not product and is_brudifarma and cfdi_line.no_identificacion:
                 line_code = self._normalize_article_code(cfdi_line.no_identificacion)
                 addenda_candidates = addenda_lots_by_code.get(line_code, [])
@@ -342,6 +350,34 @@ class PurchaseInvoiceImportWizard(models.TransientModel):
                         prod_conf = 0.97
                         prod_method = 'brudifarma_addenda_cbarra'
                         break
+                    addenda_cbarra = addenda_cbarra or cbarra
+
+            if not product:
+                cache_key = self._normalize_article_code(cfdi_line.no_identificacion) or None
+                if cache_key and cache_key in auto_created_cache:
+                    product = auto_created_cache[cache_key]
+                    prod_method = 'auto_created_cached'
+                else:
+                    product = self._auto_create_product(
+                        cfdi_line=cfdi_line,
+                        is_brudifarma=is_brudifarma,
+                        barcode_hint=addenda_cbarra,
+                    )
+                    prod_method = 'auto_created'
+                    if cache_key:
+                        auto_created_cache[cache_key] = product
+                # confianza 0.0 a proposito: 'needs_review' abajo sigue
+                # marcando la linea en rojo para revision humana aunque ya
+                # tenga product_id — un producto recien creado sin catalogar
+                # sigue mereciendo una revision visual, solo que ya no
+                # bloquea la creacion de la OC.
+                # confidence 0.0 on purpose: 'needs_review' below still flags
+                # the line red for human review even though it now has a
+                # product_id — a freshly auto-created, uncatalogued product
+                # still deserves a visual review, it just no longer blocks
+                # PO creation.
+                prod_conf = 0.0
+
             if cfdi_line.ieps_presente:
                 ieps_lines_count += 1
             lines_vals.append({
@@ -533,6 +569,82 @@ class PurchaseInvoiceImportWizard(models.TransientModel):
         if name.startswith('QFM'):
             return 'quifamesa'
         return None
+
+    def _auto_create_product(self, cfdi_line, is_brudifarma, barcode_hint):
+        """Crea dinamicamente un product.product almacenable cuando ningun
+        metodo de matching (barcode, default_code, supplierinfo, Addenda,
+        nombre) resolvio un producto existente para esta linea CFDI.
+
+        Decisiones de diseno / Design decisions:
+        - type='consu' + is_storable=True: en Odoo 19 el antiguo
+          type='product' ya no existe: esta es la unica combinacion que
+          activa el tracking de cantidades fisicas ('A la Mano' / On Hand)
+          via stock.quant. Usar solo type='consu' sin is_storable crearia un
+          bien de consumo SIN inventario — el bug que esta funcion existe
+          para evitar.
+        - Captura el codigo del proveedor en default_code (BRUDIFARMA, que
+          matchea por ahi — ver ProductMatcher._search_default_code) o en
+          barcode (QUIFAMESA, o cuando hay CBarra de Addenda), para que
+          reimportaciones futuras de la MISMA factura/proveedor re-matcheen
+          este producto en lugar de crear un duplicado cada vez.
+        - tracking='none' por default: un producto recien creado sin
+          revision humana no debe asumirse con seguimiento por lote — eso
+          activaria el Hard Stop de "A la Mano" (_validate_line_lot) en la
+          misma importacion que lo crea. Un usuario puede subir el producto
+          a tracking='lot' despues de revisarlo.
+
+        Dynamically creates a storable product.product when no matching
+        strategy (barcode, default_code, supplierinfo, Addenda, name)
+        resolved an existing product for this CFDI line.
+
+        - type='consu' + is_storable=True: in Odoo 19 the old type='product'
+          no longer exists — this is the only combination that enables
+          physical quantity tracking ('A la Mano' / On Hand) via
+          stock.quant. type='consu' alone without is_storable would create a
+          consumable with NO inventory tracking — the exact bug this method
+          exists to avoid.
+        - Captures the supplier code into default_code (BRUDIFARMA, which
+          matches on it — see ProductMatcher._search_default_code) or
+          barcode (QUIFAMESA, or when an Addenda CBarra is available), so
+          future re-imports of the SAME supplier/product re-match it instead
+          of creating a duplicate every time.
+        - tracking='none' by default: a freshly created, human-unreviewed
+          product should not be assumed to need lot tracking — that would
+          trigger the "A la Mano" Hard Stop (_validate_line_lot) in the very
+          import that creates it. A user can upgrade it to tracking='lot'
+          after reviewing it.
+        """
+        code = self._normalize_article_code(cfdi_line.no_identificacion)
+        name = (
+            cfdi_line.descripcion_clean
+            or cfdi_line.descripcion
+            or code
+            or _('Producto sin descripción (importado desde CFDI)')
+        ).strip()
+
+        vals = {
+            'name': name,
+            'type': 'consu',
+            'is_storable': True,
+            'tracking': 'none',
+            'purchase_ok': True,
+            'sale_ok': False,
+            'standard_price': cfdi_line.valor_unitario or 0.0,
+            'list_price': cfdi_line.valor_unitario or 0.0,
+        }
+        if is_brudifarma and code:
+            vals['default_code'] = code
+        if barcode_hint:
+            vals['barcode'] = barcode_hint
+        elif not is_brudifarma and code:
+            vals['barcode'] = code
+
+        product = self.env['product.product'].create(vals)
+        _logger.info(
+            "Producto auto-creado desde importacion CFDI: %s (id=%s, codigo_proveedor=%s)",
+            product.display_name, product.id, code,
+        )
+        return product
 
     def _extract_lines_by_supplier_format(self, doc, supplier_format):
         lines = list(doc.lines or [])

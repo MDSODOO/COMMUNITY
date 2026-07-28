@@ -40,4 +40,40 @@
         </field>
     </record>
 
+    <!--
+        La accion "Solicitudes de cotizacion" (purchase.purchase_rfq) fuerza
+        view_id=purchase.purchase_order_kpis_tree como vista primaria. Esa
+        vista es standalone (inherit_id=False, es una copia con KPIs propios,
+        no una extension de purchase.purchase_order_tree), asi que
+        purchase_rfq_list_import_cfdi de arriba NUNCA se aplica ahi pese a
+        heredar del mismo modelo — el boton "Importar XML" quedaba invisible
+        en la lista de RFQ. Se repite el mismo boton apuntando directo a esta
+        vista para que aparezca tambien en ese listado.
+
+        The "Quotations/RFQ" action (purchase.purchase_rfq) hardcodes
+        view_id=purchase.purchase_order_kpis_tree as its primary view. That
+        view is standalone (inherit_id=False, a copy with its own KPIs, not
+        an extension of purchase.purchase_order_tree), so
+        purchase_rfq_list_import_cfdi above never applied there despite
+        inheriting the same model — the "Importar XML" button was invisible
+        on the RFQ list. Repeating the same button targeted directly at this
+        view so it also shows up there.
+    -->
+    <record id="purchase_rfq_kpis_list_import_cfdi" model="ir.ui.view">
+        <field name="name">purchase.rfq.kpis.list.import.cfdi</field>
+        <field name="model">purchase.order</field>
+        <field name="inherit_id" ref="purchase.purchase_order_kpis_tree"/>
+        <field name="arch" type="xml">
+            <list position="inside">
+                <header>
+                    <button name="%(action_cfdi_import_wizard)d"
+                            string="Importar XML"
+                            type="action"
+                            class="btn-secondary pip_import_xml_btn"
+                            display="always"/>
+                </header>
+            </list>
+        </field>
+    </record>
+
 </odoo>
