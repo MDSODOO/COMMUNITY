@@ -4,19 +4,19 @@
  * lenguaje natural (AiInventoryQueryDialog). Mismo patron que el toggle de
  * custom_addons/md_dark_mode (componente OWL registrado en systray).
  *
- * Tambien se registra como comando fijo del Command Palette (Ctrl+K) via
- * useCommand -- NO se implemento como command_provider con busqueda en
- * vivo (options.searchValue) porque una consulta real tarda 10-25s+ y el
- * Command Palette esta pensado para resultados casi instantaneos; forzar
- * eso ahi se hubiera sentido "congelado", no una mejora. En vez de eso, el
- * comando simplemente abre el mismo dialogo ya probado -- Ctrl+K como
- * atajo de descubrimiento, no como buscador en vivo.
+ * El acceso via Ctrl+K vive en ./launcher_quick_actions.js (registry
+ * "md_launcher_quick_actions"), no aqui -- este archivo antes usaba
+ * useCommand() para eso, pero se descubrio en auditoria (2026-07-28) que
+ * el Command Palette nativo de Odoo (del que depende useCommand) nunca se
+ * abre en esta instancia: md_command_palette intercepta Ctrl+K/Alt+Espacio
+ * en fase de captura con stopImmediatePropagation() antes de que el
+ * hotkey service nativo lo reciba. La entrada "Copiloto de inventario"
+ * jamas aparecio en la paleta real pese a lo que decia el commit 80e3573.
  */
 
 import { Component } from "@odoo/owl";
 import { registry } from "@web/core/registry";
 import { useService } from "@web/core/utils/hooks";
-import { useCommand } from "@web/core/commands/command_hook";
 import { AiInventoryQueryDialog } from "./ai_inventory_query_dialog";
 
 export class AiInventoryQuerySystrayIcon extends Component {
@@ -25,9 +25,6 @@ export class AiInventoryQuerySystrayIcon extends Component {
 
     setup() {
         this.dialog = useService("dialog");
-        useCommand("Copiloto de inventario (IA local)", () => this.openDialog(), {
-            category: "default",
-        });
     }
 
     openDialog() {

@@ -70,6 +70,24 @@
                                 Sin resultados para “<t t-esc="state.query"/>” / No results for “<t t-esc="state.query"/>”
                             </span>
                         </div>
+                        <div t-if="state.quickActionResults.length" class="o_md_command_palette_group o_md_command_palette_group--quickaction">
+                            <div class="o_md_command_palette_group_label">
+                                Acciones rápidas / Quick actions <span class="o_md_command_palette_group_count" t-esc="state.quickActionResults.length"/>
+                            </div>
+                            <t t-foreach="state.quickActionResults" t-as="item" t-key="item.key">
+                                <div t-att-id="item.key"
+                                     role="option"
+                                     t-attf-aria-selected="{{ results.indexOf(item) === state.activeIndex ? 'true' : 'false' }}"
+                                     t-attf-class="o_md_command_palette_item {{ results.indexOf(item) === state.activeIndex ? 'active' : '' }}"
+                                     t-on-click="() => this.onItemClick(item)"
+                                     t-on-mouseenter="() => this.state.activeIndex = results.indexOf(item)">
+                                    <span class="o_md_command_palette_avatar">
+                                        <i t-attf-class="fa {{ item.icon }}"/>
+                                    </span>
+                                    <span t-esc="item.label"/>
+                                </div>
+                            </t>
+                        </div>
                         <div t-if="state.menuResults.length" class="o_md_command_palette_group o_md_command_palette_group--menu">
                             <div class="o_md_command_palette_group_label">
                                 Menús / Menus <span class="o_md_command_palette_group_count" t-esc="state.menuResults.length"/>

@@ -8,75 +8,83 @@ from odoo.http import request
 
 _logger = logging.getLogger(__name__)
 
-# Limite mas estricto que /afiliacion (5/15min): cada solicitud aqui cuesta
-# 90-240s de CPU + hasta 6.7GB de RAM (modelo de vision), no solo un
-# registro en Postgres -- ver docs/AI_MODEL_ODOO_CONFIG.md §9.1.
+# La mayoria de las cotizaciones llegan por WhatsApp (cuentas normales, sin
+# API oficial) a un empleado, no por el formulario publico -- ver
+# docs/AI_MODEL_ODOO_CONFIG.md §9.3. Este endpoint deja que ese empleado
+# arrastre la foto directo a Odoo (dialogo abierto desde el Command
+# Palette / systray) en vez de forzarlo a pasar por /ai/quote_from_image
+# (pensado para que el cliente final suba su propia foto).
+#
+# Limite mas generoso que el publico (3/hora) porque es staff autenticado
+# y de confianza, pero sigue habiendo un limite: cada solicitud cuesta
+# 90-240s de CPU + hasta 6.7GB de RAM (modelo de vision, ver
+# image_quote_processor.py), asi que un arrastre accidental de muchas
+# fotos de golpe si debe frenarse. Contado por user_id, no por IP: varios
+# empleados comparten la IP de oficina.
 _RATE_LIMIT_WINDOW_SECONDS = 60 * 60
-_RATE_LIMIT_MAX_ATTEMPTS = 3
+_RATE_LIMIT_MAX_ATTEMPTS = 10
 
-_MAX_FILE_SIZE = 8 * 1024 * 1024  # 8 MB por foto
+_MAX_FILE_SIZE = 8 * 1024 * 1024  # 8 MB por foto, igual que el endpoint publico
 _ALLOWED_MIMETYPES = {'image/jpeg', 'image/png'}
 _MAX_IMAGES_PER_REQUEST = 5
 
 
-class LocalAiQuoteFromImageController(http.Controller):
+class LocalAiQuoteFromImageInternalController(http.Controller):
 
-    def _get_request_ip(self):
-        return request.httprequest.remote_addr or 'unknown'
-
-    def _is_rate_limited(self, ip):
+    def _is_rate_limited(self, user_id):
         Attempt = request.env['local.ai.image.quote.attempt'].sudo()
         window_start = fields.Datetime.now() - timedelta(seconds=_RATE_LIMIT_WINDOW_SECONDS)
         attempt_count = Attempt.search_count([
-            ('ip_address', '=', ip),
+            ('user_id', '=', user_id),
             ('create_date', '>=', window_start),
         ])
         if attempt_count >= _RATE_LIMIT_MAX_ATTEMPTS:
             return True
-        Attempt.create({'ip_address': ip})
+        Attempt.create({'user_id': user_id})
         return False
 
     @http.route(
-        '/ai/quote_from_image',
-        type='http', auth='public', website=True,
+        '/ai/quote_from_image/staff',
+        type='http', auth='user', website=True,
         methods=['POST'],
-        csrf=False,  # multipart/form-data sin sesion -- mismo criterio que /web/afiliacion/submit
     )
-    def quote_from_image(self, **post):
-        """Recibe 1+ fotos de una cotizacion escrita/impresa a mano y
-        encola su procesamiento -- NUNCA procesa en esta misma request
-        (una imagen real tarda 90-240s, ver docs/AI_MODEL_ODOO_CONFIG.md §9.2).
-        Un cron la recoge despues (services/image_quote_processor.py) y un
-        humano de staff revisa cada renglon antes de crear cualquier
-        cotizacion real -- ver action_create_quotation en
-        models/image_quote_request.py.
+    def quote_from_image_staff(self, **post):
+        """Version interna de /ai/quote_from_image: un empleado arrastra o
+        selecciona 1+ fotos recibidas por WhatsApp y las encola -- mismo
+        pipeline de despues (cron -> extraccion -> matching -> revision)
+        que la via publica, ver models/image_quote_request.py.
         """
-        ip = self._get_request_ip()
-        if self._is_rate_limited(ip):
+        user = request.env.user
+        if self._is_rate_limited(user.id):
             _logger.warning(
-                'quote_from_image: rate limit alcanzado para IP %s (%s intentos / %s min)',
-                ip, _RATE_LIMIT_MAX_ATTEMPTS, _RATE_LIMIT_WINDOW_SECONDS // 60,
+                'quote_from_image_staff: rate limit alcanzado para usuario %s (%s intentos / %s min)',
+                user.login, _RATE_LIMIT_MAX_ATTEMPTS, _RATE_LIMIT_WINDOW_SECONDS // 60,
             )
             return request.make_json_response({
                 'success': False,
-                'message': 'Demasiados intentos. Por favor espera antes de volver a intentar.',
+                'message': 'Demasiadas solicitudes seguidas. Espera unos minutos antes de volver a intentar.',
             }, status=429)
 
         customer_name = (post.get('customer_name') or '').strip()
         customer_email = (post.get('customer_email') or '').strip()
         customer_phone = (post.get('customer_phone') or '').strip()
 
-        if not customer_name or not customer_email:
+        if not customer_name:
             return request.make_json_response({
                 'success': False,
-                'message': 'Nombre y correo son obligatorios.',
+                'message': 'El nombre del cliente es obligatorio.',
+            }, status=400)
+        if not customer_email and not customer_phone:
+            return request.make_json_response({
+                'success': False,
+                'message': 'Captura al menos el teléfono o el correo del cliente.',
             }, status=400)
 
         files = request.httprequest.files.getlist('images')
         if not files:
             return request.make_json_response({
                 'success': False,
-                'message': 'Sube al menos una foto.',
+                'message': 'Adjunta al menos una foto.',
             }, status=400)
         if len(files) > _MAX_IMAGES_PER_REQUEST:
             return request.make_json_response({
@@ -94,7 +102,7 @@ class LocalAiQuoteFromImageController(http.Controller):
                 }, status=400)
             mimetype = file_obj.content_type or 'application/octet-stream'
             if mimetype not in _ALLOWED_MIMETYPES:
-                _logger.warning('quote_from_image: mimetype no permitido (%s)', mimetype)
+                _logger.warning('quote_from_image_staff: mimetype no permitido (%s)', mimetype)
                 return request.make_json_response({
                     'success': False,
                     'message': 'Solo se aceptan fotos JPEG o PNG.',
@@ -108,13 +116,13 @@ class LocalAiQuoteFromImageController(http.Controller):
             'customer_name': customer_name,
             'customer_email': customer_email,
             'customer_phone': customer_phone,
-            'ip_address': ip,
-            'origin_channel': 'public_web',
+            'ip_address': request.httprequest.remote_addr,
+            'origin_channel': 'internal_staff',
             'image_ids': image_vals,
         })
 
         return request.make_json_response({
             'success': True,
-            'message': 'Recibido. Un miembro de nuestro equipo revisará tu solicitud y te contactaremos con la cotización.',
+            'message': 'Solicitud creada. Se procesará en unos minutos.',
             'reference': quote_request.name,
         })

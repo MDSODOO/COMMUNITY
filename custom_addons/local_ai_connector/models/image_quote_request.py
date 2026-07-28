@@ -2,7 +2,7 @@
 import logging
 
 from odoo import api, fields, models
-from odoo.exceptions import UserError
+from odoo.exceptions import UserError, ValidationError
 
 _logger = logging.getLogger(__name__)
 
@@ -10,12 +10,16 @@ _logger = logging.getLogger(__name__)
 class LocalAiImageQuoteRequest(models.Model):
     _name = "local.ai.image.quote.request"
     _description = (
-        "Solicitud de cotizacion por imagen (endpoint publico). Cola "
-        "asincrona -- cada imagen tarda 90-240s en procesarse (medido con "
-        "qwen2.5vl:7b en CPU, ver docs/AI_MODEL_ODOO_CONFIG.md §9.2), asi "
-        "que no se procesa en la misma request HTTP que la subida. Un cron "
-        "(ver services/image_quote_processor.py) recoge las solicitudes "
-        "'pending' una por una."
+        "Solicitud de cotizacion por imagen. Cola asincrona -- cada imagen "
+        "tarda 90-240s en procesarse (medido con qwen2.5vl:7b en CPU, ver "
+        "docs/AI_MODEL_ODOO_CONFIG.md §9.2), asi que no se procesa en la "
+        "misma request HTTP que la subida. Un cron (ver "
+        "services/image_quote_processor.py) recoge las solicitudes "
+        "'pending' una por una. Dos canales de entrada, ver origin_channel: "
+        "el endpoint publico (/ai/quote_from_image, cliente sube la foto el "
+        "mismo) y el interno (/ai/quote_from_image/staff, un empleado "
+        "arrastra una foto recibida por WhatsApp -- la mayoria de las "
+        "cotizaciones llegan asi, no por el formulario publico)."
     )
     _order = "create_date desc"
     _inherit = ["mail.thread"]
@@ -29,10 +33,27 @@ class LocalAiImageQuoteRequest(models.Model):
         ("error", "Error"),
     ], string="Estado", default="pending", required=True, tracking=True, index=True)
 
+    origin_channel = fields.Selection([
+        ("public_web", "Sitio web público"),
+        ("internal_staff", "Interna (staff, WhatsApp)"),
+    ], string="Canal de origen", default="public_web", required=True, index=True)
+
     customer_name = fields.Char(string="Nombre del cliente", required=True)
-    customer_email = fields.Char(string="Correo del cliente", required=True)
+    # Sin required=True: la via interna (WhatsApp) casi nunca trae correo,
+    # solo nombre + telefono -- ver _check_contact_info mas abajo, que exige
+    # al menos uno de los dos en vez de forzar el correo especificamente.
+    customer_email = fields.Char(string="Correo del cliente")
     customer_phone = fields.Char(string="Teléfono del cliente")
     ip_address = fields.Char(string="Dirección IP de origen")
+
+    @api.constrains("customer_email", "customer_phone")
+    def _check_contact_info(self):
+        for request in self:
+            if not request.customer_email and not request.customer_phone:
+                raise ValidationError(
+                    "Se necesita al menos un dato de contacto del cliente "
+                    "(correo o teléfono)."
+                )
 
     image_ids = fields.One2many(
         "local.ai.image.quote.image", "request_id", string="Imágenes",
@@ -82,9 +103,20 @@ class LocalAiImageQuoteRequest(models.Model):
                 "Revisa y confirma al menos una línea antes de crear la cotización."
             )
 
-        partner = self.env["res.partner"].sudo().search(
-            [("email", "=ilike", self.customer_email)], limit=1
-        )
+        # Busca primero por correo (identificador mas confiable cuando
+        # existe); si no hay correo -- caso comun en la via interna, cliente
+        # solo identificado por WhatsApp -- busca por telefono. Ninguno de
+        # los dos es unico a nivel de base de datos, por lo que "limit=1"
+        # puede no ser el mismo partner en dos solicitudes distintas del
+        # mismo cliente; aceptable para este flujo (staff revisa el partner
+        # asignado en el sale.order resultante antes de enviarlo).
+        partner = self.env["res.partner"].sudo()
+        if self.customer_email:
+            partner = partner.search([("email", "=ilike", self.customer_email)], limit=1)
+        if not partner and self.customer_phone:
+            partner = self.env["res.partner"].sudo().search(
+                [("phone", "=", self.customer_phone)], limit=1
+            )
         if not partner:
             partner = self.env["res.partner"].sudo().create({
                 "name": self.customer_name,

@@ -1,0 +1,34 @@
+.o_image_quote_dropzone {
+    border: 2px dashed var(--md-border-color, #ccc);
+    border-radius: 8px;
+    padding: 2rem 1rem;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color 0.15s ease, background-color 0.15s ease;
+
+    &:hover,
+    &--active {
+        border-color: var(--md-primary, #714B67);
+        background-color: rgba(113, 75, 103, 0.05);
+    }
+}
+
+.o_image_quote_thumb {
+    width: 64px;
+    height: 64px;
+
+    img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 4px;
+    }
+
+    &_remove {
+        position: absolute;
+        top: -6px;
+        right: -6px;
+        padding: 0 6px;
+        line-height: 1.4;
+    }
+}

@@ -27,6 +27,26 @@ import { Component, useState, useRef, onMounted, onWillUnmount } from "@odoo/owl
 // llegue al <button> del Dropdown, así que su propio handler de toggle
 // nunca se dispara. El <Dropdown> nativo sigue existiendo en el DOM sin
 // tocarlo — solo evitamos que reciba el click.
+// Contrato de "acciones rapidas": cualquier modulo puede empujar entradas a
+// registry.category("md_launcher_quick_actions") sin que este modulo (ni el
+// que las registra) se declaren dependencia mutua -- mismo desacoplamiento
+// que ya usan los registries nativos de Odoo (systray, main_components).
+// Cada entrada: { id, label, keywords?: string[], icon?: string (clase fa-*),
+// run(env) }. "run" recibe el Env de OWL (con .services) para que quien
+// registra decida que hacer (abrir un Dialog, navegar, etc.) sin que
+// MdLauncher necesite conocer detalles de negocio.
+//
+// Se agrego tras la auditoria del 2026-07-28: el "Copiloto de inventario"
+// (commit 80e3573, 2026-07-27) se registro con useCommand() asumiendo que
+// alimentaria el Command Palette NATIVO de Odoo -- pero este modulo
+// intercepta Ctrl+K/Alt+Espacio en fase de captura con
+// stopImmediatePropagation() (ver _onGlobalKeydown) antes de que el hotkey
+// service nativo (del que depende useCommand) lo reciba. Confirmado en vivo:
+// buscar "copiloto" o "inventario" en esta paleta no devolvia nada. Este
+// registry es el arreglo de raiz -- ver local_ai_connector/static/src/js/
+// launcher_quick_actions.js.
+const QUICK_ACTIONS_CATEGORY = "md_launcher_quick_actions";
+
 export class MdLauncher extends Component {
     static template = "md_command_palette.Launcher";
     static props = {};
@@ -41,6 +61,7 @@ export class MdLauncher extends Component {
             query: "",
             menuResults: [],
             productResults: [],
+            quickActionResults: [],
             suggestedApps: [],
             activeIndex: 0,
         });
@@ -156,7 +177,7 @@ export class MdLauncher extends Component {
                 app,
             }));
         }
-        return [...this.state.menuResults, ...this.state.productResults];
+        return [...this.state.quickActionResults, ...this.state.menuResults, ...this.state.productResults];
     }
 
     _moveActive(delta) {
@@ -211,10 +232,29 @@ export class MdLauncher extends Component {
             // ninguna relación con "sugerencias útiles").
             this.state.menuResults = [];
             this.state.productResults = [];
+            this.state.quickActionResults = [];
             return;
         }
+        this._searchQuickActions(query);
         this._searchMenus(query);
         this._searchProducts(query);
+    }
+
+    _searchQuickActions(query) {
+        const q = query.trim().toLowerCase();
+        const all = registry.category(QUICK_ACTIONS_CATEGORY).getAll();
+        this.state.quickActionResults = all
+            .filter((action) => {
+                const haystack = [action.label, ...(action.keywords || [])].join(" ").toLowerCase();
+                return haystack.includes(q);
+            })
+            .map((action) => ({
+                type: "quickaction",
+                key: `quickaction-${action.id}`,
+                label: action.label,
+                icon: action.icon || "fa-bolt",
+                action,
+            }));
     }
 
     _searchMenus(query) {
@@ -283,6 +323,8 @@ export class MdLauncher extends Component {
         this.close();
         if (item.type === "menu" || item.type === "app") {
             this.menuService.selectMenu(item.type === "app" ? item.app : item.menu);
+        } else if (item.type === "quickaction") {
+            item.action.run(this.env);
         } else if (item.type === "product") {
             // Abre product.template (no product.product): es el modelo que
             // usa el menú "Productos" normal — product.product tiene su

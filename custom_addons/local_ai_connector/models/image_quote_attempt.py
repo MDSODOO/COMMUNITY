@@ -6,17 +6,23 @@ from odoo import api, fields, models
 class LocalAiImageQuoteAttempt(models.Model):
     _name = "local.ai.image.quote.attempt"
     _description = (
-        "Registro de intentos POST a /ai/quote_from_image, para rate "
-        "limiting real compartido entre workers -- mismo patron ya "
-        "verificado en medicine.depot.affiliation.attempt (el contador en "
-        "memoria de un solo proceso no sirve con workers > 1). El limite "
-        "aqui es mas estricto que el de afiliacion porque cada solicitud "
-        "cuesta 90-240s de CPU + hasta 6.7GB de RAM (modelo de vision), no "
-        "solo un registro en Postgres."
+        "Registro de intentos POST a /ai/quote_from_image (publico) o "
+        "/ai/quote_from_image/staff (interno), para rate limiting real "
+        "compartido entre workers -- mismo patron ya verificado en "
+        "medicine.depot.affiliation.attempt (el contador en memoria de un "
+        "solo proceso no sirve con workers > 1). El limite aqui es mas "
+        "estricto que el de afiliacion porque cada solicitud cuesta "
+        "90-240s de CPU + hasta 6.7GB de RAM (modelo de vision), no solo "
+        "un registro en Postgres."
     )
     _order = "create_date desc"
 
-    ip_address = fields.Char(string="Dirección IP", required=True, index=True)
+    # ip_address: siempre presente (identifica la via publica). user_id:
+    # solo presente en la via interna -- ahi el limite se cuenta por
+    # usuario, no por IP, porque varios empleados comparten la IP de
+    # oficina y un limite por IP los estrangularia a todos por igual.
+    ip_address = fields.Char(string="Dirección IP", index=True)
+    user_id = fields.Many2one("res.users", string="Usuario (vía interna)", index=True)
 
     @api.model
     def _gc_old_attempts(self, older_than_hours=24):

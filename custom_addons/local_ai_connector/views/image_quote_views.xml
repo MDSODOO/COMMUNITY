@@ -11,6 +11,8 @@
                 <field name="name"/>
                 <field name="customer_name"/>
                 <field name="customer_email"/>
+                <field name="customer_phone"/>
+                <field name="origin_channel" widget="badge"/>
                 <field name="create_date" string="Recibida"/>
                 <field name="state" widget="badge"/>
                 <field name="sale_order_id"/>
@@ -41,6 +43,7 @@
                             <field name="customer_phone"/>
                         </group>
                         <group string="Origen">
+                            <field name="origin_channel" readonly="1"/>
                             <field name="ip_address" readonly="1"/>
                             <field name="sale_order_id" readonly="1"/>
                             <field name="error_message" invisible="not error_message"/>
