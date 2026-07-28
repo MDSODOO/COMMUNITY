@@ -1,34 +1,171 @@
-.o_image_quote_dropzone {
-    border: 2px dashed var(--md-border-color, #ccc);
-    border-radius: 8px;
-    padding: 2rem 1rem;
-    text-align: center;
-    cursor: pointer;
-    transition: border-color 0.15s ease, background-color 0.15s ease;
+// ═══════════════════════════════════════════════════════════════════
+//  Bento Drop Dialog — local_ai_connector (cotización desde imagen)
+// ────────────────────────────────────────────────────────────────────
+//  Misma receta que .pip_bento_card/.pip_upload_zone
+//  (purchase_invoice_parser/static/src/scss/cfdi_upload_zone.scss, wizard
+//  "Importar XML"): tokens --md-* de backend_tokens.scss, glass con
+//  fallback opaco, estados idle/dragover/filled, dark mode gateado con
+//  html.o_md_dark_mode/[data-bs-theme="dark"] (backend_dark.scss de
+//  purchase_invoice_parser documenta por qué web.assets_web_dark nunca
+//  carga en Community: IrHttp.color_scheme() esta hardcodeado a "light").
+// ═══════════════════════════════════════════════════════════════════
 
-    &:hover,
-    &--active {
-        border-color: var(--md-primary, #714B67);
-        background-color: rgba(113, 75, 103, 0.05);
+.iqd_bento_card {
+    background:    rgba(255, 255, 255, 0.72);
+    border:        1px solid rgba(255, 255, 255, 0.45);
+    border-radius: var(--md-radius-lg, 14px);
+    box-shadow:
+        0 8px 32px rgba(0, 0, 0, 0.08),
+        0 1px 3px  rgba(0, 0, 0, 0.04);
+    padding: var(--md-space-5, 24px);
+
+    @supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
+        background: rgba(255, 255, 255, 0.42);
+        backdrop-filter:         blur(16px) saturate(1.3);
+        -webkit-backdrop-filter: blur(16px) saturate(1.3);
     }
 }
 
-.o_image_quote_thumb {
-    width: 64px;
+// Re-viste el modal nativo de Odoo que envuelve este dialogo -- escopado
+// con :has() para no afectar el resto de dialogos del backend, mismo
+// patron que .modal-content:has(.pip_bento_card).
+.modal-content:has(.iqd_bento_card) {
+    border-radius: var(--md-radius-lg, 14px);
+    overflow: hidden;
+    box-shadow:
+        0 8px 32px rgba(0, 0, 0, 0.12),
+        0 2px 8px  rgba(0, 0, 0, 0.06);
+}
+
+.iqd_dropzone {
+    border:          2px dashed rgba(22, 166, 217, 0.35); // var(--md-primary)
+    border-radius:   var(--md-radius-md, 10px);
+    padding:         var(--md-space-6, 32px) var(--md-space-4, 16px);
+    text-align:      center;
+    cursor:          pointer;
+    user-select:     none;
+    background:      rgba(255, 255, 255, 0.30);
+    transition:
+        border-color 0.18s ease,
+        background   0.18s ease,
+        box-shadow    0.18s ease,
+        transform     0.12s ease;
+
+    &:hover {
+        border-color: var(--md-primary, #16A6D9);
+        background:   var(--md-primary-soft, rgba(22, 166, 217, 0.08));
+    }
+
+    &--active {
+        border-color: var(--md-primary, #16A6D9) !important;
+        background:   rgba(22, 166, 217, 0.10) !important;
+        box-shadow:   0 0 0 4px rgba(22, 166, 217, 0.18);
+        transform:    scale(1.012);
+    }
+
+    &__icon {
+        font-size:     1.9rem;
+        color:         var(--md-color-text-muted, #7a86a3);
+        display:       block;
+        margin-bottom: var(--md-space-2, 8px);
+        transition:    color 0.18s ease;
+    }
+
+    &:hover &__icon,
+    &--active &__icon {
+        color: var(--md-primary, #16A6D9);
+    }
+
+    &__label {
+        font-size:   var(--md-text-md, 0.875rem);
+        font-weight: var(--md-weight-label, 600);
+        color:       var(--md-color-text-primary, #0e1730);
+        margin-bottom: 2px;
+    }
+
+    &__hint {
+        font-size: var(--md-text-sm, 0.75rem);
+        color:     var(--md-color-text-muted, #7a86a3);
+    }
+}
+
+.iqd_thumbs {
+    display:  flex;
+    flex-wrap: wrap;
+    gap: var(--md-space-2, 8px);
+}
+
+.iqd_thumb {
+    position: relative;
+    width:  64px;
     height: 64px;
+    border-radius: var(--md-radius-sm, 6px);
+    overflow: hidden;
+    border: 1px solid var(--md-border, rgba(255, 255, 255, 0.5));
+    box-shadow: var(--md-shadow-1, 0 1px 3px rgba(14, 23, 48, 0.08));
 
     img {
         width: 100%;
         height: 100%;
         object-fit: cover;
-        border-radius: 4px;
     }
 
-    &_remove {
+    &__remove {
         position: absolute;
         top: -6px;
         right: -6px;
-        padding: 0 6px;
-        line-height: 1.4;
+        width: 20px;
+        height: 20px;
+        padding: 0;
+        line-height: 1;
+        border-radius: var(--md-radius-pill, 999px);
+    }
+}
+
+.iqd_result {
+    border-radius: var(--md-radius-md, 10px);
+}
+
+// ─── Dark mode ───────────────────────────────────────────────────────
+// Gateado igual que purchase_invoice_parser/backend_dark.scss: la clase
+// que SÍ está presente en el DOM en este proyecto (o_md_dark_mode, mismo
+// toggle que usan todos los módulos md_*), no un selector nativo de Odoo.
+html.o_md_dark_mode,
+html[data-bs-theme="dark"] {
+    .iqd_bento_card {
+        background:   rgba(26, 31, 46, 0.60);
+        border-color: rgba(255, 255, 255, 0.08);
+        box-shadow:
+            0 2px 14px rgba(0, 0, 0, 0.35),
+            0 1px 4px  rgba(0, 0, 0, 0.25);
+
+        @supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
+            background: rgba(26, 31, 46, 0.45);
+        }
+    }
+
+    .modal-content:has(.iqd_bento_card) {
+        box-shadow:
+            0 8px 32px rgba(0, 0, 0, 0.45),
+            0 2px 8px  rgba(0, 0, 0, 0.30);
+    }
+
+    .iqd_dropzone {
+        border-color: rgba(255, 255, 255, 0.18);
+        background:   rgba(255, 255, 255, 0.03);
+
+        &:hover {
+            background: rgba(22, 166, 217, 0.10);
+        }
+
+        &--active {
+            background: rgba(22, 166, 217, 0.16) !important;
+        }
+
+        &__label { color: #e8e8ec; }
+    }
+
+    .iqd_thumb {
+        border-color: rgba(255, 255, 255, 0.10);
     }
 }

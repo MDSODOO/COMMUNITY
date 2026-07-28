@@ -4,65 +4,71 @@
     <t t-name="local_ai_connector.ImageQuoteDropDialog">
         <Dialog size="'md'" title="'Nueva cotización desde imagen'">
 
-            <p class="text-muted small">
-                Arrastra aquí una foto que te haya mandado un cliente por WhatsApp (o selecciónala
-                a mano). Se procesará en unos minutos y quedará lista para tu revisión en
-                <strong>Ventas &gt; Cotizaciones por imagen (IA)</strong>.
-            </p>
+            <div class="iqd_bento_card">
 
-            <div t-attf-class="o_image_quote_dropzone {{ state.dragActive ? 'o_image_quote_dropzone--active' : '' }}"
-                 t-on-dragover.prevent="onDragOver"
-                 t-on-dragleave.prevent="onDragLeave"
-                 t-on-drop.prevent="onDrop"
-                 t-on-click="openFilePicker"
-                 role="button">
-                <i class="fa fa-cloud-upload fa-2x mb-2"/>
-                <div>Arrastra fotos aquí o haz click para elegirlas</div>
-                <div class="text-muted small">JPEG/PNG, máx. 8 MB c/u, hasta 5 fotos</div>
-                <input t-ref="fileInput"
-                       type="file"
-                       accept="image/jpeg,image/png"
-                       multiple="multiple"
-                       class="d-none"
-                       t-on-change="onFileInputChange"/>
-            </div>
+                <p class="text-muted small">
+                    Arrastra aquí una foto que te haya mandado un cliente por WhatsApp (o
+                    selecciónala a mano). Se procesará en unos minutos y quedará lista para tu
+                    revisión en <strong>Ventas &gt; Cotizaciones por imagen (IA)</strong>.
+                </p>
 
-            <div t-if="state.files.length" class="d-flex flex-wrap gap-2 my-3">
-                <t t-foreach="state.files" t-as="entry" t-key="entry.previewUrl">
-                    <div class="o_image_quote_thumb position-relative">
-                        <img t-att-src="entry.previewUrl" alt=""/>
-                        <button class="btn btn-sm btn-danger o_image_quote_thumb_remove"
-                                t-on-click="() => this.removeFile(state.files.indexOf(entry))"
-                                title="Quitar">
-                            <i class="fa fa-times"/>
-                        </button>
+                <div t-attf-class="iqd_dropzone {{ state.dragActive ? 'iqd_dropzone--active' : '' }}"
+                     t-on-dragover.prevent="onDragOver"
+                     t-on-dragleave.prevent="onDragLeave"
+                     t-on-drop.prevent="onDrop"
+                     t-on-click="openFilePicker"
+                     role="button">
+                    <i class="fa fa-cloud-upload iqd_dropzone__icon"/>
+                    <div class="iqd_dropzone__label">Arrastra fotos aquí o haz click para elegirlas</div>
+                    <div class="iqd_dropzone__hint">JPEG/PNG, máx. 8 MB c/u, hasta 5 fotos</div>
+                    <input t-ref="fileInput"
+                           type="file"
+                           accept="image/jpeg,image/png"
+                           multiple="multiple"
+                           class="d-none"
+                           t-on-change="onFileInputChange"/>
+                </div>
+
+                <div t-if="state.files.length" class="iqd_thumbs my-3">
+                    <t t-foreach="state.files" t-as="entry" t-key="entry.previewUrl">
+                        <div class="iqd_thumb">
+                            <img t-att-src="entry.previewUrl" alt=""/>
+                            <button class="btn btn-sm btn-danger iqd_thumb__remove"
+                                    t-on-click="() => this.removeFile(state.files.indexOf(entry))"
+                                    title="Quitar">
+                                <i class="fa fa-times"/>
+                            </button>
+                        </div>
+                    </t>
+                </div>
+
+                <div class="row g-2 mt-1 mb-2">
+                    <div class="col-12">
+                        <input type="text" class="form-control" placeholder="Nombre del cliente *"
+                               t-model="state.customerName" t-att-disabled="state.loading"/>
                     </div>
-                </t>
-            </div>
+                    <div class="col-6">
+                        <input type="text" class="form-control" placeholder="Teléfono (WhatsApp)"
+                               t-model="state.customerPhone" t-att-disabled="state.loading"/>
+                    </div>
+                    <div class="col-6">
+                        <input type="email" class="form-control" placeholder="Correo (opcional)"
+                               t-model="state.customerEmail" t-att-disabled="state.loading"/>
+                    </div>
+                </div>
+                <p class="text-muted small mb-0">* Nombre obligatorio; captura al menos teléfono o correo.</p>
 
-            <div class="row g-2 mb-2">
-                <div class="col-12">
-                    <input type="text" class="form-control" placeholder="Nombre del cliente *"
-                           t-model="state.customerName" t-att-disabled="state.loading"/>
+                <div t-if="state.result"
+                     t-attf-class="iqd_result alert mt-3 {{ state.result.success ? 'alert-success' : 'alert-danger' }}"
+                     role="alert">
+                    <t t-if="state.result.success">
+                        <t t-esc="state.result.message"/> Referencia: <strong t-esc="state.result.reference"/>
+                    </t>
+                    <t t-else="">
+                        <t t-esc="state.result.message"/>
+                    </t>
                 </div>
-                <div class="col-6">
-                    <input type="text" class="form-control" placeholder="Teléfono (WhatsApp)"
-                           t-model="state.customerPhone" t-att-disabled="state.loading"/>
-                </div>
-                <div class="col-6">
-                    <input type="email" class="form-control" placeholder="Correo (opcional)"
-                           t-model="state.customerEmail" t-att-disabled="state.loading"/>
-                </div>
-            </div>
-            <p class="text-muted small">* Nombre obligatorio; captura al menos teléfono o correo.</p>
 
-            <div t-if="state.result" t-attf-class="alert {{ state.result.success ? 'alert-success' : 'alert-danger' }}" role="alert">
-                <t t-if="state.result.success">
-                    <t t-esc="state.result.message"/> Referencia: <strong t-esc="state.result.reference"/>
-                </t>
-                <t t-else="">
-                    <t t-esc="state.result.message"/>
-                </t>
             </div>
 
             <t t-set-slot="footer">
