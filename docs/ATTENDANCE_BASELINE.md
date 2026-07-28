@@ -10,9 +10,19 @@ Este documento tiene dos partes / This document has two parts:
    `e2e_tests/audit_attendance_config.spec.ts`. Not yet run against the
    instance — see the permissions note below.
 2. **Arquitectura del módulo `hr_attendance_ip_autologin`** (después de los
-   marcadores): diseño propuesto, sin implementar todavía. /
-   **Architecture for the `hr_attendance_ip_autologin` module** (after the
-   markers): proposed design, not yet implemented.
+   marcadores): diseño original del check-in por IP (implementado, commit
+   `564e23b`) más el checkout dinámico agregado despues (logout explícito +
+   cron de sesión abandonada, también implementado en ese mismo commit). Los
+   fragmentos de código de abajo son el diseño original tal como se propuso
+   -- el código real en `custom_addons/hr_attendance_ip_autologin/` difiere
+   en algunos detalles encontrados durante la implementación (ver notas
+   inline). / **Architecture for the `hr_attendance_ip_autologin` module**
+   (after the markers): the original IP check-in design (implemented,
+   commit `564e23b`) plus the dynamic checkout added afterward (explicit
+   logout + abandoned-session cron, also implemented in that same commit).
+   The code snippets below are the original proposal as first written -- the
+   real code in `custom_addons/hr_attendance_ip_autologin/` differs in a
+   few details found during implementation (see inline notes).
 
 <!-- BASELINE:START (auto-generado, no editar a mano / auto-generated, do not hand-edit) -->
 
@@ -38,7 +48,7 @@ Captura / Screenshot: `screenshots/attendance_settings_baseline.png`
 
 <!-- BASELINE:END -->
 
-## Arquitectura propuesta: `hr_attendance_ip_autologin` / Proposed architecture
+## Arquitectura: `hr_attendance_ip_autologin` (implementada) / Architecture (implemented)
 
 ### Objetivo / Goal
 
@@ -195,6 +205,16 @@ class HomeIPAutoCheckin(Home):
         return response
 ```
 
+**Diferencia con el código real / Difference from the real code:** la
+condición final usa `request.params.get("login_success") and request.session.uid`,
+no solo `request.session.uid` -- distingue un login real (POST recien
+autenticado) de una simple recarga de `/web/login` con una sesión ya
+existente, que también deja `session.uid` seteado. / The final condition
+uses `request.params.get("login_success") and request.session.uid`, not
+just `request.session.uid` -- it distinguishes a real login (freshly
+authenticated POST) from a plain reload of `/web/login` with an
+already-existing session, which also leaves `session.uid` set.
+
 ### Lógica de negocio / Business logic
 
 ```python
@@ -224,6 +244,20 @@ class HrEmployee(models.Model):
             return True
         return False
 ```
+
+**Diferencia con el código real / Difference from the real code:** el
+código real recorre TODOS los `hr.employee` del usuario (`search(...)` sin
+`limit=1`), no solo el primero -- un mismo `res.users` puede tener un
+`hr.employee` por cada compañía (confirmado: el usuario Administrator tiene
+6), y había que hacer check-in en el que coincidiera con la sucursal de la
+IP, no asumir que el primer resultado era el correcto. Este mismo patrón
+multi-compañía se reutilizó para el checkout (ver abajo). / The real code
+loops over ALL of the user's `hr.employee` records (`search(...)` without
+`limit=1`), not just the first -- a single `res.users` can have one
+`hr.employee` per company (confirmed: the Administrator user has 6), and
+check-in had to happen on whichever one matched the IP's branch, not assume
+the first search result was correct. This same multi-company pattern was
+reused for checkout (see below).
 
 ### Riesgos y decisiones abiertas / Risks and open decisions
 
@@ -256,15 +290,96 @@ class HrEmployee(models.Model):
   instead of living in this HR module — but that's a separate design
   decision, not part of this deliverable.
 
-### Vista de administración (pendiente) / Admin view (pending)
+### Vista de administración (implementada) / Admin view (implemented)
 
-Falta: vista de lista/form para `hr.attendance.authorized.ip` embebida como
-pestaña en el form de `res.company` (o en Ajustes > Asistencias, bloque
-nuevo), y ACL en `security/ir.model.access.csv` restringido a
-`hr_attendance.group_hr_attendance_manager` para editar. No implementado en
-esta entrega — solo diseño. / Missing: list/form view for
-`hr.attendance.authorized.ip` embedded as a tab on the `res.company` form
-(or under Settings > Attendances, new block), and an ACL in
+Vista de lista/form para `hr.attendance.authorized.ip` embebida como
+pestaña "Check-in por IP" en el form de `res.company`
+(`views/res_company_views.xml`), más un menú "IPs autorizadas" bajo
+Asistencias > Configuración (`views/hr_attendance_authorized_ip_views.xml`).
+ACL en `security/ir.model.access.csv` restringido a
+`hr_attendance.group_hr_attendance_manager` para editar. Capturas:
+`screenshots/authorized_ip_list.png`, `screenshots/company_ip_tab.png`. /
+List/form view for `hr.attendance.authorized.ip` embedded as a "Check-in por
+IP" tab on the `res.company` form (`views/res_company_views.xml`), plus an
+"IPs autorizadas" menu under Attendances > Configuration
+(`views/hr_attendance_authorized_ip_views.xml`). ACL in
 `security/ir.model.access.csv` restricted to
-`hr_attendance.group_hr_attendance_manager` for editing. Not implemented in
-this deliverable — design only.
+`hr_attendance.group_hr_attendance_manager` for editing. Screenshots:
+`screenshots/authorized_ip_list.png`, `screenshots/company_ip_tab.png`.
+
+## Checkout dinámico (implementado) / Dynamic checkout (implemented)
+
+Complementa el check-in por IP de arriba: cierra el turno del empleado sin
+esperar a que alguien lo haga manualmente, cubriendo los dos escenarios de
+"el empleado ya no está usando el backend" -- cerró sesión explícitamente, o
+simplemente cerró el navegador. / Complements the IP check-in above: closes
+the employee's shift without waiting for someone to do it by hand, covering
+both scenarios of "the employee is no longer using the backend" -- they
+logged out explicitly, or they just closed the browser.
+
+### Logout explícito / Explicit logout
+
+`controllers/main.py`, clase `SessionAutoCheckout`, override de
+`odoo.addons.web.controllers.session.Session.logout`. Dos hallazgos que
+cambiaron el diseño original respecto a lo que se había planteado
+(interceptar `/web/session/destroy`):
+
+- El botón "Cerrar sesión" del menú de usuario navega a
+  **`/web/session/logout`** (`type='http'`), NO a `/web/session/destroy`
+  (`type='jsonrpc'`, usado por otros flujos como `auth_timeout`) --
+  confirmado leyendo `web/static/src/webclient/user_menu/user_menu_items.js`.
+- `Session.logout()` llama a `request.session.clear()` **antes** del hook
+  oficial `ir.http._post_logout()` -- para cuando ese hook corre,
+  `request.env` ya es el usuario público. Por eso el checkout se captura
+  leyendo `request.session.uid` **antes** de llamar a `super().logout()`,
+  al revés de como `HomeIPAutoCheckin.web_login` lee el `uid` (ahí se lee
+  *después* del `super()`, porque el login lo establece).
+
+`models/hr_employee.py`, método `_auto_checkout_by_session(user_id)`: mismo
+patrón multi-compañía que `_auto_checkin_by_ip` (recorre TODOS los
+`hr.employee` del usuario). Nota: `attendance_state` es un campo `compute`
+**sin `store=True`** -- no se puede filtrar en el dominio de `search()`
+(Odoo lanza `ValueError: Cannot convert ... to SQL because it is not
+stored`), así que el estado se filtra en Python, no en el dominio.
+
+### Sesión abandonada / Abandoned session
+
+Cron `ir_cron_auto_checkout_abandoned_sessions` (`data/ir_cron.xml`, cada 30
+min) → `models/hr_employee.py`, método
+`_cron_auto_checkout_abandoned_sessions()`. Hallazgo que cambió el diseño
+original (que planteaba usar `ir.sessions`): **ese modelo no existe** en
+esta instancia de Odoo 19 CE (verificado). La señal de "última actividad"
+usada en su lugar es **`mail.presence.last_poll`** (módulo `mail`, agregado
+como dependencia del manifest), actualizada por el heartbeat del *bus
+longpolling* del cliente web mientras la pestaña del empleado sigue
+abierta.
+
+Reglas del cron:
+- Umbral configurable vía `ir.config_parameter`
+  `hr_attendance_ip_autologin.abandoned_session_timeout_hours` (default 8h)
+  -- decisión deliberada de no exponerlo como campo en Ajustes hasta que
+  haya una necesidad real de turnos de distinta duración por sucursal.
+- Se excluyen a propósito los `hr.employee` **sin `user_id`** (empleados que
+  marcan solo por Quiosco/código de barras, sin sesión de backend/bus) --
+  cerrarlos sería un falso positivo, del mismo tipo que el ya documentado
+  arriba para el check-in en redes NAT compartidas.
+- Un empleado sin ningún `mail.presence` (nunca hubo heartbeat) se deja
+  **sin tocar** en vez de asumir abandono -- mismo criterio conservador.
+- `check_out` se fija en `presence.last_poll`, no en "ahora", para que las
+  horas contabilizadas se acerquen al momento real en que el navegador dejó
+  de responder.
+- Si `last_poll` no es **posterior** a `check_in` (señal inútil para ese
+  registro puntual) o el `write()` falla por cualquier otra razón (p. ej.
+  Odoo rechaza un `check_out` anterior al `check_in`), ese registro se omite
+  con un log de advertencia **sin abortar el resto del lote** -- un
+  problema puntual no debe impedir que se cierren las demás sesiones
+  abandonadas de esa corrida.
+- `ir.cron` en Odoo 19 ya no tiene el campo `numbercall` (los cron corren
+  indefinidamente, controlados solo por `active`) -- diferencia respecto a
+  versiones anteriores de Odoo a tener en cuenta si se reusa este patrón en
+  otro módulo.
+
+Verificado end-to-end con Playwright (`e2e_tests/test_attendance_checkout.spec.ts`):
+login real, logout real, y disparo manual del cron vía
+`ir.cron.method_direct_trigger` (el mismo método que usa el botón "Run
+Manually" del form de `ir.cron`).
