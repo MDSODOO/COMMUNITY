@@ -286,6 +286,25 @@ Se construyó y validó end-to-end la parte de **consultas de inventario en leng
 
 **Lección de prompting repetida una vez más:** la primera versión del prompt (v1) dejaba que el modelo parafraseara el identificador del producto en vez de devolver solo el fragmento exacto (ej. devolvió "Producto con código de barras 8051708031164" en vez de "8051708031164"). Se corrigió en v2 agregando ejemplos concretos de input→output — mismo patrón que ya se vio en §5.3 con el prompt de extracción de imagen: instrucciones en prosa, sin ejemplo, no son suficientes.
 
+### 7.2 Cotización por imagen — implementada y probada end-to-end (2026-07-28)
+
+A diferencia de §7.1 (solo la parte de inventario NL), esta vez se construyó el flujo completo: endpoint público → cola async → cron con IA real → matching de producto → revisión de staff → `sale.order` real. Validado con una foto real de WhatsApp (la misma usada en el PoC de §3.2/§9.2): 71 renglones extraídos, matching corrido contra el catálogo real, un renglón confirmado manualmente por staff (PARACETAMOL - PERRIGO), cotización `S01811` creada correctamente y trazable de vuelta a la solicitud original (`AIQ-00001`).
+
+**Modelos:** `local.ai.image.quote.request` (cabecera + estado: pending → processing → ready_for_review → reviewed/error), `local.ai.image.quote.image` (una o más fotos por solicitud — confirmado necesario en §9.2), `local.ai.image.quote.line` (renglón extraído + producto sugerido, nunca se incluye en la cotización sin `confirmed=True` puesto por un humano). `local.ai.image.quote.attempt` para el rate limit (3 solicitudes/hora por IP — más estricto que `/afiliacion` por el costo real de cómputo).
+
+**Decisión de arquitectura — no se reutilizó `ProductMatcher` de `purchase_invoice_parser` como proponía el diseño original:** ese matcher filtra por `purchase_ok=True` (contexto de compra a proveedores). Aquí el contexto es venta a cliente final — se necesita `sale_ok=True`. Reutilizar la clase de compras habría introducido un bug sutil (productos vendibles pero no comprables invisibles, o viceversa). Se escribió `services/image_quote_matcher.py`, mismo criterio de matching (barcode/código exacto, nombre `ilike` como fallback) pero con el filtro correcto.
+
+**Decisión de arquitectura — sin `queue_job` (OCA) ni lock distribuido propio:** el procesamiento corre vía `ir.cron` (cada 2 minutos, procesa 1 solicitud pendiente por ejecución). La serialización real (nunca 2 imágenes a la vez, crítico dado el pico de 6.7GB por solicitud) no depende de ningún lock nuevo — depende del locking propio de `ir.cron` de Odoo, que ya garantiza que una misma entrada de cron no corre 2 veces en paralelo. El `threading.Lock()` de `ollama_client.py` (§8) sigue sin ser cross-worker, pero eso ya no es crítico para el caso de visión porque el cron lo evita por otro camino — sigue siendo una limitación real para las consultas de texto de §7.1, sin resolver.
+
+**Bugs reales encontrados y corregidos durante la prueba (no solo teoría):**
+1. `num_ctx=2048` (default de `generate_structured`) se quedó corto para imágenes reales — mismo problema ya diagnosticado en §9.2, pero se me olvidó pasar el valor correcto en el código nuevo. Corregido a `num_ctx=4096` en `image_quote_processor.py`.
+2. `tax_id` no existe en `sale.order.line` en este build de Odoo 19 — el campo correcto es `tax_ids` (plural). Error real de `ValueError` al crear la cotización, encontrado solo al probar en vivo, no en revisión de código.
+
+**Lo que falta — deliberadamente fuera de esta iteración:**
+- **Página pública de subida en el sitio web.** El endpoint `/ai/quote_from_image` existe y funciona (probado con `curl -F`), pero no hay ningún formulario HTML en `medicine_depot_website` desde donde un cliente real lo use todavía.
+- **Notificación al cliente.** Cuando se crea la cotización, no se le avisa nada al cliente por correo — solo queda registrada internamente. `action_create_quotation` ya postea un mensaje en el chatter del `sale.order`, pero eso es interno, no llega al cliente.
+- **`unaccent`** (mismo pendiente de §7.1) también afecta el matching por nombre aquí.
+
 ---
 
 ## 8. Gobernanza de Recursos / Resource Governance

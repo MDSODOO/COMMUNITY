@@ -23,19 +23,37 @@ _logger = logging.getLogger(__name__)
 # docker-compose.yml (extra_hosts: host.docker.internal:host-gateway).
 OLLAMA_URL = "http://host.docker.internal:11434/api/generate"
 DEFAULT_TIMEOUT = 60  # segundos -- consultas de texto son cortas (num_ctx bajo, §4)
+# Imagenes reales tardaron 93-242s incluso redimensionadas (medido
+# 2026-07-27, ver docs/AI_MODEL_ODOO_CONFIG.md §9.2) -- margen generoso.
+VISION_TIMEOUT = 300
 
 _inference_lock = threading.Lock()
+
+# NOTA IMPORTANTE sobre concurrencia entre workers: este threading.Lock()
+# solo protege dentro de un mismo proceso Python. Con workers=5 (dev),
+# NO evita que 2 workers distintos llamen a Ollama al mismo tiempo -- eso
+# es una limitacion conocida y aceptada para las consultas de texto
+# (ai_inventory_query, costo bajo). Para el caso de vision (6.7GB de pico
+# por solicitud, ver §9.2), la serializacion real NO depende de este lock:
+# depende de que el procesamiento corre via cron (image_quote_processor.py),
+# y Odoo garantiza que una misma entrada de ir.cron no corre dos veces en
+# paralelo (locking propio a nivel de base de datos) -- eso es lo que
+# realmente evita que 2 imagenes se procesen a la vez, no este Lock.
 
 
 class OllamaError(Exception):
     """El modelo no respondio, tardo demasiado, o devolvio JSON invalido/con forma inesperada."""
 
 
-def generate_structured(model, prompt, json_schema, temperature=0.0, num_ctx=2048, timeout=DEFAULT_TIMEOUT):
+def generate_structured(model, prompt, json_schema, temperature=0.0, num_ctx=2048,
+                         timeout=DEFAULT_TIMEOUT, images=None):
     """
     Llama a Ollama pidiendo un JSON que cumpla json_schema (format=<schema>,
     no el string generico "json" -- la version generica demostro perdida
     silenciosa de datos en pruebas reales, ver docs/AI_MODEL_ODOO_CONFIG.md §5.3).
+
+    images: lista opcional de strings base64 (sin el prefijo data:...) para
+    modelos de vision.
 
     Devuelve el objeto ya parseado (dict o list segun el schema). Lanza
     OllamaError si la respuesta no es JSON valido -- nunca devuelve texto
@@ -48,6 +66,8 @@ def generate_structured(model, prompt, json_schema, temperature=0.0, num_ctx=204
         "stream": False,
         "options": {"temperature": temperature, "num_ctx": num_ctx},
     }
+    if images:
+        payload["images"] = images
 
     with _inference_lock:
         try:

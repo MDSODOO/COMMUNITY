@@ -65,3 +65,43 @@ INVENTORY_QUERY_SCHEMA = {
     },
     "required": ["producto_mencionado", "aclaracion_necesaria"],
 }
+
+# ─── Extraccion de productos desde imagen de cotizacion ─────────────────────
+# v3 (2026-07-27): la unica version que dio resultados usables en las
+# pruebas reales (docs/AI_MODEL_ODOO_CONFIG.md §5.3). Clave: el schema JSON
+# real via el parametro `format` de la API (no el string "json" generico) +
+# un ejemplo few-shot -- ninguno de los dos por separado fue suficiente.
+IMAGE_QUOTE_VERSION = "v3"
+IMAGE_QUOTE_MODEL = "qwen2.5vl:7b"
+
+IMAGE_QUOTE_PROMPT = """Vas a recibir una imagen con una lista de productos escrita o impresa por un cliente
+de una farmacia, para generar una cotización.
+
+Transcribe CADA renglón de texto que veas en la imagen como un elemento separado de la
+lista. Si un renglón incluye una cantidad (ej. "x2", "x1"), separa el texto del producto
+de la cantidad numérica.
+
+Ejemplo: si la imagen dice "PARACETAMOL 500MG C/20 TAB x2" y "LOSARTAN 50MG C/30 TABS",
+la respuesta debe tener 2 elementos:
+- texto_detectado: "PARACETAMOL 500MG C/20 TAB", cantidad_detectada: 2
+- texto_detectado: "LOSARTAN 50MG C/30 TABS", cantidad_detectada: null
+
+No devuelvas una lista vacía si hay texto legible en la imagen. No adivines el producto
+exacto del catálogo, solo transcribe.
+
+Si algún renglón menciona una cantidad física de inventario existente (poco común en
+este flujo), refiérete a ella únicamente como "A la mano" (On Hand). Nunca uses
+"disponible", "stock" ni "existencias"."""
+
+IMAGE_QUOTE_SCHEMA = {
+    "type": "array",
+    "minItems": 1,
+    "items": {
+        "type": "object",
+        "properties": {
+            "texto_detectado": {"type": "string"},
+            "cantidad_detectada": {"type": ["integer", "null"]},
+        },
+        "required": ["texto_detectado", "cantidad_detectada"],
+    },
+}

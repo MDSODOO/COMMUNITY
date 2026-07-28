@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="cron_image_quote_process_pending" model="ir.cron">
+        <field name="name">IA: Procesar cotizaciones por imagen pendientes</field>
+        <field name="model_id" ref="model_local_ai_image_quote_request"/>
+        <field name="state">code</field>
+        <field name="code">model._cron_process_pending()</field>
+        <!-- Cada 2 min: suficiente margen sobre los 93-242s medidos por
+             imagen (docs/AI_MODEL_ODOO_CONFIG.md §9.2) sin acumular
+             ejecuciones superpuestas. -->
+        <field name="interval_number">2</field>
+        <field name="interval_type">minutes</field>
+        <field name="active">True</field>
+    </record>
+</odoo>

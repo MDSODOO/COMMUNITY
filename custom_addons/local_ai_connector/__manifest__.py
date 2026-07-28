@@ -1,18 +1,22 @@
 {
     'name': 'MDS - Conector de IA Local',
-    'summary': 'Copiloto interno (Ollama, en el host) para consultas de inventario en lenguaje natural.',
+    'summary': 'Copiloto interno (Ollama, en el host) para consultas de inventario y cotizaciones por imagen.',
     'version': '19.0.1.0.0',
     'category': 'Tools',
     'author': 'MedicineDepot Sureste',
     'license': 'LGPL-3',
     # requests ya viene con la imagen odoo:19.0, se declara para que quede
-    # explicito -- no es un paquete que este modulo instale.
+    # explicito -- no es un paquete que este modulo instale. Pillow (PIL)
+    # tambien ya viene incluido (lo usa el propio Odoo para imagenes).
     'external_dependencies': {
-        'python': ['requests'],
+        'python': ['requests', 'PIL'],
     },
-    'depends': ['stock', 'product'],
+    'depends': ['stock', 'product', 'sale', 'mail'],
     'data': [
         'security/ir.model.access.csv',
+        'data/image_quote_sequence.xml',
+        'data/image_quote_cron.xml',
+        'views/image_quote_views.xml',
     ],
     'assets': {
         'web.assets_backend': [
