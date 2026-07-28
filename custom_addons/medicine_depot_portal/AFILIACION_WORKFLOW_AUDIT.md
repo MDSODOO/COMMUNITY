@@ -62,36 +62,47 @@ Notas técnicas:
 
 ## c) Vulnerabilidades o Puntos de Falla
 
-### Crítico
+> **Nota de revisión (2026-07-27, Data Migration Architect):** este documento y el código
+> de `portal.py` quedaron congelados en el mismo commit baseline (`9ca60a9`, 2026-07-24),
+> pero el código ya incluía correcciones que este documento no reflejaba. Se verificó
+> línea por línea contra el código real antes de tocar nada más. Estado actualizado abajo.
 
-1. **Ruta pública con escritura `sudo()` sobre `res.partner` por email**
-   - `auth='public'` + `partner_model = request.env['res.partner'].sudo()`.
-   - Si llega un `email` existente, actualiza ese partner (`search([('email', '=', ...)], limit=1)`), incluso sin autenticación.
-   - Riesgo: modificación no autorizada de datos y documentos de terceros.
+### Ya corregidos en el código actual (verificado 2026-07-27)
 
-2. **Carga de archivos sin validación de tipo MIME/extension real/tamaño**
-   - Backend guarda cualquier payload binario en campos Studio.
-   - No hay límite de tamaño, no hay bloqueo por tipo real, no hay escaneo malware.
-   - Riesgo: almacenamiento de archivos maliciosos o payloads muy grandes (DoS por almacenamiento/memoria).
+1. ~~**Ruta pública con escritura `sudo()` sobre `res.partner` por email**~~ — **CORREGIDO.**
+   Si el email ya existe y quien envía es un usuario público, el backend devuelve `409`
+   ("Ya existe una cuenta con ese correo...") y **nunca** ejecuta `write()` sobre ese
+   partner. Un usuario público solo puede llegar a `create()` de un partner nuevo, jamás
+   a modificar uno existente sin autenticación.
 
-### Alto
+2. ~~**Carga de archivos sin validación de tipo MIME/extensión/tamaño**~~ — **CORREGIDO.**
+   `_build_upload_vals` valida extensión (`_AFFILIATION_ALLOWED_EXTENSIONS`), MIME
+   (`_AFFILIATION_ALLOWED_MIME_TYPES`) y tamaño máximo (5 MB,
+   `_AFFILIATION_MAX_FILE_SIZE_BYTES`).
 
-3. **Validación de campos obligatorios depende casi totalmente del cliente**
-   - `required="required"` está en HTML, pero en backend no hay validación explícita de `nombre`, `email`, `telefono`, `especialidad`, `privacy`.
-   - Peticiones directas pueden omitir campos; resultado depende de constraints del modelo en runtime.
+3. ~~**Validación de campos obligatorios depende casi totalmente del cliente**~~ — **CORREGIDO.**
+   `_validate_affiliation_post` valida `nombre`, `email` (formato incluido), `telefono`,
+   `especialidad` y `privacy` en el backend antes de procesar.
 
-4. **Sin control antifraude/antibot**
-   - No hay reCAPTCHA, rate limit, throttling por IP ni challenge.
-   - Riesgo de spam masivo, carga de archivos automatizada y creación de partners basura.
+4. ~~**Manejo de error opaco en frontend**~~ — **CORREGIDO.** `afiliacion.js` (`_onSubmit`)
+   lee `data.payload.message` del backend y lo muestra vía `_showError()`; solo cae a un
+   mensaje genérico si la respuesta no trae JSON válido.
+
+5. ~~**Sin control antifraude/antibot**~~ — **CORREGIDO (2026-07-28).** Rate limit de 5
+   intentos / 15 min por IP, respaldado en Postgres (modelo
+   `medicine.depot.affiliation.attempt`) en vez de un contador en memoria — necesario
+   porque `config/odoo.conf` corre con `workers = 5` y un contador in-process no vería
+   los intentos que caen en otros workers. Excedido el límite, el endpoint responde `429`
+   sin tocar el modelo de negocio. No cubre reCAPTCHA/challenge, solo throttling por IP.
+
+### Sigue abierto (verificado 2026-07-27, actualizado 2026-07-28)
 
 ### Medio
 
-5. **Manejo de error opaco en frontend**
-   - `catch()` solo restaura botón; no muestra mensaje útil.
-   - Si backend revienta con 500 o devuelve HTML de error, `response.json()` falla y usuario no sabe causa.
-
-6. **`privacy` no auditado**
-   - El checkbox se exige en UI pero no se persiste evidencia de consentimiento (timestamp, IP, versión aviso).
+6. **`privacy` no auditado** — **parcialmente corregido (2026-07-28).** Cada aceptación de
+   `/afiliacion` ahora deja evidencia en el log del servidor (`partner_id`, `email`, IP,
+   User-Agent). Sigue sin persistir en un modelo dedicado con timestamp/versión del aviso
+   consultable desde la UI — ver `docs/OLLAMA_MIGRATION_PLAN.md` §9 para el follow-up.
 
 ## d) Recomendaciones de Optimización
 

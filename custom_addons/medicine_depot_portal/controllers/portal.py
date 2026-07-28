@@ -1,15 +1,57 @@
 # -*- coding: utf-8 -*-
 import base64
+import logging
 import os
 import re
-from odoo import _
+from datetime import timedelta
+from odoo import _, fields
 from odoo.http import request, route
 from odoo.addons.portal.controllers.portal import CustomerPortal
 from .utils import clean as _clean_val, is_valid_email as _is_valid_email_util
 
+_logger = logging.getLogger(__name__)
+
 
 class MedicineDepotPortal(CustomerPortal):
     """Extiende el Portal del Cliente para alimentar el dashboard Bento."""
+
+    # ------------------------------------------------------------------
+    # Rate limit de /afiliacion (POST)
+    # ------------------------------------------------------------------
+    # DB-backed (modelo medicine.depot.affiliation.attempt): un contador en
+    # memoria de proceso NO sirve aqui porque config/odoo.conf corre con
+    # `workers = 5` — se probo empiricamente el 2026-07-27 y los requests se
+    # reparten entre procesos distintos, por lo que ningun contador en
+    # memoria por-worker llega a acumular el limite real. Persistiendo en
+    # Postgres, los 5 workers comparten el mismo conteo.
+    _AFFILIATION_RATE_LIMIT_WINDOW_SECONDS = 15 * 60
+    _AFFILIATION_RATE_LIMIT_MAX_ATTEMPTS = 5
+
+    def _get_request_ip(self):
+        return request.httprequest.remote_addr or 'unknown'
+
+    def _is_affiliation_rate_limited(self, ip):
+        """True si `ip` ya alcanzo el maximo de intentos en la ventana actual.
+
+        Registra el intento actual como efecto colateral (cuenta para el
+        limite independientemente del resultado final del POST). El conteo
+        vive en Postgres (`medicine.depot.affiliation.attempt`), compartido
+        por los 5 workers de Odoo.
+        """
+        Attempt = request.env['medicine.depot.affiliation.attempt'].sudo()
+        window_start = fields.Datetime.now() - timedelta(
+            seconds=self._AFFILIATION_RATE_LIMIT_WINDOW_SECONDS
+        )
+        attempt_count = Attempt.search_count([
+            ('ip_address', '=', ip),
+            ('create_date', '>=', window_start),
+        ])
+
+        if attempt_count >= self._AFFILIATION_RATE_LIMIT_MAX_ATTEMPTS:
+            return True
+
+        Attempt.create({'ip_address': ip})
+        return False
 
     _AFFILIATION_REQUIRED_DOCUMENTS = (
         ('x_studio_operation_notice', 'Aviso de Funcionamiento'),
@@ -411,6 +453,19 @@ class MedicineDepotPortal(CustomerPortal):
                 self._prepare_afiliacion_qcontext(),
             )
 
+        ip_address = self._get_request_ip()
+        if self._is_affiliation_rate_limited(ip_address):
+            _logger.warning(
+                'Afiliacion: rate limit alcanzado para IP %s (%s intentos / %s min)',
+                ip_address,
+                self._AFFILIATION_RATE_LIMIT_MAX_ATTEMPTS,
+                self._AFFILIATION_RATE_LIMIT_WINDOW_SECONDS // 60,
+            )
+            return request.make_json_response({
+                'success': False,
+                'message': _('Demasiados intentos. Por favor espera unos minutos e inténtalo de nuevo.'),
+            }, status=429)
+
         user = request.env.user
         if user and not user._is_public():
             affiliate_state = self._get_affiliation_state(user.partner_id)
@@ -498,12 +553,25 @@ class MedicineDepotPortal(CustomerPortal):
         try:
             if partner:
                 partner.write(partner_vals)
+                target_partner = partner
             else:
-                partner_model.create(partner_vals)
+                target_partner = partner_model.create(partner_vals)
         except Exception:
             return request.make_json_response({
                 'success': False,
                 'message': _('Ocurrió un error inesperado al procesar tu solicitud.'),
             }, status=500)
+
+        # Evidencia de consentimiento (privacy=on, validado en _validate_affiliation_post).
+        # Queda en el log del servidor, no en base de datos: es una primera capa de
+        # trazabilidad. Persistirlo en un modelo dedicado queda como follow-up
+        # (ver docs/OLLAMA_MIGRATION_PLAN.md, hallazgo Medio #6).
+        _logger.info(
+            'Afiliacion: consentimiento de privacidad aceptado. partner_id=%s email=%s ip=%s user_agent=%s',
+            target_partner.id,
+            partner_vals.get('email', ''),
+            ip_address,
+            request.httprequest.headers.get('User-Agent', ''),
+        )
 
         return request.make_json_response({'success': True})

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+
+    <record id="ir_cron_affiliation_attempt_gc" model="ir.cron">
+        <field name="name">Limpieza: intentos de rate limit de /afiliacion</field>
+        <field name="model_id" ref="model_medicine_depot_affiliation_attempt"/>
+        <field name="state">code</field>
+        <field name="code">model._gc_old_attempts()</field>
+        <field name="interval_number">1</field>
+        <field name="interval_type">days</field>
+        <field name="active" eval="True"/>
+        <field name="priority">10</field>
+    </record>
+
+</odoo>
