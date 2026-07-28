@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <record id="hr_attendance_authorized_ip_view_list" model="ir.ui.view">
+        <field name="name">hr.attendance.authorized.ip.list</field>
+        <field name="model">hr.attendance.authorized.ip</field>
+        <field name="arch" type="xml">
+            <list string="IPs autorizadas de asistencia" editable="bottom">
+                <field name="name"/>
+                <field name="company_id"/>
+                <field name="ip_address"/>
+                <field name="active" widget="boolean_toggle"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="hr_attendance_authorized_ip_view_form" model="ir.ui.view">
+        <field name="name">hr.attendance.authorized.ip.form</field>
+        <field name="model">hr.attendance.authorized.ip</field>
+        <field name="arch" type="xml">
+            <form string="IP autorizada de asistencia">
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                        <field name="company_id"/>
+                        <field name="ip_address" placeholder="189.203.10.5 o 189.203.10.0/24"/>
+                        <field name="active"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="hr_attendance_authorized_ip_action" model="ir.actions.act_window">
+        <field name="name">IPs autorizadas de asistencia</field>
+        <field name="res_model">hr.attendance.authorized.ip</field>
+        <field name="view_mode">list,form</field>
+        <field name="context">{'active_test': False}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Registra las IPs (o rangos CIDR) autorizadas por sucursal para
+                que el check-in de asistencia se marque solo con iniciar sesión.
+            </p>
+        </field>
+    </record>
+
+    <!-- Cuelga del menu que ya trae hr_attendance para Configuracion, con el
+         mismo grupo (hr_attendance.group_hr_attendance_manager) que ya rige
+         esa seccion completa. Ver menu_hr_attendance_configuration en
+         hr_attendance/views/hr_attendance_view.xml. -->
+    <menuitem id="menu_hr_attendance_authorized_ip"
+              name="IPs autorizadas"
+              parent="hr_attendance.menu_hr_attendance_configuration"
+              action="hr_attendance_authorized_ip_action"
+              sequence="20"/>
+
+</odoo>

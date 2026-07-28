@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <record id="view_company_form_inherit_attendance_ip" model="ir.ui.view">
+        <field name="name">res.company.form.inherit.hr.attendance.ip.autologin</field>
+        <field name="model">res.company</field>
+        <field name="inherit_id" ref="base.view_company_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//notebook" position="inside">
+                <page string="Check-in por IP" name="attendance_ip_autologin"
+                      groups="hr_attendance.group_hr_attendance_manager">
+                    <p class="text-muted">
+                        IPs (o rangos CIDR) desde las que un login exitoso marca
+                        el check-in de asistencia automáticamente para
+                        empleados de esta sucursal.
+                    </p>
+                    <field name="attendance_authorized_ip_ids">
+                        <list editable="bottom">
+                            <field name="name"/>
+                            <field name="ip_address"/>
+                            <field name="active" widget="boolean_toggle"/>
+                        </list>
+                    </field>
+                </page>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

@@ -190,3 +190,59 @@ export async function clearSearchFilters(page: Page): Promise<void> {
 export function fixture(name: string): string {
   return path.join(__dirname, '..', 'fixtures', name);
 }
+
+/**
+ * Login manual (mismos pasos que auth.setup.ts) para specs que necesitan un
+ * usuario DISTINTO al de la sesion compartida (.auth/odoo-session.json).
+ * Requiere que el test/archivo use `test.use({ storageState: undefined })`
+ * para no arrancar ya autenticado con la sesion compartida.
+ *
+ * Manual login (same steps as auth.setup.ts) for specs that need a
+ * DIFFERENT user than the shared session (.auth/odoo-session.json).
+ * Requires the test/file to set `test.use({ storageState: undefined })` so
+ * it doesn't start out already authenticated via the shared session.
+ */
+export async function loginAs(page: Page, login: string, password: string, db?: string): Promise<void> {
+  await page.goto('/web/login');
+
+  // Si hay usuarios recientes en esta instancia, Odoo 19 muestra un selector
+  // ("Choose a user") en vez del formulario de login directo -- el input de
+  // login SI esta en el DOM pero oculto detras de esa pantalla. Hay que
+  // pasar por "Use another user" primero.
+  //
+  // OJO con .isVisible({timeout}): NO hace polling, es una sola
+  // comprobacion instantanea del DOM (mismo gotcha ya documentado en
+  // captureIfErrorDialog mas arriba en este archivo) -- con eso, esta
+  // deteccion era una carrera contra el render de la pantalla del selector
+  // y fallaba de forma intermitente. .waitFor() si hace polling.
+  //
+  // If there are recent users on this instance, Odoo 19 shows a chooser
+  // ("Choose a user") instead of the plain login form -- the login input IS
+  // in the DOM but hidden behind that screen. Need to go through "Use
+  // another user" first.
+  //
+  // Watch out for .isVisible({timeout}): it does NOT poll, it's a single
+  // instant DOM check (same gotcha already documented in
+  // captureIfErrorDialog earlier in this file) -- with that, this
+  // detection was a race against the chooser screen's render and failed
+  // intermittently. .waitFor() does poll.
+  const useAnotherUser = page.getByRole('button', { name: /Use another user|Usar otro usuario/i });
+  const chooserAppeared = await useAnotherUser
+    .waitFor({ state: 'visible', timeout: 3_000 })
+    .then(() => true)
+    .catch(() => false);
+  if (chooserAppeared) {
+    await useAnotherUser.click();
+  }
+
+  const dbField = page.locator('input[name="db"]');
+  if (await dbField.isVisible().catch(() => false)) {
+    await dbField.fill(db ?? process.env.ODOO_DB ?? 'medicinedepot_dev');
+  }
+
+  await page.locator('input[name="login"]').fill(login);
+  await page.locator('input[name="password"]').fill(password);
+  await page.locator('form:has(input[name="password"]) button[type="submit"]').click();
+
+  await expect(page.locator('.o_main_navbar')).toBeVisible({ timeout: 20_000 });
+}
