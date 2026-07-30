@@ -12,7 +12,7 @@ from . import ollama_client, prompt_templates
 
 _logger = logging.getLogger(__name__)
 
-MODEL = "qwen2.5-coder:7b"
+MODEL = "qwen2.5:14b"
 
 
 def resolve_inventory_query(env, question):

@@ -26,10 +26,10 @@ _logger = logging.getLogger(__name__)
 # Odoo -- 127.0.0.1 aqui dentro apuntaria al propio contenedor. Ver
 # docker-compose.yml (extra_hosts: host.docker.internal:host-gateway).
 OLLAMA_URL = "http://189.162.156.127:11434/api/generate"
-DEFAULT_TIMEOUT = 60  # segundos -- consultas de texto son cortas (num_ctx bajo, §4)
+DEFAULT_TIMEOUT = 90  # q8 vision + 14b text son más lentos que q4
 # Imagenes reales tardaron 93-242s incluso redimensionadas (medido
 # 2026-07-27, ver docs/AI_MODEL_ODOO_CONFIG.md §9.2) -- margen generoso.
-VISION_TIMEOUT = 300
+VISION_TIMEOUT = 450  # qwen2.5vl:7b-q8_0 tarda más que q4 (mayor precisión)
 
 # Clave fija para advisory lock de Postgres (64-bit). Funciona entre todos
 # los workers de Odoo porque el lock es a nivel de base de datos, no de

@@ -54,6 +54,12 @@ def process_next_pending_request(env):
 
     try:
         _process_request(env, request)
+    except ollama_client.OllamaBusyError:
+        _logger.warning(
+            "image_quote_processor: Ollama busy, re-queuing request %s", request.name
+        )
+        request.write({"state": "pending"})
+        env.cr.commit()
     except Exception as exc:  # noqa: BLE001 -- este es el limite de aislamiento del cron
         _logger.exception("image_quote_processor: fallo procesando %s", request.name)
         request.write({"state": "error", "error_message": str(exc)})
@@ -67,6 +73,9 @@ def _process_request(env, request):
     any_line_created = False
 
     for image in request.image_ids:
+        if image.extraction_status == 'done':
+            continue
+
         try:
             img_b64 = _resize_image(base64.b64decode(image.image))
             parsed = ollama_client.generate_structured(
@@ -75,13 +84,12 @@ def _process_request(env, request):
                 json_schema=prompt_templates.IMAGE_QUOTE_SCHEMA,
                 images=[img_b64],
                 timeout=ollama_client.VISION_TIMEOUT,
-                # Default de generate_structured (2048) se queda corto: la
-                # imagen sola consume ~2000 tokens de contexto, sin dejar
-                # espacio para la respuesta (done_reason="length", JSON
-                # truncado/invalido). Confirmado empiricamente 2026-07-27
-                # tanto en scripts/test_vision_extraction.py como aqui.
-                num_ctx=4096,
+                num_ctx=8192,
+                priority='low',
+                cr=env.cr,
             )
+        except ollama_client.OllamaBusyError:
+            raise
         except (ollama_client.OllamaError, ValueError) as exc:
             image.write({"extraction_status": "error", "error_message": str(exc)})
             continue
