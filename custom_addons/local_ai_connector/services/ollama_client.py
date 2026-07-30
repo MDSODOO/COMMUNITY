@@ -25,7 +25,7 @@ _logger = logging.getLogger(__name__)
 # Ollama corre en el HOST (fuera de Docker), no dentro del contenedor de
 # Odoo -- 127.0.0.1 aqui dentro apuntaria al propio contenedor. Ver
 # docker-compose.yml (extra_hosts: host.docker.internal:host-gateway).
-OLLAMA_URL = "http://201.132.253.85:11434/api/generate"
+OLLAMA_URL = "http://189.162.156.127:11434/api/generate"
 DEFAULT_TIMEOUT = 60  # segundos -- consultas de texto son cortas (num_ctx bajo, §4)
 # Imagenes reales tardaron 93-242s incluso redimensionadas (medido
 # 2026-07-27, ver docs/AI_MODEL_ODOO_CONFIG.md §9.2) -- margen generoso.
