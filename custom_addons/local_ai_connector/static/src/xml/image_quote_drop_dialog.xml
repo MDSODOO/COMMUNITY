@@ -2,81 +2,191 @@
 <templates id="template" xml:space="preserve">
 
     <t t-name="local_ai_connector.ImageQuoteDropDialog">
-        <Dialog size="'md'" title="'Nueva cotización desde imagen'">
+        <Dialog size="'md'" title="'Cotizador WhatsApp'">
 
-            <div class="iqd_bento_card">
+            <div class="iqd_bento_card p-4">
 
-                <p class="text-muted small">
-                    Arrastra aquí una foto que te haya mandado un cliente por WhatsApp (o
-                    selecciónala a mano). Se procesará en unos minutos y quedará lista para tu
-                    revisión en <strong>Ventas &gt; Cotizaciones por imagen (IA)</strong>.
-                </p>
+                <!-- ══ Encabezado Hero con Insignia WhatsApp ══ -->
+                <div class="iqd_header mb-3 pb-2 border-bottom">
+                    <div class="d-flex align-items-center justify-content-between mb-2">
+                        <div class="iqd_badge_whatsapp d-inline-flex align-items-center gap-2 px-3 py-1.5 rounded-pill border">
+                            <i class="fa fa-whatsapp fs-5 text-success"/>
+                            <span class="fw-bold fs-6">Cotizador WhatsApp</span>
+                        </div>
+                        <span class="badge bg-light text-muted border rounded-pill px-3 py-1 small">
+                            <i class="fa fa-picture-o me-1 text-primary"/>
+                            Extracción por Imagen
+                        </span>
+                    </div>
+                    <h5 class="fw-bold iqd_title mb-1 text-dark">Creador de Cotizaciones por Imagen</h5>
+                    <p class="iqd_subtitle mb-0 text-muted small">
+                        Arrastra o pega (<kbd class="iqd_kbd">Ctrl+V</kbd>) recetas o comprobantes enviados por clientes para calcular los productos e inventarios <strong>A la mano</strong>.
+                    </p>
+                </div>
 
-                <div t-attf-class="iqd_dropzone {{ state.dragActive ? 'iqd_dropzone--active' : '' }}"
+                <!-- ══ Hero Dropzone Interactiva ══ -->
+                <div t-attf-class="iqd_dropzone {{ state.dragActive ? 'iqd_dropzone--active' : '' }} {{ state.files.length ? 'iqd_dropzone--has-files' : '' }} p-4 rounded-3 text-center my-3"
                      t-on-dragover.prevent="onDragOver"
                      t-on-dragleave.prevent="onDragLeave"
                      t-on-drop.prevent="onDrop"
                      t-on-click="openFilePicker"
-                     role="button">
-                    <i class="fa fa-cloud-upload iqd_dropzone__icon"/>
-                    <div class="iqd_dropzone__label">Arrastra fotos aquí o haz click para elegirlas</div>
-                    <div class="iqd_dropzone__hint">JPEG/PNG, máx. 8 MB c/u, hasta 5 fotos</div>
+                     role="button"
+                     tabindex="0"
+                     aria-label="Zona para subir o arrastrar fotos de cotización">
+                    
+                    <div class="iqd_dropzone_icon_wrap mb-2">
+                        <i class="fa fa-cloud-upload iqd_dropzone__icon text-primary fs-1"/>
+                    </div>
+
+                    <div class="iqd_dropzone__label fw-bold mb-1 fs-6">
+                        Arrastra tus fotos aquí, pega con <kbd class="iqd_kbd">Ctrl+V</kbd> o haz clic
+                    </div>
+
+                    <div class="iqd_dropzone__hint text-muted small mb-2">
+                        Formatos soportados: <strong>JPEG, PNG, WEBP</strong> (máx. 8 MB c/u, hasta 5 imágenes)
+                    </div>
+
+                    <div t-if="state.files.length" class="iqd_file_counter badge rounded-pill bg-primary-subtle text-primary border border-primary-subtle px-3 py-1 mt-1">
+                        <i class="fa fa-check-circle me-1"/> <t t-esc="state.files.length"/> de 5 fotos seleccionadas
+                    </div>
+
                     <input t-ref="fileInput"
                            type="file"
-                           accept="image/jpeg,image/png"
+                           accept="image/jpeg,image/png,image/webp"
                            multiple="multiple"
                            class="d-none"
                            t-on-change="onFileInputChange"/>
                 </div>
 
-                <div t-if="state.files.length" class="iqd_thumbs my-3">
-                    <t t-foreach="state.files" t-as="entry" t-key="entry.previewUrl">
-                        <div class="iqd_thumb">
-                            <img t-att-src="entry.previewUrl" alt=""/>
-                            <button class="btn btn-sm btn-danger iqd_thumb__remove"
-                                    t-on-click="() => this.removeFile(state.files.indexOf(entry))"
-                                    title="Quitar">
-                                <i class="fa fa-times"/>
-                            </button>
+                <!-- ══ Galería de Miniaturas Animada (.iqd_thumbs) ══ -->
+                <div t-if="state.files.length" class="iqd_thumbs_wrap my-3 p-3 rounded-3 border">
+                    <div class="d-flex align-items-center justify-content-between mb-2">
+                        <span class="fw-bold small text-muted text-uppercase">Imágenes Adjuntas (<t t-esc="state.files.length"/>)</span>
+                        <button class="btn btn-link btn-sm text-danger text-decoration-none p-0 small" t-on-click="removeAllFiles">
+                            <i class="fa fa-trash me-1"/> Limpiar fotos
+                        </button>
+                    </div>
+                    <div class="iqd_thumbs">
+                        <t t-foreach="state.files" t-as="entry" t-key="entry.previewUrl">
+                            <div class="iqd_thumb shadow-sm">
+                                <img t-att-src="entry.previewUrl" alt="Vista previa de imagen"/>
+                                <button class="btn btn-sm btn-danger iqd_thumb__remove shadow-sm"
+                                        t-on-click.stop="() => this.removeFile(state.files.indexOf(entry))"
+                                        title="Eliminar esta foto">
+                                    <i class="fa fa-times"/>
+                                </button>
+                            </div>
+                        </t>
+                    </div>
+                </div>
+
+                <!-- ══ Card Bento de Selección de Cliente ══ -->
+                <div class="iqd_customer_card p-3.5 rounded-3 border my-3 shadow-sm">
+                    <div class="d-flex align-items-center justify-content-between mb-2.5">
+                        <label class="form-label fw-bold small text-uppercase text-muted mb-0 d-flex align-items-center gap-1.5">
+                            <i class="fa fa-user-circle text-primary fs-5 me-1"/>
+                            <span>Cliente Registrado *</span>
+                        </label>
+                        <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-2.5 py-1 small">
+                            <i class="fa fa-check-square-o me-1"/>Afiliado Obligatorio
+                        </span>
+                    </div>
+
+                    <!-- Si NO hay cliente seleccionado, muestra el autocompletador con icono interactivo -->
+                    <div t-if="!state.partnerId" class="iqd_partner_select_wrap">
+                        <div class="iqd_partner_select o_input">
+                            <Many2XAutocomplete t-props="partnerAutocompleteProps"/>
                         </div>
-                    </t>
+                    </div>
+
+                    <!-- Si YA hay cliente seleccionado, muestra la Ficha Bento Profile Card -->
+                    <div t-else="" class="iqd_partner_profile_card p-3 rounded-3 border d-flex align-items-center justify-content-between gap-3">
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="iqd_customer_avatar rounded-circle d-flex align-items-center justify-content-center fw-bold fs-5 text-primary bg-primary-subtle border border-primary-subtle" style="width: 44px; height: 44px;">
+                                <t t-esc="state.partnerDisplayName ? state.partnerDisplayName.substring(0, 2).toUpperCase() : 'CL'"/>
+                            </div>
+                            <div>
+                                <div class="fw-bold text-dark fs-6 d-flex align-items-center gap-1.5">
+                                    <span t-esc="state.partnerDisplayName"/>
+                                    <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-2 py-0.5 small ms-1">
+                                        <i class="fa fa-check me-1"/>Verificado
+                                    </span>
+                                </div>
+                                <div class="text-muted small d-flex align-items-center gap-2 mt-1">
+                                    <t t-if="state.partnerPhone">
+                                        <span class="badge bg-light text-dark border px-2 py-1">
+                                            <i class="fa fa-phone me-1 text-primary"/><t t-esc="state.partnerPhone"/>
+                                        </span>
+                                    </t>
+                                    <t t-if="state.partnerEmail">
+                                        <span class="badge bg-light text-dark border px-2 py-1">
+                                            <i class="fa fa-envelope-o me-1 text-primary"/><t t-esc="state.partnerEmail"/>
+                                        </span>
+                                    </t>
+                                    <t t-if="!state.partnerPhone and !state.partnerEmail">
+                                        <span class="fst-italic text-muted">Sin teléfono ni correo registrado.</span>
+                                    </t>
+                                </div>
+                            </div>
+                        </div>
+
+                        <button class="btn btn-outline-secondary btn-sm rounded-pill px-3 d-inline-flex align-items-center gap-1"
+                                t-on-click="clearPartner"
+                                title="Cambiar de cliente">
+                            <i class="fa fa-refresh"/>
+                            <span>Cambiar</span>
+                        </button>
+                    </div>
+
+                    <div class="text-muted small mt-2.5 d-flex align-items-center gap-1.5">
+                        <i class="fa fa-info-circle text-primary"/>
+                        <span>Solo clientes ya afiliados en el sistema. Las existencias se calcularán <strong>A la mano</strong>.</span>
+                    </div>
                 </div>
 
-                <div class="row g-2 mt-1 mb-2">
-                    <div class="col-12">
-                        <input type="text" class="form-control" placeholder="Nombre del cliente *"
-                               t-model="state.customerName" t-att-disabled="state.loading"/>
-                    </div>
-                    <div class="col-6">
-                        <input type="text" class="form-control" placeholder="Teléfono (WhatsApp)"
-                               t-model="state.customerPhone" t-att-disabled="state.loading"/>
-                    </div>
-                    <div class="col-6">
-                        <input type="email" class="form-control" placeholder="Correo (opcional)"
-                               t-model="state.customerEmail" t-att-disabled="state.loading"/>
-                    </div>
-                </div>
-                <p class="text-muted small mb-0">* Nombre obligatorio; captura al menos teléfono o correo.</p>
-
+                <!-- ══ Notificación de Resultado ══ -->
                 <div t-if="state.result"
-                     t-attf-class="iqd_result alert mt-3 {{ state.result.success ? 'alert-success' : 'alert-danger' }}"
+                     t-attf-class="iqd_result alert mt-3 rounded-3 shadow-sm d-flex align-items-center gap-2.5 {{ state.result.success ? 'alert-success border-success' : 'alert-danger border-danger' }}"
                      role="alert">
-                    <t t-if="state.result.success">
-                        <t t-esc="state.result.message"/> Referencia: <strong t-esc="state.result.reference"/>
-                    </t>
-                    <t t-else="">
-                        <t t-esc="state.result.message"/>
-                    </t>
+                    <i t-attf-class="fa {{ state.result.success ? 'fa-check-circle fs-4 text-success' : 'fa-exclamation-triangle fs-4 text-danger' }}"/>
+                    <div>
+                        <t t-if="state.result.success">
+                            <div class="fw-bold"><t t-esc="state.result.message"/></div>
+                            <div class="small">Folio de solicitud: <strong t-esc="state.result.reference"/></div>
+                        </t>
+                        <t t-else="">
+                            <t t-esc="state.result.message"/>
+                        </t>
+                    </div>
                 </div>
 
             </div>
 
             <t t-set-slot="footer">
-                <button class="btn btn-primary" t-on-click="submit" t-att-disabled="!canSubmit">
-                    <i t-if="state.loading" class="fa fa-spinner fa-spin"/>
-                    <t t-else="">Crear solicitud</t>
-                </button>
-                <button class="btn btn-secondary" t-on-click="props.close">Cerrar</button>
+                <div class="d-flex align-items-center justify-content-between w-100">
+                    <span class="text-muted small">
+                        <t t-if="!canSubmit">
+                            <i class="fa fa-exclamation-circle text-warning me-1"/>
+                            Adjunta al menos 1 foto y selecciona un cliente.
+                        </t>
+                        <t t-else="">
+                            <i class="fa fa-check text-success me-1"/>
+                            Listo para generar la cotización.
+                        </t>
+                    </span>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-secondary px-3" t-on-click="props.close">Cancelar</button>
+                        <button class="btn btn-primary iqd_btn_submit px-4 d-inline-flex align-items-center gap-2"
+                                t-on-click="submit"
+                                t-att-disabled="!canSubmit">
+                            <i t-if="state.loading" class="fa fa-spinner fa-spin"/>
+                            <t t-else="">
+                                <i class="fa fa-file-text-o"/>
+                                <span>Procesar Imagen</span>
+                            </t>
+                        </button>
+                    </div>
+                </div>
             </t>
 
         </Dialog>

@@ -21,6 +21,14 @@ _logger = logging.getLogger(__name__)
 # image_quote_processor.py), asi que un arrastre accidental de muchas
 # fotos de golpe si debe frenarse. Contado por user_id, no por IP: varios
 # empleados comparten la IP de oficina.
+#
+# Regla de negocio: no se vende a clientes no registrados -- el cliente
+# SIEMPRE debe haberse registrado antes via el portal de /afiliacion
+# (medicine_depot_portal). Por eso partner_id es obligatorio aqui y no se
+# acepta nombre/telefono/correo sueltos ni se crea un contacto nuevo desde
+# este endpoint (a diferencia de /ai/quote_from_image, el publico, que si
+# puede terminar creando un res.partner via action_create_quotation -- ese
+# flujo es distinto y queda fuera de esta regla por ahora).
 _RATE_LIMIT_WINDOW_SECONDS = 60 * 60
 _RATE_LIMIT_MAX_ATTEMPTS = 10
 
@@ -65,19 +73,30 @@ class LocalAiQuoteFromImageInternalController(http.Controller):
                 'message': 'Demasiadas solicitudes seguidas. Espera unos minutos antes de volver a intentar.',
             }, status=429)
 
-        customer_name = (post.get('customer_name') or '').strip()
-        customer_email = (post.get('customer_email') or '').strip()
-        customer_phone = (post.get('customer_phone') or '').strip()
-
-        if not customer_name:
+        # partner_id: seleccionado por el empleado en el selector real
+        # (Many2XAutocomplete de solo busqueda sobre res.partner, ver
+        # static/src/js/image_quote_drop_dialog.js). Obligatorio -- regla de
+        # negocio: no se vende a clientes no registrados, siempre deben
+        # haberse registrado antes via el portal de /afiliacion. Este
+        # endpoint ya NO acepta nombre/telefono/correo sueltos ni crea
+        # contactos nuevos; nombre/correo/telefono se toman siempre del
+        # contacto seleccionado.
+        partner_id_raw = (post.get('partner_id') or '').strip()
+        partner_id = int(partner_id_raw) if partner_id_raw.isdigit() else None
+        partner = request.env['res.partner'].sudo().browse(partner_id).exists() if partner_id else None
+        if not partner:
             return request.make_json_response({
                 'success': False,
-                'message': 'El nombre del cliente es obligatorio.',
+                'message': 'Selecciona un cliente registrado. No se pueden crear cotizaciones para clientes no registrados (deben registrarse antes vía afiliación).',
             }, status=400)
+
+        customer_name = partner.name
+        customer_email = partner.email or ''
+        customer_phone = partner.phone or ''
         if not customer_email and not customer_phone:
             return request.make_json_response({
                 'success': False,
-                'message': 'Captura al menos el teléfono o el correo del cliente.',
+                'message': 'El cliente seleccionado no tiene teléfono ni correo registrado. Actualiza su contacto antes de continuar.',
             }, status=400)
 
         files = request.httprequest.files.getlist('images')
@@ -116,6 +135,7 @@ class LocalAiQuoteFromImageInternalController(http.Controller):
             'customer_name': customer_name,
             'customer_email': customer_email,
             'customer_phone': customer_phone,
+            'partner_id': partner.id,
             'ip_address': request.httprequest.remote_addr,
             'origin_channel': 'internal_staff',
             'image_ids': image_vals,

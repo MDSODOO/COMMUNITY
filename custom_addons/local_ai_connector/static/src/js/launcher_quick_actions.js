@@ -28,8 +28,8 @@ quickActions.add("local_ai_connector.inventory_query", {
 
 quickActions.add("local_ai_connector.image_quote_drop", {
     id: "local_ai_connector.image_quote_drop",
-    label: "Nueva cotización desde imagen (foto de WhatsApp)",
-    keywords: ["cotizacion", "imagen", "foto", "whatsapp", "arrastrar", "ia"],
-    icon: "fa-camera",
+    label: "Cotizador WhatsApp",
+    keywords: ["ac", "acciones", "cotizacion", "cotizar", "foto", "whatsapp", "imagen", "receta", "comprobante"],
+    icon: "fa-whatsapp",
     run: (env) => env.services.dialog.add(ImageQuoteDropDialog, {}),
 });

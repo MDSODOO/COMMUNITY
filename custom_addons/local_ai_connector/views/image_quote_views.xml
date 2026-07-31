@@ -10,6 +10,7 @@
                   decoration-muted="state == 'reviewed'">
                 <field name="name"/>
                 <field name="customer_name"/>
+                <field name="partner_id"/>
                 <field name="customer_email"/>
                 <field name="customer_phone"/>
                 <field name="origin_channel" widget="badge"/>
@@ -39,6 +40,7 @@
                     <group>
                         <group string="Cliente">
                             <field name="customer_name"/>
+                            <field name="partner_id" readonly="1"/>
                             <field name="customer_email"/>
                             <field name="customer_phone"/>
                         </group>

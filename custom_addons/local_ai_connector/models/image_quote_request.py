@@ -44,6 +44,16 @@ class LocalAiImageQuoteRequest(models.Model):
     # al menos uno de los dos en vez de forzar el correo especificamente.
     customer_email = fields.Char(string="Correo del cliente")
     customer_phone = fields.Char(string="Teléfono del cliente")
+    # Opcional: si el empleado encontro y selecciono un contacto existente
+    # en el dialogo (selector real vinculado a res.partner, en vez del input
+    # aislado que habia antes), queda registrado aqui de una vez. Si se deja
+    # vacio (caso mas comun via WhatsApp: cliente nuevo, sin contacto
+    # todavia), action_create_quotation sigue resolviendo por
+    # correo/telefono o creando un contacto nuevo, como ya hacia.
+    partner_id = fields.Many2one(
+        "res.partner", string="Cliente (contacto existente)",
+        help="Contacto ya existente en res.partner, seleccionado por el empleado en el dialogo.",
+    )
     ip_address = fields.Char(string="Dirección IP de origen")
 
     @api.constrains("customer_email", "customer_phone")
@@ -103,26 +113,35 @@ class LocalAiImageQuoteRequest(models.Model):
                 "Revisa y confirma al menos una línea antes de crear la cotización."
             )
 
-        # Busca primero por correo (identificador mas confiable cuando
-        # existe); si no hay correo -- caso comun en la via interna, cliente
-        # solo identificado por WhatsApp -- busca por telefono. Ninguno de
-        # los dos es unico a nivel de base de datos, por lo que "limit=1"
-        # puede no ser el mismo partner en dos solicitudes distintas del
-        # mismo cliente; aceptable para este flujo (staff revisa el partner
-        # asignado en el sale.order resultante antes de enviarlo).
-        partner = self.env["res.partner"].sudo()
-        if self.customer_email:
-            partner = partner.search([("email", "=ilike", self.customer_email)], limit=1)
-        if not partner and self.customer_phone:
-            partner = self.env["res.partner"].sudo().search(
-                [("phone", "=", self.customer_phone)], limit=1
-            )
-        if not partner:
-            partner = self.env["res.partner"].sudo().create({
-                "name": self.customer_name,
-                "email": self.customer_email,
-                "phone": self.customer_phone,
-            })
+        # Si el empleado ya selecciono un contacto real en el dialogo (ver
+        # partner_id, selector Many2XAutocomplete sobre res.partner), se usa
+        # directo -- sin esto, es la unica fuente de verdad confiable. Solo
+        # si no hay partner_id (caso mas comun via WhatsApp: cliente sin
+        # contacto todavia) se recurre al fuzzy-match/creacion de siempre.
+        if self.partner_id:
+            partner = self.partner_id
+        else:
+            # Busca primero por correo (identificador mas confiable cuando
+            # existe); si no hay correo -- caso comun en la via interna,
+            # cliente solo identificado por WhatsApp -- busca por telefono.
+            # Ninguno de los dos es unico a nivel de base de datos, por lo
+            # que "limit=1" puede no ser el mismo partner en dos solicitudes
+            # distintas del mismo cliente; aceptable para este flujo (staff
+            # revisa el partner asignado en el sale.order resultante antes
+            # de enviarlo).
+            partner = self.env["res.partner"].sudo()
+            if self.customer_email:
+                partner = partner.search([("email", "=ilike", self.customer_email)], limit=1)
+            if not partner and self.customer_phone:
+                partner = self.env["res.partner"].sudo().search(
+                    [("phone", "=", self.customer_phone)], limit=1
+                )
+            if not partner:
+                partner = self.env["res.partner"].sudo().create({
+                    "name": self.customer_name,
+                    "email": self.customer_email,
+                    "phone": self.customer_phone,
+                })
 
         order_lines = []
         for line in confirmed_lines:
