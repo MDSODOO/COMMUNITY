@@ -1,7 +1,7 @@
 {
     'name': 'MDS - Conector de IA Local',
     'summary': 'Copiloto interno (Ollama, en el host) para consultas de inventario y cotizaciones por imagen.',
-    'version': '19.0.1.0.0',
+    'version': '19.0.1.1.0',
     'category': 'Tools',
     'author': 'MedicineDepot Sureste',
     'license': 'LGPL-3',
@@ -31,6 +31,7 @@
             'local_ai_connector/static/src/xml/image_quote_drop_dialog.xml',
         ],
     },
+    'post_init_hook': 'post_init_hook',
     'installable': True,
     'application': False,
 }
