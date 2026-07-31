@@ -5,6 +5,7 @@ from datetime import timedelta
 
 from odoo import fields, http
 from odoo.http import request
+from .csrf_utils import validate_origin
 
 _logger = logging.getLogger(__name__)
 
@@ -40,7 +41,7 @@ class LocalAiQuoteFromImageController(http.Controller):
         '/ai/quote_from_image',
         type='http', auth='public', website=True,
         methods=['POST'],
-        csrf=False,  # multipart/form-data sin sesion -- mismo criterio que /web/afiliacion/submit
+        csrf=False,  # multipart/form-data sin sesion; protegido via validate_origin()
     )
     def quote_from_image(self, **post):
         """Recibe 1+ fotos de una cotizacion escrita/impresa a mano y
@@ -51,6 +52,10 @@ class LocalAiQuoteFromImageController(http.Controller):
         cotizacion real -- ver action_create_quotation en
         models/image_quote_request.py.
         """
+        csrf_error = validate_origin()
+        if csrf_error:
+            return csrf_error
+
         ip = self._get_request_ip()
         if self._is_rate_limited(ip):
             _logger.warning(
