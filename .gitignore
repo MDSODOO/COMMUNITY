@@ -40,5 +40,8 @@ setup_antigravity_context.sh
 CLAUDE.md
 AGENTS.md
 
+# Prompts de agentes IA (suelen traer credenciales inline) -- nunca al repo
+PROMPT_*.md
+
 # Artefactos de estado del engine AURORA (regenerables, no son fuente)
 .migration-context.json
