@@ -1,15 +1,18 @@
 .env
 .env.*
+!.env.example
 !.env.*.example
 config/odoo.conf
-!config/odoo.conf.example
 config/odoo_test.conf
+config/*.conf
+!config/odoo.conf.example
 !config/odoo_test.conf.example
 *.log
 __pycache__/
 *.pyc
 ._*
 *.bak.*
+*.orig*
 .DS_Store
 oca_addons/*/
 custom_addons/.graphify/
@@ -23,3 +26,19 @@ e2e_tests/test-results/
 e2e_tests/playwright-report/
 e2e_tests/screenshots/
 e2e_tests/.env
+test-results/
+screenshots/
+playwright-report/
+.graphify/
+
+# Configuracion de agentes IA -- no se publica en el repositorio
+.claude/
+.opencode/
+.antigravity/
+opencode.json
+setup_antigravity_context.sh
+CLAUDE.md
+AGENTS.md
+
+# Artefactos de estado del engine AURORA (regenerables, no son fuente)
+.migration-context.json
