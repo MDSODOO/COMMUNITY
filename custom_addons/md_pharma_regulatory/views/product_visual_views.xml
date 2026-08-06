@@ -133,16 +133,14 @@
                 <attribute name="style">min-height:170px</attribute>
             </xpath>
 
-            <!-- Imagen reducida, en columna vertical, con tamaño FIJO (ancho y alto)
-                 para que todas las cards midan lo mismo sin importar la proporción
-                 de la foto de cada producto. -->
+            <!-- Imagen en cápsula Bento con remoción de fondo blanco (mix-blend-mode) -->
             <xpath expr="//aside" position="attributes">
-                <attribute name="class" add="d-flex flex-column align-items-center gap-1" separator=" "/>
-                <attribute name="style">min-width:72px; max-width:72px;</attribute>
+                <attribute name="class" add="order-first md-kanban-image-container" separator=" "/>
+                <attribute name="style">width:68px; height:68px; min-width:68px; max-width:68px; flex-shrink:0;</attribute>
             </xpath>
             <xpath expr="//field[@name='image_128']" position="attributes">
-                <attribute name="options">{'img_class': 'object-fit-contain', 'preview_image': 'image_128'}</attribute>
-                <attribute name="style">width:72px; height:72px; display:block;</attribute>
+                <attribute name="options">{'img_class': 'object-fit-contain md-kanban-img', 'preview_image': 'image_128'}</attribute>
+                <attribute name="style">width:100%; height:100%; display:block;</attribute>
             </xpath>
 
             <!-- Badge "A la mano": overlay absoluto anclado a la esquina superior
@@ -162,147 +160,83 @@
                  badge de md_lots_management sobre esta misma vista base fue
                  removido (ver product_template_kanban_card_views.xml) para no
                  duplicar. -->
+            <!-- Barra de Acciones Rápidas Unificada (COFEPRIS + Lotes FEFO + Ajuste de Inventario) -->
             <xpath expr="//t[@t-name='card']" position="inside">
-                <div t-if="record.is_storable.raw_value &amp;&amp; record.tracking.raw_value !== 'lot' &amp;&amp; record.tracking.raw_value !== 'serial'"
-                     t-attf-class="md-onhand-badge md-onhand-badge--{{record.md_onhand_badge_color.value}}">
-                    <field name="qty_available"/> A la mano
+                <div class="md-card-top-actions">
+                    <a type="object" name="action_open_cofepris_detail"
+                       class="md-cofepris-btn" title="Detalle regulatorio COFEPRIS"
+                       aria-label="Detalle regulatorio COFEPRIS">
+                        <i class="fa fa-flask" aria-hidden="true"/>
+                    </a>
+                    <t t-if="record.tracking.raw_value === 'lot' || record.tracking.raw_value === 'serial'">
+                        <field name="id" widget="md_lot_detail_button" nolabel="1"/>
+                    </t>
+                    <a type="object" name="action_open_quants"
+                       class="md-adjust-qty-btn" title="Ajustar A la mano"
+                       aria-label="Ajustar A la mano">
+                        <i class="fa fa-sliders" aria-hidden="true"/>
+                    </a>
                 </div>
             </xpath>
 
-            <!-- Anillo "Próx. Vencer": replica short-expiry-ring/-pill de
-                 bi_pos_stock/pos_product_card.scss (borde morado + pastilla),
-                 cuando el producto tiene algun lote a la mano venciendo en
-                 <=180 dias (md_has_short_expiry, mismo umbral SHORT_EXPIRY_DAYS
-                 de lot_expiry_utils.js). No depende de un carrito activo: se
-                 calcula por producto, por eso SI es replicable en Inventario. -->
-            <xpath expr="//t[@t-name='card']" position="inside">
-                <div t-if="record.md_has_short_expiry.raw_value" class="md-short-expiry-ring" aria-label="Próximo a vencer" aria-hidden="true">
-                    <span class="md-short-expiry-pill">Prox. Vencer</span>
-                </div>
-            </xpath>
-
-            <!-- Botón COFEPRIS: equivalente exacto al botón regulatorio real
-                 del POS — NO a bi_pos_stock (ese es el de lotes), sino al de
-                 md_pos_product_labels (.md-pos-reg-info-btn), el módulo que
-                 YA replica estas mismas etiquetas en el POS (ver su propio
-                 comentario de cabecera: "Replica en la card de producto de
-                 POS las mismas etiquetas... que ya se muestran en el kanban
-                 de Inventario"). Ese módulo posiciona su botón regulatorio
-                 en la esquina superior IZQUIERDA, ícono fa-flask, relleno
-                 sólido — deliberadamente distinto del botón de lotes
-                 (derecha, blanco translúcido) "para que nunca se confundan
-                 ni se superpongan" (cita textual de su propio comentario).
-                 Auditoría de fidelidad 2026-07-21 (Playwright contra el POS
-                 en vivo): aquí vivía en la esquina DERECHA con fa-certificate;
-                 se corrige posición e ícono para igualar esa regla real.
-                 action_open_cofepris_detail() abre un modal (target=new) con
-                 el detalle regulatorio completo; type="object" es reconocido
-                 de forma nativa por el renderer de Kanban: el click NO abre
-                 el registro completo, solo dispara el método.
-                 aria-label (auditoría de accesibilidad en Dark Mode
-                 2026-07-21, audit_wizard_buttons_darkmode.spec.ts): el
-                 title="" nativo no es suficiente para lectores de pantalla
-                 en un <a> sin texto visible. -->
-            <xpath expr="//t[@t-name='card']" position="inside">
-                <a type="object" name="action_open_cofepris_detail"
-                   class="md-cofepris-btn" title="Detalle regulatorio COFEPRIS"
-                   aria-label="Detalle regulatorio COFEPRIS / COFEPRIS regulatory detail">
-                    <i class="fa fa-flask" aria-hidden="true"/>
-                </a>
-            </xpath>
-
-            <!-- Ajustar "A la mano" directamente desde el Kanban (mejora de
-                 funcionalidad, punto 2 de INVENTORY_KANBAN_UX_PLAN.md).
-                 action_open_quants() es un método NATIVO de product.template
-                 (odoo/addons/stock/models/product.py) — la MISMA acción que
-                 ya usa el botón "A la mano" del formulario de producto: abre
-                 stock.quant filtrado a este producto, editable inline si el
-                 usuario tiene permisos de Gestor de Inventario. No se
-                 necesitó ningún wizard ni método Python nuevo. Esquina
-                 inferior derecha: la única libre en ambos casos (con/sin
-                 lote — COFEPRIS ocupa la izquierda arriba, detalle de lotes
-                 la derecha arriba solo cuando hay lote). -->
-            <xpath expr="//t[@t-name='card']" position="inside">
-                <a type="object" name="action_open_quants"
-                   class="md-adjust-qty-btn" title="Ajustar A la mano">
-                    <i class="fa fa-sliders"/>
-                </a>
-            </xpath>
-
-            <!-- La fila de precio original queda vacía: se mueve arriba en el siguiente xpath.
-                 Esto se hace ANTES de insertar el nuevo bloque para que el selector no
-                 coincida accidentalmente con el <field name="list_price"/> nuevo. -->
+            <!-- La fila de precio original queda vacía -->
             <xpath expr="//field[@name='list_price']/parent::span" position="replace">
                 <span/>
             </xpath>
 
-            <!-- Fila superior: Precio arriba a la izquierda. Tratamiento tipográfico
-                 de .md-product-card__price del portal (medicine_depot_portal/_cards.scss):
-                 azul de marca + peso 900, en vez del verde/.95rem anterior (que no
-                 correspondía a ningún token del portal ni del backend) — ver
-                 .md-kanban-price en product_kanban_pos_style.scss.
-                 padding-left:22px (auditoría 2026-07-21): reserva espacio para el
-                 botón COFEPRIS, ahora en la esquina superior izquierda (antes
-                 vivía a la derecha y no chocaba con el precio) — mismo criterio
-                 que md_pos_product_labels/product_card.scss usa con
-                 "padding-left: 18px" en .product-name por la misma razón. -->
+            <!-- Fila superior: Badge "A la mano" toma el lugar superior donde estaba el precio -->
             <xpath expr="//div[hasclass('mb-1')]" position="before">
-                <div class="mb-1" style="white-space:nowrap; padding-left:22px;">
-                    <span class="md-kanban-price">$<field name="list_price"/></span>
-                    <span t-if="record.l10n_mx_tiene_iva.raw_value" class="md-kanban-price-iva">
-                        + <field name="l10n_mx_iva_label"/> = $<field name="l10n_mx_price_con_iva"/>
+                <div class="mb-1 d-flex align-items-center">
+                    <span t-if="record.is_storable.raw_value"
+                          t-attf-class="badge rounded-pill md-onhand-badge md-onhand-badge--{{record.md_onhand_badge_color.value}}">
+                        <i class="fa fa-cubes me-1"/>
+                        <field name="qty_available" options="{'digits': [16, 0]}"/> A la mano
                     </span>
                 </div>
             </xpath>
 
-            <!-- Nombre del producto: tipografía exacta de .md-product-card__name
-                 del portal (auditoría UX 2026-07-21, punto 1.1 de
-                 INVENTORY_KANBAN_UX_PLAN.md) — antes se renderizaba sin
-                 clase (arch base: <field name="name"/> suelto dentro del
-                 div.h5 nativo de Odoo), sin control de salto de línea
-                 (rompía a media palabra). Confirmado el arch real vía
-                 `env.ref('product.product_template_kanban_view').arch` en
-                 odoo shell: es un field suelto, no un span literal — el
-                 primer intento (xpath sobre //div[hasclass('h5')]/span)
-                 fallaba porque ese span no existe en el arch fuente, solo
-                 en el HTML ya renderizado por el widget. -->
-            <xpath expr="//field[@name='name']" position="attributes">
-                <attribute name="class">md-kanban-product-name</attribute>
+            <!-- Ocultar div nativo de existencias de Odoo stock para eliminar texto duplicado de A la mano -->
+            <xpath expr="//div[@groups='stock.group_stock_user']" position="replace">
+                <div class="d-none"/>
             </xpath>
 
-            <!-- Oculta el texto plano "On hand: X" del módulo stock: lo sustituimos por el
-                 chip de arriba a la derecha -->
-            <xpath expr="//div[@t-if='record.show_on_hand_qty_status_button.raw_value']" position="attributes">
-                <attribute name="t-if">0</attribute>
+            <!-- Fila inferior / Footer: Franja Bento de Precios con Pastilla Dorado/Naranja sin la palabra "CON" -->
+            <xpath expr="//main" position="inside">
+                <div class="mt-2 pt-2 border-top d-flex align-items-center justify-content-between md-kanban-price-strip">
+                    <!-- Precio Base (Sin IVA) -->
+                    <div class="d-flex align-items-baseline">
+                        <span class="md-price-currency">$</span>
+                        <span class="md-price-amount"><field name="list_price"/></span>
+                        <span class="md-price-subtext ms-1">Sin IVA</span>
+                    </div>
+
+                    <!-- Pastilla Dorado / Naranja con IVA (sin la palabra CON) -->
+                    <div t-if="record.l10n_mx_tiene_iva.raw_value" class="md-price-iva-gold-pill">
+                        <span class="md-iva-label">IVA:</span>
+                        <span class="md-iva-amount">$<field name="l10n_mx_price_con_iva"/></span>
+                    </div>
+                </div>
             </xpath>
 
-            <!-- Línea + Forma/Concentración/Contenido con colores, en formato compacto.
-                 Tratamiento tipográfico md-portal-tag (mayúsculas + peso 900) igual
-                 que .md-product-badge del portal — antes peso 500 sin mayúsculas. -->
+            <!-- Línea + Forma/Concentración/Contenido con etiquetas Bento Glass del portal -->
             <span t-if="record.default_code.value" position="after">
                 <div class="d-flex flex-wrap align-items-center gap-1 mt-1" style="row-gap:.25rem;">
-                    <span t-if="record.product_line_id.value" class="badge rounded-pill md-portal-tag"
-                          style="font-size:.65rem; background:#C9784F; color:#fff;">
+                    <span t-if="record.product_line_id.value" class="badge rounded-pill md-portal-tag md-portal-tag--line">
                         <field name="product_line_id"/>
                     </span>
-                    <span t-if="record.l10n_mx_forma_farmaceutica.value" class="badge rounded-pill md-portal-tag"
-                          style="font-size:.65rem; background:#2C8C99; color:#fff;">
+                    <span t-if="record.l10n_mx_forma_farmaceutica.value" class="badge rounded-pill md-portal-tag md-portal-tag--forma">
                         <field name="l10n_mx_forma_farmaceutica"/>
                     </span>
-                    <span t-if="record.l10n_mx_concentracion.value" class="badge rounded-pill md-portal-tag"
-                          style="font-size:.65rem; background:#7B4B9E; color:#fff;">
+                    <span t-if="record.l10n_mx_concentracion.value" class="badge rounded-pill md-portal-tag md-portal-tag--concentracion">
                         <field name="l10n_mx_concentracion"/>
                     </span>
-                    <span t-if="record.l10n_mx_contenido_empaque.value" class="badge rounded-pill md-portal-tag"
-                          style="font-size:.65rem; background:#4A5C8C; color:#fff;">
+                    <span t-if="record.l10n_mx_contenido_empaque.value" class="badge rounded-pill md-portal-tag md-portal-tag--contenido">
                         <field name="l10n_mx_contenido_empaque"/>
                     </span>
-                    <span t-if="record.l10n_mx_tipo_envase.value" class="badge rounded-pill md-portal-tag"
-                          style="font-size:.65rem; background:#5C8A5C; color:#fff;">
+                    <span t-if="record.l10n_mx_tipo_envase.value" class="badge rounded-pill md-portal-tag md-portal-tag--envase">
                         <field name="l10n_mx_tipo_envase"/>
                     </span>
-                    <span t-if="record.l10n_mx_talla.value" class="badge rounded-pill md-portal-tag"
-                          style="font-size:.65rem; background:#B0785C; color:#fff;">
+                    <span t-if="record.l10n_mx_talla.value" class="badge rounded-pill md-portal-tag md-portal-tag--talla">
                         <field name="l10n_mx_talla"/>
                     </span>
                 </div>
@@ -313,48 +247,6 @@
                     <field name="l10n_mx_dimensiones"/>
                 </small>
 
-                <!-- Desglose de lotes a la mano (FEFO): equivalente al
-                     lot-card-footer del POS, pero mostrando TODOS los lotes
-                     a la mano en vez de solo el seleccionado en el carrito
-                     (aqui no hay carrito). Mismos iconos calendario/cubos y
-                     colores por vencimiento (md_lot_breakdown_html, generado
-                     en product_template.py con los mismos umbrales que
-                     lot_expiry_utils.js). Solo se renderiza para productos
-                     con seguimiento por lote/serie: coincide con la
-                     condicion del badge de arriba.
-
-                     Botón dedicado al lado (md_lot_detail_button widget):
-                     abre MdKanbanLotDetailPopup — réplica funcional completa
-                     del LotDetailPopup del POS (leyenda + tabla FEFO + fila
-                     "1° = vender primero" + "VENCIDO (Xd)"), que los chips
-                     de abajo NO muestran (los chips son solo un resumen
-                     inline acotado a 6 + "+N").
-
-                     Badge total "A la mano" (auditoría UX 2026-07-21,
-                     e2e_tests/audit_inventory_kanban_usability.spec.ts):
-                     para productos con lote/serie, el badge de arriba
-                     (.md-onhand-badge absoluto) NUNCA se renderiza — solo
-                     quedaban los chips por lote, sin ningún total visible
-                     (había que sumarlos a mano). Este badge NO reemplaza
-                     los chips (siguen siendo la única fuente de detalle por
-                     lote/FEFO), los complementa con la suma. Reutiliza
-                     qty_available (ya fetched arriba para el badge no-lote)
-                     y md_onhand_badge_color (mismo semáforo, sin campo
-                     Python nuevo); usa la variante "inline" del badge (ver
-                     clase en el span de abajo) en vez de la absoluta, para
-                     no competir con el precio en la esquina superior. -->
-                <div class="mt-1 d-flex align-items-center gap-1" t-if="record.tracking.raw_value === 'lot' || record.tracking.raw_value === 'serial'">
-                    <span t-attf-class="md-onhand-badge md-onhand-badge--inline md-onhand-badge--{{record.md_onhand_badge_color.value}}">
-                        <field name="qty_available" options="{'digits': [16, 0]}"/>&#160;A la mano
-                    </span>
-                    <!-- Chips de desglose por lote (md_lot_breakdown_html) ocultos a pedido
-                         del usuario (2026-07-21): la card quedaba muy cargada con badge total +
-                         chips + botón. El detalle por lote/FEFO sigue disponible completo en el
-                         popup (botón de abajo, MdKanbanLotDetailPopup) — solo se oculta el
-                         resumen inline, no la función. Campo/compute Python sin tocar: el popup
-                         usa get_md_lot_detail()/_md_lot_breakdown_data(), no este HTML. -->
-                    <field name="id" widget="md_lot_detail_button" nolabel="1"/>
-                </div>
             </span>
         </field>
     </record>

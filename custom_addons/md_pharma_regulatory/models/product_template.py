@@ -60,6 +60,11 @@ class ProductTemplate(models.Model):
         string='Talla/Medida',
         help='Talla o medida abreviada extraída del nombre (ej. "CH", "MED", "GDE" -> "CHICO", "MEDIANO", "GRANDE").',
     )
+    cofepris_full_name = fields.Char(
+        string='Nombre Completo COFEPRIS (NOM-072)',
+        compute='_compute_cofepris_full_name',
+        help='Nombre concatenado según NOM-072-SSA1-2012: Denominación Distintiva + Sustancia Activa + (Forma, Concentración, Presentación).',
+    )
     l10n_mx_tiene_iva = fields.Boolean(
         string='Tiene IVA', compute='_compute_l10n_mx_iva', store=True,
         help='Indica si el producto tiene un impuesto de venta del 16% (IVA) asociado.',
@@ -87,6 +92,54 @@ class ProductTemplate(models.Model):
         ('fase_2_parcial', 'Fase 2: datos parciales'),
         ('fase_3_sin_datos', 'Fase 3: sin datos regulatorios'),
     ], string='Fase de Homologación')
+
+    @api.depends('name', 'active_substance_ids', 'l10n_mx_concentracion', 'l10n_mx_forma_farmaceutica', 'l10n_mx_contenido_empaque')
+    def _compute_cofepris_full_name(self):
+        for rec in self:
+            rec.cofepris_full_name = rec._get_cofepris_full_name()
+
+    def _get_cofepris_full_name(self):
+        """Genera la concatenación lógica y legal de datos del producto según NOM-072-SSA1-2012.
+
+        Previene valores False/None o duplicados substrings.
+        Estructura:
+        [Denominación Distintiva] - [Denominación Genérica/Sustancia] ([Forma Farmacéutica] [Concentración], [Presentación])
+        """
+        self.ensure_one()
+        base_name = (self.name or '').strip()
+        if not base_name:
+            return ''
+
+        substance_names = []
+        if hasattr(self, 'active_substance_ids') and self.active_substance_ids:
+            substance_names = [s.name.strip() for s in self.active_substance_ids if s.name]
+        
+        substance_str = ", ".join(substance_names)
+
+        details = []
+        forma = (getattr(self, 'l10n_mx_forma_farmaceutica', '') or '').strip()
+        concentracion = (getattr(self, 'l10n_mx_concentracion', '') or '').strip()
+        empaque = (getattr(self, 'l10n_mx_contenido_empaque', '') or '').strip()
+
+        base_upper = base_name.upper()
+
+        if forma and forma.upper() not in base_upper:
+            details.append(forma)
+        if concentracion and concentracion.upper() not in base_upper:
+            details.append(concentracion)
+        if empaque and empaque.upper() not in base_upper:
+            details.append(empaque)
+
+        parts = [base_name]
+
+        if substance_str and substance_str.upper() not in base_upper:
+            parts.append(f"- {substance_str}")
+
+        if details:
+            details_str = ", ".join(details)
+            parts.append(f"({details_str})")
+
+        return " ".join(parts)
 
     # ── Kanban de Inventario estilo POS: badge de existencia + lotes ────────
     # Replica el mismo lenguaje visual/umbrales de bi_pos_stock ProductCard

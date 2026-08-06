@@ -69,38 +69,39 @@
 // que stockColorClass en product_card.js), usando los hex EXACTOS del POS
 // (--md-pos-*, no los tokens genericos --md-danger/--md-warning/--md-success
 // del backend, que tienen otro hex).
+// ── Badge "A la mano" Bento Glass ──────────────────────────────────────────
 .md-onhand-badge {
-    position: absolute;
-    top: 5px;
-    left: 5px;
-    z-index: 4;
-    font-size: 0.68rem;
-    font-weight: 700;
-    border-radius: var(--md-radius-pill);
-    border: 1px solid rgba(255, 255, 255, 0.5);
-    color: #fff;
-    min-width: 20px;
-    height: auto;
     display: inline-flex;
-    justify-content: center;
     align-items: center;
-    line-height: 1;
-    padding: 2px 8px;
+    gap: 4px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    border-radius: 999px;
+    padding: 3px 10px;
     white-space: nowrap;
+    margin-top: 4px;
+    transition: all 0.2s ease;
 
-    &.md-onhand-badge--danger  { background-color: var(--md-pos-danger); }
-    &.md-onhand-badge--warning { background-color: var(--md-pos-warning); }
-    &.md-onhand-badge--success { background-color: var(--md-pos-success); }
+    &.md-onhand-badge--success {
+        background: rgba(31, 157, 85, 0.12);
+        color: #15803d;
+        border: 1px solid rgba(31, 157, 85, 0.28);
+    }
 
-    // Variante inline (auditoría UX 2026-07-21): total "A la mano" junto al
-    // desglose de lotes, en vez de la esquina superior absoluta -- esa
-    // posición es del badge de productos SIN lote y no debe competir con el
-    // precio. Mismos colores/tipografía, solo se resetea el posicionamiento.
+    &.md-onhand-badge--warning {
+        background: rgba(217, 130, 43, 0.12);
+        color: #b45309;
+        border: 1px solid rgba(217, 130, 43, 0.28);
+    }
+
+    &.md-onhand-badge--danger {
+        background: rgba(211, 34, 42, 0.12);
+        color: #b91c1c;
+        border: 1px solid rgba(211, 34, 42, 0.28);
+    }
+
     &.md-onhand-badge--inline {
         position: static;
-        top: auto;
-        left: auto;
-        z-index: auto;
         flex-shrink: 0;
     }
 }
@@ -141,31 +142,27 @@
 // si algun dia se quita ese modulo, el acento desaparece tambien aqui y
 // habria que restaurarlo explicitamente.
 .o_kanban_view .o_kanban_record.o_md_product_kanban_card {
-    border-radius: var(--md-portal-r-card);
-    border-top: 1px solid rgba(255, 255, 255, 0.72);
-    border-right: 1px solid rgba(255, 255, 255, 0.72);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.72);
-    // border-left: deliberadamente omitido, ver comentario arriba.
-    background: rgba(255, 255, 255, 0.94); // fallback solido (igual al @supports not del mixin)
-    box-shadow: 0 4px 14px rgba(20, 30, 60, 0.05); // $md-shadow-sm exacto
+    border-radius: 16px !important;
+    border: 1px solid rgba(22, 166, 217, 0.20) !important;
+    border-left: 4px solid #16a6d9 !important;
+    background: #ffffff !important;
+    box-shadow:
+        0 4px 20px rgba(7, 58, 76, 0.06),
+        0 1px 3px  rgba(0, 0, 0, 0.04) !important;
     transition: transform 0.22s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.22s ease, background 0.22s ease;
 
-    @supports (backdrop-filter: blur(1px)) {
-        background:
-            linear-gradient(165deg, rgba(255, 255, 255, 0.55), rgba(255, 255, 255, 0.12) 42%, rgba(255, 255, 255, 0.02) 72%),
-            rgba(255, 255, 255, 0.62);
-        backdrop-filter: blur(18px) saturate(1.45);
-        -webkit-backdrop-filter: blur(18px) saturate(1.45);
-        box-shadow:
-            0 0 0 1px rgba(7, 58, 76, 0.04),
-            0 24px 60px rgba(7, 58, 76, 0.10),
-            0 6px 18px rgba(7, 58, 76, 0.05),
-            inset 0 1px 0 rgba(255, 255, 255, 0.9);
+    @supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
+        background: rgba(255, 255, 255, 0.90) !important;
+        backdrop-filter: blur(14px) saturate(1.3) !important;
+        -webkit-backdrop-filter: blur(14px) saturate(1.3) !important;
     }
 
     &:hover {
-        transform: translateY(-4px) perspective(600px) rotateY(1deg);
-        box-shadow: 0 32px 60px -8px rgba(7, 58, 76, 0.22), 0 18px 28px -8px rgba(7, 58, 76, 0.12); // $md-shadow-xl exacto
+        transform: translateY(-3px) !important;
+        box-shadow:
+            0 12px 32px rgba(22, 166, 217, 0.18),
+            0 4px 12px  rgba(7, 58, 76, 0.08) !important;
+        border-color: rgba(22, 166, 217, 0.40) !important;
     }
 }
 
@@ -245,113 +242,331 @@
     pointer-events: none;
 }
 
-// ── Chips de desglose de lotes (FEFO) ─────────────────────────────────────
-// Generados server-side en product_template.py (_md_render_lot_breakdown),
-// mismos iconos calendario/cubos que el lot-card-footer del POS.
-.md-lot-chip {
-    font-size: 0.62rem;
-    font-weight: 500;
-    padding: 0.2rem 0.45rem;
+// ── Marco Bento de Imagen (Efecto PNG transparente sin cuadro blanco en Tema Claro) ──
+:root:not(.o_md_dark_mode) .o_kanban_pharma_reg_products .o_kanban_record,
+html:not(.o_md_dark_mode):not([data-bs-theme="dark"]) .o_kanban_pharma_reg_products .o_kanban_record {
+    aside.md-kanban-image-container,
+    .md-kanban-image-container,
+    .o_kanban_image,
+    .o_field_image {
+        width: 68px !important;
+        height: 68px !important;
+        min-width: 68px !important;
+        max-width: 68px !important;
+        background: transparent !important;
+        background-color: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
+        padding: 0 !important;
+        margin: 0 auto 8px auto !important;
+        align-self: center !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        overflow: visible !important;
+
+        a, div, span {
+            background: transparent !important;
+            background-color: transparent !important;
+            border: none !important;
+            box-shadow: none !important;
+        }
+
+        img, .md-kanban-img, .o_kanban_image img {
+            width: 100% !important;
+            height: 100% !important;
+            object-fit: contain !important;
+            mix-blend-mode: multiply !important;
+            background: transparent !important;
+            background-color: transparent !important;
+            filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.10)) !important;
+            transition: transform 0.2s ease !important;
+        }
+
+        &:hover img {
+            transform: scale(1.05) !important;
+        }
+    }
 }
 
-// ── Botón COFEPRIS (equivalente al botón "(i)" de la ProductCard del POS) ──
-// Base (blanco translucido + icono oscuro + borde sutil): copiada 1:1 de
-// bi_pos_stock/static/src/css/stock.css .lot-info-btn -- esa parte SI es
-// fiel porque .pos .modal-content/botones base no cambian entre light/dark.
-// Hover (corregido 2026-07-21): revertido a los tokens propios del backend
-// (--md-primary-dark/--md-primary-2) en vez de los hex del hover de
-// stock.css (#0B5E7A/#59CBE8) -- ese hover de stock.css es la version CLARA
-// del boton, pero el POS real jamas la muestra (pos_glass_bento.scss, activo
-// siempre, la sobreescribe con su propio hover oscuro rgba(255,255,255,.18)
-// + var(--pg-blue-highlight) #59CBE8 sobre fondo oscuro). Como el usuario
-// decidio mantener esta card en el tema claro Bento del backend (no el
-// vidrio oscuro), no tiene sentido copiar un hover claro que ningun cajero
-// ve en produccion -- se usa la paleta clara PROPIA del backend en su lugar.
-// Posición/color EXACTOS de .md-pos-reg-info-btn (md_pos_product_labels,
-// static/src/scss/product_card.scss) -- confirmado contra el POS EN VIVO vía
-// Playwright (sesión MDS CAMPECHE 1): top:3px, left:3px, 20x20, fondo sólido
-// #2C8C99 (no translúcido), borde rgba(255,255,255,.6), sombra
-// 0 1px 3px rgba(0,0,0,.25), hover #256f79. Ícono fa-flask (ver xpath en
-// product_visual_views.xml). Esquina IZQUIERDA a propósito -- ver comentario
-// de ese mismo archivo fuente: nunca debe compartir esquina con el botón de
-// lotes (.md-lot-detail-btn, ahora en la esquina derecha, más abajo).
+.md-kanban-sku {
+    font-family: var(--md-font-mono, monospace) !important;
+    font-size: 0.72rem !important;
+    font-weight: 700 !important;
+    padding: 2px 7px !important;
+    border-radius: 6px !important;
+    background: rgba(22, 166, 217, 0.08) !important;
+    color: #0b5e7a !important;
+    border: 1px solid rgba(22, 166, 217, 0.18) !important;
+    display: inline-block;
+    margin-bottom: 2px;
+}
+
+// ── Chips de Clasificación Regulatoria & Comercial (Paridad Mi Portal) ────
+.md-portal-tag {
+    font-size: 0.65rem !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    padding: 3px 8px !important;
+    border-radius: 999px !important;
+    letter-spacing: 0.3px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.md-portal-tag--line {
+    background: rgba(22, 166, 217, 0.12) !important;
+    color: #0b5e7a !important;
+    border: 1px solid rgba(22, 166, 217, 0.25) !important;
+}
+
+.md-portal-tag--forma {
+    background: rgba(31, 157, 85, 0.12) !important;
+    color: #15803d !important;
+    border: 1px solid rgba(31, 157, 85, 0.25) !important;
+}
+
+.md-portal-tag--concentracion {
+    background: rgba(135, 90, 123, 0.12) !important;
+    color: #7b4b9e !important;
+    border: 1px solid rgba(135, 90, 123, 0.25) !important;
+}
+
+.md-portal-tag--contenido,
+.md-portal-tag--envase,
+.md-portal-tag--talla {
+    background: rgba(100, 116, 139, 0.10) !important;
+    color: #475569 !important;
+    border: 1px solid rgba(100, 116, 139, 0.20) !important;
+}
+
+// ── Franja Bento de Precios (Bento Price Strip) ──────────────────────────
+.md-kanban-price-strip {
+    width: 100% !important;
+    margin-top: 8px !important;
+    padding-top: 6px !important;
+    border-top: 1px solid rgba(22, 166, 217, 0.18) !important;
+}
+
+.md-price-currency {
+    font-size: 0.85rem !important;
+    font-weight: 700 !important;
+    color: #16a6d9 !important;
+    margin-right: 1px;
+}
+
+.md-price-amount {
+    font-size: 1.25rem !important;
+    font-weight: 800 !important;
+    color: #073a4c !important;
+    letter-spacing: -0.4px !important;
+    line-height: 1 !important;
+}
+
+.md-price-subtext {
+    font-size: 0.65rem !important;
+    font-weight: 600 !important;
+    color: #64748b !important;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+// Pastilla Dorado / Naranja Premium para IVA (Sin la palabra "CON")
+.md-price-iva-gold-pill {
+    font-size: 0.75rem !important;
+    padding: 3px 10px !important;
+    border-radius: 999px !important;
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.14) 0%, rgba(217, 119, 6, 0.14) 100%) !important;
+    border: 1px solid rgba(245, 158, 11, 0.35) !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    white-space: nowrap !important;
+    box-shadow: 0 2px 6px rgba(245, 158, 11, 0.12) !important;
+
+    .md-iva-label {
+        font-size: 0.65rem !important;
+        font-weight: 700 !important;
+        color: #d97706 !important;
+        text-transform: uppercase;
+        margin-right: 4px;
+        letter-spacing: 0.3px;
+    }
+
+    .md-iva-amount {
+        font-size: 0.78rem !important;
+        font-weight: 800 !important;
+        color: #b45309 !important;
+    }
+}
+
+// Oculta texto duplicado nativo "A la mano: XX Unidades" del footer nativo de Odoo stock
+.o_kanban_record main > div:last-child:has(.fa-cubes),
+.o_kanban_record div:has(> small:has(.fa-cubes)),
+.o_kanban_record .text-muted:has(.fa-cubes),
+.o_kanban_record main .text-muted,
+.o_kanban_record main small {
+    &:not(.md-kanban-sku):not(.md-portal-tag):not(.md-kanban-price-iva-badge) {
+        display: none !important;
+    }
+}
+
+// ── Barra de Acciones Rápidas Unificada (Bento Action Toolstrip) ─────────────
+// Posicionada a la izquierda del botón de menú nativo de Odoo (right: 36px)
+.md-card-top-actions {
+    position: absolute;
+    top: 6px;
+    right: 36px;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+// Contenedor del widget de campo en Odoo
+.o_field_md_lot_detail_button {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+    background: transparent !important;
+}
+
+// Estilo Base Estandarizado para los 3 Botones Inteligentes (26px x 26px circular Bento Glass)
+.md-cofepris-btn,
+.md-adjust-qty-btn,
+.md-lot-detail-btn,
+button.md-lot-detail-btn {
+    position: static !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 26px !important;
+    height: 26px !important;
+    min-width: 26px !important;
+    min-height: 26px !important;
+    max-width: 26px !important;
+    max-height: 26px !important;
+    border-radius: 50% !important;
+    font-size: 0.75rem !important;
+    line-height: 1 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    text-decoration: none !important;
+    cursor: pointer !important;
+    outline: none !important;
+    appearance: none !important;
+    -webkit-appearance: none !important;
+    backdrop-filter: blur(8px) !important;
+    -webkit-backdrop-filter: blur(8px) !important;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06) !important;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+
+    &:hover {
+        transform: translateY(-2px) scale(1.1) !important;
+        color: #ffffff !important;
+    }
+
+    &:focus-visible {
+        outline: 2px solid #16a6d9 !important;
+        outline-offset: 2px !important;
+    }
+}
+
+// 1. Botón COFEPRIS (Teal / Turquesa Regulatorio)
 .md-cofepris-btn {
-    position: absolute;
-    top: 3px;
-    left: 3px;
-    z-index: 6;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 20px;
-    height: 20px;
-    border-radius: 50%;
-    background: #2C8C99;
-    border: 1px solid rgba(255, 255, 255, 0.6);
-    color: #fff;
-    font-size: 0.6rem;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
-    text-decoration: none;
-    cursor: pointer;
-    transition: background 0.15s;
+    background: rgba(44, 140, 153, 0.14) !important;
+    border: 1px solid rgba(44, 140, 153, 0.35) !important;
+    color: #2c8c99 !important;
 
     &:hover {
-        background: #256f79;
-    }
-
-    // Anillo de foco (auditoría UX 2026-07-21): sin esto, navegar con Tab
-    // hasta este botón no mostraba ningún indicador visual -- violación de
-    // WCAG 2.4.7 (Focus Visible). Mismo azul que ya usa el hover translúcido
-    // de .md-lot-detail-btn (var(--md-primary-dark)) para que ambos botones
-    // de la card compartan un solo lenguaje de "foco", no uno por botón.
-    &:focus-visible {
-        outline: 2px solid var(--md-primary-dark);
-        outline-offset: 2px;
+        background: #2c8c99 !important;
+        border-color: #2c8c99 !important;
+        box-shadow: 0 4px 12px rgba(44, 140, 153, 0.35) !important;
     }
 }
 
-// ── Botón "detalle de lotes FEFO" (widget md_lot_detail_button) ───────────
-// Posición EXACTA de .lot-info-btn (bi_pos_stock, pos_glass_bento.scss):
-// esquina superior DERECHA, círculo blanco translúcido, 22x22 -- la esquina
-// contraria al botón regulatorio de arriba, mismo criterio "nunca se
-// confunden ni se superponen" que documenta md_pos_product_labels. Antes
-// vivía inline junto a los chips de lote (ya ocultos a pedido del usuario,
-// ver product_visual_views.xml); al quedar solo, flota en la esquina como
-// en el POS real -- posicionamiento absoluto, no importa en qué parte del
-// DOM esté anidado (.o_kanban_record ya aporta position:relative nativo).
-.md-lot-detail-btn {
-    position: absolute;
-    top: 3px;
-    right: 3px;
-    z-index: 6;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 22px;
-    height: 22px;
-    border-radius: 50%;
-    background: rgba(255, 255, 255, 0.88);
-    border: 1px solid rgba(0, 0, 0, 0.12);
-    color: var(--md-color-text-dark);
-    font-size: 0.68rem;
-    padding: 0;
-    cursor: pointer;
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.90), 0 1px 3px rgba(0, 0, 0, 0.12);
-    transition: background 0.15s, box-shadow 0.15s, color 0.15s;
+// 2. Botón Ajustar Existencias (Azul Primario Medicine Depot)
+.md-adjust-qty-btn {
+    background: rgba(22, 166, 217, 0.14) !important;
+    border: 1px solid rgba(22, 166, 217, 0.35) !important;
+    color: #16a6d9 !important;
 
     &:hover {
-        background: rgba(255, 255, 255, 1);
-        color: var(--md-primary-dark);
-        border-color: var(--md-primary-2);
-        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.90), 0 2px 6px rgba(22, 166, 217, 0.20);
+        background: #16a6d9 !important;
+        border-color: #16a6d9 !important;
+        box-shadow: 0 4px 12px rgba(22, 166, 217, 0.35) !important;
+    }
+}
+
+// 3. Botón Detalle Lotes FEFO (Morado/Índigo Regulatorio)
+.md-lot-detail-btn,
+button.md-lot-detail-btn {
+    background: rgba(135, 90, 123, 0.14) !important;
+    border: 1px solid rgba(135, 90, 123, 0.35) !important;
+    color: #875a7b !important;
+
+    &:hover {
+        background: #875a7b !important;
+        border-color: #875a7b !important;
+        box-shadow: 0 4px 12px rgba(135, 90, 123, 0.35) !important;
+    }
+}
+
+// ════════════════════════════════════════════════════════════════════════
+// ── Modales & Ventanas Emergentes con Estética Bento Glass de Mi Portal ──
+// ════════════════════════════════════════════════════════════════════════
+.modal-content:has(.lot-detail-popup),
+.modal-content:has(.o_md_cofepris_bento_sheet),
+.modal-content:has(.o_stock_quant_tree) {
+    border-radius: 20px !important;
+    border: 1px solid rgba(22, 166, 217, 0.20) !important;
+    background: rgba(255, 255, 255, 0.95) !important;
+    backdrop-filter: blur(20px) !important;
+    -webkit-backdrop-filter: blur(20px) !important;
+    box-shadow: 0 20px 50px rgba(7, 58, 76, 0.15) !important;
+
+    .modal-header {
+        background: linear-gradient(135deg, #073a4c 0%, #0b5e7a 100%) !important;
+        color: #ffffff !important;
+        border-top-left-radius: 19px !important;
+        border-top-right-radius: 19px !important;
+        padding: 1rem 1.5rem !important;
+
+        .modal-title {
+            color: #ffffff !important;
+            font-weight: 700 !important;
+        }
+
+        .btn-close {
+            filter: invert(1) grayscale(100%) brightness(200%) !important;
+        }
     }
 
-    // Mismo motivo que el anillo de foco de .md-cofepris-btn arriba (WCAG
-    // 2.4.7): auditoría 2026-07-21 confirmó que ningún botón circular de
-    // esta card mostraba foco visible al navegar con teclado.
-    &:focus-visible {
-        outline: 2px solid var(--md-primary-dark);
-        outline-offset: 2px;
+    .modal-footer {
+        border-top: 1px solid rgba(0, 0, 0, 0.06) !important;
+        background: rgba(248, 250, 252, 0.80) !important;
+        border-bottom-left-radius: 19px !important;
+        border-bottom-right-radius: 19px !important;
+    }
+
+    .table {
+        border-radius: 12px !important;
+        overflow: hidden !important;
+
+        thead {
+            background: linear-gradient(135deg, #073a4c 0%, #0b5e7a 100%) !important;
+            color: #ffffff !important;
+
+            th {
+                color: #ffffff !important;
+                font-weight: 600 !important;
+            }
+        }
+
+        tbody tr:hover {
+            background: rgba(22, 166, 217, 0.05) !important;
+        }
     }
 }
 

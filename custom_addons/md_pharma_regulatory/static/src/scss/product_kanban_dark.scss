@@ -2,14 +2,13 @@
 // product_kanban_dark.scss — Tono oscuro REAL del POS para el Kanban de
 // Inventario (card de producto, md_pharma_regulatory).
 // ────────────────────────────────────────────────────────────────────────
-// CORREGIDO 2026-07-27: vivía en web.assets_web_dark, asumiendo que Odoo 19
-// lo inyecta "únicamente cuando el dark mode del backend está activo".
-// Falso en Community: IrHttp.color_scheme() está hardcodeado a "light"
-// (verificado en odoo/addons/web/models/ir_http.py) — ese bundle NUNCA
-// carga aquí. Se migra a web.assets_backend, gateado con el selector que sí
-// funciona: html.o_md_dark_mode / html[data-bs-theme="dark"] (mismo
-// mecanismo que custom_addons/md_dark_mode y el resto de módulos migrados
-// el mismo día).
+// Registrado en web.assets_web_dark (NO en web.assets_backend): Odoo 19
+// inyecta este bundle ÚNICAMENTE cuando el dark mode del backend está
+// activo -- mismo patrón ya validado en
+// medicine_depot_portal/backend_dark.scss (su propio comentario de
+// cabecera documenta que intentos previos con selectores .o_dark_mode /
+// [data-bs-theme] NUNCA coincidían con el DOM real; el bundle dedicado es
+// la única señal confiable).
 //
 // Origen de los valores: bi_pos_stock/static/src/scss/pos_glass_bento.scss,
 // selector ".pos .rightpane .product" (la card de producto real del POS en
@@ -19,101 +18,203 @@
 // bi_pos_stock (otro módulo, otra carga de assets_pos vs assets_backend).
 // ════════════════════════════════════════════════════════════════════════
 
+// ─── Dark Mode — Paridad Total con Mi Portal (medicine_depot_portal) ──────
 html.o_md_dark_mode,
-html[data-bs-theme="dark"] {
+html[data-bs-theme="dark"],
+html.o_dark_mode {
+    .o_web_client .o_kanban_view .o_kanban_record.o_md_product_kanban_card {
+        background: rgba(26, 31, 46, 0.75) !important;
+        border: 1px solid rgba(255, 255, 255, 0.10) !important;
+        border-left: 4px solid #59cbe8 !important;
+        backdrop-filter: blur(14px) !important;
+        -webkit-backdrop-filter: blur(14px) !important;
+        box-shadow:
+            0 8px 32px rgba(0, 0, 0, 0.45),
+            0 2px 8px  rgba(0, 0, 0, 0.25) !important;
+        color: #e8eaf0 !important;
 
-.o_web_client .o_kanban_view .o_kanban_record.o_md_product_kanban_card {
-    // --pg-bg-card / --pg-bg-card-border en pos_glass_bento.scss
-    background:
-        linear-gradient(165deg, rgba(255, 255, 255, 0.09), rgba(255, 255, 255, 0.02) 60%),
-        rgba(7, 28, 34, 0.5) !important;
-    border-top: 1px solid rgba(255, 255, 255, 0.10) !important;
-    border-right: 1px solid rgba(255, 255, 255, 0.10) !important;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.10) !important;
-    // border-left: sigue sin declararse (acento de md_lots_management),
-    // igual que en el archivo claro -- ver ese comentario para el porqué.
-    backdrop-filter: blur(10px) !important; // --pg-blur-base
-    -webkit-backdrop-filter: blur(10px) !important;
-    box-shadow: 0 14px 30px rgba(7, 58, 76, 0.22) !important;
-
-    &:hover {
-        box-shadow: 0 18px 36px rgba(7, 58, 76, 0.30) !important;
-    }
-}
-
-// Nombre: --pg-text del POS (#EAF6FB), no el token generico de dark mode
-// del backend (--md-color-text-primary, #e8eaf0) -- el pedido explicito fue
-// "el tono del POS original", no el dark mode generico del resto del ERP.
-.o_web_client .md-kanban-product-name {
-    color: #EAF6FB !important;
-}
-
-// Precio: --pg-blue-highlight del POS (#59CBE8). Sin este cambio el azul
-// oscuro de .md-kanban-price (var(--md-portal-blue-800), #0B5E7A) queda
-// casi ilegible sobre el nuevo fondo navy translucido -- mismo problema que
-// ya resolvió backend_dark.scss para .btn.btn-primary con este MISMO hex.
-.o_web_client .md-kanban-price {
-    color: #59CBE8 !important;
-}
-
-// Botón de lotes (esquina derecha): mismo tratamiento que .pos .rightpane
-// .lot-info-btn en pos_glass_bento.scss -- círculo translúcido blanco tenue
-// en vez del círculo blanco opaco del tema claro (ilegible/plano sobre
-// fondo oscuro).
-.o_web_client .md-adjust-qty-btn {
-    background: rgba(255, 255, 255, 0.10) !important;
-    border: 1px solid rgba(255, 255, 255, 0.10) !important;
-    color: #EAF6FB !important;
-
-    &:hover {
-        background: rgba(255, 255, 255, 0.18) !important;
-        color: #59CBE8 !important;
-    }
-}
-
-// Auditoría de contraste en Dark Mode 2026-07-21 (audit_wizard_buttons_darkmode.spec.ts):
-// el borde rgba(255,255,255,.10) de .md-lot-detail-btn (mismo valor que
-// .md-adjust-qty-btn arriba) es casi indistinguible del fondo navy
-// translúcido de la card -- el "chip" del botón se percibía plano, sin
-// borde perceptible (WCAG 1.4.11, contraste de componentes de UI, no de
-// texto). Se separa de .md-adjust-qty-btn (que no forma parte de este
-// rediseño) para subir SOLO el borde de este botón a .28 sin tocar aquel.
-// El foco visible (:focus-visible) reutiliza #59CBE8, el mismo azul que ya
-// usa el :hover de ambos botones en oscuro -- ningún color nuevo.
-.o_web_client .md-lot-detail-btn {
-    background: rgba(255, 255, 255, 0.10) !important;
-    border: 1px solid rgba(255, 255, 255, 0.28) !important;
-    color: #EAF6FB !important;
-
-    &:hover {
-        background: rgba(255, 255, 255, 0.18) !important;
-        color: #59CBE8 !important;
+        &:hover {
+            transform: translateY(-3px) !important;
+            box-shadow:
+                0 14px 40px rgba(0, 0, 0, 0.60),
+                0 4px 12px  rgba(22, 166, 217, 0.25) !important;
+            border-color: rgba(22, 166, 217, 0.40) !important;
+        }
     }
 
-    &:focus-visible {
-        outline: 2px solid #59CBE8 !important;
-        outline-offset: 2px;
+    // Remoción Total de Fondo Blanco en Imagenes en Dark Mode (Efecto PNG recortado flotante)
+    aside.md-kanban-image-container,
+    .md-kanban-image-container,
+    .o_kanban_image,
+    .o_field_image {
+        width: 68px !important;
+        height: 68px !important;
+        min-width: 68px !important;
+        max-width: 68px !important;
+        background: transparent !important;
+        background-color: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
+        padding: 0 !important;
+        margin: 0 auto 8px auto !important;
+        align-self: center !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+
+        a, div, span {
+            background: transparent !important;
+            background-color: transparent !important;
+            border: none !important;
+            box-shadow: none !important;
+        }
+
+        img, .md-kanban-img, .o_kanban_image img {
+            width: 100% !important;
+            height: 100% !important;
+            object-fit: contain !important;
+            mix-blend-mode: multiply !important;
+            background: transparent !important;
+            background-color: transparent !important;
+            filter: brightness(1.35) contrast(1.15) !important;
+        }
+
+        &:hover img {
+            transform: scale(1.05) !important;
+        }
     }
-}
 
-// Botón COFEPRIS (esquina izquierda, #2C8C99 sólido): sin override de color
-// aquí a propósito -- md_pos_product_labels/product_card.scss (el POS real)
-// no tiene ninguna variante dark para .md-pos-reg-info-btn, el teal sólido
-// ya es el mismo en cualquier tema porque el POS siempre corre oscuro. El
-// único override en oscuro es el anillo de foco (mismo #59CBE8 de arriba,
-// por consistencia entre los dos botones de la card), ya que el outline
-// navy por defecto (var(--md-primary-dark), pensado para el tema claro)
-// se funde con el fondo navy de esta card en modo oscuro y queda invisible.
-.o_web_client .md-cofepris-btn:focus-visible {
-    outline: 2px solid #59CBE8 !important;
-    outline-offset: 2px;
-}
+    .md-kanban-sku {
+        background: rgba(89, 203, 232, 0.12) !important;
+        color: #59cbe8 !important;
+        border: 1px solid rgba(89, 203, 232, 0.25) !important;
+    }
 
-// Fondo ambient del grid (ver product_kanban_pos_style.scss para la versión
-// clara): en oscuro se usa el gradiente de PANTALLA real del POS
-// (--pg-bg-screen), no el ambient claro del portal -- es el mismo fondo que
-// ve el cajero hoy detrás de cada card en el POS.
-.o_web_client .o_kanban_pharma_reg_products .o_kanban_renderer {
-    background: linear-gradient(180deg, #073A4C 0%, #152330 100%) !important;
-}
+    .md-kanban-product-name {
+        color: #e8eaf0 !important;
+    }
+
+    .md-kanban-price-strip {
+        border-top: 1px solid rgba(255, 255, 255, 0.12) !important;
+    }
+
+    .md-price-currency {
+        color: #59cbe8 !important;
+    }
+
+    .md-price-amount {
+        color: #f8fafc !important;
+    }
+
+    .md-price-subtext {
+        color: #94a3b8 !important;
+    }
+
+    .md-price-iva-gold-pill {
+        background: linear-gradient(135deg, rgba(245, 158, 11, 0.20) 0%, rgba(217, 119, 6, 0.20) 100%) !important;
+        border: 1px solid rgba(245, 158, 11, 0.45) !important;
+        box-shadow: 0 2px 8px rgba(245, 158, 11, 0.20) !important;
+
+        .md-iva-label {
+            color: #fbbf24 !important;
+        }
+
+        .md-iva-amount {
+            color: #f59e0b !important;
+        }
+    }
+
+    .md-portal-tag--line {
+        background: rgba(89, 203, 232, 0.14) !important;
+        color: #59cbe8 !important;
+        border: 1px solid rgba(89, 203, 232, 0.30) !important;
+    }
+
+    .md-portal-tag--forma {
+        background: rgba(37, 211, 102, 0.14) !important;
+        color: #25d366 !important;
+        border: 1px solid rgba(37, 211, 102, 0.30) !important;
+    }
+
+    .md-portal-tag--concentracion {
+        background: rgba(216, 180, 254, 0.14) !important;
+        color: #d8b4fe !important;
+        border: 1px solid rgba(216, 180, 254, 0.30) !important;
+    }
+
+    .md-portal-tag--contenido,
+    .md-portal-tag--envase,
+    .md-portal-tag--talla {
+        background: rgba(255, 255, 255, 0.08) !important;
+        color: #cbd5e1 !important;
+        border: 1px solid rgba(255, 255, 255, 0.14) !important;
+    }
+
+    .md-cofepris-btn,
+    .md-adjust-qty-btn,
+    .md-lot-detail-btn,
+    button.md-lot-detail-btn {
+        background: rgba(255, 255, 255, 0.10) !important;
+        border: 1px solid rgba(255, 255, 255, 0.16) !important;
+        color: #e8eaf0 !important;
+
+        &:hover {
+            background: rgba(22, 166, 217, 0.35) !important;
+            border-color: #59cbe8 !important;
+            color: #ffffff !important;
+            box-shadow: 0 4px 14px rgba(89, 203, 232, 0.40) !important;
+        }
+
+        &:focus-visible {
+            outline: 2px solid #59cbe8 !important;
+            outline-offset: 2px;
+        }
+    }
+
+    .md-cofepris-btn {
+        color: #59cbe8 !important;
+    }
+
+    .md-adjust-qty-btn {
+        color: #59cbe8 !important;
+    }
+
+    .md-lot-detail-btn {
+        color: #d8b4fe !important;
+    }
+
+    .modal-content:has(.lot-detail-popup),
+    .modal-content:has(.o_md_cofepris_bento_sheet),
+    .modal-content:has(.o_stock_quant_tree) {
+        background: rgba(26, 31, 46, 0.95) !important;
+        border: 1px solid rgba(255, 255, 255, 0.14) !important;
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.65) !important;
+        color: #e8eaf0 !important;
+
+        .modal-header {
+            background: linear-gradient(135deg, #13172a 0%, #1a1f2e 100%) !important;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.10) !important;
+        }
+
+        .modal-footer {
+            background: rgba(19, 23, 42, 0.90) !important;
+            border-top: 1px solid rgba(255, 255, 255, 0.10) !important;
+        }
+
+        .table {
+            color: #e8eaf0 !important;
+
+            thead {
+                background: linear-gradient(135deg, #13172a 0%, #1a1f2e 100%) !important;
+            }
+
+            tbody tr:hover {
+                background: rgba(255, 255, 255, 0.06) !important;
+            }
+        }
+    }
+
+    .o_kanban_pharma_reg_products .o_kanban_renderer {
+        background: #13172a !important;
+    }
 }

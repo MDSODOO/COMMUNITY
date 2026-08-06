@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- ══ Menú raíz de Farmacovigilancia ══
+         web_icon registra el icono PNG del módulo en ir.ui.menu.web_icon_data
+         para que menu_service.js lo exponga como webIconData y el Command
+         Palette lo muestre igual que los módulos nativos de Odoo. -->
+    <menuitem id="menu_md_pharma_root"
+              name="Farmacovigilancia"
+              web_icon="md_pharma_regulatory,static/description/icon.png"
+              sequence="90"/>
+
+    <!-- Submenú de agrupación para las vistas regulatorias -->
+    <menuitem id="menu_md_pharma_config"
+              name="Configuración Regulatoria"
+              parent="menu_md_pharma_root"
+              sequence="10"/>
+</odoo>
