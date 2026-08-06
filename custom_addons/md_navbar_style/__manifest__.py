@@ -2,7 +2,7 @@
 {
     "name": "MDS - Navbar Style & OWL Extension",
     "summary": "Rediseño corporativo MDS de la barra superior y extensión OWL para Odoo 19.",
-    "version": "19.0.1.1.0",
+    "version": "19.0.1.2.0",
     "category": "Themes",
     "author": "MedicineDepot Sureste",
     "license": "LGPL-3",

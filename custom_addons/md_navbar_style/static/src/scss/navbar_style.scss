@@ -19,13 +19,71 @@ body,
 }
 
 // --------------------------------------------------------------------------
-// 1. BARRA SUPERIOR (NAVBAR) Y SUBMENÚS — Paleta corporativa MDS
+// 1. BARRA SUPERIOR (NAVBAR) — Bento Glassmorphism, paleta MDS
 // --------------------------------------------------------------------------
+// Mismo lenguaje visual que .md-bento-card (md_tokens.scss, /my/dashboard):
+// veil translucido + blur + saturate sobre un fondo de color, borde de 1px
+// semitransparente, sombra suave con inset highlight. El gradiente MDS que
+// ya teniamos se conserva como capa de color; el glass va ENCIMA como veil,
+// no lo reemplaza -- asi el navbar sigue siendo reconocible como marca MDS
+// incluso donde backdrop-filter no este soportado (fallback solido abajo).
+//
+// Blur en .o_main_navbar es seguro: NO es un elemento portado (no vive
+// dentro de un .o_popover ni de un t-portal="'body'"), asi que no esta
+// expuesto al bug de compositing de Chromium documentado en
+// docs/audits/2026-07-01_backend_dark_mode_audit.md (backdrop-filter +
+// position:fixed + portal -> fondo blanco solido).
 body .o_main_navbar {
-    background: linear-gradient(135deg, var(--mds-dark-teal) 0%, #0A495E 60%, var(--mds-blue) 100%) !important;
+    position: relative;
     border-bottom: 2px solid var(--mds-lime) !important;
-    box-shadow: 0 4px 12px rgba(7, 28, 34, 0.15) !important;
     color: var(--mds-text-light) !important;
+
+    // Fallback solido (sin backdrop-filter): el gradiente MDS de siempre.
+    background: linear-gradient(135deg, var(--mds-dark-teal) 0%, #0A495E 60%, var(--mds-blue) 100%) !important;
+    box-shadow: 0 8px 32px rgba(7, 28, 34, 0.18) !important;
+
+    @supports (backdrop-filter: blur(1px)) {
+        // Veil: mismo gradiente pero translucido (alpha .78-.85), + blur +
+        // saturate -- mismo ratio que .md-bento-card (blur 12-18px,
+        // saturate 1.3-1.45). inset highlight replica el borde superior
+        // "cristal" de .bento-glass-card.
+        background:
+            linear-gradient(135deg, rgba(7, 58, 76, 0.85) 0%, rgba(10, 73, 94, 0.80) 60%, rgba(22, 166, 217, 0.78) 100%) !important;
+        backdrop-filter: blur(16px) saturate(1.35);
+        -webkit-backdrop-filter: blur(16px) saturate(1.35);
+        box-shadow:
+            0 8px 32px rgba(7, 28, 34, 0.20),
+            inset 0 1px 0 rgba(255, 255, 255, 0.14) !important;
+    }
+}
+
+// Dark mode: gatear SIEMPRE con html.o_md_dark_mode (y [data-bs-theme] como
+// refuerzo) dentro de web.assets_backend. NUNCA mover esto a
+// web.assets_web_dark -- ese bundle no carga en esta instancia Community
+// (IrHttp.color_scheme() hardcodeado a "light", ver
+// docs/audits/2026-07-01_backend_dark_mode_audit.md). Es el mismo bug que
+// dejo medicine_depot_portal/backend_dark.scss muerto.
+//
+// Contraste calculado: texto blanco rgba(255,255,255,.92) sobre el veil
+// oscuro mezclado (luminancia relativa < 0.01) da un ratio >12:1 -- muy
+// por encima del umbral 4.5:1 que exige audit_theme_modes.spec.ts.
+html.o_md_dark_mode,
+html[data-bs-theme="dark"] {
+    .o_main_navbar {
+        border-bottom-color: rgba(151, 215, 0, 0.55) !important;
+        background: linear-gradient(135deg, #071c22 0%, #0d2530 55%, rgba(22, 166, 217, 0.35) 100%) !important;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.45) !important;
+
+        @supports (backdrop-filter: blur(1px)) {
+            background:
+                linear-gradient(135deg, rgba(7, 28, 34, 0.90) 0%, rgba(19, 23, 42, 0.86) 55%, rgba(22, 166, 217, 0.22) 100%) !important;
+            backdrop-filter: blur(18px) saturate(1.4);
+            -webkit-backdrop-filter: blur(18px) saturate(1.4);
+            box-shadow:
+                0 8px 32px rgba(0, 0, 0, 0.45),
+                inset 0 1px 0 rgba(255, 255, 255, 0.06) !important;
+        }
+    }
 }
 
 body .o_main_navbar .o_menu_brand {
@@ -53,9 +111,13 @@ body .o_main_navbar button {
     // en modo claro (en oscuro queda disimulado porque md_dark_mode.scss
     // ya sobreescribe esta misma propiedad). Se neutraliza aqui.
     background-color: transparent !important;
+    border-radius: 8px;
+    transition: background-color 0.15s ease, color 0.15s ease;
 
     &:hover, &:focus {
-        background-color: rgba(255, 255, 255, 0.12) !important;
+        // Glass hover pill, consistente con .o_dropdown_menu .dropdown-item
+        // de backend_bento.scss (hover = tinte translucido de marca).
+        background-color: rgba(255, 255, 255, 0.14) !important;
         color: var(--mds-lime) !important;
     }
 }
@@ -66,6 +128,16 @@ body .o_main_navbar button {
     gap: 8px;
     padding-left: 12px;
     padding-right: 12px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    body .o_main_navbar .o_nav_entry,
+    body .o_main_navbar .dropdown-toggle,
+    body .o_main_navbar a:not(.o_menu_brand),
+    body .o_main_navbar span,
+    body .o_main_navbar button {
+        transition-duration: 0.01ms !important;
+    }
 }
 
 // Submenús (Encabezados de categoría y opciones)
