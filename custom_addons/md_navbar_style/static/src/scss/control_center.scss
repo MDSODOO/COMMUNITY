@@ -248,3 +248,57 @@ html[data-bs-theme="dark"] {
         transition-duration: 0.01ms !important;
     }
 }
+
+// ── Contador sobre el botón del Control Center ──────────────────────────
+//
+// El panel oculta el trigger nativo de purchase_invoice_parser en la barra
+// (navbar_style.scss). Sin esta burbuja, el número de actualizaciones de
+// precio sin leer solo sería visible DESPUÉS de abrir el panel — que es lo
+// contrario de para qué sirve un contador de notificaciones.
+.o_mds_control_center_toggle {
+    position: relative;
+}
+
+// Selector deliberadamente largo, no por gusto: la regla tipográfica de
+// marca del navbar es `body .o_main_navbar span:not(.pip_dropdown *)`, cuya
+// especificidad real es (0,2,2) — el :not() SUMA la especificidad de su
+// argumento. `.o_mds_cc_toggle_badge` sola es (0,1,0) y pierde aunque las
+// dos declaren !important (!important solo desempata entre reglas de IGUAL
+// peso; la especificidad se compara primero). Medido en vivo: el badge
+// renderizaba a 11px en lugar de 9px. Con (0,3,2) gana sin ambigüedad y sin
+// depender del orden de carga de los bundles.
+body .o_main_navbar .o_mds_control_center_toggle .o_mds_cc_toggle_badge {
+    position: absolute;
+    top: 2px;
+    right: 0;
+    min-width: 15px;
+    height: 15px;
+    padding: 0 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    // background-COLOR con !important, no el shorthand `background`.
+    // navbar_style.scss aplica `background-color: transparent !important` a
+    // todo `body .o_main_navbar span`, y una longhand !important gana SIEMPRE
+    // a una shorthand sin !important, por mas especifico que sea el selector.
+    // Medido en vivo: la regla si aplicaba (aparecia en cssRules con
+    // rgb(231,76,60)) pero el backgroundColor computado era rgba(0,0,0,0) --
+    // el badge se veia azul porque se transparentaba y dejaba pasar el
+    // degradado del propio navbar.
+    background-color: #e74c3c !important;
+    color: #fff !important;
+    // La regla de tipografía de marca del navbar (navbar_style.scss) alcanza
+    // a todo `body .o_main_navbar span` con especificidad (0,1,2) — mayor que
+    // esta clase sola. Sin !important el contador hereda 11px + uppercase +
+    // letter-spacing y se desborda del círculo.
+    font-size: 9px !important;
+    font-weight: 700 !important;
+    letter-spacing: 0 !important;
+    text-transform: none !important;
+    line-height: 1 !important;
+    font-variant-numeric: tabular-nums;
+    // Separa la burbuja del icono aunque se solapen.
+    box-shadow: 0 0 0 1.5px var(--mds-dark-teal, #073a4c);
+    pointer-events: none;
+}

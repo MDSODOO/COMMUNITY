@@ -371,6 +371,67 @@ html[data-bs-theme="dark"] {
         .pip_unread {
             background: rgba(227, 6, 19, 0.10) !important;
         }
+
+        // Codificacion por color de subida/bajada.
+        //
+        // Medido con Playwright 2026-08-06: en oscuro .pip_old, .pip_new y
+        // .pip_delta renderizaban TODOS a rgb(228,228,228) -- el color de
+        // texto global del tema aplastaba el verde/rojo y se perdia por
+        // completo la señal de "subió" vs "bajó", que es justo la
+        // información que el panel existe para dar. Se repintan con tonos
+        // pensados para fondo oscuro (mas claros y menos saturados que los
+        // de modo claro, que sobre #13172A vibran).
+        .pip_old {
+            color: #ff8a80 !important;
+        }
+
+        .pip_new,
+        .pip_delta_down {
+            color: #6ee7a8 !important;
+        }
+
+        .pip_delta_up {
+            color: #ff8a80 !important;
+        }
+
+        .pip_delta_new {
+            color: #94a3b8 !important;
+        }
+    }
+}
+
+// ── Toast de notificaciones en modo oscuro ────────────────────────────────
+//
+// BUG GLOBAL, no solo de precios: Odoo pinta .o_notification con fondo
+// blanco fijo, mientras el tema oscuro fuerza el color de texto a #e4e4e4.
+// Resultado medido con Playwright (2026-08-06): color rgb(228,228,228)
+// sobre background rgb(255,255,255) -> contraste 1.3:1, ilegible. Afecta a
+// CUALQUIER toast del backend en modo oscuro, no solo a los que emite
+// purchase_invoice_parser.
+//
+// Se corrige aquí, en el módulo que define el tema oscuro del backend, y no
+// en purchase_invoice_parser: el defecto no es del emisor del toast sino de
+// la superficie sobre la que se pinta.
+html.o_md_dark_mode,
+html[data-bs-theme="dark"] {
+    .o_notification {
+        background-color: #1a1f2e !important;
+        color: #e8eaf0 !important;
+
+        // El div interno lleva `border` de Bootstrap con el gris claro por
+        // defecto, que sobre fondo oscuro dibuja un marco brillante.
+        > .border {
+            border-color: rgba(255, 255, 255, 0.12) !important;
+            color: #e8eaf0 !important;
+        }
+
+        .o_notification_content {
+            color: #e8eaf0 !important;
+        }
+
+        .btn-close {
+            filter: invert(1) grayscale(1) brightness(1.8);
+        }
     }
 }
 

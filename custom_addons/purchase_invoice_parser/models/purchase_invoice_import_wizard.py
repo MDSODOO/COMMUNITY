@@ -1347,9 +1347,29 @@ class PurchaseInvoiceImportWizard(models.TransientModel):
         Notification = self.env['purchase.price.notification']
         bus = self.env['bus.bus']
 
-        managers = self.env.ref('stock.group_stock_manager').user_ids.sudo().filtered(
-            lambda u: not u.share and company in u.company_ids
-        )
+        # Destinatarios: MISMOS grupos que autoriza get_unread()
+        # (_check_stock_manager acepta stock manager O usuario de compras).
+        # Antes solo se miraba stock.group_stock_manager, así que un usuario
+        # de compras veía el panel pero nunca recibía un evento en vivo.
+        #
+        # Y se busca por `all_group_ids`, no por `group.user_ids`: user_ids
+        # lista ÚNICAMENTE las asignaciones directas del grupo, no la
+        # pertenencia por herencia (implied_ids). Verificado en vivo
+        # 2026-08-06 con el usuario del entorno de pruebas (id 19):
+        # has_group('stock.group_stock_manager') -> True, pero
+        # `user in group.user_ids` -> False, porque lo tiene vía un grupo
+        # padre. Con la version anterior ese usuario quedaba fuera de la
+        # lista y no recibía ninguna notificación en vivo.
+        target_groups = self.env['res.groups']
+        for xmlid in ('stock.group_stock_manager', 'purchase.group_purchase_user'):
+            target_groups |= self.env.ref(xmlid, raise_if_not_found=False) or self.env['res.groups']
+
+        managers = self.env['res.users'].sudo().search([
+            ('all_group_ids', 'in', target_groups.ids),
+            ('share', '=', False),
+            ('company_ids', 'in', company.id),
+            ('active', '=', True),
+        ])
         if not managers:
             return
 
@@ -1391,6 +1411,12 @@ class PurchaseInvoiceImportWizard(models.TransientModel):
                 'state': 'unread',
             })
 
+            if not old_price:
+                direction, delta_pct = 'new', 0.0
+            else:
+                direction = 'up' if new_price > old_price else 'down'
+                delta_pct = (new_price - old_price) / old_price * 100
+
             bus_payloads.append({
                 'product_name': product.display_name,
                 'product_tmpl_id': tmpl_id,
@@ -1400,6 +1426,12 @@ class PurchaseInvoiceImportWizard(models.TransientModel):
                 'purchase_order_name': po.name,
                 'state': 'unread',
                 'company_id': company.id,
+                # Duplicados del compute almacenado en purchase.price.notification
+                # (_compute_price_delta) a propósito: el payload del bus se
+                # construye ANTES del create() y el toast del systray los
+                # necesita sin un round-trip extra al servidor.
+                'direction': direction,
+                'delta_pct': delta_pct,
             })
 
         if not notifications_to_create:
@@ -1407,10 +1439,29 @@ class PurchaseInvoiceImportWizard(models.TransientModel):
 
         created = Notification.create(notifications_to_create)
 
-        channel = f'purchase.price.notification.{company.id}'
+        # Canales de REGISTRO (res.partner de cada manager), no un canal string.
+        #
+        # Antes se enviaba a f'purchase.price.notification.{company.id}'. Ese
+        # canal es un string arbitrario, y bus/models/ir_websocket.py
+        # (_build_bus_channel_list) agrega los canales que manda el cliente
+        # TAL CUAL, sin validarlos -- solo comprueba isinstance(c, str). Es
+        # decir: cualquier usuario autenticado podía suscribirse a ese canal
+        # (el nombre es trivialmente adivinable, la empresa es un entero) y
+        # recibir en vivo producto, proveedor, precio anterior y precio nuevo,
+        # saltándose el _check_stock_manager() que sí protege get_unread().
+        #
+        # _build_bus_channel_list suscribe automáticamente a cada sesión al
+        # canal de su propio res.partner, y ese sí lo resuelve el servidor a
+        # partir de la sesion -- no se puede suplantar desde el cliente. Por
+        # eso se emite un mensaje por manager en vez de uno global.
         for rec, payload in zip(created, bus_payloads):
             payload['id'] = rec.id
-            bus._sendone(channel, 'purchase_invoice_parser/price_update', payload)
+            for manager in managers:
+                bus._sendone(
+                    manager.partner_id,
+                    'purchase_invoice_parser/price_update',
+                    payload,
+                )
 
             # Inyectar mensaje en el chatter del producto
             if rec.product_tmpl_id:

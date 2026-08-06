@@ -12,12 +12,78 @@
         }
     }
 
+    // Ancla del contador. inline-flex (no inline-block) para que el <i>
+    // quede centrado sin depender de line-height heredado del navbar.
+    .pip_icon_wrap {
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    // Contador tipo burbuja SOBRE el icono, no a su lado.
+    //
+    // El navbar de md_navbar_style impone font-size/letter-spacing/uppercase
+    // en masa a los <span> del navbar; sin !important el badge hereda 11px y
+    // se desborda del circulo. Ver navbar_style.scss (regla de tipografia).
+    // Misma trampa de especificidad que el badge del Control Center: la
+    // regla `body .o_main_navbar span:not(.pip_dropdown *)` es (0,2,2) y
+    // `.pip_price_notification .pip_badge` solo (0,2,0). Se sube a 4 clases
+    // para ganar por conteo de clases, sin depender de que este bundle
+    // cargue despues del de md_navbar_style (son modulos independientes: el
+    // orden no esta garantizado).
+    &.o_menu_systray_item .pip_icon_wrap .pip_badge,
     .pip_badge {
-        font-size: 10px;
-        min-width: 16px;
-        height: 16px;
-        line-height: 16px;
+        position: absolute;
+        top: -6px;
+        right: -8px;
+        font-size: 9px !important;
+        font-weight: 700 !important;
+        letter-spacing: 0 !important;
+        text-transform: none !important;
+        line-height: 1 !important;
+        // Mismo motivo que el badge del Control Center: navbar_style.scss
+        // pone `background-color: transparent !important` sobre todo span
+        // del navbar y anularia el rojo de .text-bg-danger de Bootstrap.
+        background-color: #e74c3c !important;
+        min-width: 15px;
+        height: 15px;
         padding: 0 4px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        // Separa la burbuja del icono aunque se solapen.
+        box-shadow: 0 0 0 1.5px var(--mds-dark-teal, #073a4c);
+        pointer-events: none;
+    }
+
+    // Variacion % por fila. tabular-nums para que los porcentajes
+    // no bailen de ancho entre filas.
+    .pip_delta {
+        font-size: 10px;
+        font-weight: 600;
+        font-variant-numeric: tabular-nums;
+        white-space: nowrap;
+
+        .fa {
+            font-size: 9px;
+        }
+    }
+
+    .pip_delta_up {
+        color: #e74c3c;
+    }
+
+    // #27ae60 medido con Playwright sobre el fondo real del panel: 2.87:1,
+    // por debajo del minimo AA para texto pequeño (3:1). Se oscurece hasta
+    // cumplir sin cambiar la lectura de "verde = el costo bajo".
+    .pip_delta_down {
+        color: #1a7f47;
+    }
+
+    .pip_delta_new {
+        color: #6c757d;
+        font-weight: 500;
     }
 
     .pip_dropdown {
@@ -58,7 +124,8 @@
     }
 
     .pip_new {
-        color: #27ae60;
+        // Mismo ajuste de contraste que .pip_delta_down (medido: 2.87:1).
+        color: #1a7f47;
     }
 
     .pip_product_link {

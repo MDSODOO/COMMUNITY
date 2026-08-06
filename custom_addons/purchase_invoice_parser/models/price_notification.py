@@ -92,6 +92,44 @@ class PurchasePriceNotification(models.Model):
         index=True,
     )
 
+    direction = fields.Selection(
+        [('up', 'Subió'), ('down', 'Bajó'), ('new', 'Sin precio previo')],
+        compute='_compute_price_delta',
+        store=True,
+        index=True,
+        help='Sentido del cambio respecto al precio anterior de supplierinfo.',
+    )
+    delta_pct = fields.Float(
+        'Variación %',
+        compute='_compute_price_delta',
+        store=True,
+        digits=(16, 2),
+    )
+
+    @api.depends('old_price', 'new_price')
+    def _compute_price_delta(self):
+        """Clasifica el cambio en subida/bajada y calcula la variación %.
+
+        Campos calculados ALMACENADOS a propósito: el sentido del cambio se
+        usa para filtrar/agrupar en las vistas lista y pivot y para colorear
+        el toast del systray. Recalcularlo en cada lectura obligaría a leer
+        old/new_price siempre, y no puede cambiar retroactivamente — una
+        notificación es un hecho histórico inmutable.
+
+        `old_price == 0` significa "el proveedor no tenía precio registrado"
+        (no "el precio anterior era cero"), por eso es 'new' y no 'up': una
+        variación porcentual contra cero no tiene sentido y mostrarla como
+        subida infinita sería engañoso.
+        """
+        for rec in self:
+            old, new = rec.old_price or 0.0, rec.new_price or 0.0
+            if not old:
+                rec.direction = 'new'
+                rec.delta_pct = 0.0
+            else:
+                rec.direction = 'up' if new > old else 'down'
+                rec.delta_pct = (new - old) / old * 100
+
     def _check_stock_manager(self):
         has_access = (
             self.env.user.has_group('stock.group_stock_manager') or
@@ -126,6 +164,8 @@ class PurchasePriceNotification(models.Model):
                 'old_price_fmt': old_fmt,
                 'new_price_fmt': new_fmt,
                 'state': rec.state,
+                'direction': rec.direction,
+                'delta_pct': rec.delta_pct,
                 'date': fields.Datetime.to_string(rec.create_date),
                 'purchase_order_id': rec.purchase_order_id.id if rec.purchase_order_id else False,
                 'purchase_order_name': rec.purchase_order_id.name if rec.purchase_order_id else '',

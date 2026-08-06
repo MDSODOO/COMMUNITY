@@ -5,6 +5,11 @@
     <Dropdown position="'bottom-end'" state="dropdown" beforeOpen.bind="onBeforeOpen" menuClass="'o_mds_control_center_menu'" bottomSheet="false">
         <button class="o_mds_control_center_toggle bg-transparent" title="Control Center">
             <i class="fa fa-lg fa-sliders" role="img" aria-label="Control Center"/>
+            <span t-if="priceCounter.count"
+                  class="o_mds_cc_toggle_badge"
+                  t-att-aria-label="priceCounter.count + ' actualizaciones de precio sin leer'">
+                <t t-esc="priceCounter.count > 99 ? '99+' : priceCounter.count"/>
+            </span>
         </button>
         <t t-set-slot="content">
             <div class="o_mds_control_center">
@@ -29,6 +34,7 @@
                 <div class="o_mds_cc_tile" t-on-click="openPriceUpdates">
                     <i class="fa fa-bar-chart o_mds_cc_icon"/>
                     <span class="o_mds_cc_label">Precios</span>
+                    <span t-if="priceCounter.count" class="o_mds_cc_badge"><t t-esc="priceCounter.count"/></span>
                 </div>
                 <div class="o_mds_cc_tile" t-on-click="openCompanySwitcher">
                     <i class="fa fa-building o_mds_cc_icon"/>

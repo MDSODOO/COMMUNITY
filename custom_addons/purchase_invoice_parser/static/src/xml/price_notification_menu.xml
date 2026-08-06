@@ -2,14 +2,20 @@
 <templates xml:space="preserve">
     <t t-name="purchase_invoice_parser.PriceNotificationMenu">
         <t t-if="state.visible">
-            <li class="o_menu_systray_item pip_price_notification">
+            <li class="o_menu_systray_item pip_price_notification" t-ref="root">
                 <a class="o_nav_entry d-flex align-items-center px-2"
                    t-on-click.stop="toggle"
                    title="Actualizaciones de precio de proveedores">
-                    <i class="fa fa-line-chart fa-fw"/>
-                    <span t-if="state.count > 0"
-                          class="pip_badge badge rounded-pill text-bg-danger ms-1">
-                        <t t-esc="state.count > 99 ? '99+' : state.count"/>
+                    <!-- El badge se posiciona SOBRE el icono (contador tipo
+                         burbuja), no a su lado: el wrapper aporta el
+                         position:relative que ancla el absolute del badge. -->
+                    <span class="pip_icon_wrap">
+                        <i class="fa fa-line-chart fa-fw"/>
+                        <span t-if="state.count > 0"
+                              class="pip_badge badge rounded-pill text-bg-danger"
+                              t-att-aria-label="state.count + ' actualizaciones de precio sin leer'">
+                            <t t-esc="state.count > 99 ? '99+' : state.count"/>
+                        </span>
                     </span>
                 </a>
 
@@ -61,6 +67,19 @@
                                     <span class="pip_old small" t-esc="notif.old_price_fmt"/>
                                     <i class="fa fa-arrow-right text-muted" style="font-size:10px;"/>
                                     <span class="pip_new small fw-semibold" t-esc="notif.new_price_fmt"/>
+                                    <!-- Variacion %: un costo de compra al alza
+                                         erosiona margen, por eso 'up' va en rojo. -->
+                                    <span t-if="notif.direction === 'up'"
+                                          class="pip_delta pip_delta_up">
+                                        <i class="fa fa-caret-up"/>
+                                        <t t-esc="'+' + notif.delta_pct.toFixed(1) + '%'"/>
+                                    </span>
+                                    <span t-elif="notif.direction === 'down'"
+                                          class="pip_delta pip_delta_down">
+                                        <i class="fa fa-caret-down"/>
+                                        <t t-esc="notif.delta_pct.toFixed(1) + '%'"/>
+                                    </span>
+                                    <span t-else="" class="pip_delta pip_delta_new">nuevo</span>
                                 </div>
 
                                 <!-- Meta + botones de acción -->
