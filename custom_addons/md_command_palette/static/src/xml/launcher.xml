@@ -24,35 +24,37 @@
                 <div id="o_md_launcher_results" class="o_md_command_palette_results" role="listbox">
 
                     <!-- ══ Estado por defecto (sin búsqueda activa): grid de -->
-                    <!-- "Acciones Sugeridas" — mismas apps instaladas que -->
-                    <!-- antes mostraba el grid de md_home_menu, ahora dentro -->
-                    <!-- de este mismo componente. ══ -->
-                    <div t-if="!state.query.trim()" class="o_md_command_palette_group o_md_command_palette_group--suggested">
+                    <!-- "Acciones Sugeridas / Acciones Rápidas" ══ -->
+                    <div t-if="!state.query.trim()"
+                         class="o_md_command_palette_group o_md_command_palette_group--suggested"
+                         role="group"
+                         aria-label="Acciones Rápidas y Aplicaciones">
                         <div class="o_md_command_palette_group_label">
-                            Acciones Sugeridas / Suggested Actions
+                            <i class="oi oi-bolt me-1" aria-hidden="true"/>
+                            <span>Acciones Sugeridas / Suggested Actions</span>
+                            <span class="o_md_command_palette_group_count" t-esc="state.suggestedApps.length"/>
                         </div>
-                        <div t-if="state.suggestedApps.length" class="o_md_launcher_suggested_grid">
-                            <!-- t-foreach sobre "results" (no "state.suggestedApps" + reconstrucción -->
-                            <!-- inline del item): mismo patrón ya usado, sin fallos, en Menús/Productos -->
-                            <!-- más abajo. La versión anterior reconstruía { key: `app-${app.id}`, app } -->
-                            <!-- dentro del propio t-on-click Y repetía app.id en t-on-mouseenter y en -->
-                            <!-- t-attf-aria-selected/class dentro del mismo bloque — el compilador de OWL -->
-                            <!-- perdía la referencia a "app" en ese closure y lanzaba TypeError -->
-                            <!-- (Cannot read properties of undefined reading 'id') antes de llegar a -->
-                            <!-- onItemClick, dejando el modal abierto para siempre. Reutilizar el "item" -->
-                            <!-- ya resuelto por el getter "results" elimina esa reconstrucción. -->
+                        <div t-if="state.suggestedApps.length"
+                             class="o_md_launcher_suggested_grid"
+                             role="listbox"
+                             aria-orientation="horizontal">
                             <t t-foreach="results" t-as="item" t-key="item.key">
                                 <div t-att-id="item.key"
                                      role="option"
+                                     tabindex="0"
+                                     t-att-title="item.label"
+                                     t-att-aria-label="item.label"
                                      t-attf-aria-selected="{{ results.indexOf(item) === state.activeIndex ? 'true' : 'false' }}"
                                      t-attf-class="o_md_launcher_app_tile {{ results.indexOf(item) === state.activeIndex ? 'active' : '' }}"
                                      t-on-click="() => this.onItemClick(item)"
                                      t-on-mouseenter="() => this.state.activeIndex = results.indexOf(item)">
                                     <span class="o_md_launcher_app_icon">
-                                        <img t-if="item.iconUrl" t-att-src="item.iconUrl" alt=""/>
-                                        <i t-else="" class="oi oi-apps"/>
+                                        <img t-att-src="item.iconUrl" t-att-alt="item.label" loading="lazy"/>
                                     </span>
-                                    <span class="o_md_launcher_app_label" t-esc="item.label"/>
+                                    <span class="o_md_launcher_app_label uppercase" t-esc="item.label"/>
+                                    <span t-if="item_index &lt; 9" class="o_md_launcher_quick_badge" aria-hidden="true">
+                                        <kbd>Alt+<t t-esc="item_index + 1"/></kbd>
+                                    </span>
                                 </div>
                             </t>
                         </div>
@@ -72,19 +74,51 @@
                         </div>
                         <div t-if="state.quickActionResults.length" class="o_md_command_palette_group o_md_command_palette_group--quickaction">
                             <div class="o_md_command_palette_group_label">
+                                <i class="oi oi-bolt me-1" aria-hidden="true"/>
                                 Acciones rápidas / Quick actions <span class="o_md_command_palette_group_count" t-esc="state.quickActionResults.length"/>
                             </div>
                             <t t-foreach="state.quickActionResults" t-as="item" t-key="item.key">
                                 <div t-att-id="item.key"
                                      role="option"
+                                     tabindex="0"
+                                     t-att-title="item.label"
+                                     t-att-aria-label="item.label"
                                      t-attf-aria-selected="{{ results.indexOf(item) === state.activeIndex ? 'true' : 'false' }}"
                                      t-attf-class="o_md_command_palette_item {{ results.indexOf(item) === state.activeIndex ? 'active' : '' }}"
                                      t-on-click="() => this.onItemClick(item)"
                                      t-on-mouseenter="() => this.state.activeIndex = results.indexOf(item)">
-                                    <span class="o_md_command_palette_avatar">
-                                        <i t-attf-class="fa {{ item.icon }}"/>
+                                    <span class="o_md_command_palette_avatar o_md_command_palette_avatar--action">
+                                        <i t-attf-class="fa {{ item.icon.startsWith('fa-') ? item.icon : 'fa-' + item.icon }}" aria-hidden="true"/>
                                     </span>
                                     <span t-esc="item.label"/>
+                                    <span class="o_md_command_palette_chip o_md_command_palette_chip--action">
+                                        Acción Rápida
+                                    </span>
+                                </div>
+                            </t>
+                        </div>
+                        <div t-if="state.customReportResults.length" class="o_md_command_palette_group o_md_command_palette_group--customreport">
+                            <div class="o_md_command_palette_group_label">
+                                <i class="fa fa-file-text-o me-1" aria-hidden="true"/>
+                                Reportes Personalizados / Custom Reports <span class="o_md_command_palette_group_count" t-esc="state.customReportResults.length"/>
+                            </div>
+                            <t t-foreach="state.customReportResults" t-as="item" t-key="item.key">
+                                <div t-att-id="item.key"
+                                     role="option"
+                                     tabindex="0"
+                                     t-att-title="item.label"
+                                     t-att-aria-label="item.label"
+                                     t-attf-aria-selected="{{ results.indexOf(item) === state.activeIndex ? 'true' : 'false' }}"
+                                     t-attf-class="o_md_command_palette_item {{ results.indexOf(item) === state.activeIndex ? 'active' : '' }}"
+                                     t-on-click="() => this.onItemClick(item)"
+                                     t-on-mouseenter="() => this.state.activeIndex = results.indexOf(item)">
+                                    <span class="o_md_command_palette_avatar o_md_command_palette_avatar--report">
+                                        <i t-attf-class="fa {{ item.icon.startsWith('fa-') ? item.icon : 'fa-' + item.icon }}" aria-hidden="true"/>
+                                    </span>
+                                    <span t-esc="item.label"/>
+                                    <span t-attf-class="o_md_command_palette_chip o_md_command_palette_chip--{{ item.reportType }}">
+                                        <t t-esc="item.reportType === 'excel' ? 'Excel XLSX' : 'PDF'"/>
+                                    </span>
                                 </div>
                             </t>
                         </div>
@@ -100,8 +134,12 @@
                                      t-on-click="() => this.onItemClick(item)"
                                      t-on-mouseenter="() => this.state.activeIndex = results.indexOf(item)">
                                     <span class="o_md_command_palette_avatar">
-                                        <img t-if="item.iconUrl" t-att-src="item.iconUrl" alt=""/>
-                                        <i t-else="" class="fa fa-th-large"/>
+                                        <!-- Prioridad: imagen del módulo > ícono FA > fallback genérico -->
+                                        <img t-if="item.iconUrl" t-att-src="item.iconUrl" alt="" aria-hidden="true"/>
+                                        <i t-elif="item.faIcon"
+                                           t-attf-class="fa {{ item.faIcon }}"
+                                           aria-hidden="true"/>
+                                        <i t-else="" class="fa fa-th-large" aria-hidden="true"/>
                                     </span>
                                     <span t-esc="item.label"/>
                                 </div>

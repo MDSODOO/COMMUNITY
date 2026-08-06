@@ -102,20 +102,16 @@ $mdl-action-dark-2: #4F7100; // ~darken(#97D700, 20%) — texto del chip
 // bundle). ──
 .o_md_command_palette {
     width: 92vw;
-    max-width: 640px;
-    max-height: 64vh;
+    max-width: 780px;
+    max-height: 72vh;
     background: rgba(255, 255, 255, 0.97); // fallback sólido
-    border: 1px solid rgba(255, 255, 255, 0.75);
-    // Radio deliberadamente mayor que --md-radius-lg (14px): la paleta es
-    // una superficie "flotante" tipo spotlight, no una card de contenido
-    // Bento — se mantiene 24px fijo a propósito para diferenciarla
-    // visualmente del resto de tarjetas del backend.
+    border: 1px solid rgba(255, 255, 255, 0.85);
     border-radius: 24px;
     box-shadow:
-        0 0 0 1px rgba(7, 58, 76, 0.05),   // == var(--md-primary-dark) en rgb; rgba() no admite custom properties hex como canal de color
-        0 28px 80px rgba(7, 58, 76, 0.28),
-        0 10px 24px rgba(7, 58, 76, 0.10),
-        inset 0 1px 0 rgba(255, 255, 255, 0.9);
+        0 0 0 1px rgba(7, 58, 76, 0.06),
+        0 32px 96px rgba(7, 58, 76, 0.32),
+        0 12px 32px rgba(7, 58, 76, 0.12),
+        inset 0 1px 0 rgba(255, 255, 255, 0.95);
     overflow: hidden;
     display: flex;
     flex-direction: column;
@@ -123,9 +119,9 @@ $mdl-action-dark-2: #4F7100; // ~darken(#97D700, 20%) — texto del chip
     color: var(--md-color-text-primary);
 
     @supports (backdrop-filter: blur(1px)) {
-        background: rgba(255, 255, 255, 0.88);
-        backdrop-filter: blur(12px) saturate(1.2);
-        -webkit-backdrop-filter: blur(12px) saturate(1.2);
+        background: rgba(255, 255, 255, 0.90);
+        backdrop-filter: blur(16px) saturate(1.25);
+        -webkit-backdrop-filter: blur(16px) saturate(1.25);
     }
 
     @media (prefers-reduced-motion: reduce) {
@@ -193,6 +189,11 @@ $mdl-action-dark-2: #4F7100; // ~darken(#97D700, 20%) — texto del chip
     border-color: rgba(22, 166, 217, 0.22);
 }
 
+.o_md_command_palette_group--quickaction {
+    background: linear-gradient(165deg, rgba(243, 156, 18, 0.16), rgba(243, 156, 18, 0.04) 55%, rgba(255, 255, 255, 0.3));
+    border-color: rgba(243, 156, 18, 0.25);
+}
+
 .o_md_command_palette_group--product {
     background: linear-gradient(165deg, rgba(151, 215, 0, 0.16), rgba(151, 215, 0, 0.04) 55%, rgba(255, 255, 255, 0.3));
     border-color: rgba(151, 215, 0, 0.25);
@@ -211,6 +212,7 @@ $mdl-action-dark-2: #4F7100; // ~darken(#97D700, 20%) — texto del chip
 
     .o_md_command_palette_group--menu &,
     .o_md_command_palette_group--suggested & { color: var(--md-primary); }
+    .o_md_command_palette_group--quickaction & { color: #d35400; }
     .o_md_command_palette_group--product & { color: $mdl-action-dark-1; }
 }
 
@@ -242,6 +244,72 @@ $mdl-action-dark-2: #4F7100; // ~darken(#97D700, 20%) — texto del chip
     i { opacity: 0.55; font-size: 0.85rem; }
 
     &--product img { object-fit: cover; }
+    &--action {
+        background: rgba(243, 156, 18, 0.15) !important;
+        border-color: rgba(243, 156, 18, 0.40) !important;
+        color: #d35400 !important;
+
+        i {
+            opacity: 1 !important;
+            font-size: 0.95rem !important;
+            color: #d35400 !important;
+            display: inline-block !important;
+            line-height: 1 !important;
+        }
+    }
+    &--report {
+        background: rgba(0, 184, 148, 0.12) !important;
+        border-color: rgba(0, 184, 148, 0.35) !important;
+        color: #00b894 !important;
+
+        i {
+            opacity: 1 !important;
+            font-size: 0.95rem !important;
+            color: #00b894 !important;
+            display: inline-block !important;
+            line-height: 1 !important;
+        }
+    }
+}
+
+/* ════════════════════════════════════════════════════════════════════════
+   GRUPO: REPORTES PERSONALIZADOS / CUSTOM REPORTS (Teal/Emerald Theme)
+   ════════════════════════════════════════════════════════════════════════ */
+.o_md_command_palette_group--customreport {
+    .o_md_command_palette_group_label {
+        color: #00b894 !important;
+
+        i {
+            color: #00b894 !important;
+        }
+    }
+
+    .o_md_command_palette_group_count {
+        background: rgba(0, 184, 148, 0.15) !important;
+        color: #00b894 !important;
+        border: 1px solid rgba(0, 184, 148, 0.3) !important;
+    }
+
+    .o_md_command_palette_item.active,
+    .o_md_command_palette_item:hover {
+        background: linear-gradient(135deg, rgba(0, 184, 148, 0.08) 0%, rgba(9, 132, 227, 0.04) 100%) !important;
+        border-color: rgba(0, 184, 148, 0.40) !important;
+        box-shadow: 0 4px 12px rgba(0, 184, 148, 0.15) !important;
+    }
+}
+
+.o_md_command_palette_chip--excel {
+    background: rgba(0, 184, 148, 0.15) !important;
+    color: #00897b !important;
+    border: 1px solid rgba(0, 184, 148, 0.35) !important;
+    font-weight: 700 !important;
+}
+
+.o_md_command_palette_chip--pdf {
+    background: rgba(225, 112, 85, 0.15) !important;
+    color: #d63031 !important;
+    border: 1px solid rgba(225, 112, 85, 0.35) !important;
+    font-weight: 700 !important;
 }
 
 .o_md_command_palette_group--menu .o_md_command_palette_item.active .o_md_command_palette_avatar,
@@ -274,21 +342,20 @@ $mdl-action-dark-2: #4F7100; // ~darken(#97D700, 20%) — texto del chip
     }
 
     .o_md_command_palette_group--menu & {
-        &.active, &:hover { background: rgba(22, 166, 217, 0.14); }
+        &.active, &:hover, &:focus-visible { background: rgba(22, 166, 217, 0.14); }
         &.active::before { background: var(--md-primary); }
     }
+    .o_md_command_palette_group--quickaction & {
+        &.active, &:hover, &:focus-visible { background: rgba(243, 156, 18, 0.18); }
+        &.active::before { background: #d35400; }
+    }
     .o_md_command_palette_group--product & {
-        &.active, &:hover { background: rgba(151, 215, 0, 0.20); }
+        &.active, &:hover, &:focus-visible { background: rgba(151, 215, 0, 0.20); }
         &.active::before { background: var(--md-action); }
     }
 }
 
-// ── Chip "A la mano" — firma visual del componente: la regla de negocio
-// (nunca "Disponible"/"Stock") convertida en el elemento más visible de
-// cada resultado de producto. Proporción real de .md_fav_chip
-// (portal_bento.scss): font-weight 700, font-size 0.75rem, padding
-// 0.15rem 0.5rem, radio píldora, fondo con tinte suave del color
-// semántico, sin mayúsculas ni borde. ──
+// ── Chip "A la mano" & "Acción Rápida" — firma visual del componente ──
 .o_md_command_palette_chip {
     margin-left: auto;
     display: inline-flex;
@@ -297,49 +364,58 @@ $mdl-action-dark-2: #4F7100; // ~darken(#97D700, 20%) — texto del chip
     font-size: var(--md-text-sm); // 0.75rem — igual que .md_fav_chip
     font-weight: 700;             // igual que .md_fav_chip
     color: $mdl-action-dark-2;
-    background: rgba(151, 215, 0, 0.12); // tinte suave, igual proporción que rgba($md-blue, 0.12) de .md_fav_chip
+    background: rgba(151, 215, 0, 0.12); // tinte suave
     border-radius: var(--md-radius-pill);
     padding: 0.15rem 0.5rem;
     white-space: nowrap;
-}
 
-// ── Grid de "Acciones Sugeridas" — reemplaza el grid de md_home_menu
-// (mismo tamaño de tile/ícono, misma fuente de datos: menuService.getApps()),
-// ahora dentro de la paleta en vez de un <Dropdown> nativo. ──
-$mdl-app-tile-size: 84px;
-$mdl-app-icon-size: 52px;
-
-.o_md_launcher_suggested_grid {
-    display: grid;
-    grid-template-columns: repeat(6, minmax($mdl-app-tile-size, 1fr));
-    gap: var(--md-space-3);
-    padding: var(--md-space-2) var(--md-space-2) var(--md-space-3);
-
-    @media (max-width: 640px) {
-        grid-template-columns: repeat(4, minmax(64px, 1fr));
+    &--action {
+        color: #d35400;
+        background: rgba(243, 156, 18, 0.15);
     }
 }
 
-// Hover: misma magnitud que .o_kanban_view .o_kanban_record (Step 16/17 de
-// backend_bento.scss) — translateY(-2px) + sombra de marca 12/28 — no la
-// versión más agresiva (-5px/scale(1.015)) que pertenece al portal.
+// ── Grid de "Acciones Sugeridas" ──
+$mdl-app-tile-size: 112px;
+$mdl-app-icon-size: 56px;
+
+.o_md_launcher_suggested_grid {
+    display: grid;
+    grid-template-columns: repeat(6, minmax(100px, 1fr));
+    gap: 12px;
+    padding: var(--md-space-3) var(--md-space-2) var(--md-space-4);
+
+    @media (max-width: 720px) {
+        grid-template-columns: repeat(4, minmax(80px, 1fr));
+        gap: 8px;
+    }
+    @media (max-width: 480px) {
+        grid-template-columns: repeat(3, minmax(70px, 1fr));
+        gap: 6px;
+    }
+}
+
 .o_md_launcher_app_tile {
+    position: relative;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: flex-start;
-    gap: 6px;
-    padding: var(--md-space-2) 4px;
-    border-radius: var(--md-radius-md);
+    gap: 8px;
+    padding: 10px 4px 8px 4px;
+    border-radius: var(--md-radius-lg);
+    background: rgba(255, 255, 255, 0.50);
+    border: 1px solid rgba(22, 166, 217, 0.16);
     text-align: center;
     cursor: pointer;
-    transition: background-color 0.2s ease, box-shadow 0.2s ease, transform 0.18s ease;
+    outline: none;
+    transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease, transform 0.18s ease;
 
-    &.active, &:hover { background: rgba(22, 166, 217, 0.14); }
-
-    &:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 12px 28px rgba(22, 166, 217, 0.14);
+    &.active, &:hover, &:focus-visible {
+        background: rgba(255, 255, 255, 0.92);
+        border-color: rgba(22, 166, 217, 0.45);
+        transform: translateY(-3px);
+        box-shadow: 0 14px 28px rgba(22, 166, 217, 0.18);
     }
 }
 
@@ -349,23 +425,53 @@ $mdl-app-icon-size: 52px;
     display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: var(--md-radius-lg);
+    border-radius: 14px;
     overflow: hidden;
-    box-shadow: var(--md-shadow-1);
-    background: rgba(255, 255, 255, 0.7);
+    box-shadow: 0 4px 12px rgba(7, 58, 76, 0.08);
+    background: #FFFFFF;
+    border: 1px solid var(--md-border);
+    padding: 7px;
 
-    img { width: 100%; height: 100%; object-fit: contain; }
-    i { font-size: 22px; color: var(--md-primary); }
+    img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.06));
+    }
 }
 
 .o_md_launcher_app_label {
-    font-size: var(--md-text-sm);
+    font-family: var(--md-font-heading);
+    font-size: 0.64rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: -0.02em;
     line-height: 1.2;
+    width: 100%;
     max-width: $mdl-app-tile-size;
+    white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    white-space: nowrap;
-    color: var(--md-color-text-primary);
+    color: var(--md-primary-dark);
+    word-break: normal;
+}
+
+.o_md_launcher_quick_badge {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    opacity: 0.8;
+    pointer-events: none;
+
+    kbd {
+        font-family: var(--md-font-mono);
+        font-size: 9px;
+        font-weight: 700;
+        padding: 1px 4px;
+        background: rgba(7, 58, 76, 0.09);
+        border-radius: 4px;
+        color: var(--md-primary-dark);
+    }
 }
 
 .o_md_command_palette_empty {
@@ -444,13 +550,27 @@ $mdl-app-icon-size: 52px;
     .o_md_command_palette_footer { color: rgba(#fff, 0.55); }
     .o_md_command_palette_footer kbd { background: rgba(255, 255, 255, 0.08); }
 
-    .o_md_command_palette_avatar,
-    .o_md_launcher_app_icon {
-        background: rgba(255, 255, 255, 0.06);
-        border-color: rgba(255, 255, 255, 0.10);
+    .o_md_launcher_app_tile {
+        background: rgba(255, 255, 255, 0.04);
+        border-color: rgba(255, 255, 255, 0.08);
+
+        &.active, &:hover, &:focus-visible {
+            background: rgba(22, 166, 217, 0.22);
+            border-color: rgba(22, 166, 217, 0.45);
+            box-shadow: 0 12px 28px rgba(0, 0, 0, 0.45), 0 0 16px rgba(22, 166, 217, 0.25);
+        }
     }
 
-    .o_md_launcher_app_label { color: #e4e4ef; }
-    .o_md_launcher_app_tile.active,
-    .o_md_launcher_app_tile:hover { background: rgba(255, 255, 255, 0.08); }
+    .o_md_launcher_app_icon {
+        background: rgba(26, 31, 46, 0.85);
+        border-color: rgba(255, 255, 255, 0.12);
+
+        img {
+            filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.40));
+        }
+    }
+
+    .o_md_launcher_app_label {
+        color: #F1F5F9;
+    }
 }

@@ -46,6 +46,53 @@ import { Component, useState, useRef, onMounted, onWillUnmount } from "@odoo/owl
 // registry es el arreglo de raiz -- ver local_ai_connector/static/src/js/
 // launcher_quick_actions.js.
 const QUICK_ACTIONS_CATEGORY = "md_launcher_quick_actions";
+const CUSTOM_REPORTS_CATEGORY = "md_launcher_custom_reports";
+
+function getAppIconUrl(app) {
+    if (!app) return "/web/static/img/default_icon_app.png";
+    if (app.webIconData) {
+        return app.webIconData.startsWith("data:") || app.webIconData.startsWith("/")
+            ? app.webIconData
+            : `data:image/png;base64,${app.webIconData}`;
+    }
+    if (app.webIcon && app.webIcon.includes(",")) {
+        const [mod, path] = app.webIcon.split(",");
+        return `/${mod.trim()}/${path.trim()}`;
+    }
+    if (app.xmlid && app.xmlid.includes(".")) {
+        const mod = app.xmlid.split(".")[0];
+        return `/${mod}/static/description/icon.png`;
+    }
+    return "/web/static/img/default_icon_app.png";
+}
+
+// Mapa de nombre de menú → clase FA, para enriquecer ítems de menú
+// con el mismo ícono definido en las quick actions del registro.
+const MENU_ICON_MAP = {
+    "correo":           "fa-envelope",
+    "mail":             "fa-envelope",
+    "farmacovigilancia": "fa-shield",
+    "inventario":       "fa-cubes",
+    "ventas":           "fa-shopping-cart",
+    "compras":          "fa-shopping-basket",
+    "facturaci":        "fa-file-text-o",
+    "contabilidad":     "fa-calculator",
+    "ajustes":          "fa-cog",
+    "configuraci":      "fa-sliders",
+    "reportes":         "fa-bar-chart",
+    "empleados":        "fa-users",
+    "punto de venta":   "fa-cash-register",
+    "lotes":            "fa-archive",
+    "fabricaci":        "fa-industry",
+};
+
+function getFaIconForMenu(name) {
+    const lower = (name || "").toLowerCase();
+    for (const [key, cls] of Object.entries(MENU_ICON_MAP)) {
+        if (lower.includes(key)) return cls;
+    }
+    return null;
+}
 
 export class MdLauncher extends Component {
     static template = "md_command_palette.Launcher";
@@ -62,6 +109,7 @@ export class MdLauncher extends Component {
             menuResults: [],
             productResults: [],
             quickActionResults: [],
+            customReportResults: [],
             suggestedApps: [],
             activeIndex: 0,
         });
@@ -131,6 +179,15 @@ export class MdLauncher extends Component {
         }
         if (!this.state.open) return;
 
+        if (ev.altKey && !ev.ctrlKey && !ev.shiftKey && ev.key >= "1" && ev.key <= "9") {
+            const index = parseInt(ev.key, 10) - 1;
+            if (this.results[index]) {
+                ev.preventDefault();
+                this._activate(this.results[index]);
+                return;
+            }
+        }
+
         if (ev.key === "Escape") {
             ev.preventDefault();
             this.close();
@@ -165,19 +222,22 @@ export class MdLauncher extends Component {
 
     get results() {
         // Paleta vacía (sin búsqueda activa): "Acciones Sugeridas" =
-        // mismo listado de apps instaladas que usaba el grid de
-        // md_home_menu (menuService.getApps()), ahora dentro de este
-        // componente en vez de en el <Dropdown> nativo.
+        // listado de apps instaladas con logos PNG nativos en MAYÚSCULAS.
         if (!this.state.query.trim()) {
             return this.state.suggestedApps.map((app) => ({
                 type: "app",
                 key: `app-${app.id}`,
-                label: app.name,
-                iconUrl: app.webIconData || null,
+                label: (app.name || "").toUpperCase(),
+                iconUrl: getAppIconUrl(app),
                 app,
             }));
         }
-        return [...this.state.quickActionResults, ...this.state.menuResults, ...this.state.productResults];
+        return [
+            ...this.state.quickActionResults,
+            ...this.state.customReportResults,
+            ...this.state.menuResults,
+            ...this.state.productResults,
+        ];
     }
 
     _moveActive(delta) {
@@ -201,20 +261,23 @@ export class MdLauncher extends Component {
         this.state.activeIndex = 0;
         this.state.menuResults = [];
         this.state.productResults = [];
+        this.state.quickActionResults = [];
+        this.state.customReportResults = [];
         // Mismo dataset que consumía md_home_menu para pintar su grid de
         // iconos — reutilizado tal cual, sin duplicar la fuente de datos.
         this.state.suggestedApps = this.menuService.getApps();
         this._appsButtonEl?.setAttribute("aria-expanded", "true");
-        requestAnimationFrame(() => this.inputRef.el?.focus());
+        requestAnimationFrame(() => {
+            if (this.inputRef.el) {
+                this.inputRef.el.focus();
+                this.inputRef.el.select();
+            }
+        });
     }
 
     close() {
         this.state.open = false;
         this._appsButtonEl?.setAttribute("aria-expanded", "false");
-        // Restituye el foco de teclado al disparador (botón de Apps o
-        // elemento que tenía foco antes de Ctrl+K). Bug de accesibilidad
-        // detectado en la auditoría: sin esto, el foco caía a <body> tras
-        // cerrar con Escape o al seleccionar un resultado.
         this._triggerEl?.focus?.();
         this._triggerEl = null;
     }
@@ -224,18 +287,14 @@ export class MdLauncher extends Component {
         this.state.query = query;
         this.state.activeIndex = 0;
         if (!query.trim()) {
-            // Volver al estado "Acciones Sugeridas" en vez de repetir la
-            // búsqueda de menús con query vacía (ese era el bug detectado
-            // en la auditoría: _searchMenus("") devolvía los primeros 6
-            // resultados de menuService.getAll() en el orden interno del
-            // árbol de menús — en la práctica, submenús de "Ajustes" sin
-            // ninguna relación con "sugerencias útiles").
             this.state.menuResults = [];
             this.state.productResults = [];
             this.state.quickActionResults = [];
+            this.state.customReportResults = [];
             return;
         }
         this._searchQuickActions(query);
+        this._searchCustomReports(query);
         this._searchMenus(query);
         this._searchProducts(query);
     }
@@ -257,6 +316,24 @@ export class MdLauncher extends Component {
             }));
     }
 
+    _searchCustomReports(query) {
+        const q = query.trim().toLowerCase();
+        const all = registry.category(CUSTOM_REPORTS_CATEGORY).getAll();
+        this.state.customReportResults = all
+            .filter((report) => {
+                const haystack = [report.label, ...(report.keywords || [])].join(" ").toLowerCase();
+                return haystack.includes(q);
+            })
+            .map((report) => ({
+                type: "customreport",
+                key: `customreport-${report.id}`,
+                label: report.label,
+                reportType: report.reportType || "pdf",
+                icon: report.icon || (report.reportType === "excel" ? "fa-file-excel-o" : "fa-file-pdf-o"),
+                report,
+            }));
+    }
+
     _searchMenus(query) {
         const all = this.menuService.getAll();
         // Solo el menú raíz de cada app trae webIconData — los submenús
@@ -267,6 +344,15 @@ export class MdLauncher extends Component {
         const filtered = (q ? candidates.filter((m) => m.name.toLowerCase().includes(q)) : candidates).slice(0, 6);
         this.state.menuResults = filtered.map((m) => {
             const app = appsById.get(m.appID);
+            // Busca si hay un quick action registrada con un ícono FA
+            // que coincida con el nombre de este ítem de menú.
+            // Prioridad: quick_action.icon > MENU_ICON_MAP > fallback genérico.
+            const qa = [...registry.category(QUICK_ACTIONS_CATEGORY).getEntries()]
+                .map(([, v]) => v)
+                .find((a) => m.name.toLowerCase().includes((a.label || "").split("(")[0].trim().toLowerCase()));
+            const faIcon = (qa && qa.icon)
+                ? (qa.icon.startsWith("fa-") ? qa.icon : "fa-" + qa.icon)
+                : getFaIconForMenu(m.name);
             return {
                 type: "menu",
                 key: `menu-${m.id}`,
@@ -274,6 +360,7 @@ export class MdLauncher extends Component {
                 // webIconData ya es un data-URI completo ("data:image/png;base64,...."),
                 // no base64 crudo — verificado en vivo (menu_service.js, Odoo 19).
                 iconUrl: (app && app.webIconData) || null,
+                faIcon: faIcon || null,
                 menu: m,
             };
         });
@@ -300,14 +387,21 @@ export class MdLauncher extends Component {
         const companyId = this._getActiveCompanyId();
         const records = await this.orm.searchRead(
             "product.product",
-            [["name", "ilike", q], ["qty_available", ">", 0]],
+            [
+                ["qty_available", ">", 0],
+                "|", "|", "|",
+                ["name", "ilike", q],
+                ["barcode", "ilike", q],
+                ["product_line_id.name", "ilike", q],
+                ["active_substance_ids.name", "ilike", q],
+            ],
             ["display_name", "qty_available", "uom_id", "product_tmpl_id"],
             {
                 limit: 5,
                 context: companyId ? { allowed_company_ids: [companyId] } : {},
             }
         );
-        // Regla inquebrantable: SIEMPRE "A la mano" — nunca "Disponible"/"Stock".
+        // Regla de oro e inquebrantable: Las cantidades físicas de inventario se expresan SIEMPRE como 'A la mano' (On Hand).
         this.state.productResults = records.map((r) => ({
             type: "product",
             key: `product-${r.id}`,
@@ -325,6 +419,8 @@ export class MdLauncher extends Component {
             this.menuService.selectMenu(item.type === "app" ? item.app : item.menu);
         } else if (item.type === "quickaction") {
             item.action.run(this.env);
+        } else if (item.type === "customreport") {
+            item.report.run(this.env);
         } else if (item.type === "product") {
             // Abre product.template (no product.product): es el modelo que
             // usa el menú "Productos" normal — product.product tiene su

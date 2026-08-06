@@ -24,6 +24,8 @@
         'web.assets_backend': [
             'md_command_palette/static/src/scss/launcher.scss',
             'md_command_palette/static/src/js/launcher.js',
+            'md_command_palette/static/src/js/quick_actions.js',
+            'md_command_palette/static/src/js/custom_reports.js',
             'md_command_palette/static/src/xml/launcher.xml',
         ],
     },
