@@ -1,0 +1,287 @@
+# -*- coding: utf-8 -*-
+import logging
+from datetime import timedelta
+
+from odoo import api, fields, models
+from odoo.exceptions import UserError, ValidationError
+
+_logger = logging.getLogger(__name__)
+
+# FASE 3 (2026-07-31) -- caso "huerfano": 2 de 17 solicitudes reales
+# terminaron en state='error' con el mensaje "Huerfano: proceso Odoo
+# termino antes de completar la inferencia" (nota manual de la auditoria
+# en vivo, no generada por codigo -- no existia ninguna deteccion
+# automatica de esto hasta ahora). Con limit_time_real=1200s en
+# odoo.conf muy por encima del maximo observado (~242s), un timeout del
+# propio worker de Odoo no explica el patron: la hipotesis de trabajo es
+# que coincidio un restart/deploy del contenedor con una ejecucion del
+# cron, pero no esta confirmado.
+#
+# Este umbral es el margen de seguridad para considerar una solicitud en
+# state='processing' como "abandonada" (nadie la va a retomar porque el
+# cron solo busca state='pending'): VISION_TIMEOUT (450s, ver
+# ollama_client.py) + tiempo maximo de espera del advisory lock (300s,
+# ver _acquire_ollama_lock) + margen (150s) = 900s. No pretende ser exacto,
+# solo evitar falsos positivos contra una solicitud que legitimamente
+# sigue en proceso.
+ORPHAN_PROCESSING_THRESHOLD_SECONDS = 900
+
+
+class LocalAiImageQuoteRequest(models.Model):
+    _name = "local.ai.image.quote.request"
+    _description = (
+        "Solicitud de cotizacion por imagen. Cola asincrona -- cada imagen "
+        "tarda 90-240s en procesarse (medido con qwen2.5vl:7b en CPU, ver "
+        "docs/AI_MODEL_ODOO_CONFIG.md §9.2), asi que no se procesa en la "
+        "misma request HTTP que la subida. Un cron (ver "
+        "services/image_quote_processor.py) recoge las solicitudes "
+        "'pending' una por una. Dos canales de entrada, ver origin_channel: "
+        "el endpoint publico (/ai/quote_from_image, cliente sube la foto el "
+        "mismo) y el interno (/ai/quote_from_image/staff, un empleado "
+        "arrastra una foto recibida por WhatsApp -- la mayoria de las "
+        "cotizaciones llegan asi, no por el formulario publico)."
+    )
+    _order = "create_date desc"
+    _inherit = ["mail.thread"]
+
+    name = fields.Char(string="Referencia", default="Nueva", copy=False)
+    state = fields.Selection([
+        ("pending", "Pendiente de procesar"),
+        ("processing", "Procesando"),
+        ("ready_for_review", "Lista para revisión"),
+        ("reviewed", "Cotización creada"),
+        ("error", "Error"),
+    ], string="Estado", default="pending", required=True, tracking=True, index=True)
+
+    origin_channel = fields.Selection([
+        ("public_web", "Sitio web público"),
+        ("internal_staff", "Interna (staff, WhatsApp)"),
+    ], string="Canal de origen", default="public_web", required=True, index=True)
+
+    customer_name = fields.Char(string="Nombre del cliente", required=True)
+    # Sin required=True: la via interna (WhatsApp) casi nunca trae correo,
+    # solo nombre + telefono -- ver _check_contact_info mas abajo, que exige
+    # al menos uno de los dos en vez de forzar el correo especificamente.
+    customer_email = fields.Char(string="Correo del cliente")
+    customer_phone = fields.Char(string="Teléfono del cliente")
+    # Opcional: si el empleado encontro y selecciono un contacto existente
+    # en el dialogo (selector real vinculado a res.partner, en vez del input
+    # aislado que habia antes), queda registrado aqui de una vez. Si se deja
+    # vacio (caso mas comun via WhatsApp: cliente nuevo, sin contacto
+    # todavia), action_create_quotation sigue resolviendo por
+    # correo/telefono o creando un contacto nuevo, como ya hacia.
+    partner_id = fields.Many2one(
+        "res.partner", string="Cliente (contacto existente)",
+        help="Contacto ya existente en res.partner, seleccionado por el empleado en el dialogo.",
+    )
+    ip_address = fields.Char(string="Dirección IP de origen")
+
+    @api.constrains("customer_email", "customer_phone")
+    def _check_contact_info(self):
+        for request in self:
+            if not request.customer_email and not request.customer_phone:
+                raise ValidationError(
+                    "Se necesita al menos un dato de contacto del cliente "
+                    "(correo o teléfono)."
+                )
+
+    image_ids = fields.One2many(
+        "local.ai.image.quote.image", "request_id", string="Imágenes",
+    )
+    line_ids = fields.One2many(
+        "local.ai.image.quote.line", "request_id", string="Renglones detectados",
+    )
+    sale_order_id = fields.Many2one("sale.order", string="Cotización creada", readonly=True)
+    error_message = fields.Text(string="Detalle del error")
+
+    # FASE 3 (2026-07-31): contexto para diagnosticar el caso "huerfano".
+    # Se escriben en services/image_quote_processor.py::process_next_pending_request
+    # justo antes de la parte bloqueante (llamada a Ollama), CON COMMIT
+    # inmediato -- igual que ya se hacia con state='processing' -- para que
+    # sobrevivan aunque el proceso de Odoo muera a la mitad de la
+    # inferencia (ej. restart/deploy del contenedor).
+    processing_started_at = fields.Datetime(
+        string="Inicio de intento de procesamiento",
+        help=(
+            "Timestamp justo antes de invocar el procesamiento bloqueante "
+            "de esta solicitud (llamada a Ollama incluida), escrito y "
+            "commiteado antes de esa llamada. Si el proceso de Odoo muere "
+            "a medias, este campo queda poblado con datos reales aunque "
+            "state nunca llegue a 'ready_for_review'/'error' por la ruta "
+            "normal -- es la firma de un caso 'huerfano'. Comparar con los "
+            "timestamps de `docker logs medicinedepot_dev_odoo` / eventos "
+            "de restart del contenedor."
+        ),
+    )
+    processing_pid = fields.Integer(
+        string="PID del worker (intento)",
+        help=(
+            "os.getpid() del proceso Odoo que inicio el intento de "
+            "procesamiento. Sirve para correlacionar con `docker logs` o "
+            "con `docker inspect` (el PID cambia entre reinicios del "
+            "contenedor, asi que un PID que ya no corresponde a ningun "
+            "proceso vivo es otra señal de que hubo un restart de por "
+            "medio)."
+        ),
+    )
+
+    @api.model
+    def _cron_process_pending(self):
+        """Llamado por el cron (data/image_quote_cron.xml). Procesa como
+        maximo 1 solicitud por ejecucion a proposito -- ver la nota de
+        concurrencia en services/ollama_client.py sobre por que la
+        serializacion real depende del propio locking de ir.cron."""
+        from ..services.image_quote_processor import process_next_pending_request
+        process_next_pending_request(self.env)
+
+    @api.model
+    def _detect_orphaned_processing(self, threshold_seconds=ORPHAN_PROCESSING_THRESHOLD_SECONDS):
+        """FASE 3: barrido de solicitudes 'huerfanas' -- state='processing'
+        cuyo processing_started_at es mas viejo que `threshold_seconds`. El
+        cron normal (_cron_process_pending) solo busca state='pending', asi
+        que una solicitud que se quedo en 'processing' porque el proceso
+        que la tomo murio a medias NUNCA se vuelve a recoger sola; se queda
+        bloqueada para siempre sin esta funcion.
+
+        No intenta reprocesarla (no sabemos en que paso exacto se quedo, y
+        reintentar automaticamente una llamada de 90-240s de CPU sin
+        entender la causa raiz podria agravar el problema de recursos que
+        ya documenta este modulo) -- solo la marca 'error' con el contexto
+        necesario para investigar despues: processing_started_at,
+        processing_pid, y cuanto tiempo lleva asi. Sigue el mismo patron de
+        "solo dejar evidencia, no resolver la causa raiz ahora" que ya usa
+        el resto de este modulo para otros casos de error.
+
+        Se llama al inicio de
+        services/image_quote_processor.py::process_next_pending_request,
+        antes de buscar la siguiente solicitud pendiente.
+        """
+        threshold_dt = fields.Datetime.now() - timedelta(seconds=threshold_seconds)
+        orphans = self.sudo().search([
+            ("state", "=", "processing"),
+            ("processing_started_at", "!=", False),
+            ("processing_started_at", "<", threshold_dt),
+        ])
+        for request in orphans:
+            elapsed = fields.Datetime.now() - request.processing_started_at
+            message = (
+                "Huerfano (detectado automaticamente, FASE 3): la solicitud "
+                "quedo en estado 'processing' desde {started} (pid {pid}), "
+                "{elapsed:.0f}s sin completarse -- por encima del margen de "
+                "seguridad de {threshold}s. El proceso Odoo probablemente "
+                "termino antes de completar la inferencia (ej. restart/"
+                "deploy del contenedor). Revisar `docker logs "
+                "medicinedepot_dev_odoo` alrededor de esa hora para "
+                "confirmar. No se reintento automaticamente."
+            ).format(
+                started=request.processing_started_at,
+                pid=request.processing_pid or "desconocido",
+                elapsed=elapsed.total_seconds(),
+                threshold=threshold_seconds,
+            )
+            _logger.warning(
+                "image_quote_processor: solicitud huerfana detectada: %s (pid=%s, "
+                "processing_started_at=%s)",
+                request.name, request.processing_pid, request.processing_started_at,
+            )
+            request.write({"state": "error", "error_message": message})
+        if orphans:
+            self.env.cr.commit()
+        return orphans
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        for vals in vals_list:
+            if vals.get("name", "Nueva") == "Nueva":
+                vals["name"] = self.env["ir.sequence"].next_by_code(
+                    "local.ai.image.quote.request"
+                ) or "AIQ-Nueva"
+        return super().create(vals_list)
+
+    def action_create_quotation(self):
+        """Crea el sale.order a partir de las lineas confirmadas por staff.
+
+        Solo lineas con product_id asignado Y confirmed=True se incluyen --
+        nunca se incluye una linea sin revision humana explicita, sin
+        importar que tan alta haya sido la confianza del matching
+        automatico (regla de gobernanza de todo este modulo: el LLM/matching
+        automatico nunca es la fuente de verdad final, ver
+        docs/AI_MODEL_ODOO_CONFIG.md §6.3).
+        """
+        self.ensure_one()
+        if self.state not in ("ready_for_review", "error"):
+            raise UserError("Esta solicitud todavía no está lista para revisión.")
+
+        confirmed_lines = self.line_ids.filtered(lambda l: l.confirmed and l.product_id)
+        if not confirmed_lines:
+            raise UserError(
+                "No hay ningún renglón confirmado con producto asignado. "
+                "Revisa y confirma al menos una línea antes de crear la cotización."
+            )
+
+        # Si el empleado ya selecciono un contacto real en el dialogo (ver
+        # partner_id, selector Many2XAutocomplete sobre res.partner), se usa
+        # directo -- sin esto, es la unica fuente de verdad confiable. Solo
+        # si no hay partner_id (caso mas comun via WhatsApp: cliente sin
+        # contacto todavia) se recurre al fuzzy-match/creacion de siempre.
+        if self.partner_id:
+            partner = self.partner_id
+        else:
+            # Busca primero por correo (identificador mas confiable cuando
+            # existe); si no hay correo -- caso comun en la via interna,
+            # cliente solo identificado por WhatsApp -- busca por telefono.
+            # Ninguno de los dos es unico a nivel de base de datos, por lo
+            # que "limit=1" puede no ser el mismo partner en dos solicitudes
+            # distintas del mismo cliente; aceptable para este flujo (staff
+            # revisa el partner asignado en el sale.order resultante antes
+            # de enviarlo).
+            partner = self.env["res.partner"].sudo()
+            if self.customer_email:
+                partner = partner.search([("email", "=ilike", self.customer_email)], limit=1)
+            if not partner and self.customer_phone:
+                partner = self.env["res.partner"].sudo().search(
+                    [("phone", "=", self.customer_phone)], limit=1
+                )
+            if not partner:
+                partner = self.env["res.partner"].sudo().create({
+                    "name": self.customer_name,
+                    "email": self.customer_email,
+                    "phone": self.customer_phone,
+                })
+
+        order_lines = []
+        for line in confirmed_lines:
+            product = line.product_id
+            order_lines.append((0, 0, {
+                "product_id": product.id,
+                "name": product.get_product_multiline_description_sale() if hasattr(
+                    product, "get_product_multiline_description_sale"
+                ) else product.name,
+                "product_uom_qty": line.quantity_detected or 1.0,
+                "price_unit": product.list_price,
+                "tax_ids": [(6, 0, product.taxes_id.filtered(
+                    lambda t: t.company_id == self.env.company
+                ).ids)],
+            }))
+
+        order = self.env["sale.order"].sudo().create({
+            "partner_id": partner.id,
+            "origin": self.name,
+            "order_line": order_lines,
+        })
+        order.message_post(
+            body=(
+                "Cotización generada desde una imagen enviada por el cliente "
+                "(%s), con revisión y confirmación de staff línea por línea. "
+                "Solicitud: %s"
+            ) % (self.customer_email, self.name)
+        )
+
+        self.write({"state": "reviewed", "sale_order_id": order.id})
+        return {
+            "type": "ir.actions.act_window",
+            "res_model": "sale.order",
+            "res_id": order.id,
+            "view_mode": "form",
+            "target": "current",
+        }

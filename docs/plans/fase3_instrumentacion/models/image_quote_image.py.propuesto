@@ -1,0 +1,56 @@
+# -*- coding: utf-8 -*-
+from odoo import fields, models
+
+
+class LocalAiImageQuoteImage(models.Model):
+    _name = "local.ai.image.quote.image"
+    _description = (
+        "Una foto individual de una solicitud de cotizacion. Una solicitud "
+        "puede traer varias -- hallazgo real (2026-07-27): un cliente puede "
+        "mandar los productos en una foto y las cantidades en otra, sin "
+        "relacion 1:1 evidente entre ambas (ver docs/AI_MODEL_ODOO_CONFIG.md "
+        "§9.2). No se asume que una sola imagen sea siempre suficiente."
+    )
+    _order = "sequence, id"
+
+    request_id = fields.Many2one(
+        "local.ai.image.quote.request", string="Solicitud",
+        required=True, ondelete="cascade", index=True,
+    )
+    sequence = fields.Integer(default=10)
+    image = fields.Binary(string="Imagen", required=True, attachment=True)
+    image_filename = fields.Char(string="Nombre de archivo")
+    extraction_status = fields.Selection([
+        ("pending", "Pendiente"),
+        ("done", "Procesada"),
+        ("error", "Error"),
+    ], default="pending", required=True)
+    extraction_raw = fields.Text(string="Respuesta cruda del modelo (auditoría)")
+    error_message = fields.Text(string="Detalle del error")
+
+    # FASE 3 (2026-07-31): latencia real de inferencia por imagen. Se
+    # escribe en services/image_quote_processor.py::_process_request justo
+    # despues de que ollama_client.generate_structured() devuelve
+    # (parsed, duration_seconds) -- mide solo el POST HTTP a Ollama para el
+    # intento que tuvo exito, no el redimensionado de la imagen (PIL), ni
+    # la espera del advisory lock de Postgres, ni el matching de producto
+    # posterior (ver image_quote_matcher.py). Esto es lo que permite
+    # comparar esta metrica con las pruebas puntuales conocidas
+    # (76s-242s del PoC de julio, 148.75s del 31/07) usando la misma
+    # definicion de "duracion".
+    #
+    # Queda en 0.0 (default) si la imagen termino en extraction_status=
+    # 'error' por una excepcion ANTES de recibir respuesta de Ollama (ej.
+    # imagen corrupta -- ValueError de _resize_image, que nunca llega a
+    # llamar a Ollama). No es ambiguo con esos casos porque tambien se
+    # puede filtrar por extraction_status en el reporte.
+    duration_seconds = fields.Float(
+        string="Duración de inferencia (s)",
+        digits=(10, 3),
+        help=(
+            "Tiempo real del POST HTTP a Ollama para esta imagen, medido "
+            "con time.monotonic() alrededor de requests.post en "
+            "ollama_client.py. No incluye redimensionado, espera de lock "
+            "ni matching de producto posterior."
+        ),
+    )
