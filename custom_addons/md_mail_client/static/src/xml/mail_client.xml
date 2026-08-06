@@ -30,9 +30,19 @@
                     </t>
                 </div>
 
-                <div class="omc-hint">
-                    Datos reales de <code>mail.mail</code>. Los folders "Recibidos"/"Enviados" se
-                    llenarán cuando conectemos el servidor IMAP/SMTP.
+                <div class="omc-hint" t-if="state.hasMailAccount">
+                    Bandeja basada en <code>mail.mail</code>. Los buzones se actualizan
+                    en tiempo real vía WebSocket.
+                </div>
+                <div class="omc-hint" t-else="">
+                    <strong>📬 Conecta tu correo</strong><br/>
+                    Configura tu cuenta IMAP/SMTP para recibir y enviar
+                    correos desde Odoo.
+                    <br/><br/>
+                    <a href="#" t-on-click.prevent="openMailAccountConfig"
+                       style="font-weight:700;color:var(--md-primary,#16A6D9)">
+                        Ir a configuración →
+                    </a>
                 </div>
             </div>
 

@@ -7,5 +7,6 @@
     <menuitem id="menu_md_mail_client_root"
               name="Correo"
               action="action_md_mail_client"
+              web_icon="md_mail_client,static/description/icon.png"
               sequence="10"/>
 </odoo>

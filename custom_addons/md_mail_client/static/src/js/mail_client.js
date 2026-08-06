@@ -54,10 +54,12 @@ export class MdMailClient extends Component {
             loading: true,
             query: "",
             branches: [],
-            unreadCount: 0, // NUEVO: badge para "Recibidos" (bus en tiempo real)
+            unreadCount: 0,
+            hasMailAccount: false,
         });
         onWillStart(async () => {
             await this.loadBranches();
+            await this._checkMailAccount();
             await this.loadFolder("all");
             await this._refreshUnreadCount();
         });
@@ -257,6 +259,34 @@ export class MdMailClient extends Component {
             default_subject: (m.subject || "").startsWith("Fwd: ") ? m.subject : `Fwd: ${m.subject || ""}`,
             default_body: m.body_html || "",
         });
+    }
+
+    async _checkMailAccount() {
+        try {
+            const count = await this.orm.searchCount("md.mail.account", [
+                ["user_id", "=", user.userId],
+                ["active", "=", true],
+            ]);
+            this.state.hasMailAccount = count > 0;
+        } catch {
+            this.state.hasMailAccount = false;
+        }
+    }
+
+    async openMailAccountConfig() {
+        try {
+            await this.actionService.doAction({
+                type: "ir.actions.act_window",
+                res_model: "md.mail.account",
+                view_mode: "list,form",
+                target: "current",
+                context: {
+                    default_user_id: user.userId,
+                },
+            });
+        } catch {
+            // md_mail_accounts module not installed
+        }
     }
 
     // --- PROBLEMA 3: sincronizacion en tiempo real via bus -------------------

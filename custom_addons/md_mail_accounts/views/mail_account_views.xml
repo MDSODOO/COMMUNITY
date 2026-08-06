@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="md_mail_account_view_tree" model="ir.ui.view">
+        <field name="name">md.mail.account.list</field>
+        <field name="model">md.mail.account</field>
+        <field name="arch" type="xml">
+            <list decoration-danger="state == 'error'" decoration-success="state == 'active'">
+                <field name="user_id"/>
+                <field name="imap_user"/>
+                <field name="state"/>
+                <field name="last_fetch_date"/>
+                <field name="last_fetch_count"/>
+                <field name="active"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="md_mail_account_view_form" model="ir.ui.view">
+        <field name="name">md.mail.account.form</field>
+        <field name="model">md.mail.account</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <group string="Usuario">
+                            <field name="user_id" options="{'no_create': True}"/>
+                            <field name="active"/>
+                            <field name="state" decoration-danger="state == 'error'"/>
+                        </group>
+                    </group>
+                    <group>
+                        <group string="IMAP (recepción)">
+                            <field name="imap_server"/>
+                            <field name="imap_port"/>
+                            <field name="imap_ssl"/>
+                            <field name="imap_user"/>
+                            <field name="imap_password" password="True"/>
+                        </group>
+                        <group string="SMTP (envío)">
+                            <field name="smtp_server"/>
+                            <field name="smtp_port"/>
+                            <field name="smtp_encryption"/>
+                            <field name="smtp_user"/>
+                            <field name="smtp_password" password="True"/>
+                        </group>
+                    </group>
+                    <group string="Actividad">
+                        <group>
+                            <field name="last_fetch_date"/>
+                            <field name="last_fetch_count"/>
+                        </group>
+                        <group>
+                            <field name="error_message" nolabel="1"
+                                   invisible="error_message == False"/>
+                        </group>
+                    </group>
+                </sheet>
+                <footer>
+                    <button name="action_test_imap" string="Probar IMAP" type="object"
+                            class="btn-secondary"/>
+                    <button name="action_test_smtp" string="Probar SMTP" type="object"
+                            class="btn-secondary"/>
+                    <button name="fetch_mails" string="Descargar ahora" type="object"
+                            class="btn-primary"/>
+                    <button name="action_clear_error" string="Limpiar error" type="object"
+                            class="btn-link"
+                            invisible="error_message == False"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="md_mail_account_view_search" model="ir.ui.view">
+        <field name="name">md.mail.account.search</field>
+        <field name="model">md.mail.account</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="user_id"/>
+                <field name="imap_user"/>
+                <filter name="active" string="Activos" domain="[('active', '=', True)]"/>
+                <filter name="error" string="Con errores" domain="[('error_message', '!=', False)]"/>
+            </search>
+        </field>
+    </record>
+
+    <record id="md_mail_account_action" model="ir.actions.act_window">
+        <field name="name">Cuentas de Correo</field>
+        <field name="res_model">md.mail.account</field>
+        <field name="view_mode">list,form</field>
+        <field name="help">
+            Configura aquí las cuentas IMAP/SMTP para que cada usuario
+            pueda recibir y enviar correos desde Odoo.
+        </field>
+    </record>
+
+    <menuitem id="menu_md_mail_account_root" name="Cuentas de Correo"
+              parent="md_mail_client.menu_md_mail_client_root"
+              action="md_mail_account_action" sequence="20"/>
+</odoo>

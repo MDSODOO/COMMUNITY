@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="view_res_users_form_md_mail_account" model="ir.ui.view">
+        <field name="name">res.users.form.md.mail.account</field>
+        <field name="model">res.users</field>
+        <field name="inherit_id" ref="base.view_users_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//page[@name='preferences']" position="inside">
+                <group string="Cuenta de Correo (IMAP/SMTP)">
+                    <field name="md_mail_account_ids" nolabel="1">
+                        <list decoration-danger="state == 'error'" decoration-success="state == 'active'">
+                            <field name="imap_user"/>
+                            <field name="state"/>
+                            <field name="last_fetch_date"/>
+                            <field name="last_fetch_count"/>
+                        </list>
+                        <form>
+                            <group string="IMAP">
+                                <field name="imap_server"/>
+                                <field name="imap_port"/>
+                                <field name="imap_ssl"/>
+                                <field name="imap_user"/>
+                                <field name="imap_password" password="True"/>
+                            </group>
+                            <group string="SMTP">
+                                <field name="smtp_server"/>
+                                <field name="smtp_port"/>
+                                <field name="smtp_encryption"/>
+                                <field name="smtp_user"/>
+                                <field name="smtp_password" password="True"/>
+                            </group>
+                            <footer>
+                                <button name="action_test_imap" string="Probar IMAP" type="object"/>
+                                <button name="action_test_smtp" string="Probar SMTP" type="object"/>
+                                <button name="fetch_mails" string="Descargar ahora" type="object"
+                                        class="btn-primary"/>
+                            </footer>
+                        </form>
+                    </field>
+                </group>
+            </xpath>
+        </field>
+    </record>
+</odoo>
