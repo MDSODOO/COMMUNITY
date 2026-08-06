@@ -31,18 +31,16 @@ services:
         condition: service_healthy
     ports:
       - "${ODOO_PORT:-8069}:8069"
-    # Ollama corre en el host (127.0.0.1:11434, fuera de Docker) para el
-    # modulo local_ai_connector -- 127.0.0.1 dentro del contenedor es el
-    # propio contenedor, no el host. host.docker.internal resuelve al
-    # gateway del host de forma portable (funciona igual en Docker Desktop
-    # y en Linux gracias a host-gateway).
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
+    # Nota: Ollama NO corre en este host. Vive en el servidor `mds_agent1` y el
+    # modulo local_ai_connector lo alcanza por su IP de Tailscale
+    # (100.84.63.23:11434). Por eso ya no hace falta `extra_hosts` con
+    # host.docker.internal: se retiro el 2026-07-31 por ser configuracion muerta.
     environment:
       HOST: db
       PORT: 5432
       USER: ${POSTGRES_USER:-odoo}
       PASSWORD: ${POSTGRES_PASSWORD}
+      ADMIN_PASSWD: ${ADMIN_PASSWD}
     volumes:
       - medicinedepot_dev_odoo_data:/var/lib/odoo
       - ./custom_addons:/mnt/extra-addons
@@ -57,6 +55,19 @@ services:
       --addons-path=/usr/lib/python3/dist-packages/odoo/addons,/mnt/extra-addons,/mnt/oca-account-financial-tools,/mnt/oca-account-reconcile,/mnt/oca-account-financial-reporting,/mnt/oca-reporting-engine,/mnt/oca-server-ux
       --log-level=info
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import urllib.request; r=urllib.request.urlopen('http://localhost:8069/web/health'); assert r.status == 200"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    deploy:
+      resources:
+        limits:
+          cpus: '6'
+          memory: 6G
+        reservations:
+          memory: 1G
 
 volumes:
   medicinedepot_dev_db_data:
