@@ -1,0 +1,191 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- ==================== TICKET: FORM ==================== -->
+    <record id="view_mds_helpdesk_ticket_form" model="ir.ui.view">
+        <field name="name">mds.helpdesk.ticket.form</field>
+        <field name="model">mds.helpdesk.ticket</field>
+        <field name="arch" type="xml">
+            <form string="Ticket de Soporte MDS">
+                <header>
+                    <button name="action_escalate"
+                            string="Escalar a Nivel 2"
+                            type="object"
+                            class="oe_highlight"
+                            invisible="stage in ('escalated', 'done')"/>
+                    <button name="action_resolve"
+                            string="Marcar como Resuelto"
+                            type="object"
+                            invisible="stage == 'done'"/>
+                    <field name="stage" widget="statusbar"
+                           statusbar_visible="new,analysis,escalated,testing,done"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="code" readonly="1" class="oe_inline"/>
+                            <span> - </span>
+                            <field name="name" placeholder="Titulo del problema..." class="oe_inline"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group string="Informacion General">
+                            <field name="project_id"/>
+                            <field name="team_id"/>
+                            <field name="partner_id" placeholder="Cliente o sucursal afectada..."/>
+                            <field name="tag_ids" widget="many2many_tags" options="{'color_field': 'color'}"/>
+                        </group>
+                        <group string="Asignacion y Prioridad">
+                            <field name="user_id"/>
+                            <field name="priority" widget="priority"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Descripcion del Requerimiento" name="description">
+                            <field name="description" widget="html" placeholder="Describa el problema, los pasos para reproducirlo y adjunte evidencia..."/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <!-- ==================== TICKET: KANBAN ==================== -->
+    <record id="view_mds_helpdesk_ticket_kanban" model="ir.ui.view">
+        <field name="name">mds.helpdesk.ticket.kanban</field>
+        <field name="model">mds.helpdesk.ticket</field>
+        <field name="arch" type="xml">
+            <kanban default_group_by="stage" class="o_kanban_small_column">
+                <templates>
+                    <t t-name="card">
+                        <div class="oe_kanban_global_click">
+                            <div class="o_kanban_record_top mb-0">
+                                <strong>
+                                    <field name="code"/>
+                                </strong>
+                                <field name="priority" widget="priority"/>
+                            </div>
+                            <div class="text-muted mb-1">
+                                <field name="name"/>
+                            </div>
+                            <div class="o_kanban_record_bottom">
+                                <div class="oe_kanban_bottom_left text-muted">
+                                    <field name="partner_id"/>
+                                </div>
+                                <div class="oe_kanban_bottom_right">
+                                    <field name="user_id" widget="many2one_avatar_user"/>
+                                </div>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <!-- ==================== TICKET: LIST ==================== -->
+    <record id="view_mds_helpdesk_ticket_list" model="ir.ui.view">
+        <field name="name">mds.helpdesk.ticket.list</field>
+        <field name="model">mds.helpdesk.ticket</field>
+        <field name="arch" type="xml">
+            <list string="Tickets MDS">
+                <field name="code"/>
+                <field name="name"/>
+                <field name="project_id"/>
+                <field name="stage"/>
+                <field name="priority" widget="priority"/>
+                <field name="user_id" widget="many2one_avatar_user"/>
+                <field name="partner_id"/>
+                <field name="create_date"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- ==================== TICKET: SEARCH ==================== -->
+    <record id="view_mds_helpdesk_ticket_search" model="ir.ui.view">
+        <field name="name">mds.helpdesk.ticket.search</field>
+        <field name="model">mds.helpdesk.ticket</field>
+        <field name="arch" type="xml">
+            <search string="Buscar Tickets">
+                <field name="name" string="Ticket" filter_domain="['|', ('name', 'ilike', self), ('code', 'ilike', self)]"/>
+                <field name="project_id"/>
+                <field name="user_id"/>
+                <field name="partner_id"/>
+                <filter string="Nuevos" name="new" domain="[('stage', '=', 'new')]"/>
+                <filter string="Escalados" name="escalated" domain="[('stage', '=', 'escalated')]"/>
+                <filter string="Resueltos" name="done" domain="[('stage', '=', 'done')]"/>
+                <separator/>
+                <filter string="Urgentes" name="urgent" domain="[('priority', '=', '3')]"/>
+                <group>
+                    <filter string="Etapa" name="group_stage" context="{'group_by': 'stage'}"/>
+                    <filter string="Proyecto" name="group_project" context="{'group_by': 'project_id'}"/>
+                    <filter string="Responsable" name="group_user" context="{'group_by': 'user_id'}"/>
+                    <filter string="Prioridad" name="group_priority" context="{'group_by': 'priority'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- ==================== ACCION DE VENTANA GLOBAL ==================== -->
+    <record id="action_mds_helpdesk_tickets" model="ir.actions.act_window">
+        <field name="name">Tickets MDS</field>
+        <field name="res_model">mds.helpdesk.ticket</field>
+        <field name="view_mode">kanban,list,form</field>
+        <field name="search_view_id" ref="view_mds_helpdesk_ticket_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No hay tickets abiertos.
+            </p>
+            <p>
+                Crea un ticket desde aqui o desde el Smart Button del Proyecto.
+            </p>
+        </field>
+    </record>
+
+    <!-- ==================== MENU ==================== -->
+    <menuitem id="menu_mds_helpdesk_root"
+              name="Tickets MDS"
+              parent="project.menu_main_pm"
+              action="action_mds_helpdesk_tickets"
+              sequence="15"/>
+
+    <!-- ==================== EQUIPO: FORM ==================== -->
+    <record id="view_mds_helpdesk_team_form" model="ir.ui.view">
+        <field name="name">mds.helpdesk.team.form</field>
+        <field name="model">mds.helpdesk.team</field>
+        <field name="arch" type="xml">
+            <form string="Equipo de Soporte MDS">
+                <sheet>
+                    <div class="oe_title">
+                        <h1><field name="name" placeholder="Nombre del equipo..."/></h1>
+                    </div>
+                    <group>
+                        <group string="Miembros">
+                            <field name="member_ids" widget="many2many_tags"/>
+                        </group>
+                        <group string="Escalacion Nivel 2">
+                            <field name="escalation_user_id"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Proyectos Vinculados">
+                            <field name="project_ids"/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_mds_helpdesk_teams" model="ir.actions.act_window">
+        <field name="name">Equipos de Soporte</field>
+        <field name="res_model">mds.helpdesk.team</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <menuitem id="menu_mds_helpdesk_teams"
+              name="Equipos MDS"
+              parent="project.menu_project_config"
+              action="action_mds_helpdesk_teams"
+              sequence="50"/>
+</odoo>

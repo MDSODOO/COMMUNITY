@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Grupo: Agente de Soporte MDS (N1) -->
+    <record id="group_mds_helpdesk_user" model="res.groups">
+        <field name="name">MDS Helpdesk / Agente de Soporte</field>
+        <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
+    </record>
+
+    <!-- Grupo: Administrador de Soporte MDS (N2) -->
+    <record id="group_mds_helpdesk_manager" model="res.groups">
+        <field name="name">MDS Helpdesk / Administrador de Soporte</field>
+        <field name="implied_ids" eval="[(4, ref('group_mds_helpdesk_user'))]"/>
+    </record>
+</odoo>
