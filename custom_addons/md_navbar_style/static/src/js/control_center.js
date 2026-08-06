@@ -75,6 +75,22 @@ export class ControlCenter extends Component {
         document.querySelector(".o_switch_company_menu button")?.click();
     }
 
+    // El icono nativo de debug (.o_debug_manager, fa-bug) no esta solo
+    // oculto por CSS: web/static/src/webclient/webclient.js SOLO lo
+    // registra en el systray "if (this.env.debug)" -- si el modo
+    // desarrollador esta apagado, el componente ni siquiera se monta. Se
+    // replica exactamente esa misma condicion aqui (mismo this.env.debug,
+    // Component de OWL) para que el tile aparezca/desaparezca en sincronia
+    // con el icono nativo, no sea un tile fantasma cuando debug esta OFF.
+    get isDebugMode() {
+        return Boolean(this.env.debug);
+    }
+
+    openDebugMenu() {
+        this.dropdown.close();
+        document.querySelector(".o_debug_manager button")?.click();
+    }
+
     toggleDarkMode() {
         // Delega en el toggle real de md_dark_mode (localStorage + clase +
         // atributo data-bs-theme) en vez de duplicar esa logica aqui.

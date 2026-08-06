@@ -35,6 +35,22 @@ body,
 // position:fixed + portal -> fondo blanco solido).
 body .o_main_navbar {
     position: relative;
+    // CRITICO (2026-08-06): backdrop-filter crea su propio stacking context.
+    // Con z-index:auto (el valor nativo de Odoo), TODO el navbar -- como
+    // bloque compuesto -- queda pintado en el nivel "positioned/auto" del
+    // stacking context de <body>, en orden de DOM. Como .o_content viene
+    // DESPUES de <header class="o_navbar"> en el DOM, .o_content pinta
+    // ENCIMA del navbar completo, atrapando cualquier descendiente del
+    // navbar (ej. .pip_dropdown de purchase_invoice_parser, que no esta
+    // portado a body como los demas) sin importar que z-index tenga ese
+    // descendiente -- un z-index alto DENTRO de un contexto ya tapado no
+    // sirve de nada. Confirmado en vivo con document.elementsFromPoint():
+    // .pip_dropdown aparecia en la pila, pero por DEBAJO de .o_content.
+    // Fix: z-index explicito en el navbar mismo (no en sus hijos) para que
+    // el bloque completo se pinte por encima de .o_content en el contexto
+    // de <body>. 1030 = mismo valor que usa Bootstrap para .navbar-fixed
+    // por convencion.
+    z-index: 1030;
     border-bottom: 2px solid var(--mds-lime) !important;
     color: var(--mds-text-light) !important;
 
@@ -150,6 +166,11 @@ body .o_main_navbar button {
     .o_md_dark_mode_toggle,
     .o_ai_inventory_query_toggle,
     .o_switch_company_menu,
+    // .o_debug_manager (fa-bug) solo existe en el DOM con modo desarrollador
+    // activo -- ver control_center.js/isDebugMode, mismo gate this.env.debug
+    // que webclient.js usa para registrarlo en el systray. Este selector es
+    // inofensivo cuando debug esta apagado (no hay nada que ocultar).
+    .o_debug_manager,
     button:has(> i.fa-clock-o),
     button:has(> i.fa-comments) {
         display: none !important;
@@ -158,19 +179,48 @@ body .o_main_navbar button {
     // pip_price_notification (purchase_invoice_parser) es un caso aparte:
     // su .pip_dropdown NO se porta a document.body como los demas (Apps,
     // Actividades, Mensajes, Empresa, nuestro propio Control Center) -- es
-    // un hijo directo, plano, de este mismo <li>. display:none en el <li>
-    // deja al hijo con getBoundingClientRect() en {0,0,0,0} sin importar
-    // su propio display/class "show" (confirmado en vivo 2026-08-06: la
-    // clase "show" se aplicaba pero el dropdown nunca era visible/clickeable
-    // al delegar el click desde el tile "Precios"). opacity:0 no afecta el
-    // layout ni el calculo de posicion de Popper/Bootstrap -- el trigger
-    // sigue teniendo geometria real, el dropdown sigue abriendo donde
-    // siempre abrio. pointer-events:none evita que un usuario haga click
-    // por accidente en el hueco invisible que deja en el systray.
-    .pip_price_notification {
+    // un hijo directo, plano, DEL MISMO <li>, hermano del trigger (<a
+    // class="o_nav_entry">), no descendiente suyo.
+    //
+    // CORREGIDO 2026-08-06 (v2): la primera version de este fix ponia
+    // opacity:0 en el <li> completo. Eso rompe el propio dropdown: opacity
+    // se compone hacia los descendientes (un hijo con opacity:1 dentro de
+    // un padre con opacity:0 se sigue renderizando en 0% -- no es que "no
+    // afecte a los hijos", los pinta invisibles a todos, esten abiertos o
+    // no) y pointer-events se HEREDA, asi que aunque el dropdown mostrara
+    // display:block/class "show", quedaba invisible Y no clickeable
+    // (confirmado con elementFromPoint() en el centro del dropdown: el
+    // click caia en la tabla de contactos de atras, no en el dropdown).
+    // El boton "Precios" del Control Center delegaba el click pero el
+    // usuario nunca veia ni podia usar nada -- reportado en vivo.
+    //
+    // Fix real: opacity/pointer-events SOLO en el trigger (<a
+    // class="o_nav_entry">), no en el <li> contenedor. El trigger sigue
+    // teniendo geometria real (Popper/Bootstrap posicionan el dropdown
+    // igual que siempre), queda invisible/no clickeable en la barra
+    // exterior, y el dropdown -- hermano del trigger, no su hijo -- se
+    // renderiza a opacidad y clickabilidad normales cuando se abre.
+    .pip_price_notification .o_nav_entry {
         opacity: 0 !important;
         pointer-events: none !important;
     }
+}
+
+// Bug PREEXISTENTE de .pip_dropdown, confirmado en vivo 2026-08-06 con un
+// click DIRECTO en el trigger nativo (sin pasar por el Control Center, para
+// aislar la causa): el dropdown abre (class "show", display:block,
+// z-index:1050 propio) pero queda debajo del contenido de la vista
+// (document.elementFromPoint() en su centro resuelve a una celda de la
+// tabla de Contactos, no al dropdown) -- ya existia antes de esta
+// consolidacion, no lo causo el ocultamiento del trigger. Ninguno de los
+// ancestros de .pip_dropdown ni de .o_content define z-index explicito
+// (todos "auto"), asi que por spec el z-index:1050 deberia ganar; en la
+// practica no lo hacia. Se reafirma el z-index con un valor bien por
+// encima del resto del sistema (popovers propios usan <=1100) para
+// garantizar que gane sin depender de diagnosticar la causa exacta del
+// conflicto de stacking.
+.pip_dropdown {
+    z-index: 2000 !important;
 }
 
 // ── Selector de Empresa: bento-glass (2026-08-06) ─────────────────────────

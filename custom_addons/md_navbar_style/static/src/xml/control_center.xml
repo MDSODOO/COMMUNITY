@@ -43,6 +43,12 @@
                     <i class="fa fa-cog o_mds_cc_icon"/>
                     <span class="o_mds_cc_label">Ajustes</span>
                 </div>
+                <!-- Mismo gate que web.debug_mode_menu en webclient.js: solo
+                     visible con modo desarrollador activo. -->
+                <div t-if="isDebugMode" class="o_mds_cc_tile" t-on-click="openDebugMenu">
+                    <i class="fa fa-bug o_mds_cc_icon"/>
+                    <span class="o_mds_cc_label">Debug</span>
+                </div>
             </div>
         </t>
     </Dropdown>
