@@ -7,9 +7,13 @@ import { test, expect, Page, ConsoleMessage } from '@playwright/test';
  * Contexto: md_navbar_style agrego un patch OWL a NavBar (navbar_patch.js) y una
  * extension XPath sobre web.NavBar (navbar_templates.xml) que inserta
  * .mds-navbar-custom-zone antes de .o_menu_systray. Este spec confirma que esa
- * extension no rompio los tres desplegables nativos del systray (Apps, Usuario,
- * Chat) ni introdujo errores de consola, en modo claro y en modo oscuro
- * (toggle real de custom_addons/md_dark_mode, ver audit_theme_modes.spec.ts).
+ * extension no rompio los dos desplegables nativos del systray (Apps, Usuario)
+ * ni introdujo errores de consola, en modo claro y en modo oscuro (toggle real
+ * de custom_addons/md_dark_mode, ver audit_theme_modes.spec.ts).
+ *
+ * Chat (mail.MessagingMenu) se consolido dentro del Control Center
+ * (2026-08-06): su boton nativo queda oculto en la barra exterior -- ver
+ * audit_control_center.spec.ts ("tile Mensajes abre Discuss").
  *
  * No hace click en "Cerrar sesion" / "Log out" del menu de usuario -- solo
  * confirma que el dropdown abre con contenido visible.
@@ -22,9 +26,13 @@ async function isDarkModeActive(page: Page): Promise<boolean> {
 async function setDarkMode(page: Page, enable: boolean) {
   const current = await isDarkModeActive(page);
   if (current !== enable) {
+    // Oculto (display:none) desde la consolidacion en el Control Center --
+    // sigue montado y funcional. display:none no tiene geometria: ni
+    // click({force:true}) puede simular el mouse ahi, se dispara el click()
+    // real de DOM via evaluate (mismo mecanismo que usa control_center.js).
     const toggle = page.locator('.o_md_dark_mode_toggle');
-    await expect(toggle).toBeVisible({ timeout: 10_000 });
-    await toggle.click();
+    await expect(toggle).toBeAttached({ timeout: 10_000 });
+    await toggle.evaluate((el: HTMLElement) => el.click());
     await page.waitForTimeout(300);
   }
   await expect(async () => {
@@ -81,13 +89,13 @@ async function auditNavbarDropdowns(page: Page, themeLabel: string, consoleError
   expect(userItemCount, `[${themeLabel}] menu de Usuario abrio sin items`).toBeGreaterThan(0);
   await closeAnyOpenDropdown(page);
 
-  // 3. Chat (mail.MessagingMenu)
-  const chatToggle = page.locator('.o_menu_systray button:has(i.fa-comments)').first();
-  await expect(chatToggle, `[${themeLabel}] boton de Chat no visible`).toBeVisible({ timeout: 10_000 });
-  await chatToggle.click();
-  const chatMenu = page.locator('.o-mail-MessagingMenu').first();
-  await expect(chatMenu, `[${themeLabel}] menu de Chat no abrio`).toBeVisible({ timeout: 5_000 });
-  await closeAnyOpenDropdown(page);
+  // 3. Chat: consolidado en el Control Center, ver comentario de cabecera.
+  // El boton nativo debe seguir ADJUNTO al DOM (oculto, no destruido) --
+  // confirma que la consolidacion oculta, no rompe, el componente real.
+  await expect(
+    page.locator('.o_menu_systray button:has(i.fa-comments)').first(),
+    `[${themeLabel}] boton nativo de Chat ya no esta en el DOM (deberia seguir montado, solo oculto)`
+  ).toBeAttached({ timeout: 5_000 });
 
   const relevantErrors = consoleErrors.filter(
     (e) => /navbar|NavBar|mds/i.test(e.text()) || /navbar_patch|navbar_templates/i.test(e.location().url)

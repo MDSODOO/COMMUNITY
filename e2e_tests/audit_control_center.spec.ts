@@ -4,11 +4,15 @@ import { test, expect, Page, ConsoleMessage } from '@playwright/test';
  * Auditoria funcional del Control Center (md_navbar_style.control_center).
  * MedicineDepot Odoo 19 — self-hosted (ionos).
  *
- * Contexto: panel bento-glass en el systray que agrega Mensajes/Actividades/
- * Modo Oscuro/Ajustes en tiles tipo macOS Control Center. Delega en los
- * componentes nativos ya probados (ActivityMenu, md_dark_mode toggle) en
- * vez de reimplementar su logica -- este spec confirma que esa delegacion
- * realmente dispara la accion nativa, no solo que el panel abre.
+ * Contexto: panel bento-glass en el systray que agrega Mensajes, Actividades,
+ * Copiloto IA, Precios, Empresa, Modo Oscuro y Ajustes en tiles tipo macOS
+ * Control Center. Delega en los componentes nativos ya probados (ActivityMenu,
+ * md_dark_mode toggle, local_ai_connector, purchase_invoice_parser, selector
+ * de compania nativo) en vez de reimplementar su logica -- este spec
+ * confirma que esa delegacion realmente dispara la accion nativa, no solo
+ * que el panel abre. Los 6 botones nativos correspondientes quedan ocultos
+ * (display:none) en la barra exterior tras la consolidacion (2026-08-06,
+ * ver navbar_style.scss) -- siguen ADJUNTOS al DOM, solo invisibles.
  *
  * El panel se renderiza via usePopover() (.o_popover, portado a body con
  * position:fixed). Ver docs/audits/2026-07-01_backend_dark_mode_audit.md
@@ -24,9 +28,13 @@ async function isDarkModeActive(page: Page): Promise<boolean> {
 async function setDarkMode(page: Page, enable: boolean) {
   const current = await isDarkModeActive(page);
   if (current !== enable) {
+    // Oculto (display:none) desde que este mismo modulo consolido su
+    // funcion en el tile "Modo Oscuro" -- sigue montado y funcional.
+    // display:none no tiene geometria: se dispara el click() real de DOM
+    // via evaluate (mismo mecanismo que usa control_center.js).
     const toggle = page.locator('.o_md_dark_mode_toggle');
-    await expect(toggle).toBeVisible({ timeout: 10_000 });
-    await toggle.click();
+    await expect(toggle).toBeAttached({ timeout: 10_000 });
+    await toggle.evaluate((el: HTMLElement) => el.click());
     await page.waitForTimeout(300);
   }
   await expect(async () => {
@@ -44,7 +52,7 @@ async function openControlCenter(page: Page) {
 }
 
 test.describe('Control Center (systray)', () => {
-  test('panel abre con 4 tiles en claro y oscuro, sin errores', async ({ page }) => {
+  test('panel abre con 7 tiles en claro y oscuro, sin errores', async ({ page }) => {
     const errors: ConsoleMessage[] = [];
     page.on('console', (msg) => { if (msg.type() === 'error') errors.push(msg); });
 
@@ -55,9 +63,12 @@ test.describe('Control Center (systray)', () => {
       await setDarkMode(page, dark);
       await page.waitForTimeout(200);
       const menu = await openControlCenter(page);
-      await expect(menu.locator('.o_mds_cc_tile')).toHaveCount(4);
+      await expect(menu.locator('.o_mds_cc_tile')).toHaveCount(7);
       await expect(menu.getByText('Mensajes')).toBeVisible();
       await expect(menu.getByText('Actividades')).toBeVisible();
+      await expect(menu.getByText('Copiloto IA')).toBeVisible();
+      await expect(menu.getByText('Precios')).toBeVisible();
+      await expect(menu.getByText('Empresa')).toBeVisible();
       await expect(menu.getByText('Modo Oscuro')).toBeVisible();
       await expect(menu.getByText('Ajustes')).toBeVisible();
       await page.keyboard.press('Escape');
@@ -118,5 +129,41 @@ test.describe('Control Center (systray)', () => {
 
     await expect(page.locator('.o_mds_control_center')).toBeHidden({ timeout: 5_000 });
     await expect(page.locator('.o-mail-Discuss')).toBeVisible({ timeout: 10_000 });
+  });
+
+  test('tile Copiloto IA delega en el dialogo nativo de local_ai_connector', async ({ page }) => {
+    await page.goto('/odoo/contacts');
+    await expect(page.locator('.o_main_navbar')).toBeVisible({ timeout: 15_000 });
+
+    const menu = await openControlCenter(page);
+    await menu.getByText('Copiloto IA').click();
+
+    await expect(page.locator('.o_mds_control_center')).toBeHidden({ timeout: 5_000 });
+    await expect(page.locator('.modal-title', { hasText: 'Copiloto de inventario' })).toBeVisible({ timeout: 5_000 });
+  });
+
+  test('tile Precios delega en el dropdown nativo de purchase_invoice_parser', async ({ page }) => {
+    await page.goto('/odoo/contacts');
+    await expect(page.locator('.o_main_navbar')).toBeVisible({ timeout: 15_000 });
+
+    const menu = await openControlCenter(page);
+    await menu.getByText('Precios').click();
+
+    await expect(page.locator('.o_mds_control_center')).toBeHidden({ timeout: 5_000 });
+    await expect(page.locator('.pip_dropdown')).toBeVisible({ timeout: 5_000 });
+  });
+
+  test('tile Empresa delega en el selector de compania nativo', async ({ page }) => {
+    await page.goto('/odoo/contacts');
+    await expect(page.locator('.o_main_navbar')).toBeVisible({ timeout: 15_000 });
+
+    const menu = await openControlCenter(page);
+    await menu.getByText('Empresa').click();
+
+    await expect(page.locator('.o_mds_control_center')).toBeHidden({ timeout: 5_000 });
+    // Popover nativo, portado a body (no anidado bajo .o_switch_company_menu
+    // -- mismo mecanismo que el Control Center), identificado por su clase
+    // propia .o_switch_company_menu_dropdown.
+    await expect(page.locator('.o_switch_company_menu_dropdown')).toBeVisible({ timeout: 5_000 });
   });
 });

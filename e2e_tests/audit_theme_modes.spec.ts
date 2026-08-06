@@ -133,9 +133,16 @@ async function isDarkModeActive(page: Page): Promise<boolean> {
 async function setDarkMode(page: Page, enable: boolean) {
   const current = await isDarkModeActive(page);
   if (current !== enable) {
+    // .o_md_dark_mode_toggle esta oculto (display:none) desde que su
+    // funcion se consolido en el tile "Modo Oscuro" del Control Center
+    // (md_navbar_style/control_center.js) -- sigue montado y funcional.
+    // display:none no tiene geometria, asi que ni siquiera click({force:true})
+    // de Playwright puede simular el mouse ahi (probado, falla con "Element
+    // is not visible"); se dispara el click() real de DOM via evaluate, el
+    // mismo mecanismo que usa control_center.js para delegar en este boton.
     const toggle = page.locator('.o_md_dark_mode_toggle');
-    await expect(toggle).toBeVisible({ timeout: 10_000 });
-    await toggle.click();
+    await expect(toggle).toBeAttached({ timeout: 10_000 });
+    await toggle.evaluate((el: HTMLElement) => el.click());
     await page.waitForTimeout(300);
   }
   await expect(async () => {
@@ -232,10 +239,13 @@ test.describe('Auditoria de tema Claro/Oscuro', () => {
     await page.goto('/odoo/contacts');
     await expect(page.locator('.o_main_navbar')).toBeVisible({ timeout: 15_000 });
 
+    // Oculto (display:none) desde la consolidacion en el Control Center
+    // (2026-08-06, tile "Precios") -- sigue montado y funcional. Sin
+    // geometria: se dispara el click() real de DOM via evaluate.
     const bell = page.locator('.pip_price_notification .o_nav_entry');
     test.skip((await bell.count()) === 0, 'purchase_invoice_parser no expuso el systray en esta sesion.');
 
-    await bell.click();
+    await bell.evaluate((el: HTMLElement) => el.click());
     await expect(page.locator('.pip_dropdown')).toBeVisible({ timeout: 5_000 });
 
     await assertContrast(page, 'systray_price_notification', [
