@@ -4,3 +4,4 @@ from . import image_quote_request
 from . import image_quote_image
 from . import image_quote_line
 from . import product_product
+from . import vision_identification

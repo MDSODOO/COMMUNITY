@@ -6,13 +6,13 @@ import fs from 'fs';
  * Suite E2E para el endpoint /ai/identify_product_from_photo.
  *
  * Prueba el flujo completo: staff autenticado sube una foto de un producto
- * farmacéutico → backend Odoo la envía a qwen2.5vl:7b (Ollama en
- * host.docker.internal:11434) → respuesta JSON con producto identificado +
- * cantidad "A la mano" (On Hand).
+ * farmacéutico → backend Odoo la envía a qwen2.5vl:7b (Ollama en el servidor
+ * mds_agent1, alcanzado por Tailscale en 100.84.63.23:11434) → respuesta JSON
+ * con producto identificado + cantidad "A la mano" (On Hand).
  *
  * Dependencias:
  * - Sesión de staff autenticada en Odoo (auth.setup.ts)
- * - Ollama funcionando con qwen2.5vl:7b en el host
+ * - Ollama funcionando con qwen2.5vl:7b en mds_agent1 (host aparte)
  * - Una imagen de prueba en fixtures/
  *
  * NOTA: estas pruebas requieren que el modelo de visión esté disponible y

@@ -1,14 +1,17 @@
 # -*- coding: utf-8 -*-
 """
-Cliente HTTP minimo hacia Ollama, corriendo solo en 127.0.0.1:11434.
+Cliente HTTP minimo hacia Ollama, que corre en el servidor `mds_agent1`
+(host fisico distinto a este), alcanzado por la red privada Tailscale.
 
-Regla de seguridad (docs/AI_MODEL_ODOO_CONFIG.md §2.3, §6.2): Ollama nunca
-debe exponerse fuera de localhost -- Odoo (este modulo) es el unico
-cliente permitido, jamas el navegador del usuario final.
+Regla de seguridad: Ollama nunca se expone a internet. El aislamiento real
+son dos capas: la red Tailscale (WireGuard, solo dispositivos autenticados
+del tailnet) y UFW en `mds_agent1` (allowlist por IP al puerto 11434).
+Odoo (este modulo) es el unico cliente permitido, jamas el navegador del
+usuario final.
 
-Cola de 1 solicitud concurrente (docs/AI_MODEL_ODOO_CONFIG.md §8): el host
-comparte CPU con dev/test, asi que un lock simple evita que varias
-solicitudes de IA compitan al mismo tiempo y degraden el resto del sistema.
+Cola de 1 solicitud concurrente: `mds_agent1` tiene 14 GiB y una sola
+consulta de vision usa ~9.6 GB, asi que un lock evita que varias
+solicitudes compitan al mismo tiempo y provoquen OOM.
 """
 import json
 import logging
@@ -22,10 +25,10 @@ from odoo.exceptions import UserError
 
 _logger = logging.getLogger(__name__)
 
-# Ollama corre en el HOST (fuera de Docker), no dentro del contenedor de
-# Odoo -- 127.0.0.1 aqui dentro apuntaria al propio contenedor. Ver
-# docker-compose.yml (extra_hosts: host.docker.internal:host-gateway).
-OLLAMA_URL = "http://mdsagent1.duckdns.org:11434/api/generate"
+# IP Tailscale de `mds_agent1`. Estable por nodo: no depende de la IP
+# publica residencial (dinamica) ni de DuckDNS ni del port-forward del
+# router -- ese camino anterior se caia cada vez que rotaba la IP.
+OLLAMA_URL = "http://100.84.63.23:11434/api/generate"
 DEFAULT_TIMEOUT = 90  # q8 vision + 14b text son más lentos que q4
 # Imagenes reales tardaron 93-242s incluso redimensionadas (medido
 # 2026-07-27, ver docs/AI_MODEL_ODOO_CONFIG.md §9.2) -- margen generoso.
