@@ -275,6 +275,19 @@
                         </div>
                     </a>
 
+                    <!-- Sub-Agente Digitalización de Recetas / Documentos -->
+                    <div class="md_data_card md_data_card--digitization border border-cyan rounded-4 p-3 bg-glass">
+                        <div class="md_card_head d-flex align-items-center gap-2 mb-2">
+                            <i class="fa fa-magic text-cyan" aria-hidden="true"/>
+                            <span class="fw-bold text-uppercase">Digitalizar Documento (IA)</span>
+                        </div>
+                        <p class="md_card_meta small mb-2">
+                            Mejora imágenes, filtra tachones y muestra opciones recomendadas por sustancia activa con unidades <strong>A la mano</strong>.
+                        </p>
+                        <input type="file" id="md_dashboard_digitize_file" class="form-control form-control-sm mb-2" accept="image/*"/>
+                        <div id="md_digitization_recommendations_target" class="small"/>
+                    </div>
+
                     <!-- Facturas pendientes (toma la posición de Mi cuenta) -->
                     <a href="/my/invoices" class="md_data_card md_data_card--invoice">
                         <div class="md_card_head">

@@ -114,6 +114,7 @@
     <menuitem id="menu_medicine_depot_pharmacovigilance_root"
               name="Farmacovigilancia"
               action="action_medicine_depot_pharmacovigilance_report"
+              web_icon="medicine_depot_portal,static/description/icon.png"
               groups="base.group_system"
               sequence="95"/>
 

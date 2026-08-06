@@ -158,8 +158,10 @@ class MedicineDepotPublicController(Controller):
 
     def _company_partner(self):
         """Devuelve el partner de la compañía activa en el website, con fallback al usuario actual."""
+        # Public user cannot read website/company data without elevation.
         website = request.website.sudo() if request.website else False
         company = website.company_id.sudo() if website and website.company_id else request.env.company.sudo()
+        # Partner read: public user has no ACL on company partner; sudo() required.
         return company.partner_id.sudo() if company and company.partner_id else request.env.user.partner_id.sudo()
 
     def _nav_items(self, active_route):
@@ -168,6 +170,7 @@ class MedicineDepotPublicController(Controller):
         website = request.website
         root_menu = False
         if website:
+            # Public user cannot read website.menu without elevation.
             root_menu = request.env["website.menu"].sudo().search(
                 [("url", "=", "/default-main-menu"), ("website_id", "=", website.id)],
                 limit=1,
@@ -280,6 +283,7 @@ class MedicineDepotPublicController(Controller):
         return card
 
     def _get_branch_cards(self):
+        # Public route: warehouse and partner data require elevation.
         Warehouse = request.env["stock.warehouse"].sudo()
         warehouses = Warehouse.search([("active", "=", True)], order="sequence,id")
         cards = []
@@ -325,6 +329,7 @@ class MedicineDepotPublicController(Controller):
         if "blog.post" not in request.registry.models:
             return list(self._FALLBACK_POSTS[:limit])
 
+        # Public route: blog reading requires sudo for non-logged-in users.
         Post = request.env["blog.post"].sudo()
         domain = [("is_published", "=", True)]
         if "website_id" in Post._fields and request.website:
@@ -348,7 +353,9 @@ class MedicineDepotPublicController(Controller):
         return _is_valid_email_util(email)
 
     def _pharmacovigilance_context(self):
-        partner = request.env.user.partner_id.sudo() if request.env.user and not request.env.user._is_public() else False
+        # Current user's own partner for non-public users; authenticated users
+        # have access to their own record via portal record rules.
+        partner = request.env.user.partner_id if request.env.user and not request.env.user._is_public() else False
         reporter_name = partner.name if partner else ""
         reporter_email = partner.email if partner else ""
         reporter_phone = partner.phone if partner else ""
@@ -564,6 +571,7 @@ class MedicineDepotPublicController(Controller):
 
         report_vals = self._pharmacovigilance_report_vals(post)
         try:
+            # Public user cannot create pharmacovigilance reports; elevator required.
             report = request.env["medicine.depot.pharmacovigilance.report"].sudo().create(report_vals)
         except Exception:
             return request.make_json_response(

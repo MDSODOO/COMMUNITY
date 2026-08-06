@@ -5,6 +5,7 @@ import re
 
 from odoo import _, http
 from odoo.http import request
+from .csrf_utils import validate_origin
 from odoo.addons.website.controllers.main import Website
 
 _logger = logging.getLogger(__name__)
@@ -40,10 +41,14 @@ class MdWebsiteApi(http.Controller):
         '/web/afiliacion/submit',
         type='http', auth='public', website=True,
         methods=['POST'],
-        csrf=False,  # multipart/form-data con usuario no autenticado; sin sesión no hay token CSRF válido
+        csrf=False,  # multipart/form-data con usuario no autenticado; protegido via validate_origin()
     )
     def afiliacion_submit(self, **post):
         """POST /web/afiliacion/submit — crea oportunidad CRM con documentos adjuntos desde el formulario público."""
+        csrf_error = validate_origin()
+        if csrf_error:
+            return csrf_error
+
         nombre = (post.get('nombre') or '').strip()
         apellido = (post.get('apellido') or '').strip()
         email = (post.get('email') or '').strip()
@@ -131,10 +136,14 @@ class MdWebsiteApi(http.Controller):
         '/web/medicd/submit',
         type='http', auth='public', website=True,
         methods=['POST'],
-        csrf=False,  # multipart/form-data con usuario no autenticado; sin sesión no hay token CSRF válido
+        csrf=False,  # multipart/form-data con usuario no autenticado; protegido via validate_origin()
     )
     def medicd_submit(self, **post):
         """POST /web/medicd/submit — crea oportunidad CRM para el programa MedicD desde el formulario público."""
+        csrf_error = validate_origin()
+        if csrf_error:
+            return csrf_error
+
         nombre = (post.get('nombre') or '').strip()
         apellido = (post.get('apellido') or '').strip()
         email = (post.get('email') or '').strip()

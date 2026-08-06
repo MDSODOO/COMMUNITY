@@ -111,7 +111,7 @@ class MedicineDepotPortal(CustomerPortal):
         if not partner:
             return False
 
-        partner = partner.sudo()
+        # partner is already the current user's own record; no sudo() needed.
         model_fields = partner._fields
         return any(
             field_name in model_fields and not partner[field_name]
@@ -214,7 +214,7 @@ class MedicineDepotPortal(CustomerPortal):
                 'affiliation_upload_url': '/my/account',
             }
 
-        partner = partner.sudo()
+        # partner is already current-user-scoped; no sudo() needed.
         model_fields = partner._fields
         contact_type = (partner.x_studio_contact_type or '').strip() if 'x_studio_contact_type' in model_fields else ''
         is_affiliate = contact_type.lower() == 'cliente'
@@ -245,9 +245,11 @@ class MedicineDepotPortal(CustomerPortal):
         """
         partner = request.env.user.partner_id
 
-        SaleOrder = request.env["sale.order"].sudo()
-        AccountMove = request.env["account.move"].sudo()
-        SaleOrderLine = request.env["sale.order.line"].sudo()
+        # Portal users have record-rule-scoped ACLs for their own sale/account/stock records.
+        # Using direct env (no sudo) lets Odoo's security model enforce partner isolation.
+        SaleOrder = request.env["sale.order"]
+        AccountMove = request.env["account.move"]
+        SaleOrderLine = request.env["sale.order.line"]
 
         confirmed_orders = SaleOrder.search(
             [("partner_id", "=", partner.id), ("state", "in", ("sale", "done"))],
@@ -264,7 +266,7 @@ class MedicineDepotPortal(CustomerPortal):
             ("payment_state", "in", ("not_paid", "partial")),
             ("state", "=", "posted"),
         ])
-        Picking = request.env["stock.picking"].sudo()
+        Picking = request.env["stock.picking"]
         active_pickings = Picking.search([
             ("partner_id", "=", partner.id),
             ("state", "in", ("assigned", "waiting", "confirmed")),
@@ -328,7 +330,7 @@ class MedicineDepotPortal(CustomerPortal):
     @route()
     def account(self, redirect=None, **post):
         """Extiende /my/account para manejar fields Studio + alerta de expediente."""
-        partner = request.env.user.partner_id.sudo()
+        partner = request.env.user.partner_id
         response = super().account(redirect=redirect, **post)
 
         if request.httprequest.method == 'POST':
@@ -418,7 +420,7 @@ class MedicineDepotPortal(CustomerPortal):
             return ''
 
         field = partner._fields['x_studio_branch_office']
-        value = partner.sudo().x_studio_branch_office
+        value = partner.x_studio_branch_office
         if not value:
             return ''
 
@@ -432,7 +434,8 @@ class MedicineDepotPortal(CustomerPortal):
         user = request.env.user
         partner = False
         if user and not user._is_public():
-            partner = user.partner_id.sudo()
+            # current user's own partner; no sudo() needed.
+            partner = user.partner_id
 
         values = {
             'partner': partner,
@@ -516,7 +519,8 @@ class MedicineDepotPortal(CustomerPortal):
         # 2) creación de nuevo partner para usuario público
         partner = False
         if user and not user._is_public():
-            partner = user.partner_id.sudo()
+            # current user's own partner; no sudo() needed.
+            partner = user.partner_id
         else:
             email_to_check = partner_vals.get('email', '')
             if email_to_check:
