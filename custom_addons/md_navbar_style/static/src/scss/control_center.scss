@@ -11,48 +11,81 @@
 // Si en el futuro reaparece (otro popover, otra versión de Chromium), el
 // fallback ya validado es el de backend_bento.scss (.dropdown-menu): fondo
 // casi opaco sin blur.
+//
+// Receta de vidrio (2026-08-06): se adopta la misma receta ya auditada y en
+// producción de md_command_palette/launcher.scss (.o_md_command_palette /
+// .o_md_launcher_app_tile) -- panel con sombra multicapa + highlight inset
+// + animación de entrada, tiles como chips de vidrio translúcido que se
+// vuelven casi opacos y se elevan al hover, en vez de un relleno de color
+// plano. Mismo $ink-950 (#071316, casi idéntico a --mds-ink-dark #071C22)
+// para el fallback sólido de modo oscuro.
+$mds_cc_ink_950: #071316;
 
 .o_mds_control_center_menu.o_popover {
     padding: 0;
-    border: none;
-    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.85);
+    border-radius: 22px;
     overflow: hidden;
-    background: rgba(255, 255, 255, 0.92);
+    background: rgba(255, 255, 255, 0.97); // fallback solido
     box-shadow:
         0 0 0 1px rgba(7, 58, 76, 0.06),
-        0 24px 60px rgba(7, 58, 76, 0.18);
+        0 28px 80px rgba(7, 58, 76, 0.28),
+        0 10px 28px rgba(7, 58, 76, 0.10),
+        inset 0 1px 0 rgba(255, 255, 255, 0.95);
+    animation: o_mds_cc_in 140ms ease-out;
 
     @supports (backdrop-filter: blur(1px)) {
-        background: rgba(255, 255, 255, 0.72);
-        backdrop-filter: blur(20px) saturate(1.5);
-        -webkit-backdrop-filter: blur(20px) saturate(1.5);
+        background: rgba(255, 255, 255, 0.88);
+        backdrop-filter: blur(18px) saturate(1.4);
+        -webkit-backdrop-filter: blur(18px) saturate(1.4);
     }
+
+    @media (prefers-reduced-motion: reduce) {
+        animation-duration: 0.01ms;
+    }
+}
+
+@keyframes o_mds_cc_in {
+    from { opacity: 0; transform: translateY(-6px) scale(0.98); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
 }
 
 html.o_md_dark_mode,
 html[data-bs-theme="dark"] {
     .o_mds_control_center_menu.o_popover {
-        background: rgba(19, 23, 42, 0.94);
+        background: rgba($mds_cc_ink_950, 0.94); // fallback solido
+        border-color: rgba(255, 255, 255, 0.10);
         box-shadow:
             0 0 0 1px rgba(255, 255, 255, 0.06),
-            0 24px 60px rgba(0, 0, 0, 0.5);
+            0 28px 80px rgba(0, 0, 0, 0.55),
+            inset 0 1px 0 rgba(255, 255, 255, 0.06);
 
         @supports (backdrop-filter: blur(1px)) {
-            background: rgba(19, 23, 42, 0.70);
-            backdrop-filter: blur(20px) saturate(1.5);
-            -webkit-backdrop-filter: blur(20px) saturate(1.5);
+            background: rgba($mds_cc_ink_950, 0.80);
+            backdrop-filter: blur(18px) saturate(1.4);
+            -webkit-backdrop-filter: blur(18px) saturate(1.4);
         }
     }
 }
 
 .o_mds_control_center {
+    // 7 tiles (Mensajes, Actividades, Copiloto IA, Precios, Empresa, Modo
+    // Oscuro, Ajustes). 3 columnas dejaban ~70px de contenido por tile --
+    // insuficiente para labels largos ("ACTIVIDADES", "COPILOTO IA",
+    // "MODO OSCURO" en mayusculas/letter-spacing), se veian cortados
+    // (2026-08-06, capturas cc_full_light.png). 2 columnas: mas ancho por
+    // tile (el panel crece en alto, no en ancho -- las columnas con
+    // labels largos son las que necesitaban ese espacio de mas).
     display: grid;
     grid-template-columns: repeat(2, 1fr);
     gap: 10px;
     padding: 14px;
-    width: 260px;
+    width: 240px;
 }
 
+// Chip de vidrio (misma receta que .o_md_launcher_app_tile): translucido
+// en reposo, casi opaco + elevacion + sombra de color al hover -- no un
+// relleno de color plano.
 .o_mds_cc_tile {
     position: relative;
     display: flex;
@@ -61,21 +94,29 @@ html[data-bs-theme="dark"] {
     justify-content: space-between;
     gap: 10px;
     padding: 14px;
-    min-height: 84px;
-    border-radius: 14px;
+    min-height: 76px;
+    border-radius: 16px;
     cursor: pointer;
-    background: rgba(22, 166, 217, 0.08);
-    border: 1px solid rgba(22, 166, 217, 0.14);
-    transition: background-color 0.18s ease, transform 0.18s ease, border-color 0.18s ease;
+    outline: none;
+    background: rgba(255, 255, 255, 0.50);
+    border: 1px solid rgba(22, 166, 217, 0.16);
+    transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease, transform 0.18s ease;
 
-    &:hover {
-        background: rgba(22, 166, 217, 0.16);
-        transform: translateY(-2px);
+    &:hover, &:focus-visible {
+        background: rgba(255, 255, 255, 0.92);
+        border-color: rgba(22, 166, 217, 0.45);
+        transform: translateY(-3px);
+        box-shadow: 0 14px 28px rgba(22, 166, 217, 0.18);
     }
 
     &.o_mds_cc_tile_active {
-        background: rgba(151, 215, 0, 0.16);
-        border-color: rgba(151, 215, 0, 0.30);
+        background: rgba(151, 215, 0, 0.18);
+        border-color: rgba(151, 215, 0, 0.35);
+
+        &:hover, &:focus-visible {
+            background: rgba(151, 215, 0, 0.26);
+            box-shadow: 0 14px 28px rgba(151, 215, 0, 0.20);
+        }
     }
 }
 
@@ -86,6 +127,16 @@ html[data-bs-theme="dark"] {
 
 .o_mds_cc_tile_active .o_mds_cc_icon {
     color: #5c8a00;
+}
+
+// El SVG del tile "Copiloto IA" no tiene tamaño intrinseco -- sin esto se
+// veria enorme (default del navegador). Regla duplicada intencionalmente
+// (tambien vive en local_ai_connector/image_quote_drop_dialog.scss): no
+// depender de que ese modulo especifico este instalado para que este
+// tile se vea bien.
+.o_mds_bot_icon {
+    width: 1.15em;
+    height: 1.15em;
 }
 
 .o_mds_cc_label {
@@ -150,17 +201,31 @@ html[data-bs-theme="dark"] {
         color: #e8eaf0;
     }
 
+    // Mismo patron que .o_md_launcher_app_tile en modo oscuro: casi
+    // invisible en reposo, brillo de marca + glow al hover, en vez de
+    // solo aclarar el mismo tinte plano.
     .o_mds_cc_tile {
-        background: rgba(22, 166, 217, 0.10);
-        border-color: rgba(22, 166, 217, 0.18);
+        background: rgba(255, 255, 255, 0.04);
+        border-color: rgba(255, 255, 255, 0.08);
 
-        &:hover {
-            background: rgba(22, 166, 217, 0.18);
+        &:hover, &:focus-visible {
+            background: rgba(22, 166, 217, 0.22);
+            border-color: rgba(22, 166, 217, 0.45);
+            box-shadow:
+                0 12px 28px rgba(0, 0, 0, 0.45),
+                0 0 16px rgba(22, 166, 217, 0.25);
         }
 
         &.o_mds_cc_tile_active {
-            background: rgba(151, 215, 0, 0.14);
-            border-color: rgba(151, 215, 0, 0.30);
+            background: rgba(151, 215, 0, 0.16);
+            border-color: rgba(151, 215, 0, 0.35);
+
+            &:hover, &:focus-visible {
+                background: rgba(151, 215, 0, 0.24);
+                box-shadow:
+                    0 12px 28px rgba(0, 0, 0, 0.45),
+                    0 0 16px rgba(151, 215, 0, 0.25);
+            }
         }
     }
 

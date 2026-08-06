@@ -130,6 +130,145 @@ body .o_main_navbar button {
     padding-right: 12px;
 }
 
+// ── Consolidacion en el Control Center (2026-08-06) ───────────────────────
+// Mensajes, Actividades, Copiloto IA, Actualizacion de precios, Empresa y
+// Modo Oscuro pasaron a ser tiles del Control Center (control_center.js/
+// .xml) -- se ocultan sus botones nativos duplicados de la barra exterior
+// para no repetir la misma accion dos veces. SOLO ocultamiento visual: los
+// componentes siguen montados y funcionando, control_center.js les sigue
+// haciendo click() programatico (funciona en elementos ocultos -- a
+// diferencia del click() de Playwright, que exige geometria/visibilidad
+// incluso con {force:true}; los specs afectados usan .evaluate(el =>
+// el.click()) en su lugar, ver e2e_tests/audit_*.spec.ts).
+//
+// :has() requiere Chromium 105+/Safari 15.4+/Firefox 121+ (2023+); estamos
+// en un entorno de admin interno, no storefront publico -- riesgo aceptado.
+// Si algun dia hay que soportar un navegador mas viejo, la alternativa es
+// envolver estos botones nativos en un wrapper con clase propia desde el
+// lado de Odoo, lo cual no es practico sin tocar addons de core/mail.
+.o_menu_systray {
+    .o_md_dark_mode_toggle,
+    .o_ai_inventory_query_toggle,
+    .o_switch_company_menu,
+    button:has(> i.fa-clock-o),
+    button:has(> i.fa-comments) {
+        display: none !important;
+    }
+
+    // pip_price_notification (purchase_invoice_parser) es un caso aparte:
+    // su .pip_dropdown NO se porta a document.body como los demas (Apps,
+    // Actividades, Mensajes, Empresa, nuestro propio Control Center) -- es
+    // un hijo directo, plano, de este mismo <li>. display:none en el <li>
+    // deja al hijo con getBoundingClientRect() en {0,0,0,0} sin importar
+    // su propio display/class "show" (confirmado en vivo 2026-08-06: la
+    // clase "show" se aplicaba pero el dropdown nunca era visible/clickeable
+    // al delegar el click desde el tile "Precios"). opacity:0 no afecta el
+    // layout ni el calculo de posicion de Popper/Bootstrap -- el trigger
+    // sigue teniendo geometria real, el dropdown sigue abriendo donde
+    // siempre abrio. pointer-events:none evita que un usuario haga click
+    // por accidente en el hueco invisible que deja en el systray.
+    .pip_price_notification {
+        opacity: 0 !important;
+        pointer-events: none !important;
+    }
+}
+
+// ── Selector de Empresa: bento-glass (2026-08-06) ─────────────────────────
+// .o_switch_company_menu_dropdown es un popover nativo de Odoo (usePopover,
+// portado a body) -- mismo mecanismo que el Control Center, por eso soporta
+// la misma receta de vidrio sin el riesgo de compositing de .pip_dropdown
+// (que no esta portado, ver arriba). Se aplica para que se sienta parte
+// del mismo sistema visual ahora que se abre desde el tile "Empresa".
+.o_switch_company_menu_dropdown.o_popover {
+    padding: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.85);
+    border-radius: 18px;
+    background: rgba(255, 255, 255, 0.97); // fallback solido
+    box-shadow:
+        0 0 0 1px rgba(7, 58, 76, 0.06),
+        0 24px 64px rgba(7, 58, 76, 0.22),
+        inset 0 1px 0 rgba(255, 255, 255, 0.95);
+
+    @supports (backdrop-filter: blur(1px)) {
+        background: rgba(255, 255, 255, 0.88);
+        backdrop-filter: blur(18px) saturate(1.35);
+        -webkit-backdrop-filter: blur(18px) saturate(1.35);
+    }
+
+    .o_switch_company_item {
+        border-radius: 10px;
+        margin-bottom: 2px;
+        transition: background-color 0.15s ease;
+
+        &:hover {
+            background: rgba(22, 166, 217, 0.10) !important;
+        }
+
+        &.alert-secondary {
+            background: rgba(22, 166, 217, 0.14) !important;
+        }
+
+        .log_into.bg-primary-subtle {
+            background: rgba(22, 166, 217, 0.18) !important;
+        }
+
+        .company_label {
+            font-weight: 600;
+        }
+
+        i.fa-check-square {
+            color: var(--mds-blue) !important;
+        }
+
+        .border-primary {
+            border-color: rgba(22, 166, 217, 0.40) !important;
+        }
+    }
+
+    .o_switch_company_menu_buttons .btn-primary {
+        background: var(--mds-blue) !important;
+        border-color: var(--mds-blue) !important;
+    }
+}
+
+html.o_md_dark_mode,
+html[data-bs-theme="dark"] {
+    .o_switch_company_menu_dropdown.o_popover {
+        background: rgba(19, 23, 42, 0.94); // fallback solido
+        border-color: rgba(255, 255, 255, 0.10);
+        box-shadow:
+            0 0 0 1px rgba(255, 255, 255, 0.06),
+            0 24px 64px rgba(0, 0, 0, 0.5),
+            inset 0 1px 0 rgba(255, 255, 255, 0.06);
+        color: #e8eaf0;
+
+        @supports (backdrop-filter: blur(1px)) {
+            background: rgba(19, 23, 42, 0.78);
+            backdrop-filter: blur(18px) saturate(1.35);
+            -webkit-backdrop-filter: blur(18px) saturate(1.35);
+        }
+
+        .company_label {
+            color: #e8eaf0;
+        }
+
+        .form-control {
+            background: rgba(255, 255, 255, 0.06) !important;
+            color: #e8eaf0 !important;
+        }
+
+        .o_switch_company_item {
+            &:hover {
+                background: rgba(22, 166, 217, 0.16) !important;
+            }
+
+            &.alert-secondary {
+                background: rgba(22, 166, 217, 0.20) !important;
+            }
+        }
+    }
+}
+
 @media (prefers-reduced-motion: reduce) {
     body .o_main_navbar .o_nav_entry,
     body .o_main_navbar .dropdown-toggle,

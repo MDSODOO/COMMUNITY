@@ -7,11 +7,12 @@ import { useDropdownState } from "@web/core/dropdown/dropdown_hooks";
 import { Dropdown } from "@web/core/dropdown/dropdown";
 
 // Control Center: agrega en un solo panel bento lo que ya existe disperso en
-// el systray (mensajes, actividades) + accesos rapidos, estilo macOS Control
-// Center. No reimplementa la logica de mail.store ni del toggle de modo
-// oscuro -- consume el servicio real y delega el click en los botones
-// nativos ya probados (ActivityMenu, md_dark_mode toggle) en vez de
-// duplicar su comportamiento.
+// el systray (mensajes, actividades, copiloto IA, precios, empresa, modo
+// oscuro) + Ajustes, estilo macOS Control Center. No reimplementa la logica
+// de ningun modulo -- consume mail.store donde aplica y delega el click en
+// los botones/componentes nativos ya probados (ActivityMenu, md_dark_mode
+// toggle, local_ai_connector, purchase_invoice_parser, selector de
+// compania nativo) en vez de duplicar su comportamiento.
 export class ControlCenter extends Component {
     static template = "md_navbar_style.ControlCenter";
     static components = { Dropdown };
@@ -49,6 +50,29 @@ export class ControlCenter extends Component {
     openSettings() {
         this.dropdown.close();
         this.action.doAction("base_setup.action_general_configuration");
+    }
+
+    openCopilot() {
+        // Delega en local_ai_connector (systray "Copiloto de inventario",
+        // t-on-click="openDialog") -- abre su propio Dialog, no reimplementa
+        // el flujo de pregunta/respuesta aqui.
+        this.dropdown.close();
+        document.querySelector(".o_ai_inventory_query_toggle")?.click();
+    }
+
+    openPriceUpdates() {
+        // Delega en purchase_invoice_parser (systray "Actualizaciones de
+        // precio de proveedores", .pip_price_notification).
+        this.dropdown.close();
+        document.querySelector(".pip_price_notification .o_nav_entry")?.click();
+    }
+
+    openCompanySwitcher() {
+        // Delega en el selector nativo de compania de Odoo
+        // (.o_switch_company_menu) -- no reimplementa la logica de
+        // multi-compania.
+        this.dropdown.close();
+        document.querySelector(".o_switch_company_menu button")?.click();
     }
 
     toggleDarkMode() {
