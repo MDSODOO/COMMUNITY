@@ -1,0 +1,70 @@
+name: medicinedepot_test
+
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: medicinedepot_test_db
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-medicinedepot_test}
+      POSTGRES_USER: ${POSTGRES_USER:-odoo}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - medicinedepot_test_db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-odoo} -d ${POSTGRES_DB:-medicinedepot_test}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    restart: unless-stopped
+    command: >
+      postgres
+      -c shared_buffers=512MB
+      -c effective_cache_size=1GB
+      -c work_mem=16MB
+      -c maintenance_work_mem=128MB
+
+  odoo:
+    image: odoo:19.0
+    container_name: medicinedepot_test_odoo
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "${ODOO_PORT:-8070}:8069"
+    environment:
+      HOST: db
+      PORT: 5432
+      USER: ${POSTGRES_USER:-odoo}
+      PASSWORD: ${POSTGRES_PASSWORD}
+      ADMIN_PASSWD: ${ADMIN_PASSWD}
+    volumes:
+      - medicinedepot_test_odoo_data:/var/lib/odoo
+      - ./custom_addons:/mnt/extra-addons
+      - ./oca_addons/account-financial-tools:/mnt/oca-account-financial-tools
+      - ./oca_addons/account-reconcile:/mnt/oca-account-reconcile
+      - ./oca_addons/account-financial-reporting:/mnt/oca-account-financial-reporting
+      - ./oca_addons/reporting-engine:/mnt/oca-reporting-engine
+      - ./oca_addons/server-ux:/mnt/oca-server-ux
+      - ./config/odoo_test.conf:/etc/odoo/odoo.conf
+    command: >
+      odoo
+      --addons-path=/usr/lib/python3/dist-packages/odoo/addons,/mnt/extra-addons,/mnt/oca-account-financial-tools,/mnt/oca-account-reconcile,/mnt/oca-account-financial-reporting,/mnt/oca-reporting-engine,/mnt/oca-server-ux
+      --log-level=info
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import urllib.request; r=urllib.request.urlopen('http://localhost:8069/web/health'); assert r.status == 200"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    deploy:
+      resources:
+        limits:
+          cpus: '3'
+          memory: 3G
+        reservations:
+          memory: 1G
+
+volumes:
+  medicinedepot_test_db_data:
+  medicinedepot_test_odoo_data:

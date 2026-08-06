@@ -1,0 +1,29 @@
+name: medicinedepot_monitoring
+
+services:
+  watchtower:
+    image: containrrr/watchtower
+    container_name: md_watchtower
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    command: --interval 86400 --cleanup --include-stopped --include-restarting
+    restart: unless-stopped
+    environment:
+      WATCHTOWER_NOTIFICATION_URL: ""  # Optional: configure Slack/email
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  dozzle:
+    image: amir20/dozzle:latest
+    container_name: md_dozzle
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    ports:
+      - "9999:8080"
+    environment:
+      DOZZLE_LEVEL: info
+      DOZZLE_FILTER: "name=medicinedepot"
+    restart: unless-stopped

@@ -1,0 +1,18 @@
+[options]
+addons_path = /usr/lib/python3/dist-packages/odoo/addons,/mnt/extra-addons
+admin_passwd = CHANGE_ME
+dbfilter = ^medicinedepot_test$
+proxy_mode = True
+logfile = None
+log_level = info
+
+; --- Ajuste de rendimiento: entorno 'test' comparte el mismo servidor
+; (8 CPU / 15GB RAM) con 'dev' (que ya usa workers=5) -- workers reducido
+; a proposito para no sobre-suscribir CPU entre ambos entornos.
+workers = 2
+max_cron_threads = 1
+limit_memory_hard = 1610612736
+limit_memory_soft = 1342177280
+limit_time_cpu = 600
+limit_time_real = 1200
+db_maxconn = 16
