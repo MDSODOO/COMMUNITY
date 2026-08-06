@@ -48,6 +48,11 @@ body .o_main_navbar button {
     letter-spacing: 0.06em !important;
     font-size: 11px !important;
     color: rgba(255, 255, 255, 0.92) !important;
+    // Odoo core pinta el primer .o_nav_entry (seccion activa) con el
+    // morado nativo ($o-brand-odoo) como fondo -- choca con la paleta MDS
+    // en modo claro (en oscuro queda disimulado porque md_dark_mode.scss
+    // ya sobreescribe esta misma propiedad). Se neutraliza aqui.
+    background-color: transparent !important;
 
     &:hover, &:focus {
         background-color: rgba(255, 255, 255, 0.12) !important;
