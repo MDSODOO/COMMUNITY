@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+<t t-name="md_navbar_style.ControlCenter">
+    <Dropdown position="'bottom-end'" state="dropdown" beforeOpen.bind="onBeforeOpen" menuClass="'o_mds_control_center_menu'" bottomSheet="false">
+        <button class="o_mds_control_center_toggle bg-transparent" title="Control Center">
+            <i class="fa fa-lg fa-th-large" role="img" aria-label="Control Center"/>
+        </button>
+        <t t-set-slot="content">
+            <div class="o_mds_control_center">
+                <div class="o_mds_cc_tile" t-on-click="openMessages">
+                    <i class="fa fa-comments o_mds_cc_icon"/>
+                    <span class="o_mds_cc_label">Mensajes</span>
+                    <span t-if="store.globalCounter" class="o_mds_cc_badge"><t t-esc="store.globalCounter"/></span>
+                </div>
+                <div class="o_mds_cc_tile" t-on-click="openActivities">
+                    <i class="fa fa-clock-o o_mds_cc_icon"/>
+                    <span class="o_mds_cc_label">Actividades</span>
+                    <span t-if="store.activityCounter" class="o_mds_cc_badge"><t t-esc="store.activityCounter"/></span>
+                </div>
+                <div class="o_mds_cc_tile" t-att-class="{ o_mds_cc_tile_active: state.dark }" t-on-click="toggleDarkMode">
+                    <i t-attf-class="fa {{ state.dark ? 'fa-moon-o' : 'fa-sun-o' }} o_mds_cc_icon"/>
+                    <span class="o_mds_cc_label">Modo Oscuro</span>
+                    <span class="o_mds_cc_switch" t-att-class="{ o_mds_cc_switch_on: state.dark }"/>
+                </div>
+                <div class="o_mds_cc_tile" t-on-click="openSettings">
+                    <i class="fa fa-cog o_mds_cc_icon"/>
+                    <span class="o_mds_cc_label">Ajustes</span>
+                </div>
+            </div>
+        </t>
+    </Dropdown>
+</t>
+
+</templates>

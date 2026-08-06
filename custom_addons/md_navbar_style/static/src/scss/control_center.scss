@@ -1,0 +1,178 @@
+// control_center.scss — Panel bento-glass del Control Center (systray)
+// ────────────────────────────────────────────────────────────────────────
+// Este panel se renderiza vía usePopover() (Dropdown -> DropdownPopover),
+// es decir vive en .o_popover, portado a document.body con position:fixed
+// -- la misma combinación que reprodujo el bug de compositing de Chromium
+// (backdrop-filter pinta blanco sólido) en el menú de Acción de Contactos
+// (docs/audits/2026-07-01_backend_dark_mode_audit.md). PROBADO EN VIVO
+// 2026-08-06 en claro y oscuro (capturas en e2e_tests/screenshots/
+// cc_open_light.png / cc_open_dark.png): el bug NO se reproduce aquí, el
+// blur se compone correctamente en ambos temas. Se mantiene backdrop-filter.
+// Si en el futuro reaparece (otro popover, otra versión de Chromium), el
+// fallback ya validado es el de backend_bento.scss (.dropdown-menu): fondo
+// casi opaco sin blur.
+
+.o_mds_control_center_menu.o_popover {
+    padding: 0;
+    border: none;
+    border-radius: 20px;
+    overflow: hidden;
+    background: rgba(255, 255, 255, 0.92);
+    box-shadow:
+        0 0 0 1px rgba(7, 58, 76, 0.06),
+        0 24px 60px rgba(7, 58, 76, 0.18);
+
+    @supports (backdrop-filter: blur(1px)) {
+        background: rgba(255, 255, 255, 0.72);
+        backdrop-filter: blur(20px) saturate(1.5);
+        -webkit-backdrop-filter: blur(20px) saturate(1.5);
+    }
+}
+
+html.o_md_dark_mode,
+html[data-bs-theme="dark"] {
+    .o_mds_control_center_menu.o_popover {
+        background: rgba(19, 23, 42, 0.94);
+        box-shadow:
+            0 0 0 1px rgba(255, 255, 255, 0.06),
+            0 24px 60px rgba(0, 0, 0, 0.5);
+
+        @supports (backdrop-filter: blur(1px)) {
+            background: rgba(19, 23, 42, 0.70);
+            backdrop-filter: blur(20px) saturate(1.5);
+            -webkit-backdrop-filter: blur(20px) saturate(1.5);
+        }
+    }
+}
+
+.o_mds_control_center {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    padding: 14px;
+    width: 260px;
+}
+
+.o_mds_cc_tile {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 14px;
+    min-height: 84px;
+    border-radius: 14px;
+    cursor: pointer;
+    background: rgba(22, 166, 217, 0.08);
+    border: 1px solid rgba(22, 166, 217, 0.14);
+    transition: background-color 0.18s ease, transform 0.18s ease, border-color 0.18s ease;
+
+    &:hover {
+        background: rgba(22, 166, 217, 0.16);
+        transform: translateY(-2px);
+    }
+
+    &.o_mds_cc_tile_active {
+        background: rgba(151, 215, 0, 0.16);
+        border-color: rgba(151, 215, 0, 0.30);
+    }
+}
+
+.o_mds_cc_icon {
+    font-size: 18px;
+    color: var(--mds-blue);
+}
+
+.o_mds_cc_tile_active .o_mds_cc_icon {
+    color: #5c8a00;
+}
+
+.o_mds_cc_label {
+    font-family: "Inter", system-ui, -apple-system, sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--mds-dark-teal);
+}
+
+.o_mds_cc_badge {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    background: var(--mds-blue);
+    color: #fff;
+    font-size: 10px;
+    font-weight: 700;
+}
+
+.o_mds_cc_switch {
+    align-self: flex-end;
+    width: 32px;
+    height: 18px;
+    border-radius: 999px;
+    background: rgba(7, 58, 76, 0.18);
+    position: relative;
+    transition: background-color 0.18s ease;
+
+    &::after {
+        content: "";
+        position: absolute;
+        top: 2px;
+        left: 2px;
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        background: #fff;
+        transition: transform 0.18s ease;
+    }
+
+    &.o_mds_cc_switch_on {
+        background: var(--mds-lime);
+
+        &::after {
+            transform: translateX(14px);
+        }
+    }
+}
+
+html.o_md_dark_mode,
+html[data-bs-theme="dark"] {
+    .o_mds_cc_label {
+        color: #e8eaf0;
+    }
+
+    .o_mds_cc_tile {
+        background: rgba(22, 166, 217, 0.10);
+        border-color: rgba(22, 166, 217, 0.18);
+
+        &:hover {
+            background: rgba(22, 166, 217, 0.18);
+        }
+
+        &.o_mds_cc_tile_active {
+            background: rgba(151, 215, 0, 0.14);
+            border-color: rgba(151, 215, 0, 0.30);
+        }
+    }
+
+    .o_mds_cc_switch {
+        background: rgba(255, 255, 255, 0.14);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .o_mds_cc_tile,
+    .o_mds_cc_switch,
+    .o_mds_cc_switch::after {
+        transition-duration: 0.01ms !important;
+    }
+}
