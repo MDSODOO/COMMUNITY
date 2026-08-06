@@ -25,8 +25,7 @@ $md-dark-text-muted: #9a9ba8;
 $md-dark-link: #4fc3e0;
 $md-dark-accent: #16a6d9;
 
-html.o_md_dark_mode,
-html[data-bs-theme="dark"] {
+html.o_md_dark_mode {
     background-color: $md-dark-bg;
     color-scheme: dark;
 
@@ -55,23 +54,6 @@ html[data-bs-theme="dark"] {
     --bs-modal-bg: #{$md-dark-surface};
     --bs-modal-color: #{$md-dark-text};
 
-    // Variables CSS propias (--md-dark-*): fuente única de verdad de esta
-    // paleta para que otros módulos (ej. los que traen su propio CSS de
-    // dark mode para componentes específicos) referencien estos valores en
-    // vez de duplicar hex codes. Deben gatearse bajo este MISMO selector
-    // (html.o_md_dark_mode / html[data-bs-theme="dark"]) — es el único
-    // mecanismo de dark mode que realmente carga en este Odoo 19 Community
-    // (ver nota sobre web.assets_web_dark/color_scheme() más abajo).
-    --md-dark-bg: #{$md-dark-bg};
-    --md-dark-bg-alt: #{$md-dark-bg-alt};
-    --md-dark-surface: #{$md-dark-surface};
-    --md-dark-surface-alt: #{$md-dark-surface-alt};
-    --md-dark-border: #{$md-dark-border};
-    --md-dark-text: #{$md-dark-text};
-    --md-dark-text-muted: #{$md-dark-text-muted};
-    --md-dark-link: #{$md-dark-link};
-    --md-dark-accent: #{$md-dark-accent};
-
     body,
     .o_action_manager,
     .o_content,
@@ -93,23 +75,6 @@ html[data-bs-theme="dark"] {
         background-color: $md-dark-surface !important;
         color: $md-dark-text;
     }
-
-    // Bootstrap 5.3 "subtle backgrounds + emphasis text" (bg-*-subtle /
-    // text-*-emphasis): patron muy usado en Odoo 19 para KPI tiles, alerts
-    // y badges (ej. o_purchase_dashboard: "No reconocido"/"Recepcion
-    // atrasada"). Sin cubrir hasta ahora salvo secondary -- se veian como
-    // parches pastel claros (cian/rosa) encima del resto ya oscuro.
-    // Confirmado en vivo (2026-07-21) en Compras > dashboard de KPIs.
-    .bg-info-subtle     { background-color: rgba(22, 166, 217, 0.16) !important; }
-    .bg-success-subtle  { background-color: rgba(25, 135, 84, 0.16) !important; }
-    .bg-warning-subtle  { background-color: rgba(245, 159, 0, 0.16) !important; }
-    .bg-danger-subtle   { background-color: rgba(227, 6, 19, 0.16) !important; }
-    .bg-primary-subtle  { background-color: rgba(22, 166, 217, 0.16) !important; }
-    .text-info-emphasis    { color: #59cbe8 !important; }
-    .text-success-emphasis { color: #6fd19a !important; }
-    .text-warning-emphasis { color: #ffc966 !important; }
-    .text-danger-emphasis  { color: #ff8b93 !important; }
-    .text-primary-emphasis { color: #59cbe8 !important; }
 
     // Chips de filtros activos en el buscador
     .o_searchview_facet {
@@ -205,54 +170,9 @@ html[data-bs-theme="dark"] {
         border-color: $md-dark-border !important;
     }
 
-    // Statusbar (fila de botones + estado tipo Cotizacion > Cotizacion
-    // enviada > Orden de venta): Bootstrap fija rgba(255,255,255,.82) fijo,
-    // no cubierto hasta ahora. Los botones internos (.btn-secondary/
-    // .o_arrow_button) ya heredaban bien el color oscuro por otras reglas,
-    // solo faltaba el fondo del contenedor. Confirmado en vivo (2026-07-21).
-    .o_form_statusbar {
-        background-color: $md-dark-bg !important;
-        border-color: $md-dark-border !important;
-    }
-
-    // Grupos de campos (grid de 2 columnas: label + input). Es un contenedor
-    // de layout puro -- nunca deberia tener su propio fondo opaco, solo
-    // heredar el de .o_form_sheet -- pero Bootstrap/Odoo le fija
-    // background-color:#fff en algunos contextos (confirmado en vivo: el
-    // wizard "Programar actividad", o_mail_activity_schedule_wizard, dejaba
-    // el grid de Resumen/Fecha limite/Asignada a en un panel blanco fijo
-    // encima del resto del modal ya oscuro). Se fuerza transparente en vez
-    // de un color solido para no romper el caso en que SI hereda bien.
-    .o_group {
-        background-color: transparent !important;
-    }
-
-    // Pestañas del formulario (Información general, Regulación COFEPRIS...):
-    // Bootstrap fija background-color:#fff directo en <ul class="nav-tabs">
-    // y en cada .nav-link.active, sin heredar de ningun ancestro con
-    // !important -- quedaba como una franja blanca fija (no un parpadeo de
-    // carga) encima del resto de la vista ya oscura. Confirmado en vivo
-    // (2026-07-21): rgb(255,255,255) en ambos elementos.
-    .o_notebook_headers .nav-tabs,
-    .o_notebook_headers .nav-link.active {
-        background-color: $md-dark-surface !important;
-    }
-    .o_notebook_headers {
-        border-bottom-color: $md-dark-border !important;
-    }
-
     // Odoo fija color de texto explicito en labels/inputs/titulo (no heredan
     // del .o_form_view), por lo que el `color` del bloque de arriba no les
     // llega -- hay que pisarlos uno por uno.
-    //
-    // :not(.o_tag) en los selectores span/div: sin esta exclusion, este
-    // !important pisaba tambien el color: var(--color) que Odoo core ya
-    // calcula por chip (many2many_tags con color_field) para contrastar
-    // contra su propio fondo pastel -- los tags de "Sustancia Activa"
-    // quedaban con texto casi blanco sobre fondo amarillo/rosa pastel,
-    // practicamente ilegibles. Confirmado en vivo (2026-07-21): el color
-    // nativo calculado por Odoo era rgb(47,39,9) (buen contraste), pero el
-    // computado final era rgb(228,228,228) por este selector generico.
     .o_form_sheet h1,
     .o_form_sheet h1 input,
     .o_form_sheet h2,
@@ -264,15 +184,15 @@ html[data-bs-theme="dark"] {
     .o_field_widget select,
     .o_input,
     .o_form_sheet > div > span,
-    .o_field_widget span:not(.o_tag),
-    .o_field_widget div:not(.o_tag),
+    .o_field_widget span,
+    .o_field_widget div,
     .oe_title,
     .oe_title input,
     // Odoo 19 usa una grilla de "cells" para las etiquetas en vez de
     // .o_form_label en muchas vistas (Cliente, RFC, Departamento, etc.)
     .o_cell,
     .o_cell.o_wrap_label,
-    .o_cell span:not(.o_tag),
+    .o_cell span,
     // Smart buttons (Oportunidades, Facturado, Historial...) tambien fijan
     // su propio color de texto.
     .oe_stat_button,
@@ -393,13 +313,7 @@ html[data-bs-theme="dark"] {
     .o-mail-DiscussContent-core,
     .o-mail-DiscussContent-main,
     .o-mail-DiscussSidebar-resizablePanelContainer,
-    .o-mail-DiscussSidebar,
-    // Barra de busqueda de conversaciones y header del panel de contenido:
-    // bg blanco fijo, no cubiertos por la lista original de clases o-mail-*.
-    // Confirmado en vivo (2026-07-21).
-    .o-mail-DiscussSearch,
-    .o-mail-DiscussSearch-inputContainer,
-    .o-mail-DiscussContent-header {
+    .o-mail-DiscussSidebar {
         background-color: $md-dark-bg !important;
         color: $md-dark-text;
         border-color: $md-dark-border !important;
@@ -416,27 +330,9 @@ html[data-bs-theme="dark"] {
         background-color: $md-dark-surface-alt !important;
         color: $md-dark-text !important;
     }
-    // Bootstrap .border-secondary (usado en varios separadores del arbol
-    // o-mail-*, ej. el borde superior de .o-mail-Discuss) resuelve a un gris
-    // claro pensado para fondo claro -- se ve como una linea blanca fina
-    // sobre el resto ya oscuro. Confirmado en vivo (2026-07-21).
-    .o-mail-Discuss.border-secondary,
-    .o-mail-DiscussSidebar.border-secondary,
-    [class*="o-mail-"].border-secondary {
-        border-color: $md-dark-border !important;
-    }
-    // Las burbujas de mensaje tienen variantes de color por remitente
-    // (.o-blue, .o-green, etc, ej. rgb(232,246,248) para .o-blue) pensadas
-    // para fondo claro -- en oscuro se veian como parches de color pastel
-    // con texto negro encima. Confirmado en vivo (2026-07-21). Se unifica a
-    // un solo tratamiento neutro en vez de replicar cada variante de color.
-    .o-mail-Message-bubble {
-        background-color: $md-dark-surface-alt !important;
-        border-color: $md-dark-border !important;
-    }
     .o-mail-Message-bubble,
     .o-mail-Message-content {
-        color: $md-dark-text !important;
+        color: $md-dark-text;
     }
 
     // Chatter / breadcrumb
@@ -459,20 +355,11 @@ html[data-bs-theme="dark"] {
         border-color: $md-dark-border !important;
     }
     .settings_tab .selected,
-    .settings_tab li:hover,
-    .settings_tab .tab:hover {
+    .settings_tab li:hover {
         background-color: $md-dark-surface-alt !important;
     }
-    // El selector original (.settings_tab li a) nunca coincidia: en Odoo 19
-    // real la estructura es <div class="settings_tab"><a class="tab">...</a></div>,
-    // sin <li> intermedio -- confirmado en vivo (2026-07-21), color computado
-    // rgb(33,37,41) (casi negro, texto de Bootstrap claro) sobre fondo oscuro,
-    // practicamente ilegible. Se agrega el selector real ".tab" mantenidos
-    // los anteriores por si alguna vista si usa <li>.
     .settings_tab li,
     .settings_tab li a,
-    .settings_tab a,
-    .settings_tab .tab,
     .settings_tab .settings_tab_title {
         color: $md-dark-text !important;
     }
@@ -494,204 +381,130 @@ html[data-bs-theme="dark"] {
     hr, .o_horizontal_separator {
         border-color: $md-dark-border !important;
     }
+}
 
-    // ─── Correcciones auditoria E2E Playwright (2026-07-21): 200+
-    // inconsistencias de color en Dark Mode (valores hardcodeados en vez de
-    // heredar variables CSS/Bootstrap). Grupos numerados como en el reporte.
+// ---------- Tipografía Global de Vistas (MDS Theme) ----------
+body,
+.o_web_client,
+.o_action_manager,
+.o_content {
+    font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+}
 
-    // 1. Kanban records (todas las variantes: CRM, Inventario, Empleados,
-    // Compras). Cubre <article> (algunas vistas kanban renderizan la card
-    // como article en vez de div) y el .o_kanban_record generico que ya
-    // maneja el bloque de arriba solo dentro de .o_kanban_view.
-    //
-    // :not(.o_md_product_kanban_card) -- la card de Inventario de
-    // md_pharma_regulatory (product_kanban_pos_style.scss, bundle
-    // web.assets_backend, SIEMPRE activo) define su propio glassmorphism
-    // sobre esa misma clase via `background: <gradiente>, rgba(255,255,255,.62)`
-    // SIN !important. Un !important generico en background-color aqui
-    // ganaria igual sobre el background-color implicito de ese shorthand
-    // (el !important siempre gana sin importar especificidad/orden de las
-    // hojas), dejando el gradiente-vidrio blanco superpuesto sobre un fondo
-    // oscuro -- visualmente roto, no el diseño intencional de esa card. Se
-    // excluye explicitamente en vez de depender del orden de assets.
-    //
-    // Verificado en vivo (2026-07-21): la variante oscura real de esa card
-    // (product_kanban_dark.scss) vive en el bundle web.assets_web_dark, que
-    // esta inerte en este ambiente Community (IrHttp.color_scheme() siempre
-    // devuelve "light", sin override) -- nunca se carga, no es una
-    // alternativa activa que vaya a "ganar" por su cuenta.
-    article[class*="o_kanban_record"]:not(.o_md_product_kanban_card),
-    .o_kanban_record:not(.o_md_product_kanban_card) {
-        background-color: $md-dark-surface !important;
-        color: $md-dark-text !important;
+body .o_main_navbar .o_menu_brand {
+    font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.06em !important;
+    font-size: 12px !important;
+}
 
-        .h1, .h2, .h3, .h4, .h5, .h6 {
-            color: $md-dark-text !important;
-        }
-    }
+body .o_main_navbar .o_nav_entry,
+body .o_main_navbar .dropdown-toggle,
+body .o_main_navbar a:not(.o_menu_brand),
+body .o_main_navbar span,
+body .o_main_navbar button {
+    font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.06em !important;
+    font-size: 11px !important;
+}
 
-    // 2. Encabezados de tabla (th)
-    th,
-    th.o_column_sortable,
-    th.o_list_controller,
-    th.o_list_record_selector,
-    span.o_resize {
-        background-color: $md-dark-bg-alt !important;
-        color: $md-dark-text !important;
-    }
+.dropdown-menu .dropdown-header,
+.o_dropdown_menu .dropdown-header,
+.o_popover .dropdown-header,
+.dropdown-menu .o_menu_header,
+.dropdown-menu .o_dropdown_group_title,
+.dropdown-menu .o-dropdown-item-header,
+.dropdown-menu div[class*="header"],
+.dropdown-menu span[class*="header"],
+.dropdown-menu strong,
+.dropdown-menu b,
+.dropdown-menu label,
+.dropdown-menu [role="heading"] {
+    font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.07em !important;
+    font-size: 11px !important;
+    opacity: 0.75 !important;
+}
 
-    // 3. Botones de luz (.btn-light)
-    .btn-light,
-    .btn-light.o-dropdown,
-    .btn-light.oi {
-        background: $md-dark-surface-alt !important;
-        border-color: $md-dark-border !important;
-        color: $md-dark-text !important;
-    }
+.dropdown-menu .dropdown-item,
+.o_dropdown_menu .dropdown-item,
+.o_popover .dropdown-item {
+    font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+    font-weight: 600 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.05em !important;
+    font-size: 11px !important;
+    padding-top: 4px !important;
+    padding-bottom: 4px !important;
+}
 
-    // 4. Botones Pager y cambio de vista (color e iconos internos)
-    .btn-secondary,
-    .o_pager_previous,
-    .o_pager_next,
-    .o_switch_view {
-        color: $md-dark-text !important;
+.o_control_panel .breadcrumb-item,
+.o_control_panel .o_breadcrumb,
+.o_control_panel .o_breadcrumb span,
+.o_control_panel .o_breadcrumb a {
+    font-family: "Inter", system-ui, -apple-system, sans-serif !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.05em !important;
+    font-size: 12px !important;
+}
 
-        i, span, .fa {
-            color: $md-dark-text !important;
-        }
-    }
+.btn,
+.o_statusbar_buttons .btn,
+.oe_stat_button,
+.o_cp_buttons .btn {
+    font-family: "Inter", system-ui, -apple-system, sans-serif !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.05em !important;
+    font-size: 11px !important;
+}
 
-    // 5. Texto en input de busqueda (texto negro sobre fondo transparente)
-    .o_searchview_input,
-    .o_searchview input,
-    .o_cp_searchview input {
-        color: $md-dark-text !important;
-    }
+.o_list_table thead th,
+.o_list_table thead th span,
+.o_list_table thead th a {
+    font-family: "Inter", system-ui, -apple-system, sans-serif !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.05em !important;
+    font-size: 11px !important;
+}
 
-    // 6. Componentes OWL de Conversaciones (o-mail-*) adicionales -- clases
-    // reales confirmadas (o-mail-* en el enunciado es la familia, no
-    // sintaxis CSS literal de comodin).
-    .o-mail-DiscussSearch-input,
-    .o-mail-DiscussSidebarChannel,
-    .o-mail-DiscussSidebarChannel-commands,
-    .o-mail-DiscussSidebarChannel-threadIcon,
-    .o-mail-ImStatus,
-    .o-mail-ThreadIcon,
-    button.o-mail-Mailbox {
-        color: $md-dark-text !important;
-        background-color: transparent !important;
-    }
+.o_form_view .o_form_label,
+.o_form_view .o_cell.o_wrap_label,
+.o_form_view label,
+.o_form_view .o_horizontal_separator,
+.o_form_view h2.o_horizontal_separator,
+.o_form_view .nav-tabs .nav-link,
+.o_form_view .o_notebook .nav-link,
+.o_form_view .o_statusbar_status .o_arrow_button {
+    font-family: "Inter", system-ui, -apple-system, sans-serif !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.05em !important;
+    font-size: 11px !important;
+}
 
-    // 7. Modulo de Calendario
-    .o_calendar_container,
-    .o_calendar_renderer,
-    .fc-daygrid-day,
-    .fc-timegrid-slot {
-        background-color: $md-dark-surface !important;
-        color: $md-dark-text !important;
-        border-color: $md-dark-border !important;
-    }
-    .fc-col-header-cell {
-        background-color: $md-dark-bg-alt !important;
-        color: $md-dark-text !important;
-    }
-    span.o_current_week {
-        background-color: $md-dark-surface-alt !important;
-        color: $md-dark-text !important;
-    }
-
-    // 8. Dashboard de Compras (anula el fondo blanco de Bootstrap en KPIs)
-    [class*="o_purchase_dashboard"],
-    .o_dashboard_name {
-        background-color: $md-dark-surface !important;
-        color: $md-dark-text !important;
-    }
-
-    // 9. Panel lateral de busqueda/filtros
-    .o_search_panel,
-    .o_search_panel_label,
-    .o_search_panel_label_title,
-    .o_search_panel_section_header {
-        background-color: $md-dark-bg !important;
-        color: $md-dark-text !important;
-    }
-
-    // 10. Componentes omc-* (Farmacovigilancia)
-    .omc-reader,
-    .omc-list-pane,
-    button.omc-reply-btn {
-        background-color: $md-dark-surface !important;
-        color: $md-dark-text !important;
-        border-color: $md-dark-border !important;
-    }
-
-    // 11. Spans con texto negro en listas/kanban
-    span.d-block.min-w-0,
-    span.text-truncate,
-    span.d-lg-inline,
-    span.location_xs_hide,
-    span.fw-bold {
-        color: $md-dark-text !important;
-    }
-
-    // ─── Ronda 2 de correcciones (2026-07-21): re-auditoría Playwright con
-    // el toggle real (.o_md_dark_mode_toggle) contra Inventario, CRM,
-    // Compras, Calendario, Discuss y Correo, ya con los 11 grupos de arriba
-    // desplegados. Confirmado visualmente (capturas), no solo por ratio de
-    // contraste calculado (ese script tiene falsos positivos conocidos con
-    // fondos translucidos -- ver el caso descartado de .btn-primary abajo).
-
-    // 12. Chips de etiqueta (many2many_tags: sustancia activa, línea, forma
-    // farmacéutica, etc.) -- REGRESIÓN de la regla #1 de arriba: el color
-    // de texto de estos chips nunca se fija por su cuenta (ni inline ni
-    // por clase), así que hereda el color forzado del .o_kanban_record
-    // ancestro (gris claro $md-dark-text). El fondo del chip sigue siendo
-    // el pastel elegido por el usuario (igual en claro/oscuro) -- confirmado
-    // visualmente: chips completamente en blanco/ilegibles en el Kanban de
-    // Inventario (ej. "100/400MG" sobre fondo rosa palido). Se fija un
-    // color oscuro fijo (reutiliza $md-dark-bg, no un hex nuevo) porque
-    // estos fondos pastel nunca son lo bastante oscuros para el texto claro
-    // del tema, en ningún tema.
-    //
-    // .o_tag_badge_text.o_tag_badge_text (clase duplicada a propósito, no es
-    // un error de copiar/pegar): esta regla, tal cual, perdía en la práctica
-    // contra la regla ya existente mas arriba en este archivo
-    // ".o_field_widget div:not(.o_tag)" (color: $md-dark-text !important),
-    // que tiene mayor especificidad (2 elementos + 3 clases vs 1 elemento +
-    // 2 clases de esta regla) -- verificado en vivo via CDP
-    // CSS.getMatchedStylesForNode, no a ojo. El ":not(.o_tag)" de esa regla
-    // pretendía excluir los tags, pero compara la clase del PROPIO div
-    // (".o_tag_badge_text" no es igual a ".o_tag", así que no lo excluye)
-    // -- bug preexistente ajeno a esta auditoría, no se toca esa regla
-    // grande por separado para no arriesgar sus otros ~25 selectores. En
-    // vez de eso, se sube la especificidad aqui duplicando la clase
-    // (tecnica CSS valida) para ganar sin otro !important nuevo.
-    .o_field_widget .o_tag_badge_text.o_tag_badge_text,
-    .o_tag_badge_text {
-        color: $md-dark-bg !important;
-    }
-
-    // 13. Texto de estado "sin contenido" (vistas vacías: Kanban/Lista de
-    // cualquier modelo, no solo CRM -- clase compartida por
-    // web/action_helper.xml, stock_empty_list_help.xml, etc.). Confirmado
-    // visualmente en CRM: texto negro puro sobre el fondo oscuro general,
-    // practicamente invisible.
-    .o_view_nocontent_smiling_face {
-        color: $md-dark-text !important;
-    }
-
-    // Nota: se investigó el botón "Nuevo" (.btn-primary, ratio calculado
-    // 1.49:1 por el escaneo automático) y las cards/encabezados de columna
-    // del Kanban de CRM cuando el pipeline está vacío -- ambos casos se
-    // descartaron tras revisar las capturas: el primero es un falso
-    // positivo del script (no alpha-blending, el texto #59cbe8 sí se lee
-    // bien en vivo sobre el fondo real ya compuesto); el segundo es el
-    // "sample data" nativo de Odoo (nombres/cifras falsas + estilo
-    // deliberadamente deslavado para señalar "no son datos reales",
-    // mismo patrón en cualquier tema) -- no es un bug de este módulo.
+.o_kanban_view .o_kanban_header,
+.o_kanban_view .o_kanban_title,
+.o_kanban_view .o_column_title,
+.o_kanban_view .o_kanban_record_title {
+    font-family: "Inter", system-ui, -apple-system, sans-serif !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.05em !important;
 }
 
 .o_md_dark_mode_toggle {
+
+
+
+
     cursor: pointer;
     color: inherit;
     opacity: 0.85;
@@ -700,3 +513,4 @@ html[data-bs-theme="dark"] {
         opacity: 1;
     }
 }
+

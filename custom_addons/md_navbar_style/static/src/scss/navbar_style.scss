@@ -1,0 +1,150 @@
+/* ==========================================================================
+   MDS Global Typography Theme (Odoo 19 Backend - All System Views)
+   ========================================================================== */
+
+// Tipografía base para todo el WebClient
+body,
+.o_web_client,
+.o_action_manager,
+.o_content {
+    font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+}
+
+// --------------------------------------------------------------------------
+// 1. BARRA SUPERIOR (NAVBAR) Y SUBMENÚS
+// --------------------------------------------------------------------------
+body .o_main_navbar .o_menu_brand {
+    font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.06em !important;
+    font-size: 12px !important;
+}
+
+body .o_main_navbar .o_nav_entry,
+body .o_main_navbar .dropdown-toggle,
+body .o_main_navbar a:not(.o_menu_brand),
+body .o_main_navbar span,
+body .o_main_navbar button {
+    font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.06em !important;
+    font-size: 11px !important;
+}
+
+// Submenús (Encabezados de categoría y opciones)
+.dropdown-menu .dropdown-header,
+.o_dropdown_menu .dropdown-header,
+.o_popover .dropdown-header,
+.dropdown-menu .o_menu_header,
+.dropdown-menu .o_dropdown_group_title,
+.dropdown-menu .o-dropdown-item-header,
+.dropdown-menu div[class*="header"],
+.dropdown-menu span[class*="header"],
+.dropdown-menu strong,
+.dropdown-menu b,
+.dropdown-menu label,
+.dropdown-menu [role="heading"] {
+    font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.07em !important;
+    font-size: 11px !important;
+    opacity: 0.75 !important;
+}
+
+.dropdown-menu .dropdown-item,
+.o_dropdown_menu .dropdown-item,
+.o_popover .dropdown-item {
+    font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+    font-weight: 600 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.05em !important;
+    font-size: 11px !important;
+    padding-top: 4px !important;
+    padding-bottom: 4px !important;
+}
+
+// --------------------------------------------------------------------------
+// 2. PANEL DE CONTROL & BREADCRUMBS (Móvil y Desktop)
+// --------------------------------------------------------------------------
+.o_control_panel .breadcrumb-item,
+.o_control_panel .o_breadcrumb,
+.o_control_panel .o_breadcrumb span,
+.o_control_panel .o_breadcrumb a {
+    font-family: "Inter", system-ui, -apple-system, sans-serif !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.05em !important;
+    font-size: 12px !important;
+}
+
+// --------------------------------------------------------------------------
+// 3. BOTONES EN TODAS LAS VISTAS (Acción, Formulario, Smart Buttons, Statusbar)
+// --------------------------------------------------------------------------
+.btn,
+.o_statusbar_buttons .btn,
+.oe_stat_button,
+.o_cp_buttons .btn {
+    font-family: "Inter", system-ui, -apple-system, sans-serif !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.05em !important;
+    font-size: 11px !important;
+}
+
+// --------------------------------------------------------------------------
+// 4. VISTA DE LISTA / TABLAS (Column Headers)
+// --------------------------------------------------------------------------
+.o_list_table thead th,
+.o_list_table thead th span,
+.o_list_table thead th a {
+    font-family: "Inter", system-ui, -apple-system, sans-serif !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.05em !important;
+    font-size: 11px !important;
+}
+
+// --------------------------------------------------------------------------
+// 5. VISTA DE FORMULARIO (Etiquetas, Separadores de Grupo, Tabs, Statusbar)
+// --------------------------------------------------------------------------
+.o_form_view .o_form_label,
+.o_form_view .o_cell.o_wrap_label,
+.o_form_view label,
+.o_form_view .o_horizontal_separator,
+.o_form_view h2.o_horizontal_separator,
+.o_form_view .nav-tabs .nav-link,
+.o_form_view .o_notebook .nav-link,
+.o_form_view .o_statusbar_status .o_arrow_button {
+    font-family: "Inter", system-ui, -apple-system, sans-serif !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.05em !important;
+    font-size: 11px !important;
+}
+
+// --------------------------------------------------------------------------
+// 6. VISTA DE KANBAN (Títulos de columna y Encabezados de Tarjetas)
+// --------------------------------------------------------------------------
+.o_kanban_view .o_kanban_header,
+.o_kanban_view .o_kanban_title,
+.o_kanban_view .o_column_title,
+.o_kanban_view .o_kanban_record_title {
+    font-family: "Inter", system-ui, -apple-system, sans-serif !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.05em !important;
+}
+
+// --------------------------------------------------------------------------
+// 7. BUSCADOR & FILTROS (Facet Labels)
+// --------------------------------------------------------------------------
+.o_searchview .o_searchview_facet .o_searchview_facet_label {
+    font-family: "Inter", system-ui, -apple-system, sans-serif !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.05em !important;
+    font-size: 10px !important;
+}
