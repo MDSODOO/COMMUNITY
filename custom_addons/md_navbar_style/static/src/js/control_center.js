@@ -1,6 +1,6 @@
 /** @odoo-module **/
 
-import { Component, useState } from "@odoo/owl";
+import { Component, useState, onMounted, onWillDestroy } from "@odoo/owl";
 import { registry } from "@web/core/registry";
 import { useService } from "@web/core/utils/hooks";
 import { useDropdownState } from "@web/core/dropdown/dropdown_hooks";
@@ -23,7 +23,33 @@ export class ControlCenter extends Component {
         this.action = useService("action");
         this.dropdown = useDropdownState();
         this.state = useState({ dark: this.isDarkActive() });
+
+        // Bug PREEXISTENTE de purchase_invoice_parser (confirmado en vivo
+        // 2026-08-06, incluso con click DIRECTO en el trigger nativo, sin
+        // pasar por este componente): PriceNotificationMenu implementa su
+        // cierre-al-click-afuera con this.__owl__.bdom?.el, una API interna
+        // de OWL no publica -- no resuelve en esta version y el dropdown
+        // nunca se cierra solo. No se edita el archivo original del modulo;
+        // se corrige desde aqui reabriendo (=cerrando, toggle()) el mismo
+        // trigger nativo cuando se detecta un click fuera de
+        // .pip_price_notification mientras esta abierto, mismo patron de
+        // delegacion que el resto de este componente.
+        onMounted(() => {
+            document.addEventListener("click", this._closePipOnOutsideClick, true);
+        });
+        onWillDestroy(() => {
+            document.removeEventListener("click", this._closePipOnOutsideClick, true);
+        });
     }
+
+    _closePipOnOutsideClick = (ev) => {
+        const dropdown = document.querySelector(".pip_dropdown.show");
+        if (!dropdown) return;
+        const container = document.querySelector(".pip_price_notification");
+        if (container && !container.contains(ev.target)) {
+            document.querySelector(".pip_price_notification .o_nav_entry")?.click();
+        }
+    };
 
     isDarkActive() {
         return document.documentElement.classList.contains("o_md_dark_mode");

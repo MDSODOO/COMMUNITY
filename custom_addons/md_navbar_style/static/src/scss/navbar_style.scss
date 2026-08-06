@@ -111,11 +111,30 @@ body .o_main_navbar .o_menu_brand {
     color: var(--mds-text-light) !important;
 }
 
-body .o_main_navbar .o_nav_entry,
-body .o_main_navbar .dropdown-toggle,
-body .o_main_navbar a:not(.o_menu_brand),
-body .o_main_navbar span,
-body .o_main_navbar button {
+// CAUSA RAIZ REAL del "texto ilegible" en .pip_dropdown (2026-08-06, tras
+// horas de diagnostico persiguiendo blur/opacidad -- ninguna de las dos
+// era el problema): .pip_dropdown NO esta portado a document.body como
+// Empresa/Actividades/Debug/Control Center -- vive DENTRO del DOM de
+// .o_main_navbar (.o_main_navbar > .o_menu_systray > li.pip_price_
+// notification > .pip_dropdown). Esta regla de tipografia de marca
+// (blanco 92%, mayusculas, 11px) aplicaba a CUALQUIER span/button dentro
+// de .o_main_navbar, SIN EXCLUIR los que terminan viviendo dentro de
+// .pip_dropdown -- pintaba el nombre del producto, los precios y los
+// botones "Aplicar"/descartar en blanco sobre el fondo casi-blanco del
+// panel: invisibles. El nombre del proveedor sobrevivia solo porque es
+// texto plano dentro de un <div>, no un <span>. En oscuro el mismo "bug"
+// producia por coincidencia el resultado correcto (blanco sobre fondo
+// oscuro), por eso parecia funcionar ahi y no en claro -- confirmado
+// comparando innerText (siempre correcto) contra screenshot (siempre mal)
+// en el mismo instante exacto, descartando timing/compositing.
+// :not(.pip_dropdown *) excluye cualquier descendiente de .pip_dropdown de
+// esta regla, dejando que su propia hoja de estilos
+// (price_notification_menu.scss) controle su tipografia sin interferencia.
+body .o_main_navbar .o_nav_entry:not(.pip_dropdown *),
+body .o_main_navbar .dropdown-toggle:not(.pip_dropdown *),
+body .o_main_navbar a:not(.o_menu_brand):not(.pip_dropdown *),
+body .o_main_navbar span:not(.pip_dropdown *),
+body .o_main_navbar button:not(.pip_dropdown *) {
     font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
     font-weight: 700 !important;
     text-transform: uppercase !important;
@@ -163,17 +182,40 @@ body .o_main_navbar button {
 // envolver estos botones nativos en un wrapper con clase propia desde el
 // lado de Odoo, lo cual no es practico sin tocar addons de core/mail.
 .o_menu_systray {
+    // .o_md_dark_mode_toggle no abre popover (solo alterna una clase) y
+    // .o_ai_inventory_query_toggle abre un Dialog centrado en pantalla, no
+    // anclado al trigger -- ninguno de los dos necesita geometria real
+    // para posicionarse, display:none es seguro y mas simple.
     .o_md_dark_mode_toggle,
     .o_ai_inventory_query_toggle,
+    button:has(> i.fa-comments) {
+        display: none !important;
+    }
+
+    // Actividades, Empresa y Debug SI abren un popover (usePopover(),
+    // Floating UI/Popper) anclado a la posicion del propio trigger.
+    // CORREGIDO 2026-08-06: estaban en el grupo display:none de arriba --
+    // display:none deja al trigger con getBoundingClientRect() en
+    // {0,0,0,0}, y el popover, sin un ancla real de donde calcular su
+    // posicion, cae en la esquina superior izquierda de la pantalla
+    // (x:0-1, y:4-5) en vez de abrir cerca de donde se hizo click.
+    // Confirmado en vivo para los 3 (Actividades, Empresa, Debug) --
+    // tecnicamente clickeables (zIndex correcto, contains(elementFromPoint)
+    // = true) pero visualmente rotos: el usuario hace click en un tile del
+    // Control Center y la ventana aparece flotando en la esquina, no cerca
+    // de nada. opacity:0 preserva la geometria real del trigger (a
+    // diferencia de display:none) sin afectar el layout ni requerir
+    // recalculo -- el popover vuelve a posicionarse donde el icono nativo
+    // siempre estuvo.
+    button:has(> i.fa-clock-o),
     .o_switch_company_menu,
     // .o_debug_manager (fa-bug) solo existe en el DOM con modo desarrollador
     // activo -- ver control_center.js/isDebugMode, mismo gate this.env.debug
     // que webclient.js usa para registrarlo en el systray. Este selector es
     // inofensivo cuando debug esta apagado (no hay nada que ocultar).
-    .o_debug_manager,
-    button:has(> i.fa-clock-o),
-    button:has(> i.fa-comments) {
-        display: none !important;
+    .o_debug_manager {
+        opacity: 0 !important;
+        pointer-events: none !important;
     }
 
     // pip_price_notification (purchase_invoice_parser) es un caso aparte:
@@ -221,6 +263,115 @@ body .o_main_navbar button {
 // conflicto de stacking.
 .pip_dropdown {
     z-index: 2000 !important;
+}
+
+// ── Actualizaciones de precio: bento-glass (2026-08-06) ───────────────────
+// Mismo tratamiento visual que .o_switch_company_menu_dropdown (Empresa,
+// ver mas abajo). No se edita el archivo original de purchase_invoice_parser
+// -- se sobreescribe desde aqui, mismo patron ya usado para Empresa.
+// .pip_dropdown NO esta portado a body (es un hijo plano del <li>, ver el
+// bug de arriba), pero eso no afecta el backdrop-filter en si mismo -- el
+// bug de compositing documentado en
+// docs/audits/2026-07-01_backend_dark_mode_audit.md es especifico de
+// portales (.o_popover con position:fixed), no aplica aqui.
+.pip_price_notification .pip_dropdown {
+    // CORREGIDO 2026-08-06: border-radius/border/box-shadow/padding no
+    // llevaban !important -- price_notification_menu.scss (el modulo
+    // original) define .pip_dropdown con la MISMA especificidad
+    // (.pip_price_notification .pip_dropdown) y, al cargar despues en el
+    // bundle web.assets_backend, ganaba el empate en las propiedades sin
+    // !important (confirmado via getComputedStyle: background si aplicaba
+    // -18px de radio, box-shadow de marca-, pero border-radius quedaba en
+    // los 8px nativos y el shadow en el gris plano original). El panel se
+    // veia sin definicion y el contenido de la tabla de atras se leia
+    // demasiado a traves del blur. Ahora TODO lleva !important, mismo
+    // patron que el resto de este archivo.
+    // CORREGIDO 2026-08-06 (v3): se retira backdrop-filter para ESTE
+    // dropdown especificamente. Diagnostico completo en vivo: CSS.supports
+    // ('backdrop-filter','blur(1px)') = true, getComputedStyle confirmaba
+    // background/backdrop-filter exactamente como se declaran aqui, EN EL
+    // MISMO INSTANTE de la captura -- pero el pixel renderizado seguia
+    // mostrando "1-80 / 3499" y las columnas de la tabla perfectamente
+    // legibles a traves del panel, sin importar si el alpha subia de .88 a
+    // .93 a .97 (CERO diferencia visible entre las tres). El problema no es
+    // la declaracion CSS -- es el COMPOSITING de backdrop-filter en el
+    // Chromium headless/sin GPU de este servidor, que no es confiable
+    // (categoria de bug conocida: software rendering no compone
+    // backdrop-filter correctamente). Modo oscuro con el mismo blur SI se
+    // veia bien (texto claro sobre oscuro perdona un compositing
+    // imperfecto; texto negro sobre blanco no). En vez de depender de un
+    // efecto que no se puede verificar de forma confiable en este entorno
+    // (ni, por lo tanto, garantizar en el navegador real del usuario), el
+    // "vidrio" de este panel en particular vive en el borde + sombra
+    // multicapa + fondo casi opaco -- sin blur, 100% legible siempre.
+    border-radius: 18px !important;
+    border: 1px solid rgba(255, 255, 255, 0.85) !important;
+    background: rgba(255, 255, 255, 0.98) !important;
+    box-shadow:
+        0 0 0 1px rgba(7, 58, 76, 0.06),
+        0 24px 64px rgba(7, 58, 76, 0.22),
+        inset 0 1px 0 rgba(255, 255, 255, 0.95) !important;
+    padding: 4px !important;
+
+    .pip_header {
+        padding: 12px 14px !important;
+        border-bottom-color: rgba(7, 58, 76, 0.10) !important;
+    }
+
+    // Cada notificacion como su propia tarjeta redondeada (bento) en vez
+    // de filas separadas por borde -- mas aire, mas legible.
+    .pip_item {
+        border-radius: 12px !important;
+        margin: 2px 4px !important;
+        padding: 10px 12px !important;
+        border-bottom: none !important;
+
+        &:hover {
+            background: rgba(22, 166, 217, 0.08) !important;
+        }
+    }
+
+    .pip_unread {
+        background: rgba(227, 6, 19, 0.05) !important;
+    }
+}
+
+html.o_md_dark_mode,
+html[data-bs-theme="dark"] {
+    .pip_price_notification .pip_dropdown {
+        background: rgba(19, 23, 42, 0.97) !important;
+        border-color: rgba(255, 255, 255, 0.10) !important;
+        box-shadow:
+            0 0 0 1px rgba(255, 255, 255, 0.06),
+            0 24px 64px rgba(0, 0, 0, 0.5),
+            inset 0 1px 0 rgba(255, 255, 255, 0.06) !important;
+        color: #e8eaf0;
+        // Sin backdrop-filter, misma razon que en claro (ver comentario
+        // arriba) -- consistencia entre ambos temas: los dos dependen del
+        // fondo casi opaco + borde + sombra, no de un blur que no se
+        // puede verificar de forma confiable en este entorno.
+
+        .pip_header {
+            border-bottom-color: rgba(255, 255, 255, 0.08) !important;
+        }
+
+        .pip_meta,
+        .pip_empty {
+            color: #94a3b8 !important;
+        }
+
+        .pip_product_link {
+            color: #e8eaf0 !important;
+        }
+
+        .pip_item:hover {
+            background: rgba(22, 166, 217, 0.14) !important;
+        }
+
+        .pip_unread {
+            background: rgba(227, 6, 19, 0.10) !important;
+        }
+    }
 }
 
 // ── Selector de Empresa: bento-glass (2026-08-06) ─────────────────────────
