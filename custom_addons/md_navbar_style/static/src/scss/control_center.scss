@@ -140,11 +140,18 @@ html[data-bs-theme="dark"] {
 }
 
 .o_mds_cc_label {
+    // 9.5px/0.02em en vez de 11px/0.04em: a 11px los labels largos
+    // ("ACTIVIDADES", "COPILOTO IA", "MODO OSCURO") partian a 2 lineas
+    // dentro de los ~73px de ancho util del tile (2026-08-06, capturas
+    // current_cc.png) -- se reduce lo suficiente para que quepan en una
+    // sola linea junto al icono, sin achicar el icono ni el tile.
     font-family: "Inter", system-ui, -apple-system, sans-serif;
-    font-size: 11px;
+    font-size: 9.5px;
     font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 0.04em;
+    letter-spacing: 0.02em;
+    line-height: 1.2;
+    white-space: nowrap;
     color: var(--mds-dark-teal);
 }
 

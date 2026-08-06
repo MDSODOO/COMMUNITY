@@ -27,7 +27,7 @@
                     <span class="o_mds_cc_label">Copiloto IA</span>
                 </div>
                 <div class="o_mds_cc_tile" t-on-click="openPriceUpdates">
-                    <i class="fa fa-line-chart o_mds_cc_icon"/>
+                    <i class="fa fa-bar-chart o_mds_cc_icon"/>
                     <span class="o_mds_cc_label">Precios</span>
                 </div>
                 <div class="o_mds_cc_tile" t-on-click="openCompanySwitcher">
