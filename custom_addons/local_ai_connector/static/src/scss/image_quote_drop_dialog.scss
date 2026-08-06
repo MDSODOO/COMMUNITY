@@ -388,3 +388,12 @@ html[data-bs-theme="dark"] {
         }
     }
 }
+
+// Icono SVG propio del toggle de systray (ai_inventory_query.xml) --
+// reemplaza fa-comments-o (2026-08-06). Mismo tamaño que fa-lg (~1.33em)
+// para no romper el ritmo visual del resto de iconos del systray.
+.o_mds_bot_icon {
+    width: 1.15em;
+    height: 1.15em;
+    vertical-align: -0.15em;
+}
