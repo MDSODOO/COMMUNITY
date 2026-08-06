@@ -28,7 +28,7 @@
     // .o_md_handheld_kanban .o_kanban_record (handheld_kanban.scss): distingue
     // esta card sin duplicar el efecto glass del portal de clientes en
     // tarjetas de datos.
-    border-left: 3px solid var(--md-primary);
+    border-left: 4px solid var(--md-primary, #16a6d9) !important;
 
     .o_md_product_kanban_onhand {
         display: flex;

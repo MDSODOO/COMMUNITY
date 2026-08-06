@@ -16,19 +16,18 @@ _BARCODE_PREFIX_RE = re.compile(r'^\[\d{6,20}\]\s*')
 
 
 def _clean_product_name(product):
-    """Return a product name stripped of its barcode prefix.
-
-    Odoo's default ``display_name`` for products with an internal reference or
-    barcode often prepends ``[BARCODE] `` to the name.  This helper removes
-    that prefix so the UI can show a cleaner label.
+    """Return a product name formatted according to COFEPRIS NOM-072-SSA1-2012, stripped of barcode prefix.
 
     Args:
         product: A ``product.product`` recordset (single record).
 
     Returns:
-        str: The cleaned product name.
+        str: The cleaned COFEPRIS product name.
     """
-    name = product.display_name or product.name or ''
+    if hasattr(product, '_get_cofepris_full_name'):
+        name = product._get_cofepris_full_name()
+    else:
+        name = product.display_name or product.name or ''
     barcode = product.barcode
     if barcode:
         name = name.replace(f'[{barcode}] ', '').replace(f'[{barcode}]', '')

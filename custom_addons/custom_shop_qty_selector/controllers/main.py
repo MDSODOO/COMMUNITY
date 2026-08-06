@@ -20,7 +20,8 @@ def _branch_warehouse_id():
     if not user or user._is_public():
         return None
 
-    partner = user.partner_id.sudo()
+    # Current user's own partner; portal record rules grant access.
+    partner = user.partner_id
     field = partner._fields.get('x_studio_branch_office')
     if not field:
         return None

@@ -1,8 +1,10 @@
 from odoo.tests.common import TransactionCase
+from odoo.tests import tagged
 from odoo import fields
 from datetime import datetime, timedelta
 
 
+@tagged('post_install', '-at_install')
 class TestProductionLotMigration(TransactionCase):
     """Tests unitarios para la migración de Studio → Código puro en stock.lot"""
 
@@ -11,10 +13,20 @@ class TestProductionLotMigration(TransactionCase):
         """Configuración inicial para todos los tests."""
         super().setUpClass()
 
+        # tracking_disable=True: mismo patrón que lot_selection/tests/test_lot_selection.py.
+        # Sin este contexto, crear un producto con tracking='lot' via
+        # product.product.create() bajo --test-enable dispara un NOT NULL
+        # en l10n_mx_homologacion_state (campo requerido de md_pharma_regulatory) --
+        # el create() de mail.thread computa valores de tracking del chatter
+        # antes de que todos los defaults terminen de aplicarse. No es un bug
+        # de este módulo. Ver docs/OLLAMA_MIGRATION_PLAN.md, hallazgo Fase 4.
+        cls.env = cls.env(context=dict(cls.env.context, tracking_disable=True))
+
         # Crear producto de prueba
         cls.product = cls.env['product.product'].create({
             'name': 'Producto Test - Lotes',
-            'type': 'storable',
+            'type': 'consu',
+            'is_storable': True,
             'tracking': 'lot',
         })
 
@@ -142,7 +154,9 @@ class TestProductionLotMigration(TransactionCase):
         })
 
         # Esto debe cumplirse sin error
-        self.assertEqual(lot.expiration_date, fecha_futura)
+        # expiration_date es Datetime (Odoo lo normaliza a medianoche); se
+        # compara solo la parte de fecha contra fecha_futura (un date).
+        self.assertEqual(lot.expiration_date.date(), fecha_futura)
         self.assertEqual(lot.fecha_vencimiento_estimado, fecha_hoy)
 
         # Intentar asignar fecha estimada mayor que oficial debe fallar
@@ -197,16 +211,20 @@ class TestProductionLotMigration(TransactionCase):
                 'estado_lote': estado,
             })
 
-        # Buscar lotes activos
+        # Buscar lotes activos (acotado a self.product: la BD de dev tiene
+        # miles de lotes reales migrados con estado_lote='activo', buscar
+        # sin filtrar por producto choca con esos datos preexistentes).
         lotes_activos = self.ProductionLot.search([
-            ('estado_lote', '=', 'activo')
+            ('estado_lote', '=', 'activo'),
+            ('product_id', '=', self.product.id),
         ])
 
         self.assertEqual(len(lotes_activos), 2)
 
         # Buscar lotes agotados
         lotes_agotados = self.ProductionLot.search([
-            ('estado_lote', '=', 'agotado')
+            ('estado_lote', '=', 'agotado'),
+            ('product_id', '=', self.product.id),
         ])
 
         self.assertEqual(len(lotes_agotados), 1)
@@ -474,7 +492,8 @@ class TestProductionLotMigration(TransactionCase):
         company = self._create_allowed_company('Compañía B Test Lotes 23')
         product = self.env['product.product'].create({
             'name': 'Producto Test - Lotes Compañía',
-            'type': 'storable',
+            'type': 'consu',
+            'is_storable': True,
             'tracking': 'lot',
             'company_id': company.id,
         })

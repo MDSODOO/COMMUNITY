@@ -198,7 +198,7 @@
                                     <span t-esc="record.line_name or '—'"/>
                                 </td>
                                 <td class="pharma-product-cell">
-                                    <span t-field="record.product_id"/>
+                                    <span t-esc="record.product_id._get_cofepris_full_name() if record.product_id else '—'"/>
                                 </td>
                                 <td>
                                     <span t-field="record.location_id"/>

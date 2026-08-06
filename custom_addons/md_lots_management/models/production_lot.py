@@ -766,7 +766,7 @@ class ProductionLot(models.Model):
         for lot in self:
             if (lot.fecha_vencimiento_estimado
                     and lot.expiration_date
-                    and lot.fecha_vencimiento_estimado > lot.expiration_date):
+                    and lot.fecha_vencimiento_estimado > lot.expiration_date.date()):
                 raise ValidationError(
                     'La fecha de vencimiento estimado no puede ser posterior '
                     'a la fecha de vencimiento oficial.'
