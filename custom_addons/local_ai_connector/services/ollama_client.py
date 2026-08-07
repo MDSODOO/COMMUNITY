@@ -133,7 +133,7 @@ class OllamaError(Exception):
 
 def generate_structured(model, prompt, json_schema, temperature=0.0, num_ctx=2048,
                          timeout=DEFAULT_TIMEOUT, images=None, priority='high',
-                         cr=None):
+                         cr=None, lock_timeout=None):
     """
     Llama a Ollama pidiendo un JSON que cumpla json_schema (format=<schema>,
     no el string generico "json" -- la version generica demostro perdida
@@ -144,6 +144,13 @@ def generate_structured(model, prompt, json_schema, temperature=0.0, num_ctx=204
       'low' para vision (PostgreSQL advisory lock entre workers + circuit
       breaker + reintentos). Cuando se pasan images se fuerza priority='low'.
     cr: cursor de base de datos Odoo (requerido para priority='low').
+    lock_timeout: segundos a esperar por el advisory lock antes de rendirse
+      (por defecto igual a `timeout`, para no cambiar el comportamiento de
+      llamadas ya existentes). Usar un valor bajo (2-3s) en llamadas
+      sincronas desde un controller HTTP -- si no, un worker de Odoo se
+      queda atorado hasta `timeout` esperando su turno en vez de fallar
+      rapido y dejar que el cliente reintente. Las llamadas desde un cron
+      (donde no hay un worker HTTP esperando) pueden dejar el default.
 
     Devuelve el objeto parseado (dict o list segun el schema). Lanza
     OllamaError si la respuesta no es JSON valido; OllamaBusyError si el
@@ -180,14 +187,15 @@ def generate_structured(model, prompt, json_schema, temperature=0.0, num_ctx=204
         payload["images"] = images
 
     if is_vision:
+        effective_lock_timeout = timeout if lock_timeout is None else lock_timeout
         _logger.info(
             "Acquiring PostgreSQL advisory lock for vision inference "
-            "(model=%s, timeout=%ss)", model, timeout,
+            "(model=%s, lock_timeout=%ss)", model, effective_lock_timeout,
         )
-        if not _acquire_ollama_lock(cr, timeout=timeout):
+        if not _acquire_ollama_lock(cr, timeout=effective_lock_timeout):
             _logger.warning(
                 "Could not acquire vision lock within %ss for model %s",
-                timeout, model,
+                effective_lock_timeout, model,
             )
             raise OllamaBusyError(
                 "El modelo de IA local esta ocupado procesando otra "

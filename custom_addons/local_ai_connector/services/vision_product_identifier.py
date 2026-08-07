@@ -11,6 +11,12 @@ from . import ollama_client, prompt_templates
 _logger = logging.getLogger(__name__)
 
 VISION_TIMEOUT = 300
+# Llamada sincrona desde /ai/identify_product_from_photo: si Ollama ya
+# esta ocupado con otra foto, fallar rapido (segundos) en vez de dejar
+# el worker HTTP atorado hasta VISION_TIMEOUT esperando su turno --
+# el controller ya sabe responder 503 "intenta de nuevo" ante
+# OllamaBusyError.
+LOCK_TIMEOUT = 3
 MAX_DIMENSION = 1024
 IDENTIFY_CONFIDENCE_THRESHOLD_MEDIUM = 0.5
 IDENTIFY_CONFIDENCE_THRESHOLD_HIGH = 0.8
@@ -96,6 +102,7 @@ def identify_product_from_photo(env, image_data, image_filename=""):
         json_schema=prompt_templates.VISION_PRODUCT_IDENTIFIER_SCHEMA,
         images=[img_b64],
         timeout=VISION_TIMEOUT,
+        lock_timeout=LOCK_TIMEOUT,
         num_ctx=8192,
         priority="low",
         cr=env.cr,
