@@ -1,0 +1,69 @@
+<odoo>
+    <record id="view_raffle_ticket_list" model="ir.ui.view">
+        <field name="name">raffle.ticket.list</field>
+        <field name="model">raffle.ticket</field>
+        <field name="arch" type="xml">
+            <list string="Folios de Rifa" default_order="id desc">
+                <field name="name"/>
+                <field name="campaign_id"/>
+                <field name="partner_id"/>
+                <field name="origin_type"/>
+                <field name="rule_id"/>
+                <field name="sale_order_id"/>
+                <field name="pos_order_id"/>
+                <field name="legacy_ref" optional="hide"/>
+                <field name="state" decoration-muted="state == 'cancelled'"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_raffle_ticket_form" model="ir.ui.view">
+        <field name="name">raffle.ticket.form</field>
+        <field name="model">raffle.ticket</field>
+        <field name="arch" type="xml">
+            <form string="Folio de Rifa">
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                        <field name="campaign_id"/>
+                        <field name="partner_id"/>
+                        <field name="origin_type"/>
+                        <field name="rule_id"/>
+                        <field name="sale_order_id"/>
+                        <field name="pos_order_id"/>
+                        <field name="legacy_ref"/>
+                        <field name="state"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_raffle_ticket_search" model="ir.ui.view">
+        <field name="name">raffle.ticket.search</field>
+        <field name="model">raffle.ticket</field>
+        <field name="arch" type="xml">
+            <search string="Buscar Folios">
+                <field name="name"/>
+                <field name="partner_id"/>
+                <field name="campaign_id"/>
+                <field name="legacy_ref"/>
+                <filter string="Válidos" name="valid" domain="[('state', '=', 'valid')]"/>
+                <filter string="Físicos" name="physical" domain="[('origin_type', '=', 'physical')]"/>
+                <filter string="B2B Online" name="online" domain="[('origin_type', '=', 'online_b2b')]"/>
+                <group>
+                    <filter string="Campaña" name="group_campaign" context="{'group_by': 'campaign_id'}"/>
+                    <filter string="Origen" name="group_origin" context="{'group_by': 'origin_type'}"/>
+                    <filter string="Cliente" name="group_partner" context="{'group_by': 'partner_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_raffle_ticket" model="ir.actions.act_window">
+        <field name="name">Folios de Rifa</field>
+        <field name="res_model">raffle.ticket</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_raffle_ticket_search"/>
+    </record>
+</odoo>

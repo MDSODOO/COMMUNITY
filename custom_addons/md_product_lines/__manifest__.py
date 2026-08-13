@@ -5,7 +5,7 @@
     'category': 'Inventory',
     'author': 'MedicineDepot Sureste',
     'license': 'LGPL-3',
-    'depends': ['product'],
+    'depends': ['product', 'stock'],
     'data': [
         'security/ir.model.access.csv',
         'views/product_line_views.xml',
