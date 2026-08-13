@@ -8,10 +8,10 @@ class DeviceManagement(models.Model):
     _rec_name = "nombre_dispositivo"
     _inherit = ['mail.thread', 'mail.activity.mixin']
 
-    _sql_constraints = [
-        ('codigo_dispositivo_uniq', 'UNIQUE(codigo_dispositivo)',
-         'El código/serial del dispositivo debe ser único.'),
-    ]
+    _codigo_dispositivo_uniq = models.Constraint(
+        'UNIQUE(codigo_dispositivo)',
+        'El código/serial del dispositivo debe ser único.',
+    )
 
     # Estado y control
     state = fields.Selection([
@@ -82,10 +82,10 @@ class DeviceManagement(models.Model):
     todo_ids = fields.One2many('device.todo', 'device_id', string="Tareas")
 
     # Smart button counts / Contadores para botones inteligentes
-    maintenance_count = fields.Integer(compute='_compute_maintenance_count', string="Mantenimientos")
+    maintenance_count = fields.Integer(compute='_compute_maintenance_count', string="Cant. Mantenimientos")
     documentation_count = fields.Integer(compute='_compute_documentation_count', string="Documentos")
-    payment_count = fields.Integer(compute='_compute_payment_count', string="Pagos")
-    subscription_count = fields.Integer(compute='_compute_subscription_count', string="Suscripciones")
+    payment_count = fields.Integer(compute='_compute_payment_count', string="Cant. Pagos")
+    subscription_count = fields.Integer(compute='_compute_subscription_count', string="Cant. Suscripciones")
     invoice_count = fields.Integer(compute='_compute_invoice_count', string="Facturas")
     todo_count = fields.Integer(compute='_compute_todo_count', string="Tareas Pendientes")
     todo_urgente_count = fields.Integer(compute='_compute_todo_count', string="Tareas Urgentes")

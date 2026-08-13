@@ -19,11 +19,17 @@
                         <widget name="web_ribbon" title="Fuera de Servicio" bg_color="bg-danger" invisible="state != 'retired'"/>
 
                         <div class="oe_button_box" name="button_box">
-                            <button name="action_view_maintenance" type="object" class="oe_stat_button" icon="fa-wrench">
+                            <button name="action_view_maintenance" type="object" class="oe_stat_button position-relative" icon="fa-wrench">
                                 <field name="maintenance_count" widget="statinfo" string="Mantenimientos"/>
+                                <span class="md_stat_overdue_badge badge rounded-pill text-bg-danger" invisible="mantenimiento_vencido_count == 0" title="Mantenimientos vencidos">
+                                    <field name="mantenimiento_vencido_count" nolabel="1"/>
+                                </span>
                             </button>
-                            <button name="action_view_documentation" type="object" class="oe_stat_button" icon="fa-file-text">
+                            <button name="action_view_documentation" type="object" class="oe_stat_button position-relative" icon="fa-file-text">
                                 <field name="documentation_count" widget="statinfo" string="Documentos"/>
+                                <span class="md_stat_overdue_badge badge rounded-pill text-bg-danger" invisible="documentos_vencidos_count == 0" title="Documentos vencidos">
+                                    <field name="documentos_vencidos_count" nolabel="1"/>
+                                </span>
                             </button>
                             <button name="action_view_payments" type="object" class="oe_stat_button" icon="fa-credit-card">
                                 <field name="payment_count" widget="statinfo" string="Pagos"/>
@@ -31,23 +37,17 @@
                             <button name="action_view_invoices" type="object" class="oe_stat_button" icon="fa-file-text-o">
                                 <field name="invoice_count" widget="statinfo" string="Facturas"/>
                             </button>
-                            <button name="action_view_subscriptions" type="object" class="oe_stat_button" icon="fa-key">
+                            <button name="action_view_subscriptions" type="object" class="oe_stat_button position-relative" icon="fa-key">
                                 <field name="subscription_count" widget="statinfo" string="Suscripciones"/>
+                                <span class="md_stat_overdue_badge badge rounded-pill text-bg-danger" invisible="suscripciones_vencidas_count == 0" title="Suscripciones vencidas">
+                                    <field name="suscripciones_vencidas_count" nolabel="1"/>
+                                </span>
                             </button>
-                            <button name="action_view_overdue_maintenance" type="object" class="oe_stat_button text-danger" icon="fa-exclamation-triangle" invisible="mantenimiento_vencido_count == 0">
-                                <field name="mantenimiento_vencido_count" widget="statinfo" string="Mant. vencidos"/>
-                            </button>
-                            <button name="action_view_overdue_documents" type="object" class="oe_stat_button text-danger" icon="fa-calendar-times-o" invisible="documentos_vencidos_count == 0">
-                                <field name="documentos_vencidos_count" widget="statinfo" string="Docs vencidos"/>
-                            </button>
-                            <button name="action_view_overdue_subscriptions" type="object" class="oe_stat_button text-danger" icon="fa-bell" invisible="suscripciones_vencidas_count == 0">
-                                <field name="suscripciones_vencidas_count" widget="statinfo" string="Subs vencidas"/>
-                            </button>
-                            <button name="action_view_todos" type="object" class="oe_stat_button" icon="fa-check-square-o">
+                            <button name="action_view_todos" type="object" class="oe_stat_button position-relative" icon="fa-check-square-o">
                                 <field name="todo_count" widget="statinfo" string="Tareas"/>
-                            </button>
-                            <button name="action_view_todos" type="object" class="oe_stat_button text-warning" icon="fa-exclamation-circle" invisible="todo_urgente_count == 0">
-                                <field name="todo_urgente_count" widget="statinfo" string="Urgentes"/>
+                                <span class="md_stat_overdue_badge badge rounded-pill text-bg-warning" invisible="todo_urgente_count == 0" title="Tareas urgentes">
+                                    <field name="todo_urgente_count" nolabel="1"/>
+                                </span>
                             </button>
                         </div>
 
@@ -133,23 +133,13 @@
                                     <span class="text-muted">Valor actual estimado:</span>
                                     <strong><field name="valor_actual" nolabel="1" readonly="1"/></strong>
                                 </div>
+                                <!-- El estado de garantía (vigente + % restante) ya se ve siempre
+                                     en el snapshot superior — aquí solo las fechas editables,
+                                     sin repetir esa información. -->
                                 <group string="Garantía">
-                                    <group>
-                                        <field name="garantia_fecha_inicio"/>
-                                        <field name="garantia_fecha_fin"/>
-                                    </group>
-                                    <group>
-                                        <!-- garantia_vigente y progressbar fuera de group para evitar label-for warnings -->
-                                    </group>
+                                    <field name="garantia_fecha_inicio"/>
+                                    <field name="garantia_fecha_fin"/>
                                 </group>
-                                <!-- Garantía: estado visual sin label-for inválido -->
-                                <div class="d-flex align-items-center gap-3 mb-3 small">
-                                    <field name="garantia_vigente" nolabel="1" readonly="1"/>
-                                    <span class="text-muted">Garantía vigente</span>
-                                    <div class="flex-grow-1">
-                                        <field name="garantia_porcentaje_restante" nolabel="1" widget="progressbar" readonly="1"/>
-                                    </div>
-                                </div>
                             </page>
 
                             <page string="Inventario A la mano" name="inventory_tab">
@@ -161,7 +151,7 @@
                                     </div>
                                 </div>
                                 <div class="alert alert-info d-flex align-items-start gap-2 mb-3 py-2" role="alert" invisible="inventory_ids">
-                                    <i class="fa fa-info-circle mt-1"/>
+                                    <i class="fa fa-info-circle mt-1" title="Información"/>
                                     <span>Registra primero la cantidad física en <strong>Ubicaciones</strong> — esto habilita las asignaciones a usuarios.</span>
                                 </div>
                                 <separator string="Ubicaciones"/>
@@ -369,7 +359,7 @@
                     <filter name="en_uso"         string="En uso"            domain="[('state','=','active')]"/>
                     <filter name="en_mant"        string="En mantenimiento"  domain="[('state','=','maintenance')]"/>
                     <filter name="fuera_servicio" string="Fuera de servicio" domain="[('state','=','retired')]"/>
-                    <group expand="0" string="Agrupar por">
+                    <group>
                         <filter name="by_state"     string="Estado"    context="{'group_by': 'state'}"/>
                         <filter name="by_categoria" string="Categoría" context="{'group_by': 'categoria'}"/>
                         <filter name="by_company"   string="Sucursal"  context="{'group_by': 'company_id'}"/>
@@ -440,22 +430,22 @@
 
                             <div class="small text-muted mb-2">
                                 <div class="text-truncate">
-                                    <i class="fa fa-barcode fa-fw"/>
+                                    <i class="fa fa-barcode fa-fw" title="Código"/>
                                     <field name="codigo_dispositivo"/>
                                 </div>
                                 <div class="text-truncate">
-                                    <i class="fa fa-map-marker fa-fw"/>
+                                    <i class="fa fa-map-marker fa-fw" title="Ubicación"/>
                                     <field name="ubicacion_fisica"/>
                                 </div>
                                 <div class="text-truncate">
-                                    <i class="fa fa-user fa-fw"/>
+                                    <i class="fa fa-user fa-fw" title="Asignado a"/>
                                     <field name="usuario_asignado"/>
                                 </div>
                             </div>
 
                             <div class="d-flex justify-content-between align-items-center small mb-2">
                                 <span class="fw-semibold">
-                                    <i class="fa fa-cube fa-fw"/>
+                                    <i class="fa fa-cube fa-fw" title="A la mano"/>
                                     <field name="cantidad_a_la_mano"/> A la mano
                                 </span>
                                 <span class="badge bg-success" t-if="record.garantia_vigente.raw_value">
@@ -473,33 +463,37 @@
                             </div>
 
                             <div class="small">
-                                <t t-if="record.proximo_mantenimiento_fecha.raw_value">
-                                    <div class="alert alert-info py-1 px-2 mb-1" role="alert">
-                                        <i class="fa fa-wrench fa-fw"/>
-                                        <field name="proximo_mantenimiento_fecha"/>
-                                    </div>
-                                </t>
+                                <!-- Mantenimiento: vencido y próximo son mutuamente excluyentes
+                                     (un mantenimiento vencido sigue siendo "el próximo" hasta
+                                     resolverse — mostrar ambos era redundante). -->
                                 <t t-if="record.mantenimiento_vencido_count.raw_value">
                                     <div class="alert alert-danger py-1 px-2 mb-1" role="alert">
-                                        <i class="fa fa-exclamation-triangle fa-fw"/>
+                                        <i class="fa fa-exclamation-triangle fa-fw" title="Mantenimientos vencidos"/>
                                         <field name="mantenimiento_vencido_count"/> mant. vencidos
                                     </div>
                                 </t>
-                                <t t-if="record.proxima_suscripcion_vencimiento.raw_value">
-                                    <div class="alert alert-warning py-1 px-2 mb-1" role="alert">
-                                        <i class="fa fa-key fa-fw"/>
-                                        <field name="proxima_suscripcion_vencimiento"/>
+                                <t t-elif="record.proximo_mantenimiento_fecha.raw_value">
+                                    <div class="alert alert-info py-1 px-2 mb-1" role="alert">
+                                        <i class="fa fa-wrench fa-fw" title="Próximo mantenimiento"/>
+                                        <field name="proximo_mantenimiento_fecha"/>
                                     </div>
                                 </t>
+                                <!-- Igual para suscripciones: vencida tiene prioridad sobre "próxima". -->
                                 <t t-if="record.suscripciones_vencidas_count.raw_value">
                                     <div class="alert alert-danger py-1 px-2 mb-1" role="alert">
-                                        <i class="fa fa-bell fa-fw"/>
+                                        <i class="fa fa-bell fa-fw" title="Suscripciones vencidas"/>
                                         <field name="suscripciones_vencidas_count"/> subs vencidas
+                                    </div>
+                                </t>
+                                <t t-elif="record.proxima_suscripcion_vencimiento.raw_value">
+                                    <div class="alert alert-warning py-1 px-2 mb-1" role="alert">
+                                        <i class="fa fa-key fa-fw" title="Próximo vencimiento de suscripción"/>
+                                        <field name="proxima_suscripcion_vencimiento"/>
                                     </div>
                                 </t>
                                 <t t-if="record.documentos_vencidos_count.raw_value">
                                     <div class="alert alert-danger py-1 px-2 mb-0" role="alert">
-                                        <i class="fa fa-file-text fa-fw"/>
+                                        <i class="fa fa-file-text fa-fw" title="Documentos vencidos"/>
                                         <field name="documentos_vencidos_count"/> docs vencidos
                                     </div>
                                 </t>
@@ -541,7 +535,7 @@
         </record>
 
         <record model="ir.actions.act_window" id="act_device_management_menu">
-            <field name="name">IT Management</field>
+            <field name="name">Dispositivos IT</field>
             <field name="res_model">device.management</field>
             <field name="view_mode">kanban,list,form</field>
             <field name="view_id" ref="device_management_view_kanban"/>
@@ -556,7 +550,7 @@
         </record>
 
         <menuitem id="menu_device_management" name="Medicine Depot - Activos IT"
-            web_icon="md_asset_devices,static/description/icon.png"
+            web_icon="fa-laptop,#2C3E50,#EAECEE"
             sequence="10" action="act_device_management_menu"/>
     </data>
 </odoo>

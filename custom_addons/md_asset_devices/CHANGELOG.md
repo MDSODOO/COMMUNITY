@@ -11,6 +11,10 @@ Historial generado automáticamente a partir de `git log -- md_asset_devices` (y
 ## 2026-08-13
 
 - 🔄 refactor(md_asset_devices): renombrar módulo (`quifamesa_it_management` → `md_asset_devices`), quitar referencias textuales a Quifamesa y agregar campo `company_id` (sucursal) con regla multi-compañía para operar en las 6 sucursales de Medicine Depot
+- 🐛 fix(md_asset_devices): `<group expand="0" string="...">` en la vista de búsqueda ya no valida en este build de Odoo 19 — se quitan esos atributos
+- 🐛 fix(md_asset_devices): `_sql_constraints` deprecado → migrado a `models.Constraint`; labels duplicados de `maintenance_count`/`payment_count`/`subscription_count` vs sus `_ids`; `title` agregado a 10 íconos `<i class="fa ...">` del kanban (a11y)
+- ✨ feat(md_asset_devices): ícono de app cambiado a FontAwesome (`fa-laptop,#2C3E50,#EAECEE`, antes PNG genérico heredado de Quifamesa); nombre de la acción "IT Management" → "Dispositivos IT"
+- 🎨 refactor(md_asset_devices): UI — consolidados los smart buttons de "vencidos/urgentes" (Mant. vencidos, Docs vencidos, Subs vencidas, Urgentes) como badges superpuestos en su botón padre en vez de botones separados (10→6 botones); alertas de vencimiento en kanban ahora mutuamente excluyentes con su alerta "próximo" equivalente; quitado bloque de garantía duplicado (y un `<group>` vacío) en la pestaña General — esa info ya vive en el snapshot superior
 
 
 ## 2026-06-21
