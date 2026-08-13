@@ -1,0 +1,80 @@
+<odoo>
+    <record id="view_raffle_ticket_summary_kanban" model="ir.ui.view">
+        <field name="name">raffle.ticket.summary.kanban</field>
+        <field name="model">raffle.ticket.summary</field>
+        <field name="arch" type="xml">
+            <kanban default_group_by="partner_id" records_draggable="0" create="0" edit="0" delete="0">
+                <field name="partner_id"/>
+                <field name="campaign_id"/>
+                <field name="ticket_count"/>
+                <field name="legacy_refs"/>
+                <field name="has_sponsor_line"/>
+                <field name="has_sponsor_catalog"/>
+                <templates>
+                    <t t-name="card">
+                        <div class="o_kanban_card_header">
+                            <strong><field name="partner_id"/></strong>
+                        </div>
+                        <div>
+                            <field name="campaign_id"/>
+                        </div>
+                        <div>
+                            <span class="badge text-bg-primary">
+                                <field name="ticket_count"/> boletos
+                            </span>
+                            <span t-if="record.has_sponsor_line.raw_value" class="badge text-bg-success ms-1">
+                                LOEFFLER/GALIA
+                            </span>
+                            <span t-if="record.has_sponsor_catalog.raw_value" class="badge text-bg-warning ms-1">
+                                PATROCINIO
+                            </span>
+                        </div>
+                        <div class="text-muted small mt-1" t-if="record.legacy_refs.raw_value">
+                            <field name="legacy_refs"/>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <record id="view_raffle_ticket_summary_list" model="ir.ui.view">
+        <field name="name">raffle.ticket.summary.list</field>
+        <field name="model">raffle.ticket.summary</field>
+        <field name="arch" type="xml">
+            <list string="Resumen de Boletos por Cliente" create="0" edit="0" delete="0">
+                <field name="partner_id"/>
+                <field name="campaign_id"/>
+                <field name="ticket_count"/>
+                <field name="has_sponsor_line"/>
+                <field name="has_sponsor_catalog"/>
+                <field name="legacy_refs" optional="hide"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_raffle_ticket_summary_search" model="ir.ui.view">
+        <field name="name">raffle.ticket.summary.search</field>
+        <field name="model">raffle.ticket.summary</field>
+        <field name="arch" type="xml">
+            <search string="Resumen de Boletos por Cliente">
+                <field name="partner_id"/>
+                <field name="campaign_id"/>
+                <filter string="Con bono línea patrocinadora" name="has_sponsor_line" domain="[('has_sponsor_line', '=', True)]"/>
+                <filter string="Con bono catálogo patrocinado" name="has_sponsor_catalog" domain="[('has_sponsor_catalog', '=', True)]"/>
+                <group>
+                    <filter string="Cliente" name="group_partner" context="{'group_by': 'partner_id'}"/>
+                    <filter string="Campaña" name="group_campaign" context="{'group_by': 'campaign_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_raffle_ticket_summary" model="ir.actions.act_window">
+        <field name="name">Resumen por Cliente</field>
+        <field name="res_model">raffle.ticket.summary</field>
+        <field name="view_mode">kanban,list</field>
+        <field name="search_view_id" ref="view_raffle_ticket_summary_search"/>
+        <field name="context">{'search_default_group_partner': 1}</field>
+    </record>
+</odoo>

@@ -1,9 +1,14 @@
+import logging
 import random
 import re
 import unicodedata
 
+import requests
+
 from odoo import api, fields, models
 from odoo.exceptions import UserError
+
+_logger = logging.getLogger(__name__)
 
 
 class RaffleCampaign(models.Model):
@@ -256,3 +261,108 @@ class RaffleCampaign(models.Model):
                         self, rule, partner_id, origin_type, count, block_key
                     )
         return created
+
+    # --- Integración WhatsApp Business (Meta Cloud API) ---
+    # Los tokens viven en res.config.settings (Ajustes > Rifas), respaldados
+    # por ir.config_parameter. Sin token/phone_number_id configurados, el
+    # envío es un no-op silencioso: no hay credenciales reales todavía, solo
+    # se deja preparado el payload y el disparador (ir.cron).
+
+    def _build_whatsapp_payload(self, partner, ticket_count):
+        """Payload base para POST a
+        https://graph.facebook.com/v20.0/{phone_number_id}/messages,
+        usando una plantilla de mensaje ('raffle_ticket_update', a crear
+        en Meta Business Manager) con el nombre del cliente y su total de
+        boletos acumulados en esta campaña."""
+        self.ensure_one()
+        # Odoo 19 consolidó res.partner.mobile en el campo phone (ya no
+        # existe un campo 'mobile' separado).
+        to = (partner.phone or '').strip().replace(' ', '').replace('-', '')
+        return {
+            'messaging_product': 'whatsapp',
+            'to': to,
+            'type': 'template',
+            'template': {
+                'name': 'raffle_ticket_update',
+                'language': {'code': 'es_MX'},
+                'components': [{
+                    'type': 'body',
+                    'parameters': [
+                        {'type': 'text', 'text': partner.name or ''},
+                        {'type': 'text', 'text': str(ticket_count)},
+                        {'type': 'text', 'text': self.name or ''},
+                    ],
+                }],
+            },
+        }
+
+    def _send_whatsapp_ticket_update(self, partner, ticket_count):
+        """Notifica a `partner` por WhatsApp su total de boletos
+        acumulados (`ticket_count`) en esta campaña. No-op silencioso si
+        el token o el phone_number_id no están configurados en
+        Ajustes > Rifas — nunca lanza excepción por falta de credenciales."""
+        self.ensure_one()
+        icp = self.env['ir.config_parameter'].sudo()
+        token = icp.get_param('mds_raffle_campaign.whatsapp_api_token')
+        phone_number_id = icp.get_param('mds_raffle_campaign.whatsapp_phone_number_id')
+        if not token or not phone_number_id:
+            _logger.info(
+                'Rifa WhatsApp: notificación omitida para %s (falta configurar '
+                'token/phone_number_id en Ajustes > Rifas).', partner.display_name,
+            )
+            return False
+        if not partner.phone:
+            _logger.info(
+                'Rifa WhatsApp: notificación omitida para %s (sin teléfono registrado).',
+                partner.display_name,
+            )
+            return False
+
+        payload = self._build_whatsapp_payload(partner, ticket_count)
+        url = 'https://graph.facebook.com/v20.0/%s/messages' % phone_number_id
+        try:
+            response = requests.post(
+                url, json=payload,
+                headers={'Authorization': 'Bearer %s' % token},
+                timeout=10,
+            )
+            response.raise_for_status()
+        except requests.RequestException:
+            _logger.exception('Rifa WhatsApp: fallo al notificar a %s', partner.display_name)
+            return False
+        return True
+
+    @api.model
+    def _cron_notify_whatsapp_ticket_updates(self):
+        """Disparador asíncrono (ir.cron): revisa boletos creados desde la
+        última corrida, los agrupa por cliente+campaña y notifica el total
+        acumulado. Avanza el cursor de tiempo solo si llegó a procesar
+        (si el token no está configurado, no-op y no mueve el cursor)."""
+        icp = self.env['ir.config_parameter'].sudo()
+        token = icp.get_param('mds_raffle_campaign.whatsapp_api_token')
+        if not token:
+            _logger.info('Rifa WhatsApp: cron en no-op, token no configurado en Ajustes > Rifas.')
+            return
+
+        last_run = icp.get_param('mds_raffle_campaign.whatsapp_last_run')
+        domain = [('state', '=', 'valid')]
+        if last_run:
+            domain.append(('create_date', '>', last_run))
+        tickets = self.env['raffle.ticket'].sudo().search(domain)
+        if not tickets:
+            return
+
+        groups = {}
+        for ticket in tickets:
+            groups.setdefault((ticket.partner_id, ticket.campaign_id), 0)
+            groups[(ticket.partner_id, ticket.campaign_id)] += 1
+
+        Summary = self.env['raffle.ticket.summary'].sudo()
+        for (partner, campaign), _new_count in groups.items():
+            summary = Summary.search([
+                ('partner_id', '=', partner.id), ('campaign_id', '=', campaign.id),
+            ], limit=1)
+            total = summary.ticket_count if summary else _new_count
+            campaign._send_whatsapp_ticket_update(partner, total)
+
+        icp.set_param('mds_raffle_campaign.whatsapp_last_run', fields.Datetime.now())

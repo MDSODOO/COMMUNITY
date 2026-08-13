@@ -9,3 +9,5 @@ access_raffle_prize_salesman,raffle.prize.salesman,model_raffle_prize,sales_team
 access_raffle_prize_manager,raffle.prize.manager,model_raffle_prize,sales_team.group_sale_manager,1,1,1,1
 access_raffle_prize_winner_salesman,raffle.prize.winner.salesman,model_raffle_prize_winner,sales_team.group_sale_salesman,1,0,0,0
 access_raffle_prize_winner_manager,raffle.prize.winner.manager,model_raffle_prize_winner,sales_team.group_sale_manager,1,1,1,1
+access_raffle_ticket_summary_salesman,raffle.ticket.summary.salesman,model_raffle_ticket_summary,sales_team.group_sale_salesman,1,0,0,0
+access_raffle_ticket_summary_manager,raffle.ticket.summary.manager,model_raffle_ticket_summary,sales_team.group_sale_manager,1,0,0,0
