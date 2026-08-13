@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ══ Vista Lista ═══════════════════════════════════════════════════ -->
+    <record id="view_client_cashback_report_list" model="ir.ui.view">
+        <field name="name">client.cashback.report.list</field>
+        <field name="model">client.cashback.report</field>
+        <field name="arch" type="xml">
+            <list string="Trazabilidad Cashback" create="false" edit="false" delete="false">
+                <field name="partner_id"          string="Cliente"    optional="show"/>
+                <field name="company_id"          string="Sucursal"   optional="show"/>
+                <field name="invoice_month"       string="Mes"        optional="show"/>
+                <field name="invoice_count"       string="# Facturas" optional="show" sum="Total facturas"/>
+                <field name="base_amount"         string="Monto Base"                 optional="show" sum="Total Base"/>
+                <field name="discount_amount"     string="Descuento Aplicado (2%)"     optional="show" sum="Total Descuento"/>
+                <field name="invoiced_total"       string="Total Facturado"            optional="show" sum="Total Facturado"/>
+                <field name="cashback_provision"  string="Provisión Cashback (5%)"     optional="show" sum="Total Cashback"/>
+                <field name="currency_id"         invisible="1"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- ══ Vista Pivot ═══════════════════════════════════════════════════ -->
+    <record id="view_client_cashback_report_pivot" model="ir.ui.view">
+        <field name="name">client.cashback.report.pivot</field>
+        <field name="model">client.cashback.report</field>
+        <field name="arch" type="xml">
+            <pivot string="Trazabilidad Cashback" disable_linking="True">
+                <field name="partner_id"         type="row"     string="Cliente"/>
+                <field name="company_id"         type="row"     string="Sucursal"/>
+                <field name="invoice_month"      type="col"     interval="month" string="Mes"/>
+                <field name="base_amount"        type="measure" string="Monto Base"/>
+                <field name="discount_amount"    type="measure" string="Descuento Aplicado (2%)"/>
+                <field name="invoiced_total"     type="measure" string="Total Facturado"/>
+                <field name="cashback_provision" type="measure" string="Provisión Cashback (5%)"/>
+            </pivot>
+        </field>
+    </record>
+
+    <!-- ══ Vista Gráfico ═════════════════════════════════════════════════ -->
+    <record id="view_client_cashback_report_graph" model="ir.ui.view">
+        <field name="name">client.cashback.report.graph</field>
+        <field name="model">client.cashback.report</field>
+        <field name="arch" type="xml">
+            <graph string="Trazabilidad Cashback" type="bar" stacked="True">
+                <field name="invoice_month"      type="row"     interval="month"/>
+                <field name="company_id"         type="row"/>
+                <field name="cashback_provision" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <!-- ══ Vista Búsqueda ════════════════════════════════════════════════ -->
+    <record id="view_client_cashback_report_search" model="ir.ui.view">
+        <field name="name">client.cashback.report.search</field>
+        <field name="model">client.cashback.report</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="partner_id"    string="Cliente"/>
+                <field name="company_id"    string="Sucursal"/>
+                <field name="invoice_month" string="Mes"/>
+                <separator/>
+                <group>
+                    <filter string="Cliente"  name="group_partner" context="{'group_by': 'partner_id'}"/>
+                    <filter string="Sucursal" name="group_company" context="{'group_by': 'company_id'}"/>
+                    <filter string="Mes"      name="group_month"   context="{'group_by': 'invoice_month'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- ══ Acción de ventana ═════════════════════════════════════════════ -->
+    <record id="action_client_cashback_report" model="ir.actions.act_window">
+        <field name="name">Trazabilidad Cashback 2%+5%</field>
+        <field name="res_model">client.cashback.report</field>
+        <field name="view_mode">pivot,list,graph</field>
+        <field name="search_view_id" ref="view_client_cashback_report_search"/>
+        <field name="context">{
+            'search_default_group_partner': 1,
+            'search_default_group_company': 1,
+            'pivot_measures': ['base_amount', 'discount_amount', 'invoiced_total', 'cashback_provision'],
+            'pivot_row_groupby': ['partner_id', 'company_id'],
+            'pivot_column_groupby': ['invoice_month']
+        }</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Sin trazabilidad de cashback todavía
+            </p>
+            <p>
+                Este reporte agrupa por <strong>Cliente</strong>, <strong>Sucursal</strong>
+                y <strong>Mes</strong> el esquema de descuento dividido 7% = 2% en factura
+                + 5% de provisión de cashback a fin de mes.
+            </p>
+            <p>
+                <strong>Alcance: prospectivo.</strong> Solo se incluyen facturas posteadas
+                donde ya se capturó el 2% de descuento por línea, para clientes marcados
+                con el campo <code>Esquema descuento 2% + cashback 5%</code> en su ficha
+                de contacto. El histórico previo a activar el esquema no se reprocesa.
+            </p>
+            <p>
+                <strong>Si no aparecen datos:</strong> confirma que el cliente tiene el
+                campo activado en su ficha, y que sus facturas de venta llevan el
+                descuento del 2% capturado en la línea de producto.
+            </p>
+            <p>
+                <strong>Importante sobre "Provisión Cashback (5%)":</strong> es un
+                <strong>cálculo teórico</strong> (5% del Monto Base), no una conciliación
+                contra el pago real. En producción (Odoo.sh) el 5% se liquida cada mes
+                como una factura de proveedor real emitida por el propio cliente, bajo el
+                concepto "Apoyo promocional y de asesoría por exclusividad"
+                (cuenta contable de Propaganda y publicidad). Esas facturas de proveedor
+                no existen en esta base (ionos), por lo que este reporte no puede
+                todavía comparar la provisión contra lo realmente pagado — sirve como
+                cifra de referencia para que finanzas la coteje manualmente contra la
+                factura de "publicidad" del mes.
+            </p>
+        </field>
+    </record>
+
+    <!-- ══ Ítem de menú ══════════════════════════════════════════════════ -->
+    <menuitem
+        id="menu_client_cashback_report"
+        name="Trazabilidad Cashback 2%+5%"
+        parent="account.menu_finance_reports"
+        action="action_client_cashback_report"
+        sequence="150"
+        groups="account.group_account_readonly,account.group_account_invoice"/>
+
+</odoo>
