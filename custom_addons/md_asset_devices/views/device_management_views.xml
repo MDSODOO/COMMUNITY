@@ -1,0 +1,562 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="device_management_view_form" model="ir.ui.view">
+            <field name="name">device.management.form</field>
+            <field name="model">device.management</field>
+            <field name="arch" type="xml">
+                <form>
+                    <header>
+                        <button name="action_set_active" type="object" string="Activar" class="btn-primary" invisible="state == 'active'"/>
+                        <button name="action_set_maintenance" type="object" string="Mantenimiento" class="btn-secondary" invisible="state == 'maintenance'"/>
+                        <button name="action_retire_device" type="object" string="Retirar" class="btn-danger" invisible="state == 'retired'"/>
+                        <field name="state" widget="statusbar" statusbar_visible="active,maintenance,retired"/>
+                    </header>
+
+                    <sheet>
+                        <widget name="web_ribbon" title="Activo" bg_color="bg-success" invisible="state != 'active'"/>
+                        <widget name="web_ribbon" title="En Mantenimiento" bg_color="bg-warning" invisible="state != 'maintenance'"/>
+                        <widget name="web_ribbon" title="Fuera de Servicio" bg_color="bg-danger" invisible="state != 'retired'"/>
+
+                        <div class="oe_button_box" name="button_box">
+                            <button name="action_view_maintenance" type="object" class="oe_stat_button" icon="fa-wrench">
+                                <field name="maintenance_count" widget="statinfo" string="Mantenimientos"/>
+                            </button>
+                            <button name="action_view_documentation" type="object" class="oe_stat_button" icon="fa-file-text">
+                                <field name="documentation_count" widget="statinfo" string="Documentos"/>
+                            </button>
+                            <button name="action_view_payments" type="object" class="oe_stat_button" icon="fa-credit-card">
+                                <field name="payment_count" widget="statinfo" string="Pagos"/>
+                            </button>
+                            <button name="action_view_invoices" type="object" class="oe_stat_button" icon="fa-file-text-o">
+                                <field name="invoice_count" widget="statinfo" string="Facturas"/>
+                            </button>
+                            <button name="action_view_subscriptions" type="object" class="oe_stat_button" icon="fa-key">
+                                <field name="subscription_count" widget="statinfo" string="Suscripciones"/>
+                            </button>
+                            <button name="action_view_overdue_maintenance" type="object" class="oe_stat_button text-danger" icon="fa-exclamation-triangle" invisible="mantenimiento_vencido_count == 0">
+                                <field name="mantenimiento_vencido_count" widget="statinfo" string="Mant. vencidos"/>
+                            </button>
+                            <button name="action_view_overdue_documents" type="object" class="oe_stat_button text-danger" icon="fa-calendar-times-o" invisible="documentos_vencidos_count == 0">
+                                <field name="documentos_vencidos_count" widget="statinfo" string="Docs vencidos"/>
+                            </button>
+                            <button name="action_view_overdue_subscriptions" type="object" class="oe_stat_button text-danger" icon="fa-bell" invisible="suscripciones_vencidas_count == 0">
+                                <field name="suscripciones_vencidas_count" widget="statinfo" string="Subs vencidas"/>
+                            </button>
+                            <button name="action_view_todos" type="object" class="oe_stat_button" icon="fa-check-square-o">
+                                <field name="todo_count" widget="statinfo" string="Tareas"/>
+                            </button>
+                            <button name="action_view_todos" type="object" class="oe_stat_button text-warning" icon="fa-exclamation-circle" invisible="todo_urgente_count == 0">
+                                <field name="todo_urgente_count" widget="statinfo" string="Urgentes"/>
+                            </button>
+                        </div>
+
+                        <field name="logo_dispositivo" widget="image" class="oe_avatar"/>
+                        <div class="oe_title">
+                            <h1>
+                                <field name="nombre_dispositivo" placeholder="Nombre del dispositivo..."/>
+                            </h1>
+                            <div class="d-flex gap-2 align-items-center">
+                                <field name="categoria" widget="selection_badge"/>
+                                <field name="state" widget="badge"/>
+                            </div>
+                        </div>
+
+                        <!-- Snapshot: info rápida sin <group> para evitar <label for> en elementos no labelables -->
+                        <div class="row g-3 mb-3 mt-1 border-bottom pb-3">
+                            <div class="col-12 col-md-6">
+                                <div class="text-muted fw-semibold small text-uppercase mb-2">Operación</div>
+                                <div class="d-flex flex-column gap-1 small">
+                                    <div class="d-flex justify-content-between gap-2">
+                                        <span class="text-muted">Sucursal</span>
+                                        <field name="company_id" nolabel="1"/>
+                                    </div>
+                                    <div class="d-flex justify-content-between gap-2">
+                                        <span class="text-muted">Asignado a</span>
+                                        <field name="usuario_asignado" nolabel="1" readonly="1"/>
+                                    </div>
+                                    <div class="d-flex justify-content-between gap-2">
+                                        <span class="text-muted">Departamento</span>
+                                        <field name="departamento" nolabel="1" readonly="1"/>
+                                    </div>
+                                    <div class="d-flex justify-content-between gap-2">
+                                        <span class="text-muted">Ubicación</span>
+                                        <field name="ubicacion_fisica" nolabel="1"/>
+                                    </div>
+                                    <div class="d-flex justify-content-between gap-2 mt-1">
+                                        <span class="text-muted fw-semibold">A la mano</span>
+                                        <strong class="text-success"><field name="cantidad_a_la_mano" nolabel="1" string="Cantidad A la mano" readonly="1"/></strong>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-12 col-md-6">
+                                <div class="text-muted fw-semibold small text-uppercase mb-2">Próximos Eventos</div>
+                                <div class="d-flex flex-column gap-1 small">
+                                    <div class="d-flex justify-content-between gap-2">
+                                        <span class="text-muted">Próx. Mantenimiento</span>
+                                        <field name="proximo_mantenimiento_fecha" nolabel="1" readonly="1"/>
+                                    </div>
+                                    <div class="d-flex justify-content-between gap-2">
+                                        <span class="text-muted">Venc. Suscripción</span>
+                                        <field name="proxima_suscripcion_vencimiento" nolabel="1" readonly="1"/>
+                                    </div>
+                                    <div class="d-flex justify-content-between align-items-center gap-2 mt-1">
+                                        <span class="text-muted">Garantía</span>
+                                        <field name="garantia_vigente" nolabel="1" readonly="1"/>
+                                    </div>
+                                    <div class="mt-1">
+                                        <field name="garantia_porcentaje_restante" nolabel="1" widget="progressbar" readonly="1"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <notebook>
+                            <page string="General" name="general_info">
+                                <!-- Código/Serial con CopyClipboard fuera del group (nolabel requerido por a11y) -->
+                                <div class="d-flex align-items-center gap-3 mb-3 small">
+                                    <span class="text-muted fw-semibold">Código/Serial:</span>
+                                    <field name="codigo_dispositivo" widget="CopyClipboardChar" nolabel="1"/>
+                                </div>
+                                <group>
+                                    <group string="Identificación">
+                                        <field name="modelo_dispositivo" string="Modelo"/>
+                                        <field name="active" string="Activo"/>
+                                    </group>
+                                    <group string="Adquisición">
+                                        <field name="fecha_adquisicion"/>
+                                        <field name="costo_adquisicion"/>
+                                    </group>
+                                </group>
+                                <!-- valor_actual fuera de group: evita <label for> apuntando a span readonly -->
+                                <div class="d-flex align-items-center gap-2 mb-3 small">
+                                    <span class="text-muted">Valor actual estimado:</span>
+                                    <strong><field name="valor_actual" nolabel="1" readonly="1"/></strong>
+                                </div>
+                                <group string="Garantía">
+                                    <group>
+                                        <field name="garantia_fecha_inicio"/>
+                                        <field name="garantia_fecha_fin"/>
+                                    </group>
+                                    <group>
+                                        <!-- garantia_vigente y progressbar fuera de group para evitar label-for warnings -->
+                                    </group>
+                                </group>
+                                <!-- Garantía: estado visual sin label-for inválido -->
+                                <div class="d-flex align-items-center gap-3 mb-3 small">
+                                    <field name="garantia_vigente" nolabel="1" readonly="1"/>
+                                    <span class="text-muted">Garantía vigente</span>
+                                    <div class="flex-grow-1">
+                                        <field name="garantia_porcentaje_restante" nolabel="1" widget="progressbar" readonly="1"/>
+                                    </div>
+                                </div>
+                            </page>
+
+                            <page string="Inventario A la mano" name="inventory_tab">
+                                <!-- Resumen: div stats en lugar de group para evitar label-for en campos readonly -->
+                                <div class="d-flex gap-4 mb-3 p-3 bg-100 rounded border">
+                                    <div>
+                                        <div class="text-muted small">Total A la mano</div>
+                                        <strong class="text-success fs-5"><field name="cantidad_a_la_mano" nolabel="1" string="Cantidad A la mano" readonly="1"/></strong>
+                                    </div>
+                                </div>
+                                <div class="alert alert-info d-flex align-items-start gap-2 mb-3 py-2" role="alert" invisible="inventory_ids">
+                                    <i class="fa fa-info-circle mt-1"/>
+                                    <span>Registra primero la cantidad física en <strong>Ubicaciones</strong> — esto habilita las asignaciones a usuarios.</span>
+                                </div>
+                                <separator string="Ubicaciones"/>
+                                <field name="inventory_ids" nolabel="1" context="{'default_device_id': id}">
+                                    <list editable="bottom">
+                                        <field name="cantidad_a_la_mano" string="A la mano" required="1"/>
+                                        <field name="cantidad_asignada" string="Asignada" readonly="1"/>
+                                        <field name="capacidad_asignacion" string="Sin Asignar" readonly="1"/>
+                                        <field name="cantidad_dañada" string="Dañadas/Perdidas" readonly="1"/>
+                                        <field name="ubicacion" string="Ubicación"/>
+                                        <field name="responsable" string="Responsable"/>
+                                        <field name="fecha_ultimo_inventario" string="Último Conteo"/>
+                                    </list>
+                                </field>
+                                <separator string="Asignaciones" invisible="not inventory_ids"/>
+                                <field name="assignment_ids" nolabel="1" context="{'default_device_id': id}" invisible="not inventory_ids">
+                                    <list editable="bottom"
+                                        decoration-muted="estado == 'devuelto'"
+                                        decoration-danger="estado == 'perdido' or estado == 'roto'">
+                                        <field name="inventory_id" string="Inventario" domain="[('device_id', '=', parent.id)]" required="1"/>
+                                        <field name="usuario_asignado" string="Usuario" required="1"/>
+                                        <field name="fecha_asignacion" string="Desde"/>
+                                        <field name="fecha_devolucion" string="Devuelto"/>
+                                        <field name="estado" string="Estado" widget="badge"
+                                            decoration-success="estado == 'activa'"
+                                            decoration-muted="estado == 'devuelto'"
+                                            decoration-danger="estado == 'perdido' or estado == 'roto'"/>
+                                    </list>
+                                </field>
+                            </page>
+
+                            <page string="Mantenimiento" name="maintenance_tab">
+                                <!-- Resumen: div stats en lugar de group para evitar label-for en campos readonly -->
+                                <div class="d-flex flex-wrap gap-4 mb-3 p-3 bg-100 rounded border">
+                                    <div>
+                                        <div class="text-muted small">Total</div>
+                                        <strong><field name="maintenance_count" nolabel="1" readonly="1"/></strong>
+                                    </div>
+                                    <div>
+                                        <div class="text-muted small text-danger">Vencidos</div>
+                                        <strong class="text-danger"><field name="mantenimiento_vencido_count" nolabel="1" readonly="1"/></strong>
+                                    </div>
+                                    <div>
+                                        <div class="text-muted small">Próximo</div>
+                                        <field name="proximo_mantenimiento_fecha" nolabel="1" readonly="1"/>
+                                    </div>
+                                    <div>
+                                        <div class="text-muted small">Costo Total</div>
+                                        <field name="mantenimiento_costo_total" nolabel="1" readonly="1"/>
+                                    </div>
+                                </div>
+                                <field name="maintenance_ids" nolabel="1" context="{'default_device_id': id}">
+                                    <list editable="bottom"
+                                        decoration-danger="fecha_programada and fecha_programada &lt; current_date and estado != 'completed' and estado != 'cancelled'"
+                                        decoration-warning="estado == 'in_progress'">
+                                        <field name="tipo" string="Tipo" widget="selection_badge" required="1"/>
+                                        <field name="fecha_programada" string="Programado" required="1"
+                                            decoration-danger="fecha_programada and fecha_programada &lt; current_date and estado != 'completed' and estado != 'cancelled'"/>
+                                        <field name="tecnico_asignado" string="Técnico"/>
+                                        <field name="estado" string="Estado" widget="badge"
+                                            decoration-success="estado == 'completed'"
+                                            decoration-warning="estado == 'in_progress'"
+                                            decoration-danger="fecha_programada and fecha_programada &lt; current_date and estado != 'completed' and estado != 'cancelled'"/>
+                                        <field name="costo_total" string="Costo"/>
+                                        <field name="proximo_mantenimiento" string="Siguiente"/>
+                                        <button name="action_confirmar" string="Confirmar" type="object" icon="fa-check"
+                                            invisible="estado != 'draft'" class="btn-sm btn-link p-0 text-primary"/>
+                                        <button name="action_iniciar" string="Iniciar" type="object" icon="fa-play"
+                                            invisible="estado != 'scheduled'" class="btn-sm btn-link p-0 text-success"/>
+                                        <button name="action_completar" string="Completar" type="object" icon="fa-flag-checkered"
+                                            invisible="estado != 'in_progress'" class="btn-sm btn-link p-0 text-success"/>
+                                    </list>
+                                </field>
+                            </page>
+
+                            <page string="Documentación" name="documentation_tab">
+                                <!-- Resumen: div stats en lugar de group para evitar label-for en campos readonly -->
+                                <div class="d-flex flex-wrap gap-4 mb-3 p-3 bg-100 rounded border">
+                                    <div>
+                                        <div class="text-muted small">Total</div>
+                                        <strong><field name="documentation_count" nolabel="1" readonly="1"/></strong>
+                                    </div>
+                                    <div>
+                                        <div class="text-muted small text-danger">Vencidos</div>
+                                        <strong class="text-danger"><field name="documentos_vencidos_count" nolabel="1" readonly="1"/></strong>
+                                    </div>
+                                </div>
+                                <field name="documentation_ids" nolabel="1" context="{'default_device_id': id}">
+                                    <list editable="bottom" decoration-danger="fecha_vencimiento and fecha_vencimiento &lt; current_date">
+                                        <field name="tipo" string="Tipo" widget="selection_badge" required="1"/>
+                                        <field name="nombre_documento" string="Documento" required="1"/>
+                                        <field name="fecha_documento" string="Fecha"/>
+                                        <field name="fecha_vencimiento" string="Vencimiento"
+                                            decoration-danger="fecha_vencimiento and fecha_vencimiento &lt; current_date"/>
+                                        <field name="documento_vigente" string="Vigente" widget="boolean" readonly="1"/>
+                                        <field name="archivo" string="Archivo"/>
+                                        <field name="url_documento" string="URL" widget="url"/>
+                                    </list>
+                                </field>
+                            </page>
+
+                            <page string="Finanzas" name="financial_tab" groups="md_asset_devices.device_management_admin_group">
+                                <!-- Resumen financiero: div stats en lugar de group para evitar label-for en campos readonly -->
+                                <div class="d-flex flex-wrap gap-4 mb-3 p-3 bg-100 rounded border">
+                                    <div>
+                                        <div class="text-muted small">Costo Adquisición</div>
+                                        <field name="costo_adquisicion" nolabel="1" readonly="1"/>
+                                    </div>
+                                    <div>
+                                        <div class="text-muted small">Valor Actual</div>
+                                        <field name="valor_actual" nolabel="1" readonly="1"/>
+                                    </div>
+                                    <div>
+                                        <div class="text-muted small">Costo Mantenimiento</div>
+                                        <field name="mantenimiento_costo_total" nolabel="1" readonly="1"/>
+                                    </div>
+                                    <div>
+                                        <div class="text-muted small">Total Pagos</div>
+                                        <field name="pagos_monto_total" nolabel="1" readonly="1"/>
+                                    </div>
+                                    <div>
+                                        <div class="text-muted small">Suscripciones/Año</div>
+                                        <field name="suscripciones_costo_anual_total" nolabel="1" readonly="1"/>
+                                    </div>
+                                    <div>
+                                        <div class="text-muted small">Facturas</div>
+                                        <strong><field name="invoice_count" nolabel="1" readonly="1"/></strong>
+                                    </div>
+                                </div>
+                                <field name="payment_ids" nolabel="1" context="{'default_device_id': id}">
+                                    <list editable="bottom" decoration-danger="estado == 'overdue'">
+                                        <field name="tipo" string="Tipo" widget="selection_badge" required="1"/>
+                                        <field name="descripcion" string="Descripción" required="1"/>
+                                        <field name="monto" string="Monto" required="1"/>
+                                        <field name="pagado" string="Pagado" widget="boolean_toggle"/>
+                                        <field name="fecha_proxima_renovacion" string="Renovación"
+                                            decoration-danger="fecha_proxima_renovacion and fecha_proxima_renovacion &lt; current_date"/>
+                                        <field name="periodo_pago" string="Período" widget="selection_badge"/>
+                                        <field name="invoice_id" string="Factura"/>
+                                        <field name="estado" string="Estado" widget="badge"
+                                            decoration-success="estado == 'paid'"
+                                            decoration-warning="estado == 'pending'"
+                                            decoration-danger="estado == 'overdue'"/>
+                                    </list>
+                                </field>
+                            </page>
+
+                            <page string="Suscripciones" name="subscriptions_tab">
+                                <!-- Resumen: div stats en lugar de group para evitar label-for en campos readonly -->
+                                <div class="d-flex flex-wrap gap-4 mb-3 p-3 bg-100 rounded border">
+                                    <div>
+                                        <div class="text-muted small">Total</div>
+                                        <strong><field name="subscription_count" nolabel="1" readonly="1"/></strong>
+                                    </div>
+                                    <div>
+                                        <div class="text-muted small text-danger">Vencidas</div>
+                                        <strong class="text-danger"><field name="suscripciones_vencidas_count" nolabel="1" readonly="1"/></strong>
+                                    </div>
+                                    <div>
+                                        <div class="text-muted small">Próx. Vencimiento</div>
+                                        <field name="proxima_suscripcion_vencimiento" nolabel="1" readonly="1"/>
+                                    </div>
+                                    <div>
+                                        <div class="text-muted small">Costo Anual Total</div>
+                                        <field name="suscripciones_costo_anual_total" nolabel="1" readonly="1"/>
+                                    </div>
+                                </div>
+                                <field name="subscription_ids" nolabel="1" context="{'default_device_id': id}">
+                                    <list editable="bottom"
+                                        decoration-danger="fecha_vencimiento &lt; current_date"
+                                        decoration-warning="dias_para_vencer &lt; 30 and dias_para_vencer >= 0">
+                                        <field name="tipo" string="Tipo" widget="selection_badge" required="1"/>
+                                        <field name="nombre_servicio" string="Servicio" required="1"/>
+                                        <field name="url_acceso" string="URL" widget="url"/>
+                                        <field name="fecha_vencimiento" string="Vencimiento" required="1"
+                                            decoration-danger="fecha_vencimiento &lt; current_date"
+                                            decoration-warning="dias_para_vencer &lt; 30 and dias_para_vencer >= 0"/>
+                                        <field name="periodo_renovacion" string="Período" widget="selection_badge"/>
+                                        <field name="costo_anual" string="Costo/Año"/>
+                                        <field name="estado" string="Estado" widget="badge"
+                                            decoration-success="estado == 'activo'"
+                                            decoration-warning="estado == 'proximo_vencer'"
+                                            decoration-danger="estado == 'vencido'"/>
+                                    </list>
+                                </field>
+                            </page>
+                        </notebook>
+                    </sheet>
+
+                    <chatter/>
+                </form>
+            </field>
+        </record>
+
+        <record id="device_management_view_search" model="ir.ui.view">
+            <field name="name">device.management.search</field>
+            <field name="model">device.management</field>
+            <field name="arch" type="xml">
+                <search string="Buscar Dispositivos">
+                    <field name="nombre_dispositivo"/>
+                    <field name="codigo_dispositivo"/>
+                    <field name="usuario_asignado"/>
+                    <field name="ubicacion_fisica"/>
+                    <field name="company_id"/>
+                    <filter name="en_uso"         string="En uso"            domain="[('state','=','active')]"/>
+                    <filter name="en_mant"        string="En mantenimiento"  domain="[('state','=','maintenance')]"/>
+                    <filter name="fuera_servicio" string="Fuera de servicio" domain="[('state','=','retired')]"/>
+                    <group expand="0" string="Agrupar por">
+                        <filter name="by_state"     string="Estado"    context="{'group_by': 'state'}"/>
+                        <filter name="by_categoria" string="Categoría" context="{'group_by': 'categoria'}"/>
+                        <filter name="by_company"   string="Sucursal"  context="{'group_by': 'company_id'}"/>
+                    </group>
+                </search>
+            </field>
+        </record>
+
+        <record id="device_management_view_kanban" model="ir.ui.view">
+            <field name="name">device.management.kanban</field>
+            <field name="model">device.management</field>
+            <field name="arch" type="xml">
+                <kanban sample="1" default_group_by="state">
+                    <field name="nombre_dispositivo"/>
+                    <field name="codigo_dispositivo"/>
+                    <field name="modelo_dispositivo"/>
+                    <field name="logo_dispositivo"/>
+                    <field name="categoria"/>
+                    <field name="state"/>
+                    <field name="ubicacion_fisica"/>
+                    <field name="usuario_asignado"/>
+                    <field name="cantidad_a_la_mano"/>
+                    <field name="proximo_mantenimiento_fecha"/>
+                    <field name="proxima_suscripcion_vencimiento"/>
+                    <field name="garantia_vigente"/>
+                    <field name="garantia_porcentaje_restante"/>
+                    <field name="mantenimiento_vencido_count"/>
+                    <field name="documentos_vencidos_count"/>
+                    <field name="suscripciones_vencidas_count"/>
+                    <field name="todo_urgente_count"/>
+                    <field name="todo_count"/>
+                    <field name="color"/>
+
+                    <templates>
+                        <t t-name="kanban-menu">
+                            <div class="container">
+                                <div class="row">
+                                    <div class="col-6 o_kanban_card_manage_section o_kanban_manage_view">
+                                        <t t-if="widget.editable">
+                                            <a role="menuitem" type="edit" class="oe_kanban_action">Editar</a>
+                                        </t>
+                                    </div>
+                                    <div class="col-6 o_kanban_card_manage_section o_kanban_manage_view">
+                                        <t t-if="widget.deletable">
+                                            <a role="menuitem" type="delete" class="oe_kanban_action">Eliminar</a>
+                                        </t>
+                                    </div>
+                                </div>
+                                <div class="o_kanban_card_manage_section o_kanban_manage_view col-12 ps-0">
+                                    <ul class="oe_kanban_colorpicker" data-field="color" role="popup"/>
+                                </div>
+                            </div>
+                        </t>
+
+                        <t t-name="card">
+                            <div class="d-flex align-items-start gap-2 mb-2">
+                                <field name="logo_dispositivo" widget="image" class="oe_avatar" style="width:48px;height:48px;object-fit:cover;border-radius:8px;flex-shrink:0;"/>
+                                <div class="overflow-hidden flex-grow-1">
+                                    <div class="fw-semibold text-truncate">
+                                        <field name="nombre_dispositivo"/>
+                                    </div>
+                                    <div class="d-flex flex-wrap gap-1 mt-1">
+                                        <field name="categoria" widget="selection_badge"/>
+                                        <field name="state" widget="badge"/>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="small text-muted mb-2">
+                                <div class="text-truncate">
+                                    <i class="fa fa-barcode fa-fw"/>
+                                    <field name="codigo_dispositivo"/>
+                                </div>
+                                <div class="text-truncate">
+                                    <i class="fa fa-map-marker fa-fw"/>
+                                    <field name="ubicacion_fisica"/>
+                                </div>
+                                <div class="text-truncate">
+                                    <i class="fa fa-user fa-fw"/>
+                                    <field name="usuario_asignado"/>
+                                </div>
+                            </div>
+
+                            <div class="d-flex justify-content-between align-items-center small mb-2">
+                                <span class="fw-semibold">
+                                    <i class="fa fa-cube fa-fw"/>
+                                    <field name="cantidad_a_la_mano"/> A la mano
+                                </span>
+                                <span class="badge bg-success" t-if="record.garantia_vigente.raw_value">
+                                    Garantía vigente
+                                </span>
+                                <span class="badge bg-danger" t-else="">
+                                    Garantía vencida
+                                </span>
+                            </div>
+
+                            <div class="progress mb-2" style="height: 6px;">
+                                <div class="progress-bar bg-success"
+                                    t-attf-style="width: {{ record.garantia_porcentaje_restante.raw_value }}%"
+                                    role="progressbar"/>
+                            </div>
+
+                            <div class="small">
+                                <t t-if="record.proximo_mantenimiento_fecha.raw_value">
+                                    <div class="alert alert-info py-1 px-2 mb-1" role="alert">
+                                        <i class="fa fa-wrench fa-fw"/>
+                                        <field name="proximo_mantenimiento_fecha"/>
+                                    </div>
+                                </t>
+                                <t t-if="record.mantenimiento_vencido_count.raw_value">
+                                    <div class="alert alert-danger py-1 px-2 mb-1" role="alert">
+                                        <i class="fa fa-exclamation-triangle fa-fw"/>
+                                        <field name="mantenimiento_vencido_count"/> mant. vencidos
+                                    </div>
+                                </t>
+                                <t t-if="record.proxima_suscripcion_vencimiento.raw_value">
+                                    <div class="alert alert-warning py-1 px-2 mb-1" role="alert">
+                                        <i class="fa fa-key fa-fw"/>
+                                        <field name="proxima_suscripcion_vencimiento"/>
+                                    </div>
+                                </t>
+                                <t t-if="record.suscripciones_vencidas_count.raw_value">
+                                    <div class="alert alert-danger py-1 px-2 mb-1" role="alert">
+                                        <i class="fa fa-bell fa-fw"/>
+                                        <field name="suscripciones_vencidas_count"/> subs vencidas
+                                    </div>
+                                </t>
+                                <t t-if="record.documentos_vencidos_count.raw_value">
+                                    <div class="alert alert-danger py-1 px-2 mb-0" role="alert">
+                                        <i class="fa fa-file-text fa-fw"/>
+                                        <field name="documentos_vencidos_count"/> docs vencidos
+                                    </div>
+                                </t>
+                            </div>
+                        </t>
+                    </templates>
+                </kanban>
+            </field>
+        </record>
+
+        <record id="device_management_view_tree" model="ir.ui.view">
+            <field name="name">device.management.list</field>
+            <field name="model">device.management</field>
+            <field name="arch" type="xml">
+                <list string="Dispositivos"
+                    decoration-danger="garantia_fecha_fin and garantia_fecha_fin &lt; current_date"
+                    decoration-warning="state == 'maintenance'"
+                    decoration-muted="state == 'retired'">
+                    <field name="nombre_dispositivo" string="Dispositivo"/>
+                    <field name="state" string="Estado" widget="badge"
+                        decoration-success="state == 'active'"
+                        decoration-warning="state == 'maintenance'"
+                        decoration-muted="state == 'retired'"/>
+                    <field name="categoria" string="Categoría" optional="show"/>
+                    <field name="company_id" string="Sucursal" optional="show"/>
+                    <field name="usuario_asignado" string="Asignado a"/>
+                    <field name="codigo_dispositivo" string="Código" optional="show"/>
+                    <field name="modelo_dispositivo" string="Modelo" optional="hide"/>
+                    <field name="proximo_mantenimiento_fecha" string="Próx. Mant." optional="show"
+                        decoration-danger="mantenimiento_vencido_count > 0"/>
+                    <field name="garantia_vigente" string="Garantía" widget="boolean" optional="show"/>
+                    <field name="cantidad_a_la_mano" string="A la mano" optional="show"/>
+                    <field name="mantenimiento_vencido_count" string="Mant. vencidos" optional="hide"/>
+                    <field name="documentos_vencidos_count" string="Docs vencidos" optional="hide"/>
+                    <field name="suscripciones_vencidas_count" string="Subs vencidas" optional="hide"/>
+                    <field name="ubicacion_fisica" string="Ubicación" optional="hide"/>
+                </list>
+            </field>
+        </record>
+
+        <record model="ir.actions.act_window" id="act_device_management_menu">
+            <field name="name">IT Management</field>
+            <field name="res_model">device.management</field>
+            <field name="view_mode">kanban,list,form</field>
+            <field name="view_id" ref="device_management_view_kanban"/>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    Crear un nuevo dispositivo
+                </p>
+                <p>
+                    Registra dispositivos físicos, asignaciones, mantenimientos y documentación.
+                </p>
+            </field>
+        </record>
+
+        <menuitem id="menu_device_management" name="Medicine Depot - Activos IT"
+            web_icon="md_asset_devices,static/description/icon.png"
+            sequence="10" action="act_device_management_menu"/>
+    </data>
+</odoo>

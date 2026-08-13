@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="device_payment_view_form" model="ir.ui.view">
+            <field name="name">device.payment.form</field>
+            <field name="model">device.payment</field>
+            <field name="arch" type="xml">
+                <form>
+                    <sheet>
+                        <group>
+                            <group>
+                                <field name="device_id" required="True"/>
+                                <field name="tipo" widget="selection_badge" required="True"/>
+                            </group>
+                            <group>
+                                <field name="monto" required="True"/>
+                                <field name="estado" widget="badge" readonly="True"/>
+                            </group>
+                        </group>
+                        <field name="descripcion" placeholder="Ej: Compra inicial, Renta mensual..." required="True"/>
+                        <group string="Cronograma">
+                            <group>
+                                <field name="fecha_pago"/>
+                                <field name="pagado"/>
+                                <field name="periodo_pago" widget="selection_badge"/>
+                            </group>
+                            <group>
+                                <field name="fecha_proxima_renovacion"/>
+                                <field name="dias_para_vencer" readonly="True"/>
+                            </group>
+                        </group>
+                        <field name="invoice_id"/>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <record id="device_payment_view_tree" model="ir.ui.view">
+            <field name="name">device.payment.tree</field>
+            <field name="model">device.payment</field>
+            <field name="arch" type="xml">
+                <list string="Pagos" decoration-danger="estado == 'overdue'">
+                    <field name="device_id"/>
+                    <field name="tipo" widget="badge"/>
+                    <field name="descripcion"/>
+                    <field name="monto"/>
+                    <field name="invoice_id"/>
+                    <field name="fecha_proxima_renovacion" decoration-danger="fecha_proxima_renovacion &lt; current_date"/>
+                    <field name="estado" widget="badge" decoration-danger="estado == 'overdue'" decoration-warning="estado == 'pending'"/>
+                </list>
+            </field>
+        </record>
+    </data>
+</odoo>

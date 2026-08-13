@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- FORM VIEW -->
+        <record id="device_maintenance_view_form" model="ir.ui.view">
+            <field name="name">device.maintenance.form</field>
+            <field name="model">device.maintenance</field>
+            <field name="arch" type="xml">
+                <form>
+                    <header>
+                        <button name="action_confirmar" type="object" string="Confirmar" invisible="estado != 'draft'"/>
+                        <button name="action_iniciar" type="object" string="Iniciar" invisible="estado != 'scheduled'"/>
+                        <button name="action_completar" type="object" string="Completar" invisible="estado != 'in_progress'"/>
+                        <button name="action_cancelar" type="object" string="Cancelar" invisible="estado in ('completed', 'cancelled')"/>
+                        <field name="estado" widget="statusbar" statusbar_visible="draft,scheduled,in_progress,completed"/>
+                    </header>
+                    <sheet>
+                        <group>
+                            <group>
+                                <field name="device_id" required="True"/>
+                                <field name="tipo" widget="selection_badge" required="True"/>
+                                <field name="fecha_programada" required="True"/>
+                            </group>
+                            <group>
+                                <field name="tecnico_asignado"/>
+                                <field name="fecha_inicio"/>
+                                <field name="fecha_fin"/>
+                            </group>
+                        </group>
+                        <field name="descripcion" placeholder="Descripción del mantenimiento..."/>
+                        <group string="Costos">
+                            <group>
+                                <field name="costo_mano_obra"/>
+                                <field name="costo_repuestos"/>
+                            </group>
+                            <group>
+                                <field name="costo_total" readonly="True"/>
+                            </group>
+                        </group>
+                        <field name="observaciones" placeholder="Observaciones adicionales..."/>
+                        <group>
+                            <field name="proximo_mantenimiento" string="Próximo Mantenimiento Sugerido"/>
+                        </group>
+                    </sheet>
+                    <chatter/>
+                </form>
+            </field>
+        </record>
+
+        <!-- LIST VIEW -->
+        <record id="device_maintenance_view_tree" model="ir.ui.view">
+            <field name="name">device.maintenance.tree</field>
+            <field name="model">device.maintenance</field>
+            <field name="arch" type="xml">
+                <list string="Mantenimientos"
+                    decoration-danger="fecha_programada and fecha_programada &lt; current_date and estado != 'completed' and estado != 'cancelled'"
+                    decoration-warning="estado == 'in_progress'">
+                    <field name="device_id" string="Dispositivo"/>
+                    <field name="tipo" widget="badge"/>
+                    <field name="fecha_programada" string="Fecha Prog"/>
+                    <field name="tecnico_asignado"/>
+                    <field name="estado" widget="badge"
+                        decoration-success="estado == 'completed'"
+                        decoration-warning="estado == 'in_progress'"/>
+                    <field name="costo_total"/>
+                </list>
+            </field>
+        </record>
+
+        <!-- CALENDAR VIEW -->
+        <record id="device_maintenance_view_calendar" model="ir.ui.view">
+            <field name="name">device.maintenance.calendar</field>
+            <field name="model">device.maintenance</field>
+            <field name="arch" type="xml">
+                <calendar string="Calendario de Mantenimientos"
+                    date_start="fecha_programada"
+                    date_stop="fecha_fin"
+                    color="tipo">
+                    <field name="device_id" string="Dispositivo"/>
+                    <field name="tipo" string="Tipo"/>
+                    <field name="tecnico_asignado"/>
+                </calendar>
+            </field>
+        </record>
+
+        <!-- ACTION -->
+        <record model="ir.actions.act_window" id="act_device_maintenance">
+            <field name="name">Mantenimientos</field>
+            <field name="res_model">device.maintenance</field>
+            <field name="view_mode">list,form,calendar</field>
+        </record>
+    </data>
+</odoo>

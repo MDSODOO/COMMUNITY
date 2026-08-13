@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="device_subscription_view_form" model="ir.ui.view">
+            <field name="name">device.subscription.form</field>
+            <field name="model">device.subscription</field>
+            <field name="arch" type="xml">
+                <form>
+                    <sheet>
+                        <group>
+                            <group>
+                                <field name="device_id" required="True"/>
+                                <field name="tipo" widget="selection_badge" required="True"/>
+                            </group>
+                            <group>
+                                <field name="nombre_servicio" required="True"/>
+                                <field name="estado" widget="badge" readonly="True"/>
+                            </group>
+                        </group>
+                        <field name="descripcion" placeholder="Descripción del servicio..."/>
+                        <group string="Acceso">
+                            <field name="url_acceso" widget="url"/>
+                            <field name="usuario" groups="md_asset_devices.device_management_admin_group"/>
+                            <field name="contrasena" groups="md_asset_devices.device_management_admin_group" password="True"/>
+                        </group>
+                        <group string="Renovación">
+                            <group>
+                                <field name="fecha_inicio"/>
+                                <field name="periodo_renovacion" widget="selection_badge"/>
+                            </group>
+                            <group>
+                                <field name="fecha_vencimiento" required="True" decoration-danger="fecha_vencimiento &lt; current_date"/>
+                                <field name="dias_para_vencer" readonly="True"/>
+                            </group>
+                        </group>
+                        <field name="costo_anual"/>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <record id="device_subscription_view_tree" model="ir.ui.view">
+            <field name="name">device.subscription.tree</field>
+            <field name="model">device.subscription</field>
+            <field name="arch" type="xml">
+                <list string="Suscripciones"
+                    decoration-danger="fecha_vencimiento &lt; current_date"
+                    decoration-warning="dias_para_vencer &lt; 30 and dias_para_vencer >= 0">
+                    <field name="device_id"/>
+                    <field name="tipo" widget="badge"/>
+                    <field name="nombre_servicio"/>
+                    <field name="url_acceso" widget="url"/>
+                    <field name="fecha_vencimiento" decoration-danger="fecha_vencimiento &lt; current_date"/>
+                    <field name="periodo_renovacion" widget="selection_badge"/>
+                    <field name="costo_anual"/>
+                    <field name="estado" widget="badge" decoration-danger="estado == 'vencido'" decoration-warning="estado == 'proximo_vencer'"/>
+                </list>
+            </field>
+        </record>
+    </data>
+</odoo>

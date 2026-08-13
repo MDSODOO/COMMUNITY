@@ -1,0 +1,25 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_device_management_user,device.management - User,model_device_management,md_asset_devices.device_management_user_group,1,0,0,0
+access_device_management_manager,device.management - Manager,model_device_management,md_asset_devices.device_management_manager_group,1,1,1,0
+access_device_management_admin,device.management - Admin,model_device_management,md_asset_devices.device_management_admin_group,1,1,1,1
+access_device_inventory_user,device.inventory - User,model_device_inventory,md_asset_devices.device_management_user_group,1,0,0,0
+access_device_inventory_manager,device.inventory - Manager,model_device_inventory,md_asset_devices.device_management_manager_group,1,1,1,0
+access_device_inventory_admin,device.inventory - Admin,model_device_inventory,md_asset_devices.device_management_admin_group,1,1,1,1
+access_device_assignment_user,device.assignment - User,model_device_assignment,md_asset_devices.device_management_user_group,1,0,0,0
+access_device_assignment_manager,device.assignment - Manager,model_device_assignment,md_asset_devices.device_management_manager_group,1,1,1,1
+access_device_assignment_admin,device.assignment - Admin,model_device_assignment,md_asset_devices.device_management_admin_group,1,1,1,1
+access_device_maintenance_user,device.maintenance - User,model_device_maintenance,md_asset_devices.device_management_user_group,1,0,0,0
+access_device_maintenance_manager,device.maintenance - Manager,model_device_maintenance,md_asset_devices.device_management_manager_group,1,1,1,1
+access_device_maintenance_admin,device.maintenance - Admin,model_device_maintenance,md_asset_devices.device_management_admin_group,1,1,1,1
+access_device_documentation_user,device.documentation - User,model_device_documentation,md_asset_devices.device_management_user_group,1,0,0,0
+access_device_documentation_manager,device.documentation - Manager,model_device_documentation,md_asset_devices.device_management_manager_group,1,1,1,0
+access_device_documentation_admin,device.documentation - Admin,model_device_documentation,md_asset_devices.device_management_admin_group,1,1,1,1
+access_device_payment_user,device.payment - User,model_device_payment,md_asset_devices.device_management_user_group,1,0,0,0
+access_device_payment_manager,device.payment - Manager,model_device_payment,md_asset_devices.device_management_manager_group,1,1,1,0
+access_device_payment_admin,device.payment - Admin,model_device_payment,md_asset_devices.device_management_admin_group,1,1,1,1
+access_device_subscription_user,device.subscription - User,model_device_subscription,md_asset_devices.device_management_user_group,1,0,0,0
+access_device_subscription_manager,device.subscription - Manager,model_device_subscription,md_asset_devices.device_management_manager_group,1,1,0,0
+access_device_subscription_admin,device.subscription - Admin,model_device_subscription,md_asset_devices.device_management_admin_group,1,1,1,1
+access_device_todo_user,device.todo - User,model_device_todo,md_asset_devices.device_management_user_group,1,1,1,0
+access_device_todo_manager,device.todo - Manager,model_device_todo,md_asset_devices.device_management_manager_group,1,1,1,1
+access_device_todo_admin,device.todo - Admin,model_device_todo,md_asset_devices.device_management_admin_group,1,1,1,1

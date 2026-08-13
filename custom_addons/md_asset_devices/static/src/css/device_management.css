@@ -1,0 +1,26 @@
+/* Device Management Styles */
+
+.device_management_widget .guarantee_bar {
+    height: 6px;
+    border-radius: 3px;
+}
+
+.device_management_widget .kanban_alert {
+    padding: 8px 12px;
+    margin-bottom: 8px;
+    border-radius: 4px;
+    font-size: 12px;
+}
+
+.device_management_widget .quantity_a_la_mano {
+    font-weight: bold;
+    color: #1d9741;
+}
+
+.device_management_widget .location_badge {
+    display: inline-block;
+    padding: 4px 8px;
+    background-color: #f0f0f0;
+    border-radius: 3px;
+    font-size: 11px;
+}

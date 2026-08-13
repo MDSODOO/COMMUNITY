@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- CRON PARA ALERTAS DE SUSCRIPCIONES PRÓXIMAS A VENCER -->
+        <record model="ir.cron" id="cron_device_subscription_renewal_reminder">
+            <field name="name">Device Management - Suscripción Renewal Reminder</field>
+            <field name="model_id" ref="md_asset_devices.model_device_subscription"/>
+            <field name="state">code</field>
+            <field name="code"><![CDATA[
+# Buscar suscripciones próximas a vencer (próximos 30 días)
+today = datetime.date.today()
+next_30_days = today + datetime.timedelta(days=30)
+
+suscripciones = env['device.subscription'].search([
+    ('fecha_vencimiento', '>=', today),
+    ('fecha_vencimiento', '<=', next_30_days),
+    ('estado', '!=', 'cancelado'),
+])
+
+for suscripcion in suscripciones:
+    if suscripcion.device_id:
+        # Crear actividad de recordatorio
+        suscripcion.activity_schedule(
+            'mail.mail_activity_data_todo',
+            summary=f'Suscripción por vencer: {suscripcion.nombre_servicio}',
+            note=f'La suscripción vence el {suscripcion.fecha_vencimiento}',
+            user_id=env.user.id
+        )
+]]></field>
+            <field name="interval_number">1</field>
+            <field name="interval_type">days</field>
+            <field name="nextcall">2026-06-21 09:00:00</field>
+        </record>
+
+        <!-- CRON PARA ALERTAS DE GARANTÍAS PRÓXIMAS A EXPIRAR -->
+        <record model="ir.cron" id="cron_device_warranty_expiration_reminder">
+            <field name="name">Device Management - Warranty Expiration Reminder</field>
+            <field name="model_id" ref="md_asset_devices.model_device_management"/>
+            <field name="state">code</field>
+            <field name="code"><![CDATA[
+today = datetime.date.today()
+next_60_days = today + datetime.timedelta(days=60)
+
+dispositivos = env['device.management'].search([
+    ('garantia_fecha_fin', '>=', today),
+    ('garantia_fecha_fin', '<=', next_60_days),
+    ('state', '!=', 'retired'),
+])
+
+for dispositivo in dispositivos:
+    dispositivo.activity_schedule(
+        'mail.mail_activity_data_todo',
+        summary=f'Garantía próxima a expirar: {dispositivo.nombre_dispositivo}',
+        note=f'La garantía vence el {dispositivo.garantia_fecha_fin}',
+        user_id=env.user.id
+    )
+]]></field>
+            <field name="interval_number">1</field>
+            <field name="interval_type">days</field>
+            <field name="nextcall">2026-06-21 10:00:00</field>
+        </record>
+
+    </data>
+</odoo>
