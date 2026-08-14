@@ -44,6 +44,9 @@ class RaffleCampaign(models.Model):
     prize_ids = fields.One2many('raffle.prize', 'campaign_id', string='Premios')
     prize_count = fields.Integer(string='Cantidad de Premios', compute='_compute_prize_count')
 
+    partner_summary_count = fields.Integer(
+        string='Clientes con Boletos', compute='_compute_partner_summary_count')
+
     winner_ticket_id = fields.Many2one(
         'raffle.ticket', string='Último Boleto Ganador', readonly=True, copy=False,
         help='Último boleto ganador sorteado en esta campaña. El histórico '
@@ -71,6 +74,14 @@ class RaffleCampaign(models.Model):
     def _compute_prize_count(self):
         for camp in self:
             camp.prize_count = len(camp.prize_ids)
+
+    @api.depends('ticket_ids')
+    def _compute_partner_summary_count(self):
+        Summary = self.env['raffle.ticket.summary']
+        for camp in self:
+            camp.partner_summary_count = Summary.search_count(
+                [('campaign_id', '=', camp.id)]
+            )
 
     @api.constrains('date_start', 'date_end')
     def _check_dates(self):

@@ -38,6 +38,11 @@
                                 context="{'search_default_campaign_id': id}">
                             <field name="ticket_count" widget="statinfo" string="Folios"/>
                         </button>
+                        <button name="%(action_raffle_ticket_summary)d" type="action"
+                                class="oe_stat_button" icon="fa-users"
+                                context="{'search_default_campaign_id': id}">
+                            <field name="partner_summary_count" widget="statinfo" string="Clientes"/>
+                        </button>
                     </div>
                     <div class="oe_title">
                         <label for="name"/>
