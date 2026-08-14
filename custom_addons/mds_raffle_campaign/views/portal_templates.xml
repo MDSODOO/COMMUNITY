@@ -48,17 +48,17 @@
                                     <span t-if="summary.online_count" class="badge rounded-pill o_mds_raffle_badge_online">
                                         BP · <t t-esc="summary.online_count"/>
                                     </span>
-                                    <span t-if="summary.has_sponsor_line" class="badge rounded-pill text-bg-success">
+                                    <span t-if="summary.has_sponsor_line" class="badge rounded-pill o_mds_raffle_badge_sponsor">
                                         LOEFFLER/GALIA
                                     </span>
-                                    <span t-if="summary.has_sponsor_catalog" class="badge rounded-pill text-bg-warning">
+                                    <span t-if="summary.has_sponsor_catalog" class="badge rounded-pill o_mds_raffle_badge_sponsor">
                                         PATROCINIO
                                     </span>
                                 </div>
                             </div>
                             <div class="text-end flex-shrink-0 ps-2">
                                 <div class="fs-2 fw-bold o_mds_raffle_count lh-1" t-esc="summary.ticket_count"/>
-                                <div class="text-muted small">boletos</div>
+                                <div class="text-muted small o_mds_raffle_count_label">boletos</div>
                             </div>
                         </div>
                     </div>

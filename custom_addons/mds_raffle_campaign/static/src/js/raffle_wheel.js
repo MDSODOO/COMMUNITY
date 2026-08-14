@@ -161,6 +161,16 @@ export class RaffleWheel extends Component {
             this._buildBulbs(this.bulbsBottomRef.el, 16);
             window.addEventListener("resize", this._resizeConfetti);
             this._resizeConfetti();
+            // Si la campaña ya no tiene premios pendientes al ABRIR la ruleta
+            // (no solo después de un giro), la action-zone del template no
+            // pinta nada cuando hay mascota habilitada (el done-banner solo
+            // aparece con !mascotEnabled/reducedMotion — ver raffle_wheel.xml).
+            // Sin este disparo, la página se ve vacía debajo del marquee.
+            // Replica el mismo cierre que onSpinClick corre tras el último
+            // giro: mascota final fija + su bocadillo con el aviso de cierre.
+            if (this.state.done) {
+                setTimeout(() => this._runFinalCongrats(), 250);
+            }
         });
 
         onWillUnmount(() => {

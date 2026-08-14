@@ -42,24 +42,86 @@
 
 .o_mds_raffle_title {
     font-family: 'Montserrat', -apple-system, 'Helvetica Neue', Arial, sans-serif;
+    font-size: 15px !important;
+    font-weight: 700 !important;
+    margin-bottom: 6px !important;
 }
 
 .o_mds_raffle_summary_card {
     border-left-color: var(--mds-electric, #00AEFF) !important;
+    background-color: #fff !important;
+    border-radius: 16px !important;
+    padding: 20px 22px !important;
+    box-shadow: 0 1px 2px rgba(4, 36, 85, .06), 0 8px 24px -12px rgba(4, 36, 85, .14) !important;
 }
 
 .o_mds_raffle_count {
-    color: var(--mds-navy, #042455) !important;
+    color: var(--mds-electric, #00AEFF) !important;
+    font-family: 'Montserrat', -apple-system, 'Helvetica Neue', Arial, sans-serif !important;
+    font-size: 30px !important;
+    font-weight: 800 !important;
+}
+
+.o_mds_raffle_count_label {
+    font-size: 11.5px !important;
+    color: #4a5a72 !important;
+}
+
+// Las 4 variantes de badge del artifact son "soft pills" (fondo tenue del
+// color + texto en el tono fuerte correspondiente), NUNCA relleno sólido con
+// texto blanco como los .badge/.text-bg-* crudos de Bootstrap. Se definen acá
+// para no tocar .text-bg-success/.text-bg-warning globales (ver nota arriba).
+.qf-badge, .o_mds_raffle_badge_physical, .o_mds_raffle_badge_online, .o_mds_raffle_badge_sponsor {
+    font-size: 11.5px !important;
+    font-weight: 700 !important;
+    padding: 3px 10px !important;
 }
 
 .o_mds_raffle_badge_physical {
-    background-color: var(--mds-navy, #042455) !important;
-    color: #fff !important;
+    background-color: color-mix(in srgb, #4a5a72 16%, #fff) !important;
+    color: #4a5a72 !important;
 }
 
 .o_mds_raffle_badge_online {
-    background-color: var(--mds-electric, #00AEFF) !important;
-    color: #fff !important;
+    background-color: color-mix(in srgb, var(--mds-electric, #00AEFF) 16%, #fff) !important;
+    color: #0092D6 !important;
+}
+
+.o_mds_raffle_badge_sponsor {
+    background-color: color-mix(in srgb, var(--mds-gold, #F2B705) 26%, #fff) !important;
+    color: #8a6400 !important;
+}
+
+// Tabla de folios (portal.portal_table de Odoo, clases o_portal_my_doc_table
+// que no controlamos): se afinan tipografía/paddings para que coincida con
+// .raffle-table del artifact sin tocar el componente compartido de Odoo
+// (el override queda acotado a .o_mds_raffle_page).
+.o_mds_raffle_page {
+    .o_portal_my_doc_table {
+        font-size: 13px;
+
+        thead th {
+            font-size: 11px !important;
+            font-weight: 700 !important;
+            letter-spacing: .06em;
+            text-transform: uppercase;
+            color: #4a5a72;
+            background-color: #efefed;
+        }
+
+        td, th {
+            padding: 11px 16px !important;
+        }
+
+        td:first-child span {
+            font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+            font-weight: 600;
+        }
+
+        td.text-end, th.text-end {
+            font-variant-numeric: tabular-nums;
+        }
+    }
 }
 
 // ── /web/login — panel dividido (hero navy + formulario), vía clases
@@ -107,7 +169,7 @@
 .login-panel {
     position: relative;
     overflow: hidden;
-    background: linear-gradient(160deg, #042455 0%, #0269AA 78%, #00639e 100%);
+    background: linear-gradient(160deg, #042455 0%, #004A8D 78%, #00639e 100%);
     color: #fff;
     display: flex;
     flex-direction: column;
@@ -177,17 +239,16 @@
     }
 }
 
+// El artifact aprobado usa texto plano (sin fondo/pill) para el eyebrow: solo
+// tipografía uppercase en el azul cielo tenue del panel, NO un badge relleno.
 .login-hero-eyebrow {
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: .08em;
+    font-size: 11.5px;
+    font-weight: 600;
+    letter-spacing: .14em;
     text-transform: uppercase;
-    color: #fff;
-    background: #00AEFF;
-    border-radius: 999px;
-    padding: 6px 14px;
-    margin-bottom: 18px;
-    display: inline-block;
+    color: #b0c4de;
+    margin-bottom: 14px;
+    display: block;
 }
 
 .login-hero h1 {
@@ -250,6 +311,7 @@
     h2 {
         font-size: 24px;
         font-weight: 800;
+        font-family: 'Montserrat', -apple-system, 'Helvetica Neue', Arial, sans-serif;
         margin: 0;
     }
 
@@ -352,8 +414,8 @@
     font-size: 14.5px;
 
     &:hover, &:focus, &:active {
-        background-color: #0269AA !important;
-        border-color: #0269AA !important;
+        background-color: #0092D6 !important;
+        border-color: #0092D6 !important;
         color: #fff !important;
     }
 }
