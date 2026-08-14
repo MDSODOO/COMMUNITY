@@ -9,7 +9,6 @@
                 <field name="ticket_count"/>
                 <field name="physical_count"/>
                 <field name="online_count"/>
-                <field name="legacy_refs"/>
                 <field name="has_sponsor_line"/>
                 <field name="has_sponsor_catalog"/>
                 <templates>
@@ -41,10 +40,6 @@
                                 <span t-if="record.has_sponsor_catalog.raw_value" class="badge rounded-pill text-bg-warning">
                                     PATROCINIO
                                 </span>
-                            </div>
-                            <div class="text-muted small text-truncate" t-if="record.legacy_refs.raw_value"
-                                 t-att-title="record.legacy_refs.value">
-                                <field name="legacy_refs"/>
                             </div>
                             <div class="d-flex justify-content-end mt-2">
                                 <button type="object" name="action_view_tickets"
