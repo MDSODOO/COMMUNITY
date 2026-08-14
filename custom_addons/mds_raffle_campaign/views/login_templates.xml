@@ -1,5 +1,105 @@
 <odoo>
 
+    <!-- Rediseño completo de /web/login con fidelidad al mockup aprobado:
+         panel dividido (hero navy a la izquierda, formulario a la derecha).
+
+         IMPORTANTE sobre el árbol de templates en esta instancia (confirmado
+         leyendo los XML reales del contenedor, no supuesto):
+           - web.login_layout (core) pinta una "card" centrada de max-width:300px
+             con el logo de la compañía y el pie "Manage Databases / Powered by Odoo".
+           - website.login_layout (priority=20, del módulo `website`, instalado
+             acá) REEMPLAZA por completo esa card: en su lugar llama a
+             website.layout (el sitio completo, header/footer normal) y mete el
+             contenido de web.login crudo dentro de
+             <div class="oe_website_login_container" t-out="0"/>. Por eso la
+             card de Odoo nunca se ve en esta instancia y por eso NO hace falta
+             tocar web.login_layout para nada de este rediseño: el contenido
+             que sí controla el layout visible es el de este template,
+             `web.login`, directo.
+           - El propio `web.login` (core) NO define ningún `<div>` que envuelva
+             el <form> completo — el form es un hijo directo, hermano de
+             oe_structure_login_top/bottom y del owl-component de user switch.
+           - `auth_signup.login` (auth_signup, instalado) inserta el link
+             "Reset Password" después de `label[@for='password']` y el link
+             "Don't have an account?" después del botón submit, ambos dentro
+             del <form>.
+           - `auth_passkey_login` (auth_passkey, instalado, priority=32)
+             agrega un input hidden `webauthn_response` y, vía
+             `web.login_oauth`, un botón "Use a Passkey" (auth_passkey no
+             trae oauth social real: auth_oauth está desinstalado acá, así
+             que el único auth_btn extra es el de passkey).
+         Todo eso vive DENTRO del <form class="oe_login_form">. La técnica
+         usada abajo ancla el nuevo árbol `position="after"` del
+         owl-component (el hermano justo antes del <form> en el original),
+         y dentro de ese árbol nuevo usa `<xpath ... position="move"/>` para
+         reubicar el <form> real (nodo distinto del ancla, evita el xpath
+         auto-referencial que Odoo no permite resolver: intentarlo con
+         `position="replace"` sobre el propio <form> falla porque el nodo ya
+         no es localizable en el momento en que se procesa el `move` anidado).
+         Es el patrón estándar de Odoo para "envolver un nodo sin
+         reescribirlo": el <form> se relocaliza intacto, con TODO su
+         contenido y condicionales (t-if de error/message/debug/passkey,
+         inputs de csrf/redirect/webauthn_response, y los links que auth_signup
+         inserta), dentro de la nueva tarjeta. No se recrea nada del form a
+         mano y el orden de aplicación entre este template y
+         auth_signup.login / auth_passkey_login no importa: como el `move`
+         relocaliza el <form> completo con lo que tenga adentro en ese
+         momento (o lo que se le agregue después, vía los mismos selectores
+         internos que siguen intactos), el resultado es el mismo sin
+         importar quién corra primero. -->
+    <template id="web_login_mds_layout" name="Login: panel dividido Quifamesa" inherit_id="web.login">
+        <xpath expr="//owl-component[@name='web.user_switch']" position="after">
+            <div class="login-wrap">
+                <div class="login-panel">
+                    <div class="login-glow login-glow-1"/>
+                    <div class="login-glow login-glow-2"/>
+                    <div class="login-mark">
+                        <div class="login-mark-chip">
+                            <img src="/mds_raffle_campaign/static/src/img/logo-quifamesa.png"
+                                 alt="Quifamesa" class="o_mds_login_logo"/>
+                        </div>
+                    </div>
+                    <div class="login-hero">
+                        <span class="login-hero-eyebrow">Portal de clientes</span>
+                        <h1>Tu cuenta, tus pedidos y tus <span class="accent">boletos de rifa</span> en un solo lugar.</h1>
+                        <p>Consulta facturas, direcciones y el estado de tus boletos de la Rifa 52 Aniversario sin salir del portal.</p>
+                        <div class="login-stat-row">
+                            <div class="login-stat"><b>18,121</b><span>folios activos</span></div>
+                            <div class="login-stat"><b>406</b><span>clientes participando</span></div>
+                        </div>
+                    </div>
+                    <div class="login-panel-foot">© Quifamesa · Distribución farmacéutica</div>
+                </div>
+                <div class="login-form-side">
+                    <div class="login-card">
+                        <h2>Bienvenido de vuelta</h2>
+                        <p class="sub">Ingresa con tu correo para continuar.</p>
+                        <!-- El <form> real de Odoo, con TODA su lógica intacta,
+                             se mueve completo a este punto. -->
+                        <xpath expr="//form[hasclass('oe_login_form')]" position="move"/>
+                    </div>
+                </div>
+            </div>
+        </xpath>
+    </template>
+
+    <!-- Clases visuales sobre los campos ya existentes del <form> real (no se
+         agregan/quitan inputs, no se toca ningún t-if). -->
+    <template id="web_login_mds_field_classes" name="Login: clases de campos Quifamesa" inherit_id="web.login">
+        <xpath expr="//div[hasclass('field-login')]" position="attributes">
+            <attribute name="class" add="qf-field" separator=" "/>
+        </xpath>
+        <xpath expr="//input[@id='login']" position="attributes">
+            <attribute name="class" add="qf-input" separator=" "/>
+        </xpath>
+        <xpath expr="//div[hasclass('o_caps_lock_warning')]" position="attributes">
+            <attribute name="class" add="qf-field" separator=" "/>
+        </xpath>
+        <xpath expr="//input[@id='password']" position="attributes">
+            <attribute name="class" add="qf-input" separator=" "/>
+        </xpath>
+    </template>
+
     <!-- Cambio aditivo y mínimo al login compartido de esta instancia
          (quifamesa_raffle_test): agrega una clase nueva al botón de
          "Log in" para pintarlo con el azul eléctrico real de Quifamesa
@@ -15,24 +115,14 @@
         </xpath>
     </template>
 
-    <!-- Logo real: en esta instancia el módulo `website` está instalado y
-         website.login_layout (priority=20) REEMPLAZA por completo el
-         contenido de web.login_layout (confirmado leyendo
-         website/views/website_templates.xml) — se pierde la tarjeta blanca
-         con el <img> de res.company.logo que trae Odoo de fábrica, y el
-         login queda envuelto en el header/footer normal del sitio (que
-         trae su propio placeholder "Your Logo", un campo aparte del logo
-         de la compañía, y tocarlo afectaría todo el sitio, no solo el
-         login — fuera de alcance). Por eso el logo se agrega explícito
-         acá, solo dentro del contenido propio de web.login, que es el que
-         SÍ sigue renderizándose (envuelto o no por el sitio) en /web/login,
-         /web/signup y /web/reset_password. -->
-    <template id="web_login_mds_logo" name="Login: logo real Quifamesa" inherit_id="web.login">
-        <xpath expr="//div[@id='oe_structure_login_top']" position="after">
-            <div class="text-center mb-4">
-                <img src="/mds_raffle_campaign/static/src/img/logo-quifamesa.png" alt="Quifamesa"
-                     class="o_mds_login_logo"/>
-            </div>
+    <!-- Divisor "- or -" que antecede al botón de Passkey (auth_passkey
+         instalado, auth_oauth NO instalado en esta instancia, así que el
+         único auth_btn extra es "Use a Passkey"). Puramente cosmético: solo
+         agrega una clase, no toca el t-if que controla si el divisor
+         aparece. -->
+    <template id="web_login_oauth_mds_divider" name="Login: divisor de acento Quifamesa" inherit_id="web.login_oauth">
+        <xpath expr="//em[hasclass('text-muted')]" position="attributes">
+            <attribute name="class" add="qf-divider" separator=" "/>
         </xpath>
     </template>
 

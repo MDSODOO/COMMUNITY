@@ -62,9 +62,13 @@
     color: #fff !important;
 }
 
-// ── /web/login — logo + botón de acceso, vía clases nuevas agregadas
-// desde views/login_templates.xml (nunca se toca .btn-primary global ni
-// el logo/nav del sitio) ────────────────────────────────────────────────
+// ── /web/login — panel dividido (hero navy + formulario), vía clases
+// nuevas agregadas desde views/login_templates.xml. El <form> real de Odoo
+// (con su lógica de csrf/error/passkey/reset-password/signup intacta) se
+// mueve dentro de este layout por XPath position="move" — este bloque solo
+// pinta lo que ya existe, nunca se toca .btn-primary/.form-control global ni
+// el header/footer del sitio (website.layout), que sigue envolviendo esta
+// página tal cual. ──────────────────────────────────────────────────────
 .o_mds_login_logo {
     display: block;
     max-height: 64px;
@@ -72,14 +76,252 @@
     margin: 0 auto;
 }
 
-.btn.o_mds_login_btn {
-    background-color: #00AEFF;
-    border-color: #00AEFF;
+// oe_website_login_container es el div "crudo" (sin estilos propios) donde
+// website.login_layout mete el contenido de web.login dentro del sitio
+// completo (header/footer). Le damos aire y centramos el panel para que no
+// quede pegado a los bordes del contenedor del sitio.
+.oe_website_login_container {
+    padding: clamp(16px, 4vw, 48px) 16px;
+    display: flex;
+    justify-content: center;
+}
+
+.login-wrap {
+    display: grid;
+    grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+    min-height: 640px;
+    width: 100%;
+    max-width: 1100px;
+    margin: 0 auto;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 20px 60px -20px rgba(4, 36, 85, .35);
+}
+
+@media (max-width: 860px) {
+    .login-wrap {
+        grid-template-columns: 1fr;
+    }
+}
+
+.login-panel {
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(160deg, #042455 0%, #0269AA 78%, #00639e 100%);
     color: #fff;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: clamp(28px, 5vw, 64px);
+}
+
+@media (max-width: 860px) {
+    .login-panel {
+        min-height: 320px;
+    }
+}
+
+.login-glow {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(60px);
+    pointer-events: none;
+}
+
+.login-glow-1 {
+    width: 320px;
+    height: 320px;
+    left: -8%;
+    top: -6%;
+    background: #00AEFF;
+    opacity: .35;
+}
+
+.login-glow-2 {
+    width: 260px;
+    height: 260px;
+    right: -6%;
+    bottom: 4%;
+    background: #F2B705;
+    opacity: .16;
+}
+
+.login-mark {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.login-mark-chip {
+    padding: 8px 14px;
+    border-radius: 10px;
+    background: #fff;
+    display: flex;
+    align-items: center;
+    box-shadow: 0 4px 14px -6px rgba(0, 0, 0, .35);
+
+    img {
+        height: 26px;
+        width: auto;
+        display: block;
+    }
+}
+
+.login-hero {
+    position: relative;
+    max-width: 460px;
+
+    .accent {
+        color: #00AEFF;
+    }
+}
+
+.login-hero-eyebrow {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: #fff;
+    background: #00AEFF;
+    border-radius: 999px;
+    padding: 6px 14px;
+    margin-bottom: 18px;
+    display: inline-block;
+}
+
+.login-hero h1 {
+    font-size: clamp(28px, 3.6vw, 40px);
+    line-height: 1.12;
+    font-weight: 800;
+    font-family: 'Montserrat', -apple-system, 'Helvetica Neue', Arial, sans-serif;
+    margin: 0;
+    color: #fff;
+}
+
+.login-hero p {
+    margin-top: 16px;
+    font-size: 15px;
+    line-height: 1.6;
+    color: #b0c4de;
+    max-width: 40ch;
+}
+
+.login-stat-row {
+    position: relative;
+    display: flex;
+    gap: 28px;
+    margin-top: 36px;
+}
+
+.login-stat {
+    b {
+        font-family: 'Montserrat', sans-serif;
+        font-size: 22px;
+        font-weight: 800;
+        display: block;
+    }
+
+    span {
+        font-size: 11.5px;
+        color: #b0c4de;
+    }
+}
+
+.login-panel-foot {
+    position: relative;
+    font-size: 12px;
+    color: #b0c4de;
+    opacity: .8;
+}
+
+.login-form-side {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: clamp(28px, 6vw, 60px);
+    background: #f4f7f9;
+}
+
+.login-card {
+    width: 100%;
+    max-width: 380px;
+
+    h2 {
+        font-size: 24px;
+        font-weight: 800;
+        margin: 0;
+    }
+
+    .sub {
+        margin-top: 6px;
+        font-size: 13.5px;
+        color: #4a5a72;
+    }
+
+    // El <form> real de Odoo aterriza aquí (movido por XPath); heredamos su
+    // margen superior del primer qf-field, no hace falta un selector extra.
+    .oe_login_buttons a.btn-link {
+        color: #0269AA;
+    }
+}
+
+.qf-field {
+    margin-top: 22px;
+}
+
+.qf-input {
+    width: 100%;
+    padding: 11px 13px;
+    font-size: 14px;
+    border: 1px solid #c3d0e2;
+    border-radius: 9px;
+    background: #fff;
+
+    &:focus-visible {
+        outline: none;
+        border-color: #00AEFF;
+        box-shadow: 0 0 0 3px rgba(0, 174, 255, .22);
+    }
+}
+
+.qf-btn-primary, .btn.o_mds_login_btn {
+    width: 100%;
+    margin-top: 26px;
+    padding: 12px 18px;
+    border-radius: 9px;
+    border: none;
+    background-color: #00AEFF;
+    color: #fff;
+    font-weight: 700;
+    font-size: 14.5px;
 
     &:hover, &:focus, &:active {
         background-color: #0269AA !important;
         border-color: #0269AA !important;
         color: #fff !important;
     }
+}
+
+.qf-divider {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 20px 0;
+    color: #4a5a72;
+    font-size: 12px;
+
+    &::before, &::after {
+        content: "";
+        flex: 1;
+        height: 1px;
+        background: #dde4ee;
+    }
+}
+
+.login-card-foot {
+    margin-top: 26px;
+    text-align: center;
+    font-size: 13px;
+    color: #4a5a72;
 }
