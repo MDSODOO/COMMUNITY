@@ -3,7 +3,7 @@
         <field name="name">raffle.ticket.summary.kanban</field>
         <field name="model">raffle.ticket.summary</field>
         <field name="arch" type="xml">
-            <kanban class="o_kanban_dashboard" records_draggable="0" create="0" edit="0" delete="0">
+            <kanban records_draggable="0" create="0" edit="0" delete="0">
                 <field name="partner_id"/>
                 <field name="campaign_id"/>
                 <field name="ticket_count"/>
@@ -80,7 +80,6 @@
                 <filter string="Con bono línea patrocinadora" name="has_sponsor_line" domain="[('has_sponsor_line', '=', True)]"/>
                 <filter string="Con bono catálogo patrocinado" name="has_sponsor_catalog" domain="[('has_sponsor_catalog', '=', True)]"/>
                 <group>
-                    <filter string="Cliente" name="group_partner" context="{'group_by': 'partner_id'}"/>
                     <filter string="Campaña" name="group_campaign" context="{'group_by': 'campaign_id'}"/>
                 </group>
             </search>
