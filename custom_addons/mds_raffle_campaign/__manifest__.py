@@ -9,7 +9,7 @@
     'author': 'MedicineDepot Sureste',
     'website': 'https://medicinedepot.com.mx',
     'license': 'LGPL-3',
-    'depends': ['sale', 'point_of_sale', 'mail', 'md_product_lines', 'base_setup'],
+    'depends': ['sale', 'point_of_sale', 'mail', 'md_product_lines', 'base_setup', 'portal'],
     'data': [
         'security/ir.model.access.csv',
         'views/raffle_ticket_views.xml',
@@ -18,6 +18,7 @@
         'views/raffle_campaign_views.xml',
         'views/res_config_settings_views.xml',
         'views/raffle_menus.xml',
+        'views/portal_templates.xml',
         'data/raffle_whatsapp_cron.xml',
     ],
     'assets': {

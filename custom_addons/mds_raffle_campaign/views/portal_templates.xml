@@ -1,0 +1,93 @@
+<odoo>
+
+    <template id="portal_my_home_raffle" name="Portal my home : rifa" inherit_id="portal.portal_my_home" customize_show="True" priority="50">
+        <xpath expr="//div[hasclass('o_portal_docs')]" position="before">
+            <t t-set="portal_client_category_enable" t-value="True"/>
+        </xpath>
+        <div id="portal_client_category" position="inside">
+            <t t-call="portal.portal_docs_entry">
+                <t t-set="icon" t-value="'/mds_raffle_campaign/static/description/icon.png'"/>
+                <t t-set="title">Mis Boletos de Rifa</t>
+                <t t-set="text">Consulta tus boletos acumulados y de qué compras se generaron</t>
+                <t t-set="url" t-value="'/my/raffles'"/>
+                <t t-set="placeholder_count" t-value="'raffle_ticket_count'"/>
+            </t>
+        </div>
+    </template>
+
+    <template id="portal_breadcrumbs_raffle" name="Portal breadcrumbs : rifa" inherit_id="portal.portal_breadcrumbs" priority="30">
+        <xpath expr="//ol[hasclass('o_portal_submenu')]" position="inside">
+            <li t-if="page_name == 'raffle'" class="breadcrumb-item active">Mis Boletos de Rifa</li>
+        </xpath>
+    </template>
+
+    <template id="portal_my_raffles" name="Mis Boletos de Rifa">
+        <t t-call="portal.portal_layout">
+            <t t-set="breadcrumbs_searchbar" t-value="True"/>
+
+            <t t-call="portal.portal_searchbar">
+                <t t-set="title">Mis Boletos de Rifa</t>
+            </t>
+
+            <div t-if="not summaries" class="alert alert-warning" role="alert">
+                Todavía no tienes boletos de rifa acumulados.
+            </div>
+
+            <div t-if="summaries" class="row g-2 mb-4">
+                <div class="col-12 col-md-6" t-foreach="summaries" t-as="summary">
+                    <div class="d-flex gap-3 py-3 px-3 h-100 rounded bg-100">
+                        <div class="flex-grow-1">
+                            <div class="mb-1">
+                                <span class="fs-5 fw-bold" t-field="summary.campaign_id.name"/>
+                            </div>
+                            <div class="d-flex flex-wrap gap-1">
+                                <span t-if="summary.physical_count" class="badge rounded-pill text-bg-secondary">
+                                    R · <t t-esc="summary.physical_count"/>
+                                </span>
+                                <span t-if="summary.online_count" class="badge rounded-pill text-bg-info">
+                                    BP · <t t-esc="summary.online_count"/>
+                                </span>
+                                <span t-if="summary.has_sponsor_line" class="badge rounded-pill text-bg-success">
+                                    LOEFFLER/GALIA
+                                </span>
+                                <span t-if="summary.has_sponsor_catalog" class="badge rounded-pill text-bg-warning">
+                                    PATROCINIO
+                                </span>
+                            </div>
+                        </div>
+                        <div class="text-end flex-shrink-0">
+                            <div class="fs-2 fw-bold text-primary" t-esc="summary.ticket_count"/>
+                            <div class="text-muted small">boletos</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <t t-if="tickets" t-call="portal.portal_table">
+                <thead>
+                    <tr class="active">
+                        <th>Folio</th>
+                        <th>Origen</th>
+                        <th>Regla</th>
+                        <th class="text-end">Campaña</th>
+                    </tr>
+                </thead>
+                <t t-foreach="tickets" t-as="ticket">
+                    <tr>
+                        <td>
+                            <span t-field="ticket.name"/>
+                            <div t-if="ticket.legacy_ref" class="text-muted small" t-field="ticket.legacy_ref"/>
+                        </td>
+                        <td>
+                            <span t-if="ticket.origin_type == 'physical'" class="badge rounded-pill text-bg-secondary">R · Física</span>
+                            <span t-if="ticket.origin_type == 'online_b2b'" class="badge rounded-pill text-bg-info">BP · B2B en línea</span>
+                        </td>
+                        <td><span t-field="ticket.rule_id.name"/></td>
+                        <td class="text-end"><span t-field="ticket.campaign_id.name"/></td>
+                    </tr>
+                </t>
+            </t>
+        </t>
+    </template>
+
+</odoo>
