@@ -6,7 +6,7 @@ import { debounce } from "@web/core/utils/timing";
 import { Component, useState, useRef, onMounted, onWillUnmount } from "@odoo/owl";
 
 // ════════════════════════════════════════════════════════════════════════
-// MdLauncher — fusión de md_quifamesa_command_palette + md_home_menu en un solo
+// MdLauncher — fusión de quifamesa_command_palette + md_home_menu en un solo
 // componente con un único estado `open`, activable tanto por teclado
 // (Ctrl+K / Alt+Espacio) como por click en el botón de Apps de la NavBar
 // nativa (".o_navbar_apps_menu").
@@ -107,7 +107,7 @@ function getFaIconForMenu(name) {
 }
 
 export class MdLauncher extends Component {
-    static template = "md_quifamesa_command_palette.Launcher";
+    static template = "quifamesa_command_palette.Launcher";
     static props = {};
 
     setup() {
@@ -477,6 +477,6 @@ export class MdLauncher extends Component {
     }
 }
 
-registry.category("main_components").add("md_quifamesa_command_palette.Launcher", {
+registry.category("main_components").add("quifamesa_command_palette.Launcher", {
     Component: MdLauncher,
 });

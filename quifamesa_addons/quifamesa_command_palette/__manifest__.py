@@ -19,10 +19,10 @@
     'data': [],
     'assets': {
         'web.assets_backend': [
-            'md_quifamesa_command_palette/static/src/scss/tokens.scss',
-            'md_quifamesa_command_palette/static/src/scss/launcher.scss',
-            'md_quifamesa_command_palette/static/src/js/launcher.js',
-            'md_quifamesa_command_palette/static/src/xml/launcher.xml',
+            'quifamesa_command_palette/static/src/scss/tokens.scss',
+            'quifamesa_command_palette/static/src/scss/launcher.scss',
+            'quifamesa_command_palette/static/src/js/launcher.js',
+            'quifamesa_command_palette/static/src/xml/launcher.xml',
         ],
     },
     'installable': True,

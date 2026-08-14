@@ -76,7 +76,7 @@ $mdl-ink-950: #071316;
 $mdl-action-dark-1: #618B00; // ~darken(#97D700, 15%) — heading "Productos"
 $mdl-action-dark-2: #4F7100; // ~darken(#97D700, 20%) — texto del chip
 
-.o_md_quifamesa_command_palette_backdrop {
+.o_quifamesa_command_palette_backdrop {
     position: fixed;
     inset: 0;
     background:
@@ -100,7 +100,7 @@ $mdl-action-dark-2: #4F7100; // ~darken(#97D700, 20%) — texto del chip
 // .o_form_statusbar en backend_bento.scss. Sin gradiente "highlight"
 // diagonal (esa receta es de medicine_depot_portal/website, no de este
 // bundle). ──
-.o_md_quifamesa_command_palette {
+.o_quifamesa_command_palette {
     width: 92vw;
     max-width: 780px;
     max-height: 72vh;
@@ -115,7 +115,7 @@ $mdl-action-dark-2: #4F7100; // ~darken(#97D700, 20%) — texto del chip
     overflow: hidden;
     display: flex;
     flex-direction: column;
-    animation: o_md_quifamesa_command_palette_in 140ms ease-out;
+    animation: o_quifamesa_command_palette_in 140ms ease-out;
     color: var(--md-color-text-primary);
 
     @supports (backdrop-filter: blur(1px)) {
@@ -129,21 +129,21 @@ $mdl-action-dark-2: #4F7100; // ~darken(#97D700, 20%) — texto del chip
     }
 }
 
-@keyframes o_md_quifamesa_command_palette_in {
+@keyframes o_quifamesa_command_palette_in {
     from { opacity: 0; transform: translateY(-8px) scale(0.98); }
     to { opacity: 1; transform: translateY(0) scale(1); }
 }
 
-.o_md_quifamesa_command_palette_input_wrap {
+.o_quifamesa_command_palette_input_wrap {
     display: flex;
     align-items: center;
     gap: var(--md-space-2);
     padding: var(--md-space-4) var(--md-space-4);
     border-bottom: 1px solid var(--md-border);
 
-    .o_md_quifamesa_command_palette_icon { opacity: 0.55; color: var(--md-primary-dark); }
+    .o_quifamesa_command_palette_icon { opacity: 0.55; color: var(--md-primary-dark); }
 
-    .o_md_quifamesa_command_palette_input {
+    .o_quifamesa_command_palette_input {
         flex: 1 1 auto;
         border: none;
         outline: none;
@@ -155,7 +155,7 @@ $mdl-action-dark-2: #4F7100; // ~darken(#97D700, 20%) — texto del chip
         &::placeholder { color: var(--md-muted); }
     }
 
-    .o_md_quifamesa_command_palette_hint {
+    .o_quifamesa_command_palette_hint {
         font-family: var(--md-font-mono);
         font-size: var(--md-text-xs);
         opacity: 0.6;
@@ -165,7 +165,7 @@ $mdl-action-dark-2: #4F7100; // ~darken(#97D700, 20%) — texto del chip
     }
 }
 
-.o_md_quifamesa_command_palette_results {
+.o_quifamesa_command_palette_results {
     overflow-y: auto;
     padding: var(--md-space-3);
     display: flex;
@@ -176,30 +176,30 @@ $mdl-action-dark-2: #4F7100; // ~darken(#97D700, 20%) — texto del chip
 // ── Tiles bento: cada categoría de resultado es su propia tarjeta de
 // vidrio con tinte de marca (azul = menús/sugerencias, lima = productos),
 // consistente con el resto de superficies de marca del backend. ──
-.o_md_quifamesa_command_palette_group {
+.o_quifamesa_command_palette_group {
     border-radius: var(--md-radius-lg);
     border: 1px solid transparent;
     padding: var(--md-space-1);
     background: rgba(255, 255, 255, 0.5);
 }
 
-.o_md_quifamesa_command_palette_group--menu,
-.o_md_quifamesa_command_palette_group--suggested {
+.o_quifamesa_command_palette_group--menu,
+.o_quifamesa_command_palette_group--suggested {
     background: linear-gradient(165deg, rgba(22, 166, 217, 0.14), rgba(22, 166, 217, 0.04) 55%, rgba(255, 255, 255, 0.3));
     border-color: rgba(22, 166, 217, 0.22);
 }
 
-.o_md_quifamesa_command_palette_group--quickaction {
+.o_quifamesa_command_palette_group--quickaction {
     background: linear-gradient(165deg, rgba(243, 156, 18, 0.16), rgba(243, 156, 18, 0.04) 55%, rgba(255, 255, 255, 0.3));
     border-color: rgba(243, 156, 18, 0.25);
 }
 
-.o_md_quifamesa_command_palette_group--product {
+.o_quifamesa_command_palette_group--product {
     background: linear-gradient(165deg, rgba(151, 215, 0, 0.16), rgba(151, 215, 0, 0.04) 55%, rgba(255, 255, 255, 0.3));
     border-color: rgba(151, 215, 0, 0.25);
 }
 
-.o_md_quifamesa_command_palette_group_label {
+.o_quifamesa_command_palette_group_label {
     display: flex;
     align-items: center;
     gap: var(--md-space-1);
@@ -210,13 +210,13 @@ $mdl-action-dark-2: #4F7100; // ~darken(#97D700, 20%) — texto del chip
     padding: var(--md-space-2) var(--md-space-3) 0.3rem;
     font-family: var(--md-font-heading);
 
-    .o_md_quifamesa_command_palette_group--menu &,
-    .o_md_quifamesa_command_palette_group--suggested & { color: var(--md-primary); }
-    .o_md_quifamesa_command_palette_group--quickaction & { color: #d35400; }
-    .o_md_quifamesa_command_palette_group--product & { color: $mdl-action-dark-1; }
+    .o_quifamesa_command_palette_group--menu &,
+    .o_quifamesa_command_palette_group--suggested & { color: var(--md-primary); }
+    .o_quifamesa_command_palette_group--quickaction & { color: #d35400; }
+    .o_quifamesa_command_palette_group--product & { color: $mdl-action-dark-1; }
 }
 
-.o_md_quifamesa_command_palette_group_count {
+.o_quifamesa_command_palette_group_count {
     font-family: var(--md-font-mono);
     font-weight: 600;
     opacity: 0.55;
@@ -227,7 +227,7 @@ $mdl-action-dark-2: #4F7100; // ~darken(#97D700, 20%) — texto del chip
 // ── Avatar uniforme (28px): ícono real de la app para menús, foto
 // real del producto para productos — en vez de un glifo genérico
 // repetido en cada fila. ──
-.o_md_quifamesa_command_palette_avatar {
+.o_quifamesa_command_palette_avatar {
     flex: 0 0 auto;
     width: 28px;
     height: 28px;
@@ -275,8 +275,8 @@ $mdl-action-dark-2: #4F7100; // ~darken(#97D700, 20%) — texto del chip
 /* ════════════════════════════════════════════════════════════════════════
    GRUPO: REPORTES PERSONALIZADOS / CUSTOM REPORTS (Teal/Emerald Theme)
    ════════════════════════════════════════════════════════════════════════ */
-.o_md_quifamesa_command_palette_group--customreport {
-    .o_md_quifamesa_command_palette_group_label {
+.o_quifamesa_command_palette_group--customreport {
+    .o_quifamesa_command_palette_group_label {
         color: #00b894 !important;
 
         i {
@@ -284,44 +284,44 @@ $mdl-action-dark-2: #4F7100; // ~darken(#97D700, 20%) — texto del chip
         }
     }
 
-    .o_md_quifamesa_command_palette_group_count {
+    .o_quifamesa_command_palette_group_count {
         background: rgba(0, 184, 148, 0.15) !important;
         color: #00b894 !important;
         border: 1px solid rgba(0, 184, 148, 0.3) !important;
     }
 
-    .o_md_quifamesa_command_palette_item.active,
-    .o_md_quifamesa_command_palette_item:hover {
+    .o_quifamesa_command_palette_item.active,
+    .o_quifamesa_command_palette_item:hover {
         background: linear-gradient(135deg, rgba(0, 184, 148, 0.08) 0%, rgba(9, 132, 227, 0.04) 100%) !important;
         border-color: rgba(0, 184, 148, 0.40) !important;
         box-shadow: 0 4px 12px rgba(0, 184, 148, 0.15) !important;
     }
 }
 
-.o_md_quifamesa_command_palette_chip--excel {
+.o_quifamesa_command_palette_chip--excel {
     background: rgba(0, 184, 148, 0.15) !important;
     color: #00897b !important;
     border: 1px solid rgba(0, 184, 148, 0.35) !important;
     font-weight: 700 !important;
 }
 
-.o_md_quifamesa_command_palette_chip--pdf {
+.o_quifamesa_command_palette_chip--pdf {
     background: rgba(225, 112, 85, 0.15) !important;
     color: #d63031 !important;
     border: 1px solid rgba(225, 112, 85, 0.35) !important;
     font-weight: 700 !important;
 }
 
-.o_md_quifamesa_command_palette_group--menu .o_md_quifamesa_command_palette_item.active .o_md_quifamesa_command_palette_avatar,
-.o_md_quifamesa_command_palette_group--menu .o_md_quifamesa_command_palette_item:hover .o_md_quifamesa_command_palette_avatar {
+.o_quifamesa_command_palette_group--menu .o_quifamesa_command_palette_item.active .o_quifamesa_command_palette_avatar,
+.o_quifamesa_command_palette_group--menu .o_quifamesa_command_palette_item:hover .o_quifamesa_command_palette_avatar {
     border-color: rgba(22, 166, 217, 0.4);
 }
-.o_md_quifamesa_command_palette_group--product .o_md_quifamesa_command_palette_item.active .o_md_quifamesa_command_palette_avatar,
-.o_md_quifamesa_command_palette_group--product .o_md_quifamesa_command_palette_item:hover .o_md_quifamesa_command_palette_avatar {
+.o_quifamesa_command_palette_group--product .o_quifamesa_command_palette_item.active .o_quifamesa_command_palette_avatar,
+.o_quifamesa_command_palette_group--product .o_quifamesa_command_palette_item:hover .o_quifamesa_command_palette_avatar {
     border-color: rgba(151, 215, 0, 0.45);
 }
 
-.o_md_quifamesa_command_palette_item {
+.o_quifamesa_command_palette_item {
     position: relative;
     display: flex;
     align-items: center;
@@ -341,22 +341,22 @@ $mdl-action-dark-2: #4F7100; // ~darken(#97D700, 20%) — texto del chip
         background: transparent;
     }
 
-    .o_md_quifamesa_command_palette_group--menu & {
+    .o_quifamesa_command_palette_group--menu & {
         &.active, &:hover, &:focus-visible { background: rgba(22, 166, 217, 0.14); }
         &.active::before { background: var(--md-primary); }
     }
-    .o_md_quifamesa_command_palette_group--quickaction & {
+    .o_quifamesa_command_palette_group--quickaction & {
         &.active, &:hover, &:focus-visible { background: rgba(243, 156, 18, 0.18); }
         &.active::before { background: #d35400; }
     }
-    .o_md_quifamesa_command_palette_group--product & {
+    .o_quifamesa_command_palette_group--product & {
         &.active, &:hover, &:focus-visible { background: rgba(151, 215, 0, 0.20); }
         &.active::before { background: var(--md-action); }
     }
 }
 
 // ── Chip "A la mano" & "Acción Rápida" — firma visual del componente ──
-.o_md_quifamesa_command_palette_chip {
+.o_quifamesa_command_palette_chip {
     margin-left: auto;
     display: inline-flex;
     align-items: baseline;
@@ -381,14 +381,14 @@ $mdl-action-dark-2: #4F7100; // ~darken(#97D700, 20%) — texto del chip
 //    del Kanban de Inventario (md_pharma_regulatory/product_kanban_pos_style.scss),
 //    pero en miniatura para caber en una fila de la paleta. ::before del
 //    item pinta el borde izquierdo del propio row; no interfiere.
-.o_md_quifamesa_command_palette_product_actions {
+.o_quifamesa_command_palette_product_actions {
     display: inline-flex;
     align-items: center;
     gap: 0.2rem;
     margin-left: var(--md-space-2);
 }
 
-.o_md_quifamesa_command_palette_product_action_btn {
+.o_quifamesa_command_palette_product_action_btn {
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -451,8 +451,8 @@ $mdl-action-dark-2: #4F7100; // ~darken(#97D700, 20%) — texto del chip
 //    dialog ya estaba abierto ANTES de abrir la paleta; aqui es al revés
 //    (el dialog se abre CON la paleta ya abierta), asi que aplica la
 //    excepcion solo mientras el backdrop de la paleta sigue en el DOM.
-body:has(.o_md_quifamesa_command_palette_backdrop) .modal-backdrop,
-body:has(.o_md_quifamesa_command_palette_backdrop) .modal {
+body:has(.o_quifamesa_command_palette_backdrop) .modal-backdrop,
+body:has(.o_quifamesa_command_palette_backdrop) .modal {
     z-index: 1200;
 }
 
@@ -555,7 +555,7 @@ $mdl-app-icon-size: 56px;
     }
 }
 
-.o_md_quifamesa_command_palette_empty {
+.o_quifamesa_command_palette_empty {
     padding: 2rem 1.25rem;
     opacity: 0.6;
     text-align: center;
@@ -565,10 +565,10 @@ $mdl-app-icon-size: 56px;
     gap: var(--md-space-2);
     font-size: var(--md-text-md);
 
-    .o_md_quifamesa_command_palette_empty_icon { font-size: 1.3rem; opacity: 0.5; }
+    .o_quifamesa_command_palette_empty_icon { font-size: 1.3rem; opacity: 0.5; }
 }
 
-.o_md_quifamesa_command_palette_footer {
+.o_quifamesa_command_palette_footer {
     display: flex;
     gap: var(--md-space-4);
     padding: 0.6rem var(--md-space-4);
@@ -594,14 +594,14 @@ $mdl-app-icon-size: 56px;
 // esté (son dos toggles distintos), así que los overrides quedan
 // explícitos como en el command_palette.scss ya desplegado. ──
 .o_md_dark_mode {
-    .o_md_quifamesa_command_palette_backdrop {
+    .o_quifamesa_command_palette_backdrop {
         background:
             radial-gradient(46rem 30rem at 12% -10%, rgba(22, 166, 217, 0.18), transparent 60%),
             radial-gradient(40rem 28rem at 92% 106%, rgba(151, 215, 0, 0.14), transparent 62%),
             rgba(#000, 0.66);
     }
 
-    .o_md_quifamesa_command_palette {
+    .o_quifamesa_command_palette {
         background: rgba($mdl-ink-950, 0.94); // fallback sólido
 
         @supports (backdrop-filter: blur(1px)) {
@@ -615,21 +615,21 @@ $mdl-app-icon-size: 56px;
         color: #e8e8ec;
     }
 
-    .o_md_quifamesa_command_palette_input_wrap,
-    .o_md_quifamesa_command_palette_footer {
+    .o_quifamesa_command_palette_input_wrap,
+    .o_quifamesa_command_palette_footer {
         border-color: rgba(255, 255, 255, 0.08);
     }
 
-    .o_md_quifamesa_command_palette_input { color: #e8e8ec; }
-    .o_md_quifamesa_command_palette_input_wrap .o_md_quifamesa_command_palette_icon { color: #e8e8ec; }
+    .o_quifamesa_command_palette_input { color: #e8e8ec; }
+    .o_quifamesa_command_palette_input_wrap .o_quifamesa_command_palette_icon { color: #e8e8ec; }
 
-    .o_md_quifamesa_command_palette_group { background: rgba(255, 255, 255, 0.03); }
-    .o_md_quifamesa_command_palette_group--menu,
-    .o_md_quifamesa_command_palette_group--suggested { background: linear-gradient(165deg, rgba(22, 166, 217, 0.16), rgba(22, 166, 217, 0.03) 60%); }
-    .o_md_quifamesa_command_palette_group--product { background: linear-gradient(165deg, rgba(151, 215, 0, 0.14), rgba(151, 215, 0, 0.03) 60%); }
+    .o_quifamesa_command_palette_group { background: rgba(255, 255, 255, 0.03); }
+    .o_quifamesa_command_palette_group--menu,
+    .o_quifamesa_command_palette_group--suggested { background: linear-gradient(165deg, rgba(22, 166, 217, 0.16), rgba(22, 166, 217, 0.03) 60%); }
+    .o_quifamesa_command_palette_group--product { background: linear-gradient(165deg, rgba(151, 215, 0, 0.14), rgba(151, 215, 0, 0.03) 60%); }
 
-    .o_md_quifamesa_command_palette_footer { color: rgba(#fff, 0.55); }
-    .o_md_quifamesa_command_palette_footer kbd { background: rgba(255, 255, 255, 0.08); }
+    .o_quifamesa_command_palette_footer { color: rgba(#fff, 0.55); }
+    .o_quifamesa_command_palette_footer kbd { background: rgba(255, 255, 255, 0.08); }
 
     .o_md_launcher_app_tile {
         background: rgba(255, 255, 255, 0.04);
