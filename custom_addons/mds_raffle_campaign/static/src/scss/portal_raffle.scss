@@ -259,10 +259,65 @@
         color: #4a5a72;
     }
 
-    // El <form> real de Odoo aterriza aquí (movido por XPath); heredamos su
-    // margen superior del primer qf-field, no hace falta un selector extra.
-    .oe_login_buttons a.btn-link {
-        color: #0269AA;
+    // El <form> real de Odoo aterriza aquí (movido por XPath). Lo que sigue
+    // afina la tipografía de sus elementos reales (label, links de
+    // auth_signup, botón de passkey de auth_passkey) para que coincidan con
+    // .qf-field-label-row / a.hint / .qf-btn-outline / .login-card-foot del
+    // artifact original — sin agregar/quitar ningún nodo, solo CSS sobre las
+    // clases que Odoo ya trae (form-label, btn-link, list-group-item).
+    .form-label {
+        font-size: 12.5px;
+        font-weight: 600;
+        color: #1a2b42;
+        margin-bottom: 7px;
+    }
+
+    // "Restablecer contraseña" (auth_signup, junto al label de Contraseña):
+    // hint de acento, como .qf-field a.hint en el artifact.
+    a.btn-link {
+        font-size: 12px;
+        font-weight: 600;
+        color: #00AEFF;
+        text-decoration: none;
+
+        &:hover {
+            text-decoration: underline;
+        }
+    }
+
+    // "¿No tienes una cuenta?" (auth_signup, debajo del botón de submit):
+    // texto secundario centrado, como .login-card-foot en el artifact.
+    .oe_login_buttons a.btn-link.mt-2 {
+        display: block;
+        margin-top: 26px !important;
+        font-size: 13px;
+        font-weight: 600;
+        color: #4a5a72;
+        text-align: center;
+    }
+
+    // "Usa una llave de acceso" (auth_passkey, vía web.login_oauth): Odoo lo
+    // renderiza como .list-group-item, no como <button>; se repinta para que
+    // se vea como .qf-btn-outline del artifact sin tocar su markup.
+    .o_login_auth {
+        .list-group {
+            border: none;
+        }
+
+        .list-group-item {
+            width: 100%;
+            padding: 11px 18px;
+            border-radius: 9px;
+            background: transparent;
+            border: 1px solid #c3d0e2;
+            color: #1a2b42;
+            font-weight: 600;
+            font-size: 13.5px;
+
+            &:hover {
+                background: #f4f7f9;
+            }
+        }
     }
 }
 
