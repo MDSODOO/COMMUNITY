@@ -1,4 +1,4 @@
-from odoo import fields, models, tools
+from odoo import _, fields, models, tools
 
 
 class RaffleTicketSummary(models.Model):
@@ -38,3 +38,21 @@ class RaffleTicketSummary(models.Model):
                 GROUP BY t.partner_id, t.campaign_id
             )
         """ % self._table)
+
+    def action_view_tickets(self):
+        """Abre el listado de folios (raffle.ticket) de este cliente en
+        esta campaña, reutilizando la acción/vistas ya existentes en
+        vez de duplicar una lista nueva."""
+        self.ensure_one()
+        action = self.env['ir.actions.act_window']._for_xml_id(
+            'mds_raffle_campaign.action_raffle_ticket'
+        )
+        action['domain'] = [
+            ('partner_id', '=', self.partner_id.id),
+            ('campaign_id', '=', self.campaign_id.id),
+        ]
+        action['context'] = {}
+        name = _('Boletos de %s', self.partner_id.name)
+        action['name'] = name
+        action['display_name'] = name
+        return action
