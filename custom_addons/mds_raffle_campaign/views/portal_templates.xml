@@ -6,7 +6,7 @@
         </xpath>
         <div id="portal_client_category" position="inside">
             <t t-call="portal.portal_docs_entry">
-                <t t-set="icon" t-value="'/mds_raffle_campaign/static/src/img/ticket.svg'"/>
+                <t t-set="icon" t-value="'/mds_raffle_campaign/static/src/img/ticket.svg?v=2'"/>
                 <t t-set="title">Mis Boletos de Rifa</t>
                 <t t-set="text">Consulta tus boletos acumulados y de qué compras se generaron</t>
                 <t t-set="url" t-value="'/my/raffles'"/>
@@ -34,12 +34,12 @@
             </div>
 
             <div t-if="summaries" class="row g-2 mb-4">
-                <div class="col-12 col-md-6" t-foreach="summaries" t-as="summary">
-                    <div class="d-flex gap-3 py-3 px-3 h-100 rounded bg-100">
+                <div class="col-12" t-foreach="summaries" t-as="summary">
+                    <div class="d-flex align-items-center gap-3 py-3 px-3 rounded bg-100 border-start border-4 border-primary shadow-sm">
+                        <img src="/mds_raffle_campaign/static/src/img/ticket.svg?v=2" alt="Boletos de rifa"
+                             class="flex-shrink-0" style="width: 40px; height: 40px;"/>
                         <div class="flex-grow-1">
-                            <div class="mb-1">
-                                <span class="fs-5 fw-bold" t-field="summary.campaign_id.name"/>
-                            </div>
+                            <div class="fs-5 fw-bold mb-1" t-field="summary.campaign_id.name"/>
                             <div class="d-flex flex-wrap gap-1">
                                 <span t-if="summary.physical_count" class="badge rounded-pill text-bg-secondary">
                                     R · <t t-esc="summary.physical_count"/>
@@ -55,8 +55,8 @@
                                 </span>
                             </div>
                         </div>
-                        <div class="text-end flex-shrink-0">
-                            <div class="fs-2 fw-bold text-primary" t-esc="summary.ticket_count"/>
+                        <div class="text-end flex-shrink-0 ps-2">
+                            <div class="fs-2 fw-bold text-primary lh-1" t-esc="summary.ticket_count"/>
                             <div class="text-muted small">boletos</div>
                         </div>
                     </div>
