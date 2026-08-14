@@ -6,7 +6,7 @@
         </xpath>
         <div id="portal_client_category" position="inside">
             <t t-call="portal.portal_docs_entry">
-                <t t-set="icon" t-value="'/mds_raffle_campaign/static/description/icon.png'"/>
+                <t t-set="icon" t-value="'/mds_raffle_campaign/static/src/img/ticket.svg'"/>
                 <t t-set="title">Mis Boletos de Rifa</t>
                 <t t-set="text">Consulta tus boletos acumulados y de qué compras se generaron</t>
                 <t t-set="url" t-value="'/my/raffles'"/>
@@ -66,24 +66,20 @@
             <t t-if="tickets" t-call="portal.portal_table">
                 <thead>
                     <tr class="active">
-                        <th>Folio</th>
-                        <th>Origen</th>
-                        <th>Regla</th>
-                        <th class="text-end">Campaña</th>
+                        <th>Folio del Boleto</th>
+                        <th>Fecha de Generación</th>
+                        <th class="text-end">Folio de la Compra</th>
                     </tr>
                 </thead>
                 <t t-foreach="tickets" t-as="ticket">
                     <tr>
-                        <td>
-                            <span t-field="ticket.name"/>
-                            <div t-if="ticket.legacy_ref" class="text-muted small" t-field="ticket.legacy_ref"/>
+                        <td><span t-field="ticket.name"/></td>
+                        <td><span t-field="ticket.create_date" t-options="{'widget': 'date'}"/></td>
+                        <td class="text-end">
+                            <span t-if="ticket.sale_order_id" t-field="ticket.sale_order_id.name"/>
+                            <span t-elif="ticket.pos_order_id" t-field="ticket.pos_order_id.name"/>
+                            <span t-else="1" t-field="ticket.legacy_ref"/>
                         </td>
-                        <td>
-                            <span t-if="ticket.origin_type == 'physical'" class="badge rounded-pill text-bg-secondary">R · Física</span>
-                            <span t-if="ticket.origin_type == 'online_b2b'" class="badge rounded-pill text-bg-info">BP · B2B en línea</span>
-                        </td>
-                        <td><span t-field="ticket.rule_id.name"/></td>
-                        <td class="text-end"><span t-field="ticket.campaign_id.name"/></td>
                     </tr>
                 </t>
             </t>
