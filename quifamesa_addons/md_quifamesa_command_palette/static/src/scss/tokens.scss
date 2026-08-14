@@ -1,0 +1,80 @@
+// ════════════════════════════════════════════════════════════════════════
+// tokens.scss — Design tokens propios del launcher (Quifamesa)
+// ────────────────────────────────────────────────────────────────────────
+// launcher.scss consume estas custom properties --md-* vía var(...).
+// El módulo original (md_command_palette) las heredaba de
+// medicine_depot_portal/backend_tokens.scss, pero ese módulo reescribe
+// todo el portal del cliente con la marca de Medicine Depot — no aplica a
+// Quifamesa. Este archivo trae solo la definición de variables (sin los
+// alias --bs-* que rebrandean todo el backend) para que el launcher
+// funcione de forma autocontenida, sin arrastrar esa dependencia.
+// Se carga ANTES que launcher.scss en el bundle web.assets_backend.
+// ════════════════════════════════════════════════════════════════════════
+
+.o_web_client {
+
+    --md-primary:        #16A6D9;
+    --md-primary-2:      #3dbde6;
+    --md-primary-dark:   #073A4C;
+    --md-primary-soft:   #e0f5fb;
+    --md-action:         #97D700;
+    --md-action-soft:    #eef9c2;
+    --md-danger:         #e30613;
+    --md-danger-soft:    #fde2e3;
+    --md-warning:        #f59f00;
+    --md-warning-soft:   #fff4d6;
+    --md-success:        #198754;
+
+    --md-color-text-primary:   #0e1730;
+    --md-color-text-secondary: #33405e;
+    --md-color-text-muted:     #7a86a3;
+    --md-color-text-accent:    #16A6D9;
+    --md-color-text-dark:      #073A4C;
+
+    --md-ink:            #0e1730;
+    --md-ink-2:          #33405e;
+    --md-muted:          #7a86a3;
+
+    --md-paper:          #f4f6fb;
+    --md-card-bg:        #ffffff;
+    --md-border:         #e3e7f1;
+
+    --md-radius-sm:      6px;
+    --md-radius-md:      10px;
+    --md-radius-lg:      14px;
+    --md-radius-pill:    999px;
+
+    --md-shadow-1:       0 1px 3px rgba(14, 23, 48, 0.08);
+    --md-shadow-2:       0 4px 12px rgba(14, 23, 48, 0.10);
+    --md-shadow-glass:   0 8px 24px rgba(21, 35, 48, 0.05);
+
+    --md-text-xs:        0.6875rem;
+    --md-text-sm:        0.75rem;
+    --md-text-base:      0.8125rem;
+    --md-text-md:        0.875rem;
+    --md-text-lg:        1rem;
+    --md-text-xl:        1.125rem;
+    --md-text-kpi:       1.625rem;
+
+    --md-weight-label:    600;
+    --md-weight-value:    400;
+    --md-weight-heading:  700;
+    --md-weight-kpi:      700;
+
+    --md-font-heading:   "Poppins", "Segoe UI", system-ui, sans-serif;
+    --md-font-body:      "Inter", "Segoe UI", system-ui, sans-serif;
+    --md-font-mono:      "JetBrains Mono", "Fira Code", ui-monospace, monospace;
+
+    --md-space-1:        4px;
+    --md-space-2:        8px;
+    --md-space-3:        12px;
+    --md-space-4:        16px;
+    --md-space-5:        24px;
+    --md-space-6:        32px;
+
+    --md-dropdown-bg:            rgba(255, 255, 255, 1);
+    --md-dropdown-color:         var(--md-color-text-primary);
+    --md-dropdown-border:        var(--md-border);
+    --md-dropdown-hover-bg:      var(--md-primary-soft);
+    --md-dropdown-hover-color:   var(--md-primary);
+}
