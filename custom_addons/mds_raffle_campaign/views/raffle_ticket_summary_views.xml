@@ -22,7 +22,7 @@
                                     <field name="ticket_count"/>
                                 </span>
                             </div>
-                            <div class="text-muted small mb-1">
+                            <div class="text-muted small mb-1 o_mds_kanban_campaign_name">
                                 <field name="campaign_id"/>
                             </div>
                             <div class="d-flex flex-wrap gap-1 mb-1">

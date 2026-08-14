@@ -19,6 +19,7 @@
         'views/res_config_settings_views.xml',
         'views/raffle_menus.xml',
         'views/portal_templates.xml',
+        'views/login_templates.xml',
         'data/raffle_whatsapp_cron.xml',
     ],
     'assets': {
@@ -26,6 +27,9 @@
             'mds_raffle_campaign/static/src/js/raffle_wheel.js',
             'mds_raffle_campaign/static/src/scss/raffle_wheel.scss',
             'mds_raffle_campaign/static/src/xml/raffle_wheel.xml',
+        ],
+        'web.assets_frontend': [
+            'mds_raffle_campaign/static/src/scss/portal_raffle.scss',
         ],
     },
     'installable': True,

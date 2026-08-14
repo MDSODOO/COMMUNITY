@@ -415,7 +415,9 @@ export class RaffleWheel extends Component {
         const canvas = this.confettiRef.el;
         if (!canvas) return;
         const ctx = canvas.getContext("2d");
-        const colors = ["#16A6D9", "#97d700", "#ffc107", "#0f7ea3"];
+        // Paleta real Quifamesa: navy, azul eléctrico, dorado (acento de
+        // premio/celebración) y el tono intermedio navy→eléctrico.
+        const colors = ["#042455", "#00AEFF", "#F2B705", "#0269AA"];
         const originX = window.innerWidth / 2;
         const originY = Math.min(window.innerHeight * 0.42, 340);
 

@@ -1,0 +1,39 @@
+<odoo>
+
+    <!-- Cambio aditivo y mínimo al login compartido de esta instancia
+         (quifamesa_raffle_test): agrega una clase nueva al botón de
+         "Log in" para pintarlo con el azul eléctrico real de Quifamesa
+         (#00AEFF, ver static/src/scss/portal_raffle.scss). No se toca la
+         estructura del formulario ni la clase .btn-primary global (eso
+         afectaría botones en todo el backend/portal).
+         auth_signup.login (reset password / sign up) también hereda de
+         web.login pero solo agrega enlaces junto al botón, no lo toca:
+         esta clase no choca con esos templates. -->
+    <template id="web_login_mds_brand_accent" name="Login: acento de marca Quifamesa" inherit_id="web.login">
+        <xpath expr="//button[@type='submit'][hasclass('btn-primary')]" position="attributes">
+            <attribute name="class" add="o_mds_login_btn" separator=" "/>
+        </xpath>
+    </template>
+
+    <!-- Logo real: en esta instancia el módulo `website` está instalado y
+         website.login_layout (priority=20) REEMPLAZA por completo el
+         contenido de web.login_layout (confirmado leyendo
+         website/views/website_templates.xml) — se pierde la tarjeta blanca
+         con el <img> de res.company.logo que trae Odoo de fábrica, y el
+         login queda envuelto en el header/footer normal del sitio (que
+         trae su propio placeholder "Your Logo", un campo aparte del logo
+         de la compañía, y tocarlo afectaría todo el sitio, no solo el
+         login — fuera de alcance). Por eso el logo se agrega explícito
+         acá, solo dentro del contenido propio de web.login, que es el que
+         SÍ sigue renderizándose (envuelto o no por el sitio) en /web/login,
+         /web/signup y /web/reset_password. -->
+    <template id="web_login_mds_logo" name="Login: logo real Quifamesa" inherit_id="web.login">
+        <xpath expr="//div[@id='oe_structure_login_top']" position="after">
+            <div class="text-center mb-4">
+                <img src="/mds_raffle_campaign/static/src/img/logo-quifamesa.png" alt="Quifamesa"
+                     class="o_mds_login_logo"/>
+            </div>
+        </xpath>
+    </template>
+
+</odoo>

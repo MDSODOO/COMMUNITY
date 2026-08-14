@@ -1,0 +1,85 @@
+// Estilos de marca Quifamesa para el bundle de frontend (portal + /web/login
+// en esta instancia — website está instalado, así que ambos comparten
+// web.assets_frontend). Paleta real verificada contra quifamesa.com.mx vía
+// getComputedStyle: navy #042455 (primario real del sitio), azul eléctrico
+// #00AEFF (acento real del sitio). Dorado #F2B705 es un acento de diseño
+// complementario para "premio/celebración", no viene del sitio.
+//
+// Todo acá es aditivo y va detrás de clases nuevas (o_mds_*) — no se
+// sobreescribe ningún .btn-primary/.bg-*/.text-bg-* global de Bootstrap,
+// para no afectar el resto del portal (Sus órdenes, Sus facturas, etc.)
+// ni el login de otros módulos que no sean de rifas.
+
+@font-face {
+    font-family: 'Montserrat';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url('/mds_raffle_campaign/static/src/fonts/montserrat-400.woff2') format('woff2');
+}
+@font-face {
+    font-family: 'Montserrat';
+    font-style: normal;
+    font-weight: 700;
+    font-display: swap;
+    src: url('/mds_raffle_campaign/static/src/fonts/montserrat-700.woff2') format('woff2');
+}
+@font-face {
+    font-family: 'Montserrat';
+    font-style: normal;
+    font-weight: 800;
+    font-display: swap;
+    src: url('/mds_raffle_campaign/static/src/fonts/montserrat-800.woff2') format('woff2');
+}
+
+// ── /my/raffles ─────────────────────────────────────────────────────────
+.o_mds_raffle_page {
+    --mds-navy: #042455;
+    --mds-electric: #00AEFF;
+    --mds-electric-dark: #0269AA;
+    --mds-gold: #F2B705;
+}
+
+.o_mds_raffle_title {
+    font-family: 'Montserrat', -apple-system, 'Helvetica Neue', Arial, sans-serif;
+}
+
+.o_mds_raffle_summary_card {
+    border-left-color: var(--mds-electric, #00AEFF) !important;
+}
+
+.o_mds_raffle_count {
+    color: var(--mds-navy, #042455) !important;
+}
+
+.o_mds_raffle_badge_physical {
+    background-color: var(--mds-navy, #042455) !important;
+    color: #fff !important;
+}
+
+.o_mds_raffle_badge_online {
+    background-color: var(--mds-electric, #00AEFF) !important;
+    color: #fff !important;
+}
+
+// ── /web/login — logo + botón de acceso, vía clases nuevas agregadas
+// desde views/login_templates.xml (nunca se toca .btn-primary global ni
+// el logo/nav del sitio) ────────────────────────────────────────────────
+.o_mds_login_logo {
+    display: block;
+    max-height: 64px;
+    width: auto;
+    margin: 0 auto;
+}
+
+.btn.o_mds_login_btn {
+    background-color: #00AEFF;
+    border-color: #00AEFF;
+    color: #fff;
+
+    &:hover, &:focus, &:active {
+        background-color: #0269AA !important;
+        border-color: #0269AA !important;
+        color: #fff !important;
+    }
+}
