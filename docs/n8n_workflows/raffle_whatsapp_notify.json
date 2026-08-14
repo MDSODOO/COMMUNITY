@@ -1,0 +1,218 @@
+{
+  "name": "Rifas - Notificacion WhatsApp de Nuevos Boletos",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "raffle-tickets-created",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "d66534f5-69a9-47d7-b696-b8cb50eb3447",
+      "name": "Webhook - Boletos Creados",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -160,
+        0
+      ],
+      "webhookId": "c1365825-65d0-4de3-94b2-8ce8273adf61",
+      "notes": "Espera el payload 'tickets.created' descrito en el README. Odoo (mds_raffle_campaign) debe llamar a esta URL despues de crear folios nuevos para un partner. Esta instrumentacion del lado Odoo NO esta incluida en este workflow."
+    },
+    {
+      "parameters": {
+        "jsCode": "// Valida el payload recibido de Odoo (contrato tickets.created) y arma\n// los campos listos para la plantilla de WhatsApp (parametros posicionales).\n// Ver README (docs/n8n_workflows/raffle_whatsapp_README.md) para el contrato completo.\n\nconst body = ($input.first().json.body) || $input.first().json;\n\nconst partner = body.partner || {};\nconst campaign = body.campaign || {};\nconst tickets = body.tickets || {};\nconst portalUrl = body.portal_url || '';\n\n// res.partner.phone en Odoo 19 (ya no existe 'mobile' separado). Se espera\n// formato E.164 (+52...); si Odoo lo manda con espacios/guiones los quitamos,\n// pero si no empieza con '+' lo tratamos como invalido (mejor omitir que\n// enviar a un numero mal formado).\nconst rawPhone = String(partner.phone || '').replace(/[\\s-]/g, '');\nconst hasValidPhone = /^\\+[1-9]\\d{7,14}$/.test(rawPhone);\n\nconst folios = Array.isArray(tickets.folios) ? tickets.folios : [];\nconst foliosPreview = folios.length\n  ? folios.slice(0, 5).join(', ') + (folios.length > 5 ? ` y ${folios.length - 5} mas` : '')\n  : 'N/A';\n\nreturn [{\n  json: {\n    to: rawPhone,\n    has_valid_phone: hasValidPhone,\n    partner_id: partner.id || null,\n    partner_name: partner.name || '',\n    campaign_id: campaign.id || null,\n    campaign_name: campaign.name || '',\n    campaign_code: campaign.code || '',\n    ticket_count: tickets.count || folios.length || 0,\n    folios_preview: foliosPreview,\n    portal_url: portalUrl,\n    raw_event: body,\n  },\n}];\n"
+      },
+      "id": "3e44ba26-7231-4c47-9ee1-9ce1e3440752",
+      "name": "Validar y Formatear Mensaje",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        80,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "f23f7b35-ea65-4a5f-9d7f-4cf101e0b488",
+              "leftValue": "={{$json.has_valid_phone}}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "400add77-06f0-4034-bcb6-d01a8553e590",
+      "name": "¿Telefono valido?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        320,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://graph.facebook.com/v20.0/{{$env.WHATSAPP_PHONE_NUMBER_ID}}/messages",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { messaging_product: \"whatsapp\", to: $json.to, type: \"template\", template: { name: \"raffle_ticket_update\", language: { code: \"es_MX\" }, components: [ { type: \"body\", parameters: [ { type: \"text\", text: String($json.partner_name || \"\") }, { type: \"text\", text: String($json.ticket_count) }, { type: \"text\", text: String($json.folios_preview || \"\") }, { type: \"text\", text: String($json.campaign_name || \"\") } ] } ] } } }}",
+        "options": {
+          "timeout": 10000
+        }
+      },
+      "id": "0faafdb3-dcb6-4462-ae12-728c77a76488",
+      "name": "Enviar Plantilla WhatsApp",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        560,
+        -100
+      ],
+      "onError": "continueErrorOutput",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "whatsapp-cloud-api-rifas",
+          "name": "WhatsApp Cloud API - Rifas"
+        }
+      },
+      "notes": "Credencial 'HTTP Header Auth' con header Authorization=Bearer <token>. El token vive en la credencial de n8n, nunca en este JSON. WHATSAPP_PHONE_NUMBER_ID se lee de una variable de entorno de la instancia n8n (no es secreto, pero varia entre ambientes test/prod)."
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseCode": 200,
+        "responseBody": "={{ { status: \"sent\", to: $json.to, campaign_id: $json.campaign_id } }}",
+        "options": {}
+      },
+      "id": "d15518e0-e03a-45f7-b985-a4226ae4cd7e",
+      "name": "Responder OK",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        800,
+        -140
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseCode": 502,
+        "responseBody": "={{ { status: \"error\", reason: \"whatsapp_api_error\", detail: $json.error ? $json.error.toString() : \"unknown\" } }}",
+        "options": {}
+      },
+      "id": "bd86b14c-0435-4025-a96d-fd8755a03159",
+      "name": "Responder Error Envio",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        800,
+        -20
+      ],
+      "notes": "Rama de error del HTTP Request (segundo output, onError=continueErrorOutput). No se deja el flujo roto: se responde 502 con el detalle para que quien llamo (Odoo u otro sistema) pueda reintentar o loguear el fallo."
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseCode": 200,
+        "responseBody": "={{ { status: \"skipped\", reason: \"missing_or_invalid_phone\", partner_id: $json.partner_id, partner_name: $json.partner_name } }}",
+        "options": {}
+      },
+      "id": "95290c15-3c2b-4724-91de-98faffa6d31a",
+      "name": "Responder Telefono Faltante",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        560,
+        120
+      ],
+      "notes": "partner.phone vacio o con formato invalido (no E.164). Se responde 200 'skipped' en vez de fallar silenciosamente o reventar el workflow."
+    }
+  ],
+  "connections": {
+    "Webhook - Boletos Creados": {
+      "main": [
+        [
+          {
+            "node": "Validar y Formatear Mensaje",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validar y Formatear Mensaje": {
+      "main": [
+        [
+          {
+            "node": "¿Telefono valido?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "¿Telefono valido?": {
+      "main": [
+        [
+          {
+            "node": "Enviar Plantilla WhatsApp",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Responder Telefono Faltante",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enviar Plantilla WhatsApp": {
+      "main": [
+        [
+          {
+            "node": "Responder OK",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Responder Error Envio",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": false
+  },
+  "tags": [],
+  "active": false
+}

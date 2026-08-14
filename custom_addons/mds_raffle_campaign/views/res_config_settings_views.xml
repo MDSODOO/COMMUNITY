@@ -19,6 +19,12 @@
                             <field name="mds_raffle_whatsapp_business_account_id"/>
                         </setting>
                     </block>
+                    <block title="Automatización (n8n)" name="mds_raffle_n8n">
+                        <setting id="mds_raffle_n8n_webhook_setting" string="Webhook: boletos creados"
+                                 help="URL del webhook de n8n (evento tickets.created). Vacío = no se notifica nada al crear boletos.">
+                            <field name="mds_raffle_n8n_webhook_url" placeholder="https://.../webhook/raffle-tickets-created"/>
+                        </setting>
+                    </block>
                 </app>
             </xpath>
         </field>

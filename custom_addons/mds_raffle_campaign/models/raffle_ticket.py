@@ -1,4 +1,11 @@
+import logging
+from collections import defaultdict
+
+import requests
+
 from odoo import api, fields, models
+
+_logger = logging.getLogger(__name__)
 
 
 class RaffleTicket(models.Model):
@@ -96,4 +103,54 @@ class RaffleTicket(models.Model):
                     else campaign.sequence_physical_id
                 )
                 vals['name'] = sequence.next_by_id()
-        return super().create(vals_list)
+        tickets = super().create(vals_list)
+        tickets._notify_n8n_tickets_created()
+        return tickets
+
+    def _notify_n8n_tickets_created(self):
+        """Best-effort: notifica al webhook de n8n (evento tickets.created,
+        ver docs/n8n_workflows/raffle_whatsapp_README.md) por cada grupo
+        (campaña, cliente) recién creado, para que n8n arme y envíe el
+        WhatsApp de boletos nuevos. No hace falta cr.commit() antes de
+        notificar: a diferencia del webhook de afiliación (que si necesitó
+        ese commit porque el receptor vuelve a leer de Odoo), acá el
+        payload ya trae todos los datos que n8n necesita — no hay
+        read-after-write. Nunca relanza: si el webhook no está configurado
+        o falla, solo se loguea, igual que _send_whatsapp_ticket_update."""
+        webhook_url = self.env['ir.config_parameter'].sudo().get_param(
+            'mds_raffle_campaign.n8n_webhook_url'
+        )
+        if not webhook_url:
+            return
+
+        portal_base_url = self.env['ir.config_parameter'].sudo().get_param('web.base.url', '')
+        groups = defaultdict(list)
+        for ticket in self:
+            groups[(ticket.campaign_id, ticket.partner_id)].append(ticket)
+
+        for (campaign, partner), group_tickets in groups.items():
+            payload = {
+                'event': 'tickets.created',
+                'campaign': {
+                    'id': campaign.id,
+                    'name': campaign.name,
+                    'code': campaign.code,
+                },
+                'partner': {
+                    'id': partner.id,
+                    'name': partner.name,
+                    'phone': partner.phone or '',
+                },
+                'tickets': {
+                    'count': len(group_tickets),
+                    'folios': [t.name for t in group_tickets],
+                },
+                'portal_url': '%s/my/raffles' % portal_base_url,
+            }
+            try:
+                requests.post(webhook_url, json=payload, timeout=5)
+            except requests.RequestException:
+                _logger.warning(
+                    'Rifa n8n: fallo al notificar boletos creados de %s (campaña %s)',
+                    partner.display_name, campaign.name, exc_info=True,
+                )

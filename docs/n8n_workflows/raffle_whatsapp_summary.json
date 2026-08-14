@@ -1,0 +1,433 @@
+{
+  "name": "Rifas - Recordatorio y Resumen de Cierre por WhatsApp",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 9 * * *"
+            }
+          ]
+        }
+      },
+      "id": "42c53ac4-051c-4be4-aca2-c734884fc016",
+      "name": "Disparador Diario",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -320,
+        0
+      ],
+      "notes": "Cron '0 9 * * *' = todos los dias a las 09:00, hora del timezone configurado en la instancia n8n (GENERIC_TIMEZONE / Settings > Timezone; se asume America/Merida). AJUSTAR el cron segun necesidad real (ej. solo cerca del sorteo) — NO dejar en 'cada minuto' por accidente."
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{$env.ODOO_URL}}/jsonrpc",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { jsonrpc: \"2.0\", method: \"call\", params: { service: \"common\", method: \"login\", args: [ $env.ODOO_DB, $env.ODOO_LOGIN, $env.ODOO_API_KEY ] } } }}",
+        "options": {
+          "timeout": 10000
+        }
+      },
+      "id": "e7afb4b8-da8e-4c53-80a3-9bb2097d5af7",
+      "name": "Login Odoo (JSON-RPC)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -80,
+        0
+      ],
+      "notes": "Autenticacion estandar de Odoo JSON-RPC (service=common, method=login), usando ODOO_DB/ODOO_LOGIN/ODOO_API_KEY como variables de entorno de la instancia n8n (no hardcodeadas aqui). Se asume /jsonrpc porque es un endpoint estandar disponible en cualquier instalacion Odoo 19 sin necesidad de tocar el modulo mds_raffle_campaign."
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{$env.ODOO_URL}}/jsonrpc",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { jsonrpc: \"2.0\", method: \"call\", params: { service: \"object\", method: \"execute_kw\", args: [ $env.ODOO_DB, $json.result, $env.ODOO_API_KEY, \"raffle.ticket.summary\", \"search_read\", [ [[\"campaign_id.state\",\"in\",[\"active\",\"closed\"]]] ], { fields: [\"partner_id\",\"campaign_id\",\"ticket_count\",\"physical_count\",\"online_count\",\"legacy_refs\"] } ] } } }}",
+        "options": {
+          "timeout": 15000
+        }
+      },
+      "id": "bc9150d1-522d-48a8-8af7-cde5ef15d8d2",
+      "name": "Leer raffle.ticket.summary",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        140,
+        0
+      ],
+      "notes": "execute_kw sobre raffle.ticket.summary (vista SQL de solo lectura). Filtra campanas activas o cerradas (excluye 'draft' y 'drawn')."
+    },
+    {
+      "parameters": {
+        "jsCode": "// Aplana la respuesta JSON-RPC de raffle.ticket.summary (campos many2one\n// vienen como [id, display_name]) y junta los partner_id unicos para la\n// siguiente llamada (necesitamos res.partner.phone, que NO esta en la vista SQL).\n\nconst response = $input.first().json;\nconst rows = (response && response.result) || [];\n\nconst summaries = rows.map((row) => ({\n  partner_id: Array.isArray(row.partner_id) ? row.partner_id[0] : row.partner_id,\n  partner_name: Array.isArray(row.partner_id) ? row.partner_id[1] : '',\n  campaign_id: Array.isArray(row.campaign_id) ? row.campaign_id[0] : row.campaign_id,\n  campaign_name: Array.isArray(row.campaign_id) ? row.campaign_id[1] : '',\n  ticket_count: row.ticket_count,\n  physical_count: row.physical_count,\n  online_count: row.online_count,\n  folios: String(row.legacy_refs || '')\n    .split(',')\n    .map((s) => s.trim())\n    .filter(Boolean),\n}));\n\nconst partnerIds = [...new Set(summaries.map((s) => s.partner_id).filter(Boolean))];\n\nreturn [{\n  json: {\n    summaries,\n    partner_ids: partnerIds,\n  },\n}];\n"
+      },
+      "id": "aa21387b-2f3a-42d3-af0b-94e33230501f",
+      "name": "Extraer IDs de Clientes y Aplanar Resumen",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        380,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{$env.ODOO_URL}}/jsonrpc",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { jsonrpc: \"2.0\", method: \"call\", params: { service: \"object\", method: \"execute_kw\", args: [ $env.ODOO_DB, $('Login Odoo (JSON-RPC)').first().json.result, $env.ODOO_API_KEY, \"res.partner\", \"search_read\", [ [[\"id\",\"in\", $json.partner_ids]] ], { fields: [\"id\",\"name\",\"phone\"] } ] } } }}",
+        "options": {
+          "timeout": 15000
+        }
+      },
+      "id": "6734f843-ce21-49fe-afbe-7be859dd70b7",
+      "name": "Leer Telefonos de Clientes",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        620,
+        0
+      ],
+      "notes": "raffle.ticket.summary no incluye telefono (no es campo de la vista SQL); se resuelve aparte contra res.partner."
+    },
+    {
+      "parameters": {
+        "jsCode": "// Une el resumen (folios/conteos) con el telefono real de cada cliente y\n// arma un item por cada (partner, campaign) listo para el loop de envio.\n\nconst summaries = $('Extraer IDs de Clientes y Aplanar Resumen').first().json.summaries;\nconst partnersResp = $input.first().json;\nconst partners = (partnersResp && partnersResp.result) || [];\n\nconst phoneById = {};\nfor (const p of partners) {\n  phoneById[p.id] = String(p.phone || '').replace(/[\\s-]/g, '');\n}\n\n// URL del portal (ya construido en este proyecto: /my/raffles). Configurable\n// por ambiente via variable de entorno PORTAL_BASE_URL.\nconst portalBaseUrl = $env.PORTAL_BASE_URL || 'https://portal.medicinedepot.mx';\n\nreturn summaries.map((s) => {\n  const phone = phoneById[s.partner_id] || '';\n  const hasValidPhone = /^\\+[1-9]\\d{7,14}$/.test(phone);\n  return {\n    json: {\n      to: phone,\n      has_valid_phone: hasValidPhone,\n      partner_id: s.partner_id,\n      partner_name: s.partner_name,\n      campaign_id: s.campaign_id,\n      campaign_name: s.campaign_name,\n      ticket_count: s.ticket_count,\n      folios_count: s.folios.length,\n      portal_url: `${portalBaseUrl}/my/raffles`,\n    },\n  };\n});\n"
+      },
+      "id": "a6f46cdf-66b2-4f42-ba09-ffef5ce51fdf",
+      "name": "Combinar Resumen y Telefono",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        860,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "batchSize": 1,
+        "options": {}
+      },
+      "id": "d40c4e69-2288-4792-87d5-8fea9b9c0a0d",
+      "name": "Loop Over Items - Lote de Envio",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        1100,
+        0
+      ],
+      "notes": "batchSize=1: procesa un cliente a la vez y espera entre cada envio (nodo 'Espera entre envios') para no exceder los rate limits de WhatsApp Business Cloud API. Ajustar el tiempo de espera segun el tier de mensajeria de la cuenta de Meta."
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "3b8fc171-3ff2-4548-9748-1d6984c18223",
+              "leftValue": "={{$json.has_valid_phone}}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "3a191227-464e-48bc-b195-a34277e3f453",
+      "name": "¿Telefono valido?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        1340,
+        -120
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://graph.facebook.com/v20.0/{{$env.WHATSAPP_PHONE_NUMBER_ID}}/messages",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { messaging_product: \"whatsapp\", to: $json.to, type: \"template\", template: { name: \"raffle_ticket_summary\", language: { code: \"es_MX\" }, components: [ { type: \"body\", parameters: [ { type: \"text\", text: String($json.partner_name || \"\") }, { type: \"text\", text: String($json.ticket_count) }, { type: \"text\", text: String($json.campaign_name || \"\") } ] } ] } } }}",
+        "options": {
+          "timeout": 10000
+        }
+      },
+      "id": "47e87997-03c5-4c0d-a741-a895a5d8ef20",
+      "name": "Enviar Resumen WhatsApp",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1580,
+        -200
+      ],
+      "onError": "continueErrorOutput",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "whatsapp-cloud-api-rifas",
+          "name": "WhatsApp Cloud API - Rifas"
+        }
+      },
+      "notes": "Misma credencial y plantilla-patron que el Workflow A (variables distintas, plantilla 'raffle_ticket_summary')."
+    },
+    {
+      "parameters": {
+        "amount": 2,
+        "unit": "seconds"
+      },
+      "id": "a5a9245a-e089-429f-b69c-4f667cd75ae0",
+      "name": "Espera entre envios",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1820,
+        -200
+      ],
+      "notes": "Throttling basico: ~2s entre mensajes (~30/min). Ajustar segun el limite real de la cuenta de WhatsApp Business."
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "6854e906-62d1-46cb-8992-30d708ec6b9b",
+              "name": "status",
+              "type": "string",
+              "value": "send_error"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "id": "5ca90be8-6c57-4163-b28f-426ebef89169",
+      "name": "Registrar Error de Envio",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1580,
+        -60
+      ],
+      "notes": "Rama de error del HTTP Request (onError=continueErrorOutput): no se pierde el item, se marca y sigue el loop."
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "7412bd05-3512-41fe-be6a-5ce45646fb76",
+              "name": "status",
+              "type": "string",
+              "value": "skipped_no_phone"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "id": "3a0ab18c-8eb9-409f-9da7-727384ae9fff",
+      "name": "Registrar Telefono Faltante",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1340,
+        60
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "10f86869-ca7e-4162-9473-98da1ec5402a",
+      "name": "Fin - Resumen de Cierre Enviado",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        1340,
+        -280
+      ],
+      "notes": "Salida 'done' del Loop Over Items: revisar la pestana Executions de n8n para el detalle de envios/omitidos/errores de esta corrida."
+    }
+  ],
+  "connections": {
+    "Disparador Diario": {
+      "main": [
+        [
+          {
+            "node": "Login Odoo (JSON-RPC)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Login Odoo (JSON-RPC)": {
+      "main": [
+        [
+          {
+            "node": "Leer raffle.ticket.summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Leer raffle.ticket.summary": {
+      "main": [
+        [
+          {
+            "node": "Extraer IDs de Clientes y Aplanar Resumen",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extraer IDs de Clientes y Aplanar Resumen": {
+      "main": [
+        [
+          {
+            "node": "Leer Telefonos de Clientes",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Leer Telefonos de Clientes": {
+      "main": [
+        [
+          {
+            "node": "Combinar Resumen y Telefono",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Combinar Resumen y Telefono": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items - Lote de Envio",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items - Lote de Envio": {
+      "main": [
+        [
+          {
+            "node": "Fin - Resumen de Cierre Enviado",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "¿Telefono valido?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "¿Telefono valido?": {
+      "main": [
+        [
+          {
+            "node": "Enviar Resumen WhatsApp",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Registrar Telefono Faltante",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enviar Resumen WhatsApp": {
+      "main": [
+        [
+          {
+            "node": "Espera entre envios",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Registrar Error de Envio",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Espera entre envios": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items - Lote de Envio",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Registrar Error de Envio": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items - Lote de Envio",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Registrar Telefono Faltante": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items - Lote de Envio",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": false
+  },
+  "tags": [],
+  "active": false
+}

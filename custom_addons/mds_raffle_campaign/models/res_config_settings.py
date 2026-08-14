@@ -16,3 +16,7 @@ class ResConfigSettings(models.TransientModel):
         string='Business Account ID',
         config_parameter='mds_raffle_campaign.whatsapp_business_account_id',
     )
+    mds_raffle_n8n_webhook_url = fields.Char(
+        string='Webhook n8n (boletos creados)',
+        config_parameter='mds_raffle_campaign.n8n_webhook_url',
+    )
