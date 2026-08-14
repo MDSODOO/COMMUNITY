@@ -1,0 +1,23 @@
+# <tipo>(<scope>): <resumen en imperativo, minúsculas, sin punto final> (máx 72 cols)
+#
+# Por qué (no qué — el diff ya dice qué cambió):
+# -
+# -
+#
+# Referencias: issue/ticket/doc relacionado (opcional)
+#
+# --- Tipos permitidos ---
+# feat:     nueva funcionalidad visible para el usuario/negocio
+# fix:      corrección de bug
+# refactor: cambio de código sin alterar comportamiento externo
+# docs:     solo documentación
+# test:     agregar o corregir tests
+# chore:    mantenimiento (deps, config, tooling)
+# perf:     mejora de rendimiento
+# sec:      corrección relacionada a seguridad
+#
+# --- Reglas ---
+# 1. Un commit = un tema/módulo. Si tocas 2 cosas no relacionadas, son 2 commits.
+# 2. Scope = módulo/carpeta principal afectado (ej: md_navbar_style, headless_api, pos)
+# 3. Nada de "wip", "cambios", "update", "subiendo cambios" — sé específico.
+# 4. Co-Authored-By: Claude ... si el commit fue generado/asistido por Claude Code
