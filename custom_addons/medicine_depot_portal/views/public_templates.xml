@@ -146,9 +146,14 @@
         <t t-set="body_classname" t-value="'md-bento-public'"/>
         <t t-set="md_path" t-value="request.httprequest.path or '/'"/>
         <!-- Fallbacks SEO -->
+        <!-- website.layout (website_templates.xml) reasigna incondicionalmente
+             la variable "meta_description" leyendo el fallback "website_meta_description"
+             — usar el mismo nombre acá es el único que el core realmente renderiza en
+             <meta name="description">. Ver docs/auditoria_seo_medicine_depot.md. -->
         <t t-set="title" t-value="title or 'Medicine Depot | Confianza y bienestar'"/>
-        <t t-set="meta_description" t-value="meta_description or 'Confianza y bienestar en un solo lugar: medicamentos, insumos y acompañamiento para farmacias y profesionales de salud.'"/>
-        <t t-set="meta_image" t-value="meta_image or '/medicine_depot_portal/static/src/img/md_social_share.jpg'"/>
+        <t t-set="website_meta_description" t-value="website_meta_description or 'Confianza y bienestar en un solo lugar: medicamentos, insumos y acompañamiento para farmacias y profesionales de salud.'"/>
+        <t t-set="md_website_id_for_meta" t-value="request.website.id if request.website else False"/>
+        <t t-set="meta_image" t-value="meta_image or ('/web/image/website/%s/logo' % md_website_id_for_meta if md_website_id_for_meta else '/logo.png')"/>
         <t t-set="md_nav_items"
            t-value="[
                {'label': 'Inicio', 'url': '/', 'active': md_path in ('/', '/home')},
@@ -280,6 +285,48 @@
                     </div>
 
                     <t t-call="medicine_depot_portal.s_md_branches"/>
+
+                    <!-- FAQ mínima, solo con hechos ya verificados en esta misma página
+                         (cobertura y horario) — ver docs/auditoria_seo_medicine_depot.md §2.4/2.5.
+                         El contenido visible debe coincidir con el FAQPage JSON-LD de abajo. -->
+                    <section class="md-section md-section--compact md-branches-faq" aria-label="Preguntas frecuentes sobre sucursales">
+                        <div class="md-section-head">
+                            <span class="md-eyebrow">Preguntas frecuentes</span>
+                            <h2>¿Cómo encontrar y contactar tu sucursal?</h2>
+                        </div>
+                        <div class="md-branches-faq-item">
+                            <h3>¿Cuántas sucursales tiene Medicine Depot y en qué estados?</h3>
+                            <p>Seis sucursales en el sureste de México: Mérida y Ticul (Yucatán), Campeche (Campeche), y Cancún, Playa del Carmen y Chetumal (Quintana Roo).</p>
+                        </div>
+                        <div class="md-branches-faq-item">
+                            <h3>¿Cuál es el horario de atención de las sucursales?</h3>
+                            <p>Lunes a viernes de 09:00 a 19:00 horas y sábados de 09:00 a 14:00 horas. Domingos permanecemos cerrados.</p>
+                        </div>
+                    </section>
+                    <script type="application/ld+json">
+{
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+        {
+            "@type": "Question",
+            "name": "¿Cuántas sucursales tiene Medicine Depot y en qué estados?",
+            "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Seis sucursales en el sureste de México: Mérida y Ticul (Yucatán), Campeche (Campeche), y Cancún, Playa del Carmen y Chetumal (Quintana Roo)."
+            }
+        },
+        {
+            "@type": "Question",
+            "name": "¿Cuál es el horario de atención de las sucursales?",
+            "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Lunes a viernes de 09:00 a 19:00 horas y sábados de 09:00 a 14:00 horas. Domingos permanecemos cerrados."
+            }
+        }
+    ]
+}
+                    </script>
                 </div>
             </section>
         </t>
@@ -568,25 +615,12 @@
         </t>
     </template>
 
-    <!--
-        md_login_layout_override · Centra el contenedor nativo de autenticación
-        (oe_website_login_container) para que la tarjeta Glassmorphism flote
-        verticalmente. La clase .md-login-container habilita los fondos
-        difuminados definidos en login_custom.scss; el diseño se aplica sin
-        tocar el <form class="oe_login_form"> nativo de Odoo.
-    -->
-    <template id="md_login_layout_override"
-              inherit_id="website.login_layout"
-              name="MedicineDepot · Login layout centered"
-              priority="10">
-        <xpath expr="//div[hasclass('oe_website_login_container')]" position="attributes">
-            <attribute name="class" add="md-login-container d-flex flex-column align-items-center justify-content-center" separator=" "/>
-        </xpath>
-    </template>
-
     <template id="md_shop_access_restricted">
         <t t-call="medicine_depot_portal.public_shell">
             <t t-set="title">Acceso Restringido | Medicine Depot</t>
+            <!-- Catálogo gateado a propósito (B2B): no debe competir en el índice
+                 con las fichas de producto reales. Ver docs/auditoria_seo_medicine_depot.md §4. -->
+            <t t-set="robots_noindex" t-value="True"/>
             <section class="md_restricted_page_wrap">
                 <div class="md-bento-container">
 
@@ -648,6 +682,36 @@
                                 <h3 class="md_step_title">¡Listo! Compra a la mano</h3>
                                 <p class="md_step_desc">Validamos tu expediente en 24-48 horas hábiles para ver el catálogo a la mano.</p>
                             </article>
+                        </div>
+                    </div>
+
+                </div>
+            </section>
+        </t>
+    </template>
+
+    <template id="md_affiliation_pending">
+        <t t-call="medicine_depot_portal.public_shell">
+            <t t-set="title">Afiliación en Revisión | Medicine Depot</t>
+            <section class="md_restricted_page_wrap">
+                <div class="md-bento-container">
+
+                    <div class="md_restricted_hero text-center">
+                        <div class="md_restricted_lock_wrap mx-auto mb-4">
+                            <span class="md_lock_icon"><i class="fa fa-clock-o" aria-hidden="true"/></span>
+                        </div>
+                        <p class="md_restricted_eyebrow mb-2">Solicitud Recibida</p>
+                        <h1 class="md_restricted_title mb-3">
+                            Tu afiliación está<br/>en revisión
+                        </h1>
+                        <p class="md_restricted_lead mx-auto mb-5">
+                            Ya recibimos tu solicitud y documentos. Validamos tu expediente en 24-48 horas hábiles;
+                            te avisaremos por correo en cuanto tengas acceso al catálogo a la mano.
+                        </p>
+                        <div class="d-flex justify-content-center gap-3 flex-wrap">
+                            <a href="/my" class="btn btn-outline-primary rounded-pill px-5 py-2">
+                                Ir a mi cuenta <i class="fa fa-arrow-right ms-2" aria-hidden="true"/>
+                            </a>
                         </div>
                     </div>
 

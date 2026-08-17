@@ -30,6 +30,33 @@
             <attribute name="t-attf-class" add="md-bento-navbar shadow-sm" separator=" "/>
         </xpath>
 
+        <!-- Open Graph / Twitter Card: website.layout core solo los emite cuando
+             website_meta.get('opengraph_meta') trae contenido real (via
+             seo_object.get_website_meta()), y en este sitio ningún seo_object
+             tiene esos campos poblados, así que ese bloque nunca imprimía nada
+             — con o sin seo_object presente. Se emiten aquí directo, reusando
+             title/website_meta_description/meta_image ya resueltos por public_shell.
+             Ver docs/auditoria_seo_medicine_depot.md. -->
+        <xpath expr="//head" position="inside">
+            <meta property="og:type" content="website"/>
+            <meta property="og:site_name" content="Medicine Depot"/>
+            <meta t-if="title" property="og:title" t-att-content="title"/>
+            <meta t-if="website_meta_description" property="og:description" t-att-content="website_meta_description"/>
+            <meta property="og:url" t-att-content="request.httprequest.url"/>
+            <!-- meta_image solo lo define public_shell; el homepage (md_homepage_public_override
+                 en md_bento_theme/views/homepage.xml) llama a website.layout directo y nunca pasa
+                 por ahí, así que se resuelve un fallback propio (logo del sitio) aquí también. -->
+            <t t-set="md_og_image" t-value="meta_image or ('/web/image/website/%s/logo' % website.id if website else '/logo.png')"/>
+            <meta property="og:image"
+                  t-att-content="md_og_image if md_og_image.startswith('http') else (request.httprequest.url_root.rstrip('/') + md_og_image)"/>
+            <meta name="twitter:card" content="summary_large_image"/>
+            <meta t-if="title" name="twitter:title" t-att-content="title"/>
+            <meta t-if="website_meta_description" name="twitter:description" t-att-content="website_meta_description"/>
+            <!-- Catálogo gateado (/shop) u otras páginas que pidan explícitamente
+                 no indexarse vía robots_noindex (ver public_templates.xml). -->
+            <meta t-if="robots_noindex" name="robots" content="noindex, follow"/>
+        </xpath>
+
         <xpath expr="//body" position="inside">
             <style id="md_bento_critical_public_css" type="text/css">
 html:has(:is(.oe_login_form, .oe_signup_form)) main {
@@ -172,6 +199,16 @@ html.o_dark_mode:has(:is(.oe_login_form, .oe_signup_form)) :is(.oe_login_form, .
   display: none !important;
 }
 
+/* Los titulos de columna del footer subieron de nivel de encabezado para no
+   romper la jerarquia semantica de la pagina (ver auditoria_seo_medicine_depot.md,
+   punto 1.4) - se fija el tamano visual aqui para no cambiar el diseno. */
+.md-bento-footer-title,
+.s_social_media_title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  margin-bottom: 0.75rem;
+}
+
 
 
             </style>
@@ -216,7 +253,7 @@ html.o_dark_mode:has(:is(.oe_login_form, .oe_signup_form)) :is(.oe_login_form, .
                                      data-snippet="s_social_media"
                                      data-name="Social Media"
                                      contenteditable="false">
-                                    <h5 class="s_social_media_title d-none" contenteditable="true">Redes</h5>
+                                    <h2 class="s_social_media_title d-none" contenteditable="true">Redes</h2>
                                     <a href="https://www.facebook.com/MedicineDepotMX"
                                        class="s_social_media_facebook"
                                        target="_blank"
@@ -242,7 +279,7 @@ html.o_dark_mode:has(:is(.oe_login_form, .oe_signup_form)) :is(.oe_login_form, .
                             </div>
                             <!-- Tarjeta 2: Enlaces -->
                             <div class="bento-glass-card">
-                                <h5 class="md-bento-footer-title">Enlaces</h5>
+                                <h2 class="md-bento-footer-title">Enlaces</h2>
                                 <ul class="list-unstyled md-bento-footer-list">
                                     <li><a href="/">Inicio</a></li>
                                     <li><a href="/shop">Tienda</a></li>
@@ -257,13 +294,13 @@ html.o_dark_mode:has(:is(.oe_login_form, .oe_signup_form)) :is(.oe_login_form, .
                             </div>
                             <!-- Tarjeta 3: Sobre nosotros -->
                             <div class="bento-glass-card">
-                                <h5 class="md-bento-footer-title">Sobre Nosotros</h5>
+                                <h2 class="md-bento-footer-title">Sobre Nosotros</h2>
                                 <p>Distribuidor farmacéutico para farmacias y profesionales de salud.
                                 <br/><br/>Atención especializada, sucursales regionales y soporte para operar con mayor claridad.</p>
                             </div>
                             <!-- Tarjeta 4: Contacto -->
                             <div class="bento-glass-card">
-                                <h5 class="md-bento-footer-title">Contacto</h5>
+                                <h2 class="md-bento-footer-title">Contacto</h2>
                                 <ul class="list-unstyled md-bento-footer-list">
                                     <li><i class="fa fa-comment fa-fw me-2"/><a href="/contactus">Contáctanos</a></li>
                                     <li><i class="fa fa-map-marker fa-fw me-2"/><a href="/sucursales">Ver sucursales</a></li>
@@ -312,6 +349,20 @@ html.o_dark_mode:has(:is(.oe_login_form, .oe_signup_form)) :is(.oe_login_form, .
                class="oe_unremovable btn btn-primary btn_cta rounded-pill shadow-sm px-4 md-bento-header-cta">
                 Afíliate
             </a>
+        </xpath>
+    </template>
+
+    <!-- website_sale.website_sale_layout inyecta en //head un <script ld+json>
+         de tipo Organization con res_company.name (nombre interno del ERP, ej.
+         "MDS MÉRIDA") y sin sameAs/dirección. Lo sustituimos por un bloque
+         Organization+WebSite con la marca pública real, generado en Python
+         (website.get_md_organization_jsonld(), en medicine_depot_portal/models/website.py)
+         para no manipular JSON a mano en QWeb. Ver docs/auditoria_seo_medicine_depot.md. -->
+    <template id="md_organization_jsonld_override"
+              inherit_id="website_sale.website_sale_layout"
+              name="Medicine Depot · Organization JSON-LD enriquecido">
+        <xpath expr="//script[@type='application/ld+json'][1]" position="replace">
+            <script t-if="website" type="application/ld+json" t-out="website.get_md_organization_jsonld()"/>
         </xpath>
     </template>
 

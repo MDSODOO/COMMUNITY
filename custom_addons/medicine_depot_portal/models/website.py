@@ -3,7 +3,10 @@ import json
 import re
 from urllib.parse import quote_plus
 
+from markupsafe import Markup
+
 from odoo import models, tools
+from odoo.http import request
 
 # Coordenadas conocidas por ciudad normalizada (igual que en el controlador)
 _BRANCH_COORDS = {
@@ -108,3 +111,57 @@ class Website(models.Model):
     def _md_invalidate_branch_cache(self):
         """Invalidar caché cuando cambien datos de sucursales."""
         self.env.registry.clear_cache()
+
+    def get_md_organization_jsonld(self):
+        """JSON-LD Organization + WebSite con la marca pública real.
+
+        Reemplaza (vía md_organization_jsonld_override en md_bento_theme) el bloque
+        genérico que inyecta website_sale.website_sale_layout, que usa
+        res_company.name (nombre interno del ERP, ej. 'MDS MÉRIDA') y no incluye
+        sameAs ni WebSite/SearchAction.
+
+        Sin ormcache (a diferencia de _md_branch_cards_json): el resultado incluye
+        la URL base, que debe reflejar el dominio real de la petición (mismo criterio
+        que el <link rel="canonical"> ya presente en cada página) — el website.domain
+        configurado en Ajustes puede apuntar a un dominio distinto (ej. producción
+        futura) del que realmente se está sirviendo en este entorno.
+        """
+        base_url = (
+            request.httprequest.url_root.rstrip("/")
+            if request and request.httprequest
+            else self.get_base_url()
+        )
+        org_id = "%s/#organization" % base_url
+        org = {
+            "@type": "Organization",
+            "@id": org_id,
+            "name": "Medicine Depot",
+            "alternateName": "Medicine Depot Sureste",
+            "url": base_url,
+            "logo": "%s/logo.png?company=%s" % (base_url, self.company_id.id),
+            # Ya publicadas y enlazadas en el footer (md_bento_theme/views/layout.xml).
+            "sameAs": [
+                "https://www.facebook.com/MedicineDepotMX",
+                "https://www.instagram.com/medicinedepotmx/",
+                "https://www.linkedin.com/company/medicine-depot/",
+            ],
+        }
+        site = {
+            "@type": "WebSite",
+            "@id": "%s/#website" % base_url,
+            "url": base_url,
+            "name": "Medicine Depot",
+            "publisher": {"@id": org_id},
+            "potentialAction": {
+                "@type": "SearchAction",
+                "target": {
+                    "@type": "EntryPoint",
+                    "urlTemplate": "%s/website/search?search={search_term_string}" % base_url,
+                },
+                "query-input": "required name=search_term_string",
+            },
+        }
+        # Markup(): t-out escapa HTML por defecto (comillas -> &#34;), lo que
+        # invalidaría el JSON dentro del <script>. El JSON ya está serializado
+        # de forma segura por json.dumps, no necesita (ni debe) volver a escaparse.
+        return Markup(json.dumps({"@context": "https://schema.org", "@graph": [org, site]}, ensure_ascii=False))

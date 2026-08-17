@@ -105,3 +105,24 @@ Antes de tocar código en la base de desarrollo, propongo este orden (impacto ÷
 ## Nota de confianza de datos
 
 Auditoría en **Tier 0** (solo `curl`/lectura de código, sin PageSpeed Insights, CrUX ni Search Console). Hallazgos marcados `needs_api` en los reportes de los subagentes (Core Web Vitals de campo, acceso real de bots de IA vía CDN/WAF, geocodificación de sucursales) requieren esas herramientas para confirmarse — no se dieron por buenos en silencio.
+
+## Fase 3 — ejecutado (2026-08-17, misma sesión)
+
+Con tu confirmación (mantener `/shop` gateado + solo `noindex`, y proceder con el paquete completo), se implementaron y desplegaron en `medicinedepot_dev` los 7 fixes de bajo riesgo:
+
+| # | Fix | Archivo(s) |
+|---|---|---|
+| 1 | `meta_description` renombrada a `website_meta_description` (nombre que el core de Odoo realmente lee) — corrige meta description en TODO el sitio de un solo cambio | `public_templates.xml`, `website_pages.xml` (×3), `homepage.xml` |
+| 2 | Open Graph + Twitter Card, inexistentes hasta ahora (el bloque nativo de Odoo nunca se activaba en este sitio) | `md_bento_theme/views/layout.xml` (nuevo xpath en `md_layout_bento_shell`) |
+| 3 | `noindex, follow` en la página de catálogo gateado (`/shop`) | `public_templates.xml` (`md_shop_access_restricted`) |
+| 4 | JSON-LD `Organization`+`WebSite` enriquecido (marca pública real, `sameAs`, `SearchAction`) reemplazando el bloque genérico de `website_sale` que usaba el nombre interno de ERP | `models/website.py` (nuevo `get_md_organization_jsonld()`), `md_bento_theme/views/layout.xml` (override de `website_sale.website_sale_layout`) |
+| 5 | JSON-LD `Pharmacy` para las 6 sucursales (dirección, teléfono, geo, horario), construido desde los mismos datos que ya alimentan las tarjetas visibles | `controllers/public.py` (nuevo `_branches_jsonld()`), `views/snippets/s_md_branches.xml` |
+| 6 | `FAQPage` + sección visible (2 preguntas 100% verificadas: cobertura y horario) en `/sucursales` | `public_templates.xml` (`public_branches_page`) |
+| 7 | `/llms.txt` (antes 404) | `controllers/public.py` (nueva ruta) |
+| 8 | `<h5>`→`<h2>` en los 4 títulos de columna del footer (rompían la jerarquía h1→h2→h3 en páginas cortas) | `md_bento_theme/views/layout.xml` |
+| 9 | 301 permanente para los 3 pares de URLs duplicadas (`/home`→`/`, `/sucursal`→`/sucursales`, `/contactanos`→`/contactus`) en vez de servir el mismo contenido en 2 URLs indexables | `controllers/public.py` |
+| 10 | `website_indexed=False` en los `website.page` de `/medicd`, `/contactus`, `/contacto-quejas` (ya los contribuye el controlador) — elimina los 3 duplicados exactos del sitemap | `website_pages.xml` + fix directo en BD para `/medicd` (bloqueado por `noupdate="1"`, ver incidente abajo) |
+
+**Verificado en vivo** (HTTP + visual con Claude in Chrome, sin regresiones): meta description correcta por página, OG/Twitter con comillas JSON válidas, Organization/Pharmacy/FAQPage JSON-LD parseables (6 sucursales × Pharmacy), `noindex` en `/shop`, `sitemap.xml` sin duplicados (2505 URLs, antes tenía 3 duplicadas), footer visualmente idéntico (se fijó el tamaño de fuente por CSS al subir de `h5` a `h2`), 0 errores de consola.
+
+**Incidente durante el despliegue (resuelto en la misma sesión):** Odoo tenía copias "específicas de sitio" (`website_id=1`) de varias vistas tocadas — remanentes de una vieja config multi-sitio que **shadean** la versión genérica del módulo, así que un `-u` normal no llegaba al HTML final aunque el archivo en disco ya estuviera correcto (por eso el footer seguía en `<h5>` y los OG tags no aparecían tras el primer deploy). Al limpiar esas copias (`md_layout_bento_shell`, `contact_page_view`, `complaint_page_view`) se descubrió que borrar `contact_page_view`/`complaint_page_view` arrastró en cascada sus `website.page` (`/contactus` propio y `/contacto-quejas`), dejando 2 `ir_model_data` huérfanos — mismo patrón que [[project_ionos_datos_huerfanos_ir_model_data]], resuelto igual: `DELETE` del xmlid huérfano + `-u`, que recreó ambas páginas limpias con el contenido ya corregido. Separado: el JSON-LD (Organization/Pharmacy) se enviaba con las comillas mal escapadas (`&#34;` en vez de `"`, JSON inválido) porque `t-out` de un string ya armado en Python se HTML-escapa por defecto — se corrigió envolviendo el resultado en `markupsafe.Markup(...)`.

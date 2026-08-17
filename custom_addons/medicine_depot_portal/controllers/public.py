@@ -2,6 +2,7 @@
 import json
 import re
 from urllib.parse import quote_plus, urlparse
+from markupsafe import Markup
 from werkzeug.utils import redirect
 
 from odoo import _, fields
@@ -66,6 +67,12 @@ class MedicineDepotPublicController(Controller):
         "cancún": "https://maps.app.goo.gl/pLsGau8TNF8AaYtW6?g_st=awb",
         "cancun": "https://maps.app.goo.gl/pLsGau8TNF8AaYtW6?g_st=awb",
         "chetumal": "https://maps.app.goo.gl/jdHRLsWnnjzdTTf2A?g_st=awb",
+    }
+
+    _STATE_LABELS = {
+        "yucatan": "Yucatán",
+        "campeche": "Campeche",
+        "qroo": "Quintana Roo",
     }
 
     _DEFAULT_BRANCH_SCHEDULE = {
@@ -325,6 +332,59 @@ class MedicineDepotPublicController(Controller):
             for branch in self._FALLBACK_BRANCHES
         ]
 
+    def _branches_jsonld(self, branch_cards):
+        """JSON-LD (Pharmacy por sucursal) a partir de los mismos branch_cards
+        que ya alimentan las tarjetas visibles en /sucursales — evita divergencia
+        entre lo mostrado y lo estructurado. Ver docs/auditoria_seo_medicine_depot.md §3.3.
+        """
+        # Mismo dominio que <link rel="canonical"> (el real de la petición, no
+        # necesariamente website.domain — ver nota en get_md_organization_jsonld).
+        base_url = request.httprequest.url_root.rstrip("/")
+        org_id = "%s/#organization" % base_url
+        page_url = "%s/sucursales" % base_url
+        graph = []
+        for branch in branch_cards:
+            slug = re.sub(r"[^a-z0-9]+", "-", self._normalize_branch_key(branch["name"])).strip("-")
+            entry = {
+                "@type": "Pharmacy",
+                "@id": "%s#pharmacy-%s" % (page_url, slug or branch["name"].lower()),
+                "name": "Medicine Depot %s" % branch.get("city", branch["name"]),
+                "parentOrganization": {"@id": org_id},
+                "url": page_url,
+                "address": {
+                    "@type": "PostalAddress",
+                    "streetAddress": branch.get("address", ""),
+                    "addressLocality": branch.get("city", ""),
+                    "addressRegion": self._STATE_LABELS.get(branch.get("state_key", ""), ""),
+                    "addressCountry": "MX",
+                },
+            }
+            if branch.get("phone"):
+                entry["telephone"] = branch["phone"]
+            if branch.get("maps_url"):
+                entry["hasMap"] = branch["maps_url"]
+            lat, lng = branch.get("lat"), branch.get("lng")
+            if lat and lng:
+                entry["geo"] = {"@type": "GeoCoordinates", "latitude": lat, "longitude": lng}
+            hours = [{
+                "@type": "OpeningHoursSpecification",
+                "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
+                "opens": branch.get("open_time", "09:00"),
+                "closes": branch.get("close_time", "19:00"),
+            }]
+            if branch.get("open_sat") and branch.get("close_sat"):
+                hours.append({
+                    "@type": "OpeningHoursSpecification",
+                    "dayOfWeek": ["Saturday"],
+                    "opens": branch["open_sat"],
+                    "closes": branch["close_sat"],
+                })
+            entry["openingHoursSpecification"] = hours
+            graph.append(entry)
+        # Markup(): t-out escapa HTML por defecto (comillas -> &#34;), lo que
+        # invalidaría el JSON dentro del <script>. Ver models/website.py.
+        return Markup(json.dumps({"@context": "https://schema.org", "@graph": graph}, ensure_ascii=False))
+
     def _get_featured_posts(self, limit=3):
         if "blog.post" not in request.registry.models:
             return list(self._FALLBACK_POSTS[:limit])
@@ -494,17 +554,48 @@ class MedicineDepotPublicController(Controller):
             "nav_items": self._nav_items(active_route),
             "branch_cards": branch_cards,
             "branch_cards_json": branch_cards_json,
+            "branch_local_business_jsonld": self._branches_jsonld(branch_cards),
             "featured_posts": self._get_featured_posts(),
             "active_route": active_route,
         }
 
-    @route(["/", "/home"], type="http", auth="public", website=True, sitemap=True)
+    @route(["/"], type="http", auth="public", website=True, sitemap=True)
     def home(self, **kw):
         return request.render("medicine_depot_portal.public_home_page", self._public_context("/"))
 
-    @route(["/sucursales", "/sucursal"], type="http", auth="public", website=True, sitemap=True)
+    @route(["/home"], type="http", auth="public", website=True, sitemap=False)
+    def home_alias(self, **kw):
+        # Alias histórico: 301 a la canónica en vez de duplicar contenido indexable.
+        return redirect("/", code=301)
+
+    @route(["/sucursales"], type="http", auth="public", website=True, sitemap=True)
     def branches(self, **kw):
         return request.render("medicine_depot_portal.public_branches_page", self._public_context("/sucursales"))
+
+    @route(["/sucursal"], type="http", auth="public", website=True, sitemap=False)
+    def branches_alias(self, **kw):
+        # Alias histórico: 301 a la canónica en vez de duplicar contenido indexable.
+        return redirect("/sucursales", code=301)
+
+    @route(["/llms.txt"], type="http", auth="public", website=True, sitemap=False)
+    def llms_txt(self, **kw):
+        base_url = request.httprequest.url_root.rstrip("/")
+        content = (
+            "# Medicine Depot Sureste\n\n"
+            "> Distribuidor farmacéutico B2B para farmacias y profesionales de salud "
+            "en el sureste de México (Yucatán, Campeche y Quintana Roo).\n\n"
+            "## Páginas clave\n"
+            "- Sucursales: %(base)s/sucursales\n"
+            "- Afiliación: %(base)s/afiliacion\n"
+            "- Catálogo (requiere cuenta de cliente afiliada): %(base)s/shop\n"
+            "- Farmacovigilancia: %(base)s/farmacovigilancia\n"
+            "- Contacto: %(base)s/contactus\n\n"
+            "## Notas para agentes\n"
+            "El catálogo de productos requiere una cuenta de cliente activa "
+            "(modelo B2B mayorista); las páginas de producto individuales son "
+            "públicas y usan datos estructurados schema.org/Product.\n"
+        ) % {"base": base_url}
+        return request.make_response(content, headers=[("Content-Type", "text/plain; charset=utf-8")])
 
     @route(["/shop/compare"], type="http", auth="public", website=True, sitemap=False)
     def shop_compare_alias(self, **kw):
@@ -536,10 +627,11 @@ class MedicineDepotPublicController(Controller):
     def medicd(self, **kw):
         return redirect("https://medicinedepot.com.mx/medicd/")
 
-    @route(["/contactanos"], type="http", auth="public", website=True, sitemap=True)
+    @route(["/contactanos"], type="http", auth="public", website=True, sitemap=False)
     def contact_legacy(self, **kw):
-        # Alias estable para campañas históricas y enlaces existentes.
-        return self._render_public_page("medicine_depot_portal.contact_page_view", "/contactus")
+        # Alias estable para campañas históricas y enlaces existentes: 301 a la
+        # canónica en vez de re-renderizar el mismo contenido en una URL indexable.
+        return redirect("/contactus", code=301)
 
     @route(["/contactus"], type="http", auth="public", website=True, sitemap=True)
     def contactus(self, **kw):
@@ -598,7 +690,10 @@ class WebsiteSaleShopAccess(WebsiteSale):
         '/shop/category/<model("product.public.category"):category>/page/<int:page>'
     ], type='http', auth="public", website=True, sitemap=False)
     def shop(self, page=0, category=None, search='', min_price=0.0, max_price=0.0, ppg=False, **post):
-        if request.env.user._is_public():
+        user = request.env.user
+        if user._is_public():
             return request.render("medicine_depot_portal.md_shop_access_restricted", {})
+        if getattr(user.partner_id, 'x_affiliation_status', False) == 'pending':
+            return request.render("medicine_depot_portal.md_affiliation_pending", {})
         return super().shop(page=page, category=category, search=search, min_price=min_price, max_price=max_price, ppg=ppg, **post)
 
