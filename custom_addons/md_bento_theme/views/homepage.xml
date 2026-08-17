@@ -163,7 +163,7 @@
               priority="260">
         <xpath expr="//t[@t-call='medicine_depot_portal.public_shell']" position="replace">
             <t t-set="title">Medicine Depot | Confianza y bienestar</t>
-            <t t-set="meta_description">Surtido farmacéutico, acompañamiento normativo y atención especializada para farmacias.</t>
+            <t t-set="website_meta_description">Surtido farmacéutico, acompañamiento normativo y atención especializada para farmacias.</t>
             <t t-call="website.layout">
                 <t t-call="md_bento_theme.md_homepage_content"/>
             </t>

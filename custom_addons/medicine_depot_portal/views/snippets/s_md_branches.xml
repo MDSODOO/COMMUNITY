@@ -47,6 +47,11 @@
         <section class="s_md_branches s_md_branches--bento o_colored_level"
                  data-snippet="s_md_branches" data-name="MD Branches">
 
+            <!-- Schema Pharmacy por sucursal, construido en Python (_branches_jsonld en
+                 controllers/public.py) a partir de los mismos datos de las tarjetas
+                 visibles de abajo. Ver docs/auditoria_seo_medicine_depot.md §3.3. -->
+            <script t-if="branch_local_business_jsonld" type="application/ld+json" t-out="branch_local_business_jsonld"/>
+
             <!-- ── Grid Bento responsivo: mapa (col-lg-8) + panel (col-lg-4) ── -->
             <div class="md-bento-grid">
 
