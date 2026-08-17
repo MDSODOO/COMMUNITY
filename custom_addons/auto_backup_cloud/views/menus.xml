@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- Technical Database Menu Extension -->
+    <menuitem id="menu_auto_backup_cloud_root"
+              name="Respaldos Cloud"
+              parent="base.menu_custom"
+              sequence="50"
+              groups="base.group_system"/>
+
+    <menuitem id="menu_auto_backup_cloud_settings"
+              name="Ajustes de Respaldo"
+              parent="menu_auto_backup_cloud_root"
+              action="action_auto_backup_cloud_settings"
+              sequence="10"
+              groups="base.group_system"/>
+
+    <menuitem id="menu_auto_backup_cloud_config"
+              name="Configuraciones Avanzadas"
+              parent="menu_auto_backup_cloud_root"
+              action="action_db_backup_config"
+              sequence="20"
+              groups="base.group_system"/>
+
+    <menuitem id="menu_auto_backup_cloud_logs"
+              name="Historial de Respaldos"
+              parent="menu_auto_backup_cloud_root"
+              action="action_db_backup_log"
+              sequence="30"
+              groups="base.group_system"/>
+</odoo>

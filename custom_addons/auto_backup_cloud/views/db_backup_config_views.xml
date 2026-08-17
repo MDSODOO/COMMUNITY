@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- Config List View -->
+    <record id="view_db_backup_config_list" model="ir.ui.view">
+        <field name="name">db.backup.config.list</field>
+        <field name="model">db.backup.config</field>
+        <field name="arch" type="xml">
+            <list string="Configuraciones de Respaldo">
+                <field name="name"/>
+                <field name="db_name"/>
+                <field name="backup_format"/>
+                <field name="local_backup_active" widget="boolean_toggle"/>
+                <field name="gdrive_active" widget="boolean_toggle"/>
+                <field name="sftp_active" widget="boolean_toggle"/>
+                <field name="cron_active" widget="boolean_toggle"/>
+                <field name="last_backup_date"/>
+                <field name="last_backup_status" widget="badge"
+                       decoration-success="last_backup_status == 'success'"
+                       decoration-warning="last_backup_status == 'warning'"
+                       decoration-danger="last_backup_status == 'error'"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Config Form View -->
+    <record id="view_db_backup_config_form" model="ir.ui.view">
+        <field name="name">db.backup.config.form</field>
+        <field name="model">db.backup.config</field>
+        <field name="arch" type="xml">
+            <form string="Configuración de Respaldo Cloud">
+                <header>
+                    <button name="action_backup_now" type="object"
+                            string="Respaldar Ahora" class="btn-primary" icon="fa-cloud-upload"/>
+                    <button name="action_test_gdrive" type="object"
+                            string="Probar Google Drive" class="btn-secondary" icon="fa-google"
+                            invisible="not gdrive_active"/>
+                    <button name="action_test_sftp" type="object"
+                            string="Probar Conexión SFTP" class="btn-secondary" icon="fa-server"
+                            invisible="not sftp_active"/>
+                    <field name="last_backup_status" widget="statusbar"
+                           statusbar_visible="success,warning,error"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="%(auto_backup_cloud.action_db_backup_log)d" type="action"
+                                class="oe_stat_button" icon="fa-history"
+                                context="{'search_default_config_id': id}">
+                            <field name="log_count" widget="statinfo" string="Respaldos"/>
+                        </button>
+                    </div>
+                    <div class="oe_title">
+                        <label for="name" string="Nombre de la Configuración"/>
+                        <h1>
+                            <field name="name" placeholder="ej. Respaldo Diario Producción"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group string="Origen y Formato">
+                            <field name="db_name"/>
+                            <field name="backup_format"/>
+                            <field name="with_filestore" invisible="backup_format != 'zip'"/>
+                            <field name="active" widget="boolean_toggle"/>
+                        </group>
+                        <group string="Última Ejecución">
+                            <field name="last_backup_date"/>
+                            <field name="last_backup_log_id"/>
+                            <field name="cron_nextcall" invisible="not cron_active"/>
+                        </group>
+                    </group>
+
+                    <notebook>
+                        <!-- Tab 1: Local Storage -->
+                        <page string="Almacenamiento Local" name="local">
+                            <group>
+                                <group string="Ajustes de Copia Local">
+                                    <field name="local_backup_active" widget="boolean_toggle"/>
+                                    <field name="local_backup_dir" invisible="not local_backup_active" required="local_backup_active"/>
+                                </group>
+                                <group string="Política de Retención Local" invisible="not local_backup_active">
+                                    <field name="retention_type"/>
+                                    <field name="retention_days" invisible="retention_type != 'days'"/>
+                                    <field name="retention_count" invisible="retention_type != 'count'"/>
+                                </group>
+                            </group>
+                        </page>
+
+                        <!-- Tab 2: Google Drive -->
+                        <page string="Google Drive" name="gdrive">
+                            <group>
+                                <group string="Habilitación y Autenticación">
+                                    <field name="gdrive_active" widget="boolean_toggle"/>
+                                    <field name="gdrive_auth_type" invisible="not gdrive_active" required="gdrive_active"/>
+                                    <field name="gdrive_folder_id" invisible="not gdrive_active" placeholder="ej. 1a2B3c4D5e6F7g8H9i..."/>
+                                    <field name="gdrive_retention_days" invisible="not gdrive_active"/>
+                                </group>
+                                <group string="Credenciales" invisible="not gdrive_active">
+                                    <field name="gdrive_service_account_json"
+                                           invisible="gdrive_auth_type != 'service_account'"
+                                           required="gdrive_active and gdrive_auth_type == 'service_account'"
+                                           placeholder='{\n  "type": "service_account",\n  "project_id": "...",\n  "private_key": "...",\n  "client_email": "..."\n}'/>
+                                    <field name="gdrive_client_id"
+                                           invisible="gdrive_auth_type != 'oauth'"
+                                           required="gdrive_active and gdrive_auth_type == 'oauth'"/>
+                                    <field name="gdrive_client_secret" password="True"
+                                           invisible="gdrive_auth_type != 'oauth'"
+                                           required="gdrive_active and gdrive_auth_type == 'oauth'"/>
+                                    <field name="gdrive_refresh_token" password="True"
+                                           invisible="gdrive_auth_type != 'oauth'"
+                                           required="gdrive_active and gdrive_auth_type == 'oauth'"/>
+                                </group>
+                            </group>
+                        </page>
+
+                        <!-- Tab 3: SFTP / Remote Server -->
+                        <page string="Servidor Remoto (SFTP / SSH)" name="sftp">
+                            <group>
+                                <group string="Servidor y Conexión">
+                                    <field name="sftp_active" widget="boolean_toggle"/>
+                                    <field name="sftp_host" invisible="not sftp_active" required="sftp_active" placeholder="ej. backup.empresa.com o 192.168.1.50"/>
+                                    <field name="sftp_port" invisible="not sftp_active" required="sftp_active"/>
+                                    <field name="sftp_user" invisible="not sftp_active" required="sftp_active" placeholder="ej. backup_user"/>
+                                    <field name="sftp_remote_dir" invisible="not sftp_active" required="sftp_active" placeholder="/backups/odoo"/>
+                                    <field name="sftp_retention_days" invisible="not sftp_active"/>
+                                </group>
+                                <group string="Método de Autenticación" invisible="not sftp_active">
+                                    <field name="sftp_auth_type" required="sftp_active"/>
+                                    <field name="sftp_password" password="True"
+                                           invisible="sftp_auth_type != 'password'"
+                                           required="sftp_active and sftp_auth_type == 'password'"/>
+                                    <field name="sftp_private_key"
+                                           invisible="sftp_auth_type != 'key'"
+                                           required="sftp_active and sftp_auth_type == 'key'"
+                                           placeholder="-----BEGIN OPENSSH PRIVATE KEY-----&#10;...&#10;-----END OPENSSH PRIVATE KEY-----"/>
+                                    <field name="sftp_passphrase" password="True"
+                                           invisible="sftp_auth_type != 'key'"/>
+                                </group>
+                            </group>
+                        </page>
+
+                        <!-- Tab 4: Schedule / Cron -->
+                        <page string="Programación Automática (Cron)" name="cron">
+                            <group>
+                                <group string="Automatización">
+                                    <field name="cron_active" widget="boolean_toggle"/>
+                                    <field name="cron_interval_number" invisible="not cron_active"/>
+                                    <field name="cron_interval_type" invisible="not cron_active"/>
+                                </group>
+                                <group string="Detalles de la Acción Planificada">
+                                    <field name="cron_id"/>
+                                    <field name="cron_nextcall" invisible="not cron_active"/>
+                                </group>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <!-- Action for Backup Config -->
+    <record id="action_db_backup_config" model="ir.actions.act_window">
+        <field name="name">Configuración de Respaldos</field>
+        <field name="res_model">db.backup.config</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Crea una configuración para automatizar respaldos hacia Google Drive, SFTP y almacenamiento local.
+            </p>
+        </field>
+    </record>
+</odoo>

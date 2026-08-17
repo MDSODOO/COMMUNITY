@@ -1,0 +1,197 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- res.config.settings inherit view -->
+    <record id="view_res_config_settings_form_auto_backup_cloud" model="ir.ui.view">
+        <field name="name">res.config.settings.form.auto.backup.cloud</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="base_setup.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//form" position="inside">
+                <app data-string="Respaldos Cloud" string="Respaldos Cloud" name="auto_backup_cloud"
+                     logo="/base/static/description/settings.png">
+                    
+                    <!-- Bloque 1: Acciones Rápidas y Estado -->
+                    <block title="Estado del Respaldo y Acciones Inmediatas" name="auto_backup_status_block">
+                        <setting id="backup_quick_actions" string="Control Operativo de Respaldos"
+                                 help="Dispara respaldos en demanda o consulta el registro completo de ejecuciones y transferencias cloud.">
+                            <div class="content-group">
+                                <div class="mt8">
+                                    <button name="action_backup_cloud_now" type="object"
+                                            string="Respaldar Ahora" class="btn btn-primary me-2" icon="fa-cloud-upload"/>
+                                    <button name="action_backup_cloud_open_logs" type="object"
+                                            string="Ver Historial de Respaldos" class="btn btn-secondary me-2" icon="fa-history"/>
+                                    <button name="action_backup_cloud_open_config" type="object"
+                                            string="Ajustes Avanzados" class="btn btn-link" icon="fa-sliders"/>
+                                </div>
+                                <div class="mt16 text-muted small">
+                                    <span>Base de datos activa: </span><strong><field name="backup_db_name" class="oe_inline"/></strong>
+                                    <span class="ms-3">Último respaldo: </span><strong><field name="backup_last_date" class="oe_inline"/></strong>
+                                    <span class="ms-3">Estado: </span><field name="backup_last_status" widget="badge" class="oe_inline"
+                                           decoration-success="backup_last_status == 'success'"
+                                           decoration-warning="backup_last_status == 'warning'"
+                                           decoration-danger="backup_last_status == 'error'"/>
+                                </div>
+                            </div>
+                        </setting>
+
+                        <setting id="backup_format_setting" string="Formato del Volcado"
+                                 help="El formato ZIP incluye la base de datos SQL y el filestore completo (archivos adjuntos e imágenes).">
+                            <field name="backup_format" widget="radio"/>
+                            <div class="mt8" invisible="backup_format != 'zip'">
+                                <field name="backup_with_filestore" class="oe_inline"/>
+                                <label for="backup_with_filestore" string="Incluir Filestore (Adjuntos / Documentos)"/>
+                            </div>
+                        </setting>
+                    </block>
+
+                    <!-- Bloque 2: Almacenamiento Local -->
+                    <block title="Almacenamiento Local en Servidor" name="auto_backup_local_block">
+                        <setting id="backup_local_setting" string="Copia Local en Servidor"
+                                 help="Guarda una copia del archivo de respaldo en el sistema de archivos local del servidor.">
+                            <field name="backup_local_active"/>
+                            <div class="content-group" invisible="not backup_local_active">
+                                <div class="mt8">
+                                    <label for="backup_local_dir" string="Directorio Local: " class="o_light_label"/>
+                                    <field name="backup_local_dir" class="oe_inline" placeholder="/var/lib/odoo/backups"/>
+                                </div>
+                                <div class="mt8">
+                                    <label for="backup_retention_type" string="Política de Retención: " class="o_light_label"/>
+                                    <field name="backup_retention_type" class="oe_inline"/>
+                                </div>
+                                <div class="mt8" invisible="backup_retention_type != 'days'">
+                                    <label for="backup_retention_days" string="Días a conservar: " class="o_light_label"/>
+                                    <field name="backup_retention_days" class="oe_inline"/>
+                                </div>
+                                <div class="mt8" invisible="backup_retention_type != 'count'">
+                                    <label for="backup_retention_count" string="Máximo de respaldos a conservar: " class="o_light_label"/>
+                                    <field name="backup_retention_count" class="oe_inline"/>
+                                </div>
+                            </div>
+                        </setting>
+                    </block>
+
+                    <!-- Bloque 3: Google Drive -->
+                    <block title="Google Drive" name="auto_backup_gdrive_block">
+                        <setting id="backup_gdrive_setting" string="Subida a Google Drive"
+                                 help="Sube automáticamente los respaldos a una carpeta designada en Google Drive utilizando subida por bloques (resumable upload).">
+                            <field name="backup_gdrive_active"/>
+                            <div class="content-group" invisible="not backup_gdrive_active">
+                                <div class="mt8">
+                                    <button name="action_backup_cloud_test_gdrive" type="object"
+                                            string="Probar Conexión con Google Drive" class="btn btn-outline-primary" icon="fa-google"/>
+                                </div>
+                                <div class="mt16">
+                                    <label for="backup_gdrive_auth_type" string="Método de Autenticación: " class="o_light_label"/>
+                                    <field name="backup_gdrive_auth_type" class="oe_inline"/>
+                                </div>
+                                <div class="mt8" invisible="backup_gdrive_auth_type != 'service_account'">
+                                    <label for="backup_gdrive_service_account_json" string="Service Account JSON:" class="o_light_label"/>
+                                    <field name="backup_gdrive_service_account_json" placeholder='{\n  "type": "service_account",\n  "client_email": "...",\n  "private_key": "..."\n}'/>
+                                </div>
+                                <div class="mt8" invisible="backup_gdrive_auth_type != 'oauth'">
+                                    <div>
+                                        <label for="backup_gdrive_client_id" string="Client ID: " class="o_light_label"/>
+                                        <field name="backup_gdrive_client_id" class="oe_inline"/>
+                                    </div>
+                                    <div class="mt4">
+                                        <label for="backup_gdrive_client_secret" string="Client Secret: " class="o_light_label"/>
+                                        <field name="backup_gdrive_client_secret" password="True" class="oe_inline"/>
+                                    </div>
+                                    <div class="mt4">
+                                        <label for="backup_gdrive_refresh_token" string="Refresh Token: " class="o_light_label"/>
+                                        <field name="backup_gdrive_refresh_token" password="True" class="oe_inline"/>
+                                    </div>
+                                </div>
+                                <div class="mt8">
+                                    <label for="backup_gdrive_folder_id" string="ID de Carpeta Destino: " class="o_light_label"/>
+                                    <field name="backup_gdrive_folder_id" class="oe_inline" placeholder="1a2B3c4D5e... (Opcional, si está vacío va a Mi Unidad)"/>
+                                </div>
+                                <div class="mt8">
+                                    <label for="backup_gdrive_retention_days" string="Días a conservar en Drive (0 = sin límite): " class="o_light_label"/>
+                                    <field name="backup_gdrive_retention_days" class="oe_inline"/>
+                                </div>
+                            </div>
+                        </setting>
+                    </block>
+
+                    <!-- Bloque 4: Servidor Remoto (SFTP / SSH) -->
+                    <block title="Servidor Remoto Secundario (SFTP / SSH)" name="auto_backup_sftp_block">
+                        <setting id="backup_sftp_setting" string="Transferencia SFTP / SSH"
+                                 help="Transfiere una copia segura del respaldo hacia un servidor secundario o NAS mediante SFTP/SSH.">
+                            <field name="backup_sftp_active"/>
+                            <div class="content-group" invisible="not backup_sftp_active">
+                                <div class="mt8">
+                                    <button name="action_backup_cloud_test_sftp" type="object"
+                                            string="Probar Conexión SFTP / Handshake" class="btn btn-outline-primary" icon="fa-server"/>
+                                </div>
+                                <div class="mt16 row">
+                                    <div class="col-md-8">
+                                        <label for="backup_sftp_host" string="Host / IP Remota: " class="o_light_label"/>
+                                        <field name="backup_sftp_host" placeholder="ej. sftp.miempresa.com o 192.168.1.100"/>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label for="backup_sftp_port" string="Puerto: " class="o_light_label"/>
+                                        <field name="backup_sftp_port"/>
+                                    </div>
+                                </div>
+                                <div class="mt8">
+                                    <label for="backup_sftp_user" string="Usuario: " class="o_light_label"/>
+                                    <field name="backup_sftp_user" placeholder="ej. backup_user"/>
+                                </div>
+                                <div class="mt8">
+                                    <label for="backup_sftp_auth_type" string="Autenticación: " class="o_light_label"/>
+                                    <field name="backup_sftp_auth_type" class="oe_inline"/>
+                                </div>
+                                <div class="mt8" invisible="backup_sftp_auth_type != 'password'">
+                                    <label for="backup_sftp_password" string="Contraseña SFTP: " class="o_light_label"/>
+                                    <field name="backup_sftp_password" password="True"/>
+                                </div>
+                                <div class="mt8" invisible="backup_sftp_auth_type != 'key'">
+                                    <label for="backup_sftp_private_key" string="Clave Privada SSH: " class="o_light_label"/>
+                                    <field name="backup_sftp_private_key" placeholder="-----BEGIN OPENSSH PRIVATE KEY-----&#10;...&#10;-----END OPENSSH PRIVATE KEY-----"/>
+                                    <div class="mt4">
+                                        <label for="backup_sftp_passphrase" string="Frase de Paso (Passphrase opcional): " class="o_light_label"/>
+                                        <field name="backup_sftp_passphrase" password="True"/>
+                                    </div>
+                                </div>
+                                <div class="mt8">
+                                    <label for="backup_sftp_remote_dir" string="Directorio Remoto: " class="o_light_label"/>
+                                    <field name="backup_sftp_remote_dir" placeholder="/backups/odoo"/>
+                                </div>
+                                <div class="mt8">
+                                    <label for="backup_sftp_retention_days" string="Días a conservar en SFTP (0 = sin límite): " class="o_light_label"/>
+                                    <field name="backup_sftp_retention_days" class="oe_inline"/>
+                                </div>
+                            </div>
+                        </setting>
+                    </block>
+
+                    <!-- Bloque 5: Programación Automática (Cron) -->
+                    <block title="Programación Automática (Acción Planificada)" name="auto_backup_cron_block">
+                        <setting id="backup_cron_setting" string="Ejecución Automática Periódica"
+                                 help="Ejecuta automáticamente el respaldo y la sincronización a los destinos configurados según el intervalo definido.">
+                            <field name="backup_cron_active"/>
+                            <div class="content-group" invisible="not backup_cron_active">
+                                <div class="mt8">
+                                    <label for="backup_cron_interval_number" string="Frecuencia: Cada " class="o_light_label"/>
+                                    <field name="backup_cron_interval_number" class="oe_inline"/>
+                                    <field name="backup_cron_interval_type" class="oe_inline ms-2"/>
+                                </div>
+                            </div>
+                        </setting>
+                    </block>
+
+                </app>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Action to open settings directly for this module -->
+    <record id="action_auto_backup_cloud_settings" model="ir.actions.act_window">
+        <field name="name">Ajustes de Respaldos Cloud</field>
+        <field name="res_model">res.config.settings</field>
+        <field name="view_mode">form</field>
+        <field name="target">current</field>
+        <field name="context">{'module': 'auto_backup_cloud', 'bin_size': False}</field>
+    </record>
+</odoo>

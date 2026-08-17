@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- Log List View (Odoo 19 uses <list>) -->
+    <record id="view_db_backup_log_list" model="ir.ui.view">
+        <field name="name">db.backup.log.list</field>
+        <field name="model">db.backup.log</field>
+        <field name="arch" type="xml">
+            <list string="Historial de Respaldos" create="false" edit="false" delete="true"
+                  decoration-success="overall_status == 'success'"
+                  decoration-warning="overall_status == 'warning'"
+                  decoration-danger="overall_status == 'error'">
+                <field name="start_time" string="Fecha / Hora"/>
+                <field name="name" string="Archivo"/>
+                <field name="db_name" string="Base de Datos"/>
+                <field name="backup_type" string="Tipo" widget="badge"
+                       decoration-info="backup_type == 'manual'"
+                       decoration-muted="backup_type == 'cron'"/>
+                <field name="backup_format" string="Formato"/>
+                <field name="file_size_human" string="Tamaño"/>
+                <field name="duration_seconds" string="Duración (s)"/>
+                <field name="local_status" string="Local" widget="badge"
+                       decoration-success="local_status == 'success'"
+                       decoration-danger="local_status == 'error'"
+                       decoration-muted="local_status == 'skipped'"/>
+                <field name="gdrive_status" string="Google Drive" widget="badge"
+                       decoration-success="gdrive_status == 'success'"
+                       decoration-danger="gdrive_status == 'error'"
+                       decoration-muted="gdrive_status == 'skipped'"/>
+                <field name="sftp_status" string="SFTP" widget="badge"
+                       decoration-success="sftp_status == 'success'"
+                       decoration-danger="sftp_status == 'error'"
+                       decoration-muted="sftp_status == 'skipped'"/>
+                <field name="overall_status" string="Estado" widget="badge"
+                       decoration-success="overall_status == 'success'"
+                       decoration-warning="overall_status == 'warning'"
+                       decoration-danger="overall_status == 'error'"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Log Form View -->
+    <record id="view_db_backup_log_form" model="ir.ui.view">
+        <field name="name">db.backup.log.form</field>
+        <field name="model">db.backup.log</field>
+        <field name="arch" type="xml">
+            <form string="Registro de Respaldo" create="false" edit="false">
+                <header>
+                    <field name="overall_status" widget="statusbar"
+                           statusbar_visible="success,warning,error"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <label for="name" string="Archivo de Respaldo"/>
+                        <h1>
+                            <field name="name"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group string="Información del Respaldo">
+                            <field name="db_name"/>
+                            <field name="backup_type"/>
+                            <field name="backup_format"/>
+                            <field name="file_size_human"/>
+                            <field name="file_size_bytes"/>
+                        </group>
+                        <group string="Métricas de Ejecución">
+                            <field name="start_time"/>
+                            <field name="end_time"/>
+                            <field name="duration_seconds"/>
+                            <field name="config_id"/>
+                        </group>
+                    </group>
+                    <group string="Estado de Destinos">
+                        <group>
+                            <field name="local_status" widget="badge"
+                                   decoration-success="local_status == 'success'"
+                                   decoration-danger="local_status == 'error'"
+                                   decoration-muted="local_status == 'skipped'"/>
+                            <field name="local_path" invisible="local_status != 'success'"/>
+                        </group>
+                        <group>
+                            <field name="gdrive_status" widget="badge"
+                                   decoration-success="gdrive_status == 'success'"
+                                   decoration-danger="gdrive_status == 'error'"
+                                   decoration-muted="gdrive_status == 'skipped'"/>
+                            <field name="gdrive_file_id" invisible="gdrive_status != 'success'"/>
+                            <field name="sftp_status" widget="badge"
+                                   decoration-success="sftp_status == 'success'"
+                                   decoration-danger="sftp_status == 'error'"
+                                   decoration-muted="sftp_status == 'skipped'"/>
+                            <field name="sftp_remote_path" invisible="sftp_status != 'success'"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Detalles de Ejecución y Diagnóstico" name="details">
+                            <field name="details" widget="text" nolabel="1"
+                                   placeholder="Sin detalles registrados"/>
+                        </page>
+                        <page string="Depuración de Versiones Anteriores" name="purges">
+                            <field name="purged_files_summary" widget="text" nolabel="1"
+                                   placeholder="No se ejecutó depuración o no hubo archivos antiguos"/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Log Search View -->
+    <record id="view_db_backup_log_search" model="ir.ui.view">
+        <field name="name">db.backup.log.search</field>
+        <field name="model">db.backup.log</field>
+        <field name="arch" type="xml">
+            <search string="Buscar Respaldos">
+                <field name="name" string="Archivo"/>
+                <field name="db_name" string="Base de Datos"/>
+                <filter string="Exitosos" name="success" domain="[('overall_status', '=', 'success')]"/>
+                <filter string="Con Advertencias" name="warning" domain="[('overall_status', '=', 'warning')]"/>
+                <filter string="Fallidos" name="error" domain="[('overall_status', '=', 'error')]"/>
+                <separator/>
+                <filter string="Manuales" name="manual" domain="[('backup_type', '=', 'manual')]"/>
+                <filter string="Automáticos (Cron)" name="cron" domain="[('backup_type', '=', 'cron')]"/>
+                <group>
+                    <filter string="Estado General" name="group_by_status" context="{'group_by': 'overall_status'}"/>
+                    <filter string="Tipo de Ejecución" name="group_by_type" context="{'group_by': 'backup_type'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Action for Backup Logs -->
+    <record id="action_db_backup_log" model="ir.actions.act_window">
+        <field name="name">Historial de Respaldos</field>
+        <field name="res_model">db.backup.log</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_db_backup_log_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No hay registros de respaldos aún.
+            </p>
+            <p>
+                Los respaldos manuales o automáticos aparecerán listados aquí con su tamaño, duración y estado en cada destino cloud.
+            </p>
+        </field>
+    </record>
+</odoo>
