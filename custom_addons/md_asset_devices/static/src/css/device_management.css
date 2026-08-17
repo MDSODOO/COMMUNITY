@@ -1,0 +1,38 @@
+/* Device Management Styles */
+
+.device_management_widget .guarantee_bar {
+    height: 6px;
+    border-radius: 3px;
+}
+
+.device_management_widget .kanban_alert {
+    padding: 8px 12px;
+    margin-bottom: 8px;
+    border-radius: 4px;
+    font-size: 12px;
+}
+
+.device_management_widget .quantity_a_la_mano {
+    font-weight: bold;
+    color: #1d9741;
+}
+
+.device_management_widget .location_badge {
+    display: inline-block;
+    padding: 4px 8px;
+    background-color: #f0f0f0;
+    border-radius: 3px;
+    font-size: 11px;
+}
+
+/* Badge de "vencidos/urgentes" superpuesto en la esquina de un smart button,
+   en vez de un botón separado (consolidación de smart buttons redundantes). */
+.md_stat_overdue_badge {
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    font-size: 10px;
+    line-height: 1;
+    padding: 3px 5px;
+    min-width: 16px;
+}

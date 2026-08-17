@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- CATEGORÍA DE MÓDULO -->
+        <record model="ir.module.category" id="device_management_category">
+            <field name="name">Device Management</field>
+            <field name="description">Gestión de Dispositivos Físicos</field>
+        </record>
+
+        <!-- PRIVILEGE (Intermediario Odoo 19) -->
+        <record model="res.groups.privilege" id="device_management_privilege">
+            <field name="name">Device Management</field>
+            <field name="category_id" ref="device_management_category"/>
+        </record>
+
+        <!-- GRUPO: USER (Read-only) -->
+        <record model="res.groups" id="device_management_user_group">
+            <field name="name">Device Management / User</field>
+            <field name="privilege_id" ref="device_management_privilege"/>
+            <field name="comment">Usuarios que solo pueden ver dispositivos asignados a ellos</field>
+        </record>
+
+        <!-- GRUPO: MANAGER (CRUD Completo) -->
+        <record model="res.groups" id="device_management_manager_group">
+            <field name="name">Device Management / Manager</field>
+            <field name="privilege_id" ref="device_management_privilege"/>
+            <field name="comment">Gerentes que pueden crear, editar y gestionar dispositivos</field>
+            <field name="implied_ids" eval="[(4, ref('device_management_user_group'))]"/>
+        </record>
+
+        <!-- GRUPO: ADMIN (Acceso Total) -->
+        <record model="res.groups" id="device_management_admin_group">
+            <field name="name">Device Management / Admin</field>
+            <field name="privilege_id" ref="device_management_privilege"/>
+            <field name="comment">Administradores con acceso total incluyendo credenciales sensibles</field>
+            <field name="implied_ids" eval="[(4, ref('device_management_manager_group'))]"/>
+        </record>
+
+        <!-- REGLA DE ACCESO PARA CAMPOS SENSIBLES (Credenciales) -->
+        <record model="ir.rule" id="device_subscription_credentials_rule">
+            <field name="name">Credenciales de Suscripción - Solo Admin</field>
+            <field name="model_id" ref="md_asset_devices.model_device_subscription"/>
+            <field name="groups" eval="[(4, ref('device_management_admin_group'))]"/>
+            <field name="perm_read">1</field>
+            <field name="perm_write">1</field>
+            <field name="perm_create">1</field>
+            <field name="perm_unlink">1</field>
+            <field name="domain_force">[('id', '!=', -1)]</field>
+        </record>
+
+        <!-- MULTI-SUCURSAL: cada usuario solo ve equipos de las compañías que tiene habilitadas -->
+        <record model="ir.rule" id="device_management_company_rule">
+            <field name="name">Device Management: multi-sucursal</field>
+            <field name="model_id" ref="model_device_management"/>
+            <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+        </record>
+
+    </data>
+</odoo>
