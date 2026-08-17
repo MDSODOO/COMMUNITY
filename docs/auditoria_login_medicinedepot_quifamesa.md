@@ -79,11 +79,24 @@ Suite de tests de `medicine_depot_portal` (`--test-tags /medicine_depot_portal`,
 
 Al mover una vista `inherit_id="web.login"` de un módulo a otro en un solo comando (`-u módulo_viejo -i módulo_nuevo`), Odoo puede intentar cargar la vista nueva **antes** de limpiar la vieja (la limpieza de `ir.model.data` huérfanos ocurre al final de todo el batch, no por módulo). Si ambas vistas comparten el mismo `priority` y el mismo xpath, la segunda falla con `cannot be located in parent view` porque el nodo ya fue consumido por la primera. Solución: separar en dos comandos — primero `-u módulo_viejo` (limpia el huérfano), después `-i módulo_nuevo`. Mismo patrón de "Odoo borra solo los registros huérfanos al correr `-u`" ya documentado en la auditoría de `md_asset_devices` (2026-08-17), aplicado aquí dos veces (una por cada par de módulos).
 
-## 4. Riesgo residual (no corregido, requiere decisión de infraestructura)
+## 4. Riesgo residual — corregido (2026-08-17, misma sesión)
 
-El mount `custom_addons:/mnt/extra-addons:ro` en `quifamesa_raffle_test/docker-compose.yml` sigue exponiendo **todos** los módulos de este repo (incluido `md_web_login`, que depende de `medicine_depot_portal`) como instalables desde la base de Quifamesa. El riesgo de reintroducir el conflicto en reversa ahora es mucho menor —instalar `md_web_login` ahí arrastraría el módulo grande `medicine_depot_portal` como dependencia, algo mucho menos probable que un clic accidental—, pero no es cero. Corrección estructural (no aplicada, requiere confirmación por el cambio de volumen/reinicio que implica): restringir el mount a solo los módulos que Quifamesa realmente necesita de este repo (p. ej. `mds_raffle_campaign` y sus dependencias), en vez del directorio completo.
+El mount `custom_addons:/mnt/extra-addons:ro` en `quifamesa_raffle_test/docker-compose.yml` exponía **los 41 módulos** de este repo (incluido `md_web_login`) como instalables desde la base de Quifamesa. Se curó a solo los dos módulos que Quifamesa realmente necesita de este repo:
+
+```yaml
+# antes:
+- /opt/medicinedepot-odoo19-migration/custom_addons:/mnt/extra-addons:ro
+
+# después:
+- /opt/medicinedepot-odoo19-migration/custom_addons/mds_raffle_campaign:/mnt/extra-addons/mds_raffle_campaign:ro
+- /opt/medicinedepot-odoo19-migration/custom_addons/md_product_lines:/mnt/extra-addons/md_product_lines:ro
+```
+
+`md_product_lines` es la única dependencia de `mds_raffle_campaign` que vive en `custom_addons` (sus otras dependencias — `sale`, `point_of_sale`, `mail`, `base_setup`, `portal` — son núcleo de Odoo, ya presentes en `/usr/lib/python3/dist-packages/odoo/addons`). Backup del compose original en `docker-compose.yml.bak_20260817_curated_mount` (ionos). Contenedor recreado (`docker compose down odoo && up -d odoo`; el contenedor `db` no se tocó).
+
+**Verificado tras el cambio:** `/mnt/extra-addons` dentro del contenedor de Quifamesa ahora solo contiene `mds_raffle_campaign/` y `md_product_lines/` — `md_web_login`, `medicine_depot_portal` y el resto ya no son ni siquiera visibles/instalables desde ahí. `curl` a `/web/login` (`:8073`) → HTTP 200, panel Quifamesa intacto, sin errores en logs. `medicinedepot_dev` (`:8069`, no tocado por este cambio) → HTTP 200, sin cambios.
 
 ## 5. Hoja de ruta
 
-- [ ] (Opcional, requiere aprobación) Restringir el volumen compartido `custom_addons` en `quifamesa_raffle_test/docker-compose.yml` a un subconjunto curado en vez de montar el directorio completo.
+- [x] Restringir el volumen compartido `custom_addons` en `quifamesa_raffle_test/docker-compose.yml` a un subconjunto curado — hecho, ver §4.
 - [ ] (Fuera de alcance de esta auditoría) Investigar los 3 fallos de `test_afiliacion_template` y 1 de `test_bento_dashboard_redirect` — no relacionados al login, preexistentes.
