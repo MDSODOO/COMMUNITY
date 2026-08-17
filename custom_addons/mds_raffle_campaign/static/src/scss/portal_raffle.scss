@@ -1,14 +1,31 @@
 // Estilos de marca Quifamesa para el bundle de frontend (portal + /web/login
 // en esta instancia — website está instalado, así que ambos comparten
-// web.assets_frontend). Paleta real verificada contra quifamesa.com.mx vía
-// getComputedStyle: navy #042455 (primario real del sitio), azul eléctrico
-// #00AEFF (acento real del sitio). Dorado #F2B705 es un acento de diseño
-// complementario para "premio/celebración", no viene del sitio.
+// web.assets_frontend). Paleta alineada al Manual de marca Quifamesa 2026
+// (artifact "Quifamesa Sorteo" aprobado): navy #1B365D, azul acero #285780,
+// azules claros #7D9CC0 / #5E8AB4, grises azulados #C6D6E3 / #DDE5ED,
+// fondos #F6F7F8 / #F1F3F5 / #EFEFED. Reemplaza la paleta anterior
+// (#042455 / #00AEFF / #F2B705), que era la verificada contra el sitio
+// público quifamesa.com.mx antes de este rediseño — ver historial de esta
+// sección para el porqué del cambio.
+//
+// Tipografía del manual: 'Baloo 2' (encabezados/cifras destacadas),
+// 'Inter' (labels/meta/texto pequeño), 'Montserrat' (cuerpo/botones/inputs),
+// todo con text-transform: uppercase salvo el texto en fuente monoespaciada
+// (folios) y los t-field de datos reales de Odoo.
 //
 // Todo acá es aditivo y va detrás de clases nuevas (o_mds_*) — no se
 // sobreescribe ningún .btn-primary/.bg-*/.text-bg-* global de Bootstrap,
 // para no afectar el resto del portal (Sus órdenes, Sus facturas, etc.)
 // ni el login de otros módulos que no sean de rifas.
+
+// Sintaxis v1 de la API de Google Fonts (comas, no ";") — la v2
+// ("wght@500;600;700;800") rompe el bundle CSS de Odoo: el minificador de
+// assets no respeta los ";" dentro de un url() y corta la declaración a la
+// mitad, inyectando el resto como texto suelto en medio de otro selector.
+// Confirmado al reproducirlo: /web/login quedó totalmente sin estilo hasta
+// cambiar a esta sintaxis. Mismo patrón que los @import de Inter/Inter
+// Tight ya existentes en otros módulos de esta instancia.
+@import url('https://fonts.googleapis.com/css?family=Baloo+2:500,600,700,800&family=Inter:400,500,600,700&display=swap');
 
 @font-face {
     font-family: 'Montserrat';
@@ -34,37 +51,39 @@
 
 // ── /my/raffles ─────────────────────────────────────────────────────────
 .o_mds_raffle_page {
-    --mds-navy: #042455;
-    --mds-electric: #00AEFF;
-    --mds-electric-dark: #0269AA;
-    --mds-gold: #F2B705;
+    --mds-navy: #1B365D;
+    --mds-electric: #285780;
+    --mds-electric-dark: #1B365D;
+    --mds-muted: #5A7089;
+    text-transform: uppercase;
 }
 
 .o_mds_raffle_title {
-    font-family: 'Montserrat', -apple-system, 'Helvetica Neue', Arial, sans-serif;
-    font-size: 15px !important;
+    font-family: 'Inter', -apple-system, 'Helvetica Neue', Arial, sans-serif;
+    font-size: 14.5px !important;
     font-weight: 700 !important;
     margin-bottom: 6px !important;
 }
 
 .o_mds_raffle_summary_card {
-    border-left-color: var(--mds-electric, #00AEFF) !important;
+    border-left-color: var(--mds-electric, #285780) !important;
     background-color: #fff !important;
     border-radius: 16px !important;
     padding: 20px 22px !important;
-    box-shadow: 0 1px 2px rgba(4, 36, 85, .06), 0 8px 24px -12px rgba(4, 36, 85, .14) !important;
+    box-shadow: 0 1px 2px rgba(27, 54, 93, .06), 0 8px 24px -12px rgba(27, 54, 93, .14) !important;
 }
 
 .o_mds_raffle_count {
-    color: var(--mds-electric, #00AEFF) !important;
-    font-family: 'Montserrat', -apple-system, 'Helvetica Neue', Arial, sans-serif !important;
+    color: var(--mds-electric, #285780) !important;
+    font-family: 'Baloo 2', 'Montserrat', -apple-system, 'Helvetica Neue', Arial, sans-serif !important;
     font-size: 30px !important;
-    font-weight: 800 !important;
+    font-weight: 700 !important;
 }
 
 .o_mds_raffle_count_label {
     font-size: 11.5px !important;
-    color: #4a5a72 !important;
+    color: var(--mds-muted, #5A7089) !important;
+    font-family: 'Inter', sans-serif !important;
 }
 
 // Las 4 variantes de badge del artifact son "soft pills" (fondo tenue del
@@ -77,19 +96,25 @@
     padding: 3px 10px !important;
 }
 
+// "R" (físico): gris neutro, igual al fondo de cabecera de tabla del
+// artifact — no es un tinte de color de marca, es la categoría "neutral".
 .o_mds_raffle_badge_physical {
-    background-color: color-mix(in srgb, #4a5a72 16%, #fff) !important;
-    color: #4a5a72 !important;
+    background-color: #EFEFED !important;
+    color: var(--mds-muted, #5A7089) !important;
 }
 
+// "BP" (online): tinte de acero, el acento primario del manual.
 .o_mds_raffle_badge_online {
-    background-color: color-mix(in srgb, var(--mds-electric, #00AEFF) 16%, #fff) !important;
-    color: #0092D6 !important;
+    background-color: rgba(40, 87, 128, .14) !important;
+    color: var(--mds-electric, #285780) !important;
 }
 
+// "★ Patrocinio": tinte de azul claro + texto navy — el artifact ya NO usa
+// dorado para esta insignia (el dorado del manual queda reservado solo para
+// el texto de celebración del panel de ganador de la ruleta).
 .o_mds_raffle_badge_sponsor {
-    background-color: color-mix(in srgb, var(--mds-gold, #F2B705) 26%, #fff) !important;
-    color: #8a6400 !important;
+    background-color: rgba(125, 156, 192, .28) !important;
+    color: var(--mds-navy, #1B365D) !important;
 }
 
 // Tabla de folios (portal.portal_table de Odoo, clases o_portal_my_doc_table
@@ -105,8 +130,9 @@
             font-weight: 700 !important;
             letter-spacing: .06em;
             text-transform: uppercase;
-            color: #4a5a72;
-            background-color: #efefed;
+            color: var(--mds-muted, #5A7089);
+            background-color: #EFEFED;
+            font-family: 'Inter', sans-serif;
         }
 
         td, th {
@@ -116,6 +142,7 @@
         td:first-child span {
             font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
             font-weight: 600;
+            text-transform: none;
         }
 
         td.text-end, th.text-end {
@@ -124,321 +151,3 @@
     }
 }
 
-// ── /web/login — panel dividido (hero navy + formulario), vía clases
-// nuevas agregadas desde views/login_templates.xml. El <form> real de Odoo
-// (con su lógica de csrf/error/passkey/reset-password/signup intacta) se
-// mueve dentro de este layout por XPath position="move" — este bloque solo
-// pinta lo que ya existe, nunca se toca .btn-primary/.form-control global ni
-// el header/footer del sitio (website.layout), que sigue envolviendo esta
-// página tal cual. ──────────────────────────────────────────────────────
-.o_mds_login_logo {
-    display: block;
-    max-height: 64px;
-    width: auto;
-    margin: 0 auto;
-}
-
-// oe_website_login_container es el div "crudo" (sin estilos propios) donde
-// website.login_layout mete el contenido de web.login dentro del sitio
-// completo (header/footer). Le damos aire y centramos el panel para que no
-// quede pegado a los bordes del contenedor del sitio.
-.oe_website_login_container {
-    padding: clamp(16px, 4vw, 48px) 16px;
-    display: flex;
-    justify-content: center;
-}
-
-.login-wrap {
-    display: grid;
-    grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
-    min-height: 640px;
-    width: 100%;
-    max-width: 1100px;
-    margin: 0 auto;
-    border-radius: 20px;
-    overflow: hidden;
-    box-shadow: 0 20px 60px -20px rgba(4, 36, 85, .35);
-}
-
-@media (max-width: 860px) {
-    .login-wrap {
-        grid-template-columns: 1fr;
-    }
-}
-
-.login-panel {
-    position: relative;
-    overflow: hidden;
-    background: linear-gradient(160deg, #042455 0%, #004A8D 78%, #00639e 100%);
-    color: #fff;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    padding: clamp(28px, 5vw, 64px);
-}
-
-@media (max-width: 860px) {
-    .login-panel {
-        min-height: 320px;
-    }
-}
-
-.login-glow {
-    position: absolute;
-    border-radius: 50%;
-    filter: blur(60px);
-    pointer-events: none;
-}
-
-.login-glow-1 {
-    width: 320px;
-    height: 320px;
-    left: -8%;
-    top: -6%;
-    background: #00AEFF;
-    opacity: .35;
-}
-
-.login-glow-2 {
-    width: 260px;
-    height: 260px;
-    right: -6%;
-    bottom: 4%;
-    background: #F2B705;
-    opacity: .16;
-}
-
-.login-mark {
-    position: relative;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.login-mark-chip {
-    padding: 8px 14px;
-    border-radius: 10px;
-    background: #fff;
-    display: flex;
-    align-items: center;
-    box-shadow: 0 4px 14px -6px rgba(0, 0, 0, .35);
-
-    img {
-        height: 26px;
-        width: auto;
-        display: block;
-    }
-}
-
-.login-hero {
-    position: relative;
-    max-width: 460px;
-
-    .accent {
-        color: #00AEFF;
-    }
-}
-
-// El artifact aprobado usa texto plano (sin fondo/pill) para el eyebrow: solo
-// tipografía uppercase en el azul cielo tenue del panel, NO un badge relleno.
-.login-hero-eyebrow {
-    font-size: 11.5px;
-    font-weight: 600;
-    letter-spacing: .14em;
-    text-transform: uppercase;
-    color: #b0c4de;
-    margin-bottom: 14px;
-    display: block;
-}
-
-.login-hero h1 {
-    font-size: clamp(28px, 3.6vw, 40px);
-    line-height: 1.12;
-    font-weight: 800;
-    font-family: 'Montserrat', -apple-system, 'Helvetica Neue', Arial, sans-serif;
-    margin: 0;
-    color: #fff;
-}
-
-.login-hero p {
-    margin-top: 16px;
-    font-size: 15px;
-    line-height: 1.6;
-    color: #b0c4de;
-    max-width: 40ch;
-}
-
-.login-stat-row {
-    position: relative;
-    display: flex;
-    gap: 28px;
-    margin-top: 36px;
-}
-
-.login-stat {
-    b {
-        font-family: 'Montserrat', sans-serif;
-        font-size: 22px;
-        font-weight: 800;
-        display: block;
-    }
-
-    span {
-        font-size: 11.5px;
-        color: #b0c4de;
-    }
-}
-
-.login-panel-foot {
-    position: relative;
-    font-size: 12px;
-    color: #b0c4de;
-    opacity: .8;
-}
-
-.login-form-side {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: clamp(28px, 6vw, 60px);
-    background: #f4f7f9;
-}
-
-.login-card {
-    width: 100%;
-    max-width: 380px;
-
-    h2 {
-        font-size: 24px;
-        font-weight: 800;
-        font-family: 'Montserrat', -apple-system, 'Helvetica Neue', Arial, sans-serif;
-        margin: 0;
-    }
-
-    .sub {
-        margin-top: 6px;
-        font-size: 13.5px;
-        color: #4a5a72;
-    }
-
-    // El <form> real de Odoo aterriza aquí (movido por XPath). Lo que sigue
-    // afina la tipografía de sus elementos reales (label, links de
-    // auth_signup, botón de passkey de auth_passkey) para que coincidan con
-    // .qf-field-label-row / a.hint / .qf-btn-outline / .login-card-foot del
-    // artifact original — sin agregar/quitar ningún nodo, solo CSS sobre las
-    // clases que Odoo ya trae (form-label, btn-link, list-group-item).
-    .form-label {
-        font-size: 12.5px;
-        font-weight: 600;
-        color: #1a2b42;
-        margin-bottom: 7px;
-    }
-
-    // "Restablecer contraseña" (auth_signup, junto al label de Contraseña):
-    // hint de acento, como .qf-field a.hint en el artifact.
-    a.btn-link {
-        font-size: 12px;
-        font-weight: 600;
-        color: #00AEFF;
-        text-decoration: none;
-
-        &:hover {
-            text-decoration: underline;
-        }
-    }
-
-    // "¿No tienes una cuenta?" (auth_signup, debajo del botón de submit):
-    // texto secundario centrado, como .login-card-foot en el artifact.
-    .oe_login_buttons a.btn-link.mt-2 {
-        display: block;
-        margin-top: 26px !important;
-        font-size: 13px;
-        font-weight: 600;
-        color: #4a5a72;
-        text-align: center;
-    }
-
-    // "Usa una llave de acceso" (auth_passkey, vía web.login_oauth): Odoo lo
-    // renderiza como .list-group-item, no como <button>; se repinta para que
-    // se vea como .qf-btn-outline del artifact sin tocar su markup.
-    .o_login_auth {
-        .list-group {
-            border: none;
-        }
-
-        .list-group-item {
-            width: 100%;
-            padding: 11px 18px;
-            border-radius: 9px;
-            background: transparent;
-            border: 1px solid #c3d0e2;
-            color: #1a2b42;
-            font-weight: 600;
-            font-size: 13.5px;
-
-            &:hover {
-                background: #f4f7f9;
-            }
-        }
-    }
-}
-
-.qf-field {
-    margin-top: 22px;
-}
-
-.qf-input {
-    width: 100%;
-    padding: 11px 13px;
-    font-size: 14px;
-    border: 1px solid #c3d0e2;
-    border-radius: 9px;
-    background: #fff;
-
-    &:focus-visible {
-        outline: none;
-        border-color: #00AEFF;
-        box-shadow: 0 0 0 3px rgba(0, 174, 255, .22);
-    }
-}
-
-.qf-btn-primary, .btn.o_mds_login_btn {
-    width: 100%;
-    margin-top: 26px;
-    padding: 12px 18px;
-    border-radius: 9px;
-    border: none;
-    background-color: #00AEFF;
-    color: #fff;
-    font-weight: 700;
-    font-size: 14.5px;
-
-    &:hover, &:focus, &:active {
-        background-color: #0092D6 !important;
-        border-color: #0092D6 !important;
-        color: #fff !important;
-    }
-}
-
-.qf-divider {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin: 20px 0;
-    color: #4a5a72;
-    font-size: 12px;
-
-    &::before, &::after {
-        content: "";
-        flex: 1;
-        height: 1px;
-        background: #dde4ee;
-    }
-}
-
-.login-card-foot {
-    margin-top: 26px;
-    text-align: center;
-    font-size: 13px;
-    color: #4a5a72;
-}

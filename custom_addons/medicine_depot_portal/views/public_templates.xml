@@ -568,22 +568,6 @@
         </t>
     </template>
 
-    <!--
-        md_login_layout_override · Centra el contenedor nativo de autenticación
-        (oe_website_login_container) para que la tarjeta Glassmorphism flote
-        verticalmente. La clase .md-login-container habilita los fondos
-        difuminados definidos en login_custom.scss; el diseño se aplica sin
-        tocar el <form class="oe_login_form"> nativo de Odoo.
-    -->
-    <template id="md_login_layout_override"
-              inherit_id="website.login_layout"
-              name="MedicineDepot · Login layout centered"
-              priority="10">
-        <xpath expr="//div[hasclass('oe_website_login_container')]" position="attributes">
-            <attribute name="class" add="md-login-container d-flex flex-column align-items-center justify-content-center" separator=" "/>
-        </xpath>
-    </template>
-
     <template id="md_shop_access_restricted">
         <t t-call="medicine_depot_portal.public_shell">
             <t t-set="title">Acceso Restringido | Medicine Depot</t>
@@ -648,6 +632,36 @@
                                 <h3 class="md_step_title">¡Listo! Compra a la mano</h3>
                                 <p class="md_step_desc">Validamos tu expediente en 24-48 horas hábiles para ver el catálogo a la mano.</p>
                             </article>
+                        </div>
+                    </div>
+
+                </div>
+            </section>
+        </t>
+    </template>
+
+    <template id="md_affiliation_pending">
+        <t t-call="medicine_depot_portal.public_shell">
+            <t t-set="title">Afiliación en Revisión | Medicine Depot</t>
+            <section class="md_restricted_page_wrap">
+                <div class="md-bento-container">
+
+                    <div class="md_restricted_hero text-center">
+                        <div class="md_restricted_lock_wrap mx-auto mb-4">
+                            <span class="md_lock_icon"><i class="fa fa-clock-o" aria-hidden="true"/></span>
+                        </div>
+                        <p class="md_restricted_eyebrow mb-2">Solicitud Recibida</p>
+                        <h1 class="md_restricted_title mb-3">
+                            Tu afiliación está<br/>en revisión
+                        </h1>
+                        <p class="md_restricted_lead mx-auto mb-5">
+                            Ya recibimos tu solicitud y documentos. Validamos tu expediente en 24-48 horas hábiles;
+                            te avisaremos por correo en cuanto tengas acceso al catálogo a la mano.
+                        </p>
+                        <div class="d-flex justify-content-center gap-3 flex-wrap">
+                            <a href="/my" class="btn btn-outline-primary rounded-pill px-5 py-2">
+                                Ir a mi cuenta <i class="fa fa-arrow-right ms-2" aria-hidden="true"/>
+                            </a>
                         </div>
                     </div>
 
