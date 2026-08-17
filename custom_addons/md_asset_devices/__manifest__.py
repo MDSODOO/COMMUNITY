@@ -32,7 +32,7 @@
         - Calendario de actividades y mantenimientos
         - Auditoría completa con mail.thread
     ''',
-    'version': '19.0.1.4.0',
+    'version': '19.0.1.5.0',
     'category': 'Tools/Asset Management',
     'license': 'LGPL-3',
     'author': 'Medicine Depot, Odoo Community Association (OCA)',

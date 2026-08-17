@@ -52,5 +52,32 @@
                 </list>
             </field>
         </record>
+
+        <!-- SEARCH VIEW -->
+        <record id="view_device_assignment_search" model="ir.ui.view">
+            <field name="name">device.assignment.search</field>
+            <field name="model">device.assignment</field>
+            <field name="arch" type="xml">
+                <search string="Buscar Asignaciones">
+                    <field name="device_id"/>
+                    <field name="usuario_asignado"/>
+                    <filter name="activas" string="Activas" domain="[('estado', '=', 'activa')]"/>
+                    <filter name="devueltas" string="Devueltas" domain="[('estado', '=', 'devuelto')]"/>
+                    <group>
+                        <filter name="by_usuario" string="Usuario" context="{'group_by': 'usuario_asignado'}"/>
+                        <filter name="by_estado" string="Estado" context="{'group_by': 'estado'}"/>
+                        <filter name="by_device" string="Dispositivo" context="{'group_by': 'device_id'}"/>
+                    </group>
+                </search>
+            </field>
+        </record>
+
+        <!-- ACTION -->
+        <record model="ir.actions.act_window" id="action_device_assignment">
+            <field name="name">Asignaciones</field>
+            <field name="res_model">device.assignment</field>
+            <field name="view_mode">list,form</field>
+            <field name="context">{'search_default_activas': 1}</field>
+        </record>
     </data>
 </odoo>

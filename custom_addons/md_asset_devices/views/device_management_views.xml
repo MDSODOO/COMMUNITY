@@ -563,6 +563,11 @@
             action="action_device_management"
             sequence="10"/>
 
+        <menuitem id="menu_device_management_asignaciones" name="Asignaciones"
+            parent="menu_md_asset_devices_root"
+            action="action_device_assignment"
+            sequence="15"/>
+
         <menuitem id="menu_device_management_mantenimiento" name="Mantenimientos"
             parent="menu_md_asset_devices_root"
             action="action_device_maintenance"

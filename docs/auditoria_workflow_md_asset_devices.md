@@ -3,7 +3,7 @@
 **Fecha de auditoría:** 17 de agosto de 2026
 **Entorno auditado:** Servidor Ionos (`medicinedepot-odoo19-migration`, BD: `medicinedepot_dev`, contenedor `medicinedepot_dev_odoo`)
 **Módulo:** `md_asset_devices` (`custom_addons/md_asset_devices`)
-**Versión antes de la auditoría:** `19.0.1.3.0` → **Versión resultante:** `19.0.1.4.0`
+**Versión antes de la auditoría:** `19.0.1.3.0` → **Versión resultante:** `19.0.1.5.0` (primera ronda `19.0.1.4.0` + segunda ronda de la hoja de ruta, ambas el mismo día)
 **Enfoque:** fricciones de flujo de trabajo y UX funcional (no visual) — automatización de estados, contextos/defaults, validaciones de negocio, trazabilidad.
 
 ---
@@ -105,14 +105,21 @@ Confirmado por SQL directo que la transacción de prueba no dejó residuos (`REG
 
 `docker restart medicinedepot_dev_odoo` + `-u md_asset_devices` sin errores ni warnings del módulo propio (197/197 módulos cargados).
 
+### 5.1 Segunda ronda (mismo día) — hoja de ruta
+
+Tras revisar este documento, se pidió continuar con 3 de los pendientes de la sección 6 original. Los tres quedaron corregidos y verificados (6/6 checks OK, mismo patrón de rollback):
+
+- **H6 — Misma validación para mantenimientos.** Nueva `@api.constrains('device_id')` en `device.maintenance` (`_check_device_not_retired`): bloquea programar un mantenimiento nuevo sobre un dispositivo `retired`. `action_completar` se ajustó para no agendar el seguimiento automático (`proximo_mantenimiento`) si el dispositivo fue retirado mientras el mantenimiento seguía abierto — sin este ajuste, cerrar un mantenimiento heredado de antes del retiro habría reventado con la nueva constraint.
+- **H7 — Menú standalone de Asignaciones.** Nuevo `action_device_assignment` + `menu_device_management_asignaciones` (Activos IT ▶ Asignaciones) + `view_device_assignment_search` (filtros Activas/Devueltas, agrupar por usuario/estado/dispositivo, `search_default_activas=1`). Permite a RRHH ver "qué tiene cada empleado" sin entrar dispositivo por dispositivo.
+- **H8 — Limpieza de `ir.rule` muerta.** Se eliminó `device_subscription_credentials_rule` del XML; al correr `-u` Odoo la borró automáticamente de la base (`Deleting ... ir.rule (device_subscription_credentials_rule)` en el log), confirmando que no quedó huérfana. Se dejó un comentario en su lugar explicando que la protección real de `usuario`/`contrasena` es el `groups=` a nivel de campo.
+
+Verificación (odoo shell, rollback, 6/6 OK): regla eliminada, acción/menú/búsqueda de asignaciones existen, bloqueo de mantenimiento en dispositivo retirado lanza `ValidationError`, y `action_completar` sobre un mantenimiento cuyo dispositivo se retiró mientras estaba `in_progress` no intenta crear el seguimiento (0 registros creados, sin excepción).
+
+Versión final: **`19.0.1.5.0`**.
+
 ---
 
-## 6. Hoja de Ruta — Mejoras No Aplicadas (fuera del alcance de quick win)
+## 6. Hoja de Ruta — Pendientes Restantes
 
-Hallazgos menores, de diseño o que requieren una decisión de negocio antes de tocarse:
-
-- **`device_subscription_credentials_rule` (ir.rule) es un no-op.** Su `domain_force` es `[('id', '!=', -1)]` (siempre verdadero), así que no restringe nada a nivel de registro — la protección real de `usuario`/`contrasena` ya la da el atributo `groups=` en esos dos campos (field-level security, que sí funciona). La regla no es insegura, pero es código muerto que puede confundir a quien la lea pensando que hace algo. Sugerencia: eliminarla o documentar en un comentario por qué se dejó.
-- **Sin menú propio para "Asignaciones".** El nuevo smart button y las vistas ya existen; falta decidir si además se quiere un ítem de menú standalone (como Mantenimientos/Pagos) para listar asignaciones de todos los dispositivos a la vez — útil para RRHH al hacer un inventario de "qué tiene cada empleado" sin entrar dispositivo por dispositivo.
 - **`device.payment` sin acción rápida "Marcar pagado".** Hoy se marca con el toggle del campo `pagado` en la lista embebida, lo cual funciona pero no dispara ningún efecto secundario (ej. no hay hook para conciliar contra la factura vinculada en `invoice_id`). No es un bloqueo, es una oportunidad de automatización futura si el volumen de pagos crece.
-- **`device.maintenance` con `estado='draft'` no bloquea creación en dispositivo retirado.** El fix de esta auditoría (H3) solo cubre `device.assignment`. Si se quiere el mismo criterio para mantenimientos (no debería poder programarse un mantenimiento sobre un equipo dado de baja), es una constraint análoga y de bajo riesgo — se dejó fuera del alcance porque no fue reportado como fricción observada, a diferencia de las asignaciones.
 - **Validación visual en Chrome pendiente.** Si se habilita un usuario de prueba con sesión ya iniciada en el perfil de Chrome usado por Claude, o se resuelve el acceso sin credenciales manuales, vale la pena repetir el recorrido completo (creación → folio secuencial → asignación → mantenimiento → retiro) para confirmar visualmente lo que aquí se validó por `odoo shell`.
