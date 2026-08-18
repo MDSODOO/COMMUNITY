@@ -1,0 +1,153 @@
+// Estilos de marca Quifamesa para el bundle de frontend (portal + /web/login
+// en esta instancia — website está instalado, así que ambos comparten
+// web.assets_frontend). Paleta alineada al Manual de marca Quifamesa 2026
+// (artifact "Quifamesa Sorteo" aprobado): navy #1B365D, azul acero #285780,
+// azules claros #7D9CC0 / #5E8AB4, grises azulados #C6D6E3 / #DDE5ED,
+// fondos #F6F7F8 / #F1F3F5 / #EFEFED. Reemplaza la paleta anterior
+// (#042455 / #00AEFF / #F2B705), que era la verificada contra el sitio
+// público quifamesa.com.mx antes de este rediseño — ver historial de esta
+// sección para el porqué del cambio.
+//
+// Tipografía del manual: 'Baloo 2' (encabezados/cifras destacadas),
+// 'Inter' (labels/meta/texto pequeño), 'Montserrat' (cuerpo/botones/inputs),
+// todo con text-transform: uppercase salvo el texto en fuente monoespaciada
+// (folios) y los t-field de datos reales de Odoo.
+//
+// Todo acá es aditivo y va detrás de clases nuevas (o_mds_*) — no se
+// sobreescribe ningún .btn-primary/.bg-*/.text-bg-* global de Bootstrap,
+// para no afectar el resto del portal (Sus órdenes, Sus facturas, etc.)
+// ni el login de otros módulos que no sean de rifas.
+
+// Sintaxis v1 de la API de Google Fonts (comas, no ";") — la v2
+// ("wght@500;600;700;800") rompe el bundle CSS de Odoo: el minificador de
+// assets no respeta los ";" dentro de un url() y corta la declaración a la
+// mitad, inyectando el resto como texto suelto en medio de otro selector.
+// Confirmado al reproducirlo: /web/login quedó totalmente sin estilo hasta
+// cambiar a esta sintaxis. Mismo patrón que los @import de Inter/Inter
+// Tight ya existentes en otros módulos de esta instancia.
+@import url('https://fonts.googleapis.com/css?family=Baloo+2:500,600,700,800&family=Inter:400,500,600,700&display=swap');
+
+@font-face {
+    font-family: 'Montserrat';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url('/mds_raffle_campaign/static/src/fonts/montserrat-400.woff2') format('woff2');
+}
+@font-face {
+    font-family: 'Montserrat';
+    font-style: normal;
+    font-weight: 700;
+    font-display: swap;
+    src: url('/mds_raffle_campaign/static/src/fonts/montserrat-700.woff2') format('woff2');
+}
+@font-face {
+    font-family: 'Montserrat';
+    font-style: normal;
+    font-weight: 800;
+    font-display: swap;
+    src: url('/mds_raffle_campaign/static/src/fonts/montserrat-800.woff2') format('woff2');
+}
+
+// ── /my/raffles ─────────────────────────────────────────────────────────
+.o_mds_raffle_page {
+    --mds-navy: #1B365D;
+    --mds-electric: #285780;
+    --mds-electric-dark: #1B365D;
+    --mds-muted: #5A7089;
+    text-transform: uppercase;
+}
+
+.o_mds_raffle_title {
+    font-family: 'Inter', -apple-system, 'Helvetica Neue', Arial, sans-serif;
+    font-size: 14.5px !important;
+    font-weight: 700 !important;
+    margin-bottom: 6px !important;
+}
+
+.o_mds_raffle_summary_card {
+    border-left-color: var(--mds-electric, #285780) !important;
+    background-color: #fff !important;
+    border-radius: 16px !important;
+    padding: 20px 22px !important;
+    box-shadow: 0 1px 2px rgba(27, 54, 93, .06), 0 8px 24px -12px rgba(27, 54, 93, .14) !important;
+}
+
+.o_mds_raffle_count {
+    color: var(--mds-electric, #285780) !important;
+    font-family: 'Baloo 2', 'Montserrat', -apple-system, 'Helvetica Neue', Arial, sans-serif !important;
+    font-size: 30px !important;
+    font-weight: 700 !important;
+}
+
+.o_mds_raffle_count_label {
+    font-size: 11.5px !important;
+    color: var(--mds-muted, #5A7089) !important;
+    font-family: 'Inter', sans-serif !important;
+}
+
+// Las 4 variantes de badge del artifact son "soft pills" (fondo tenue del
+// color + texto en el tono fuerte correspondiente), NUNCA relleno sólido con
+// texto blanco como los .badge/.text-bg-* crudos de Bootstrap. Se definen acá
+// para no tocar .text-bg-success/.text-bg-warning globales (ver nota arriba).
+.qf-badge, .o_mds_raffle_badge_physical, .o_mds_raffle_badge_online, .o_mds_raffle_badge_sponsor {
+    font-size: 11.5px !important;
+    font-weight: 700 !important;
+    padding: 3px 10px !important;
+}
+
+// "R" (físico): gris neutro, igual al fondo de cabecera de tabla del
+// artifact — no es un tinte de color de marca, es la categoría "neutral".
+.o_mds_raffle_badge_physical {
+    background-color: #EFEFED !important;
+    color: var(--mds-muted, #5A7089) !important;
+}
+
+// "BP" (online): tinte de acero, el acento primario del manual.
+.o_mds_raffle_badge_online {
+    background-color: rgba(40, 87, 128, .14) !important;
+    color: var(--mds-electric, #285780) !important;
+}
+
+// "★ Patrocinio": tinte de azul claro + texto navy — el artifact ya NO usa
+// dorado para esta insignia (el dorado del manual queda reservado solo para
+// el texto de celebración del panel de ganador de la ruleta).
+.o_mds_raffle_badge_sponsor {
+    background-color: rgba(125, 156, 192, .28) !important;
+    color: var(--mds-navy, #1B365D) !important;
+}
+
+// Tabla de folios (portal.portal_table de Odoo, clases o_portal_my_doc_table
+// que no controlamos): se afinan tipografía/paddings para que coincida con
+// .raffle-table del artifact sin tocar el componente compartido de Odoo
+// (el override queda acotado a .o_mds_raffle_page).
+.o_mds_raffle_page {
+    .o_portal_my_doc_table {
+        font-size: 13px;
+
+        thead th {
+            font-size: 11px !important;
+            font-weight: 700 !important;
+            letter-spacing: .06em;
+            text-transform: uppercase;
+            color: var(--mds-muted, #5A7089);
+            background-color: #EFEFED;
+            font-family: 'Inter', sans-serif;
+        }
+
+        td, th {
+            padding: 11px 16px !important;
+        }
+
+        td:first-child span {
+            font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+            font-weight: 600;
+            text-transform: none;
+        }
+
+        td.text-end, th.text-end {
+            font-variant-numeric: tabular-nums;
+        }
+    }
+}
+

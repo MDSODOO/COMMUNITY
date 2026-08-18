@@ -1,0 +1,97 @@
+<odoo>
+    <record id="view_raffle_ticket_summary_kanban" model="ir.ui.view">
+        <field name="name">raffle.ticket.summary.kanban</field>
+        <field name="model">raffle.ticket.summary</field>
+        <field name="arch" type="xml">
+            <kanban records_draggable="0" create="0" edit="0" delete="0">
+                <field name="partner_id"/>
+                <field name="campaign_id"/>
+                <field name="ticket_count"/>
+                <field name="physical_count"/>
+                <field name="online_count"/>
+                <field name="has_sponsor_line"/>
+                <field name="has_sponsor_catalog"/>
+                <templates>
+                    <t t-name="card">
+                        <main class="overflow-hidden">
+                            <div class="d-flex justify-content-between align-items-start mb-1">
+                                <span class="fw-bold fs-5 text-truncate" title="">
+                                    <field name="partner_id"/>
+                                </span>
+                                <span class="fs-3 fw-bold text-primary ms-2 flex-shrink-0">
+                                    <field name="ticket_count"/>
+                                </span>
+                            </div>
+                            <div class="text-muted small mb-1 o_mds_kanban_campaign_name">
+                                <field name="campaign_id"/>
+                            </div>
+                            <div class="d-flex flex-wrap gap-1 mb-1">
+                                <span t-if="record.physical_count.raw_value" class="badge rounded-pill text-bg-secondary"
+                                      title="Boletos por compra física (POS)">
+                                    R · <t t-esc="record.physical_count.value"/>
+                                </span>
+                                <span t-if="record.online_count.raw_value" class="badge rounded-pill text-bg-info"
+                                      title="Boletos por compra B2B en línea">
+                                    BP · <t t-esc="record.online_count.value"/>
+                                </span>
+                                <span t-if="record.has_sponsor_line.raw_value" class="badge rounded-pill text-bg-success">
+                                    LOEFFLER/GALIA
+                                </span>
+                                <span t-if="record.has_sponsor_catalog.raw_value" class="badge rounded-pill text-bg-warning">
+                                    PATROCINIO
+                                </span>
+                            </div>
+                            <div class="d-flex justify-content-end mt-2">
+                                <button type="object" name="action_view_tickets"
+                                        class="btn btn-sm btn-outline-primary"
+                                        title="Ver folios de este cliente">
+                                    <i class="fa fa-ticket me-1"/>Ver folios
+                                </button>
+                            </div>
+                        </main>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <record id="view_raffle_ticket_summary_list" model="ir.ui.view">
+        <field name="name">raffle.ticket.summary.list</field>
+        <field name="model">raffle.ticket.summary</field>
+        <field name="arch" type="xml">
+            <list string="Resumen de Boletos por Cliente" create="0" edit="0" delete="0">
+                <field name="partner_id"/>
+                <field name="campaign_id"/>
+                <field name="ticket_count"/>
+                <field name="physical_count"/>
+                <field name="online_count"/>
+                <field name="has_sponsor_line"/>
+                <field name="has_sponsor_catalog"/>
+                <field name="legacy_refs" optional="hide"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_raffle_ticket_summary_search" model="ir.ui.view">
+        <field name="name">raffle.ticket.summary.search</field>
+        <field name="model">raffle.ticket.summary</field>
+        <field name="arch" type="xml">
+            <search string="Resumen de Boletos por Cliente">
+                <field name="partner_id"/>
+                <field name="campaign_id"/>
+                <filter string="Con bono línea patrocinadora" name="has_sponsor_line" domain="[('has_sponsor_line', '=', True)]"/>
+                <filter string="Con bono catálogo patrocinado" name="has_sponsor_catalog" domain="[('has_sponsor_catalog', '=', True)]"/>
+                <group>
+                    <filter string="Campaña" name="group_campaign" context="{'group_by': 'campaign_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_raffle_ticket_summary" model="ir.actions.act_window">
+        <field name="name">Resumen por Cliente</field>
+        <field name="res_model">raffle.ticket.summary</field>
+        <field name="view_mode">kanban,list</field>
+        <field name="search_view_id" ref="view_raffle_ticket_summary_search"/>
+    </record>
+</odoo>

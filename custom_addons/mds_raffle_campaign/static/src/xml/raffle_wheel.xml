@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="mds_raffle_campaign.RaffleWheel">
+        <div class="o_raffle_wheel_page">
+            <div class="o_raffle_glow o_raffle_glow_1"/>
+            <div class="o_raffle_glow o_raffle_glow_2"/>
+            <div class="o_raffle_glow o_raffle_glow_3"/>
+
+            <header class="o_raffle_header">
+                <h1 class="o_raffle_title">
+                    <t t-esc="state.campaignName"/> · <t t-esc="state.ticketCount"/> folios participantes
+                </h1>
+            </header>
+
+            <div class="o_raffle_stage">
+                <div class="o_raffle_mascot_anchor" t-att-class="{ o_raffle_mascot_anchor_right: state.done }">
+                    <div class="o_raffle_mascot" t-ref="mascot">
+                        <div class="o_raffle_mascot_bubble" t-ref="mascotBubble">—</div>
+                        <div class="o_raffle_mascot_pointer"/>
+                        <img class="o_raffle_mascot_img" t-ref="mascotImg"
+                             src="/mds_raffle_campaign/static/src/img/mascota-dr-q.png" alt="Mascota Dr. Q"/>
+                    </div>
+                </div>
+
+                <div class="o_raffle_marquee_slot">
+                    <div class="o_raffle_marquee" t-ref="marquee" t-att-class="{ o_raffle_swapped_out: state.winner }">
+                        <div class="o_raffle_bulbs o_raffle_bulbs_top" t-ref="bulbsTop"/>
+                        <div class="o_raffle_bulbs o_raffle_bulbs_bottom" t-ref="bulbsBottom"/>
+                        <div class="o_raffle_reel_window" t-ref="reelWindow"/>
+                        <p class="o_raffle_legend">
+                            <code>folio</code> campaña &#160;·&#160;
+                            <code>R</code> tienda / <code>BP</code> B2B &#160;·&#160;
+                            <code>000123</code> consecutivo
+                        </p>
+                    </div>
+
+                    <div class="o_raffle_winner_panel" t-ref="winnerPanel"
+                         t-att-class="{ o_raffle_winner_visible: state.winner }">
+                        <t t-if="state.winner">
+                            <img t-if="state.winner.prize.has_image" class="o_raffle_winner_prize_img"
+                                 t-att-src="prizeImageUrl(state.winner.prize.prize_id)" t-on-error="onImageError" alt=""/>
+                            <div class="o_raffle_winner_eyebrow">Folio ganador — <t t-esc="state.winner.prize.name"/></div>
+                            <div class="o_raffle_winner_folio"><t t-esc="state.winner.folio"/></div>
+                            <div class="o_raffle_winner_name"><t t-esc="state.winner.name"/></div>
+                            <div class="o_raffle_winner_meta"><t t-esc="state.winner.meta"/></div>
+                        </t>
+                    </div>
+                </div>
+            </div>
+
+            <div class="o_raffle_action_zone">
+                <button t-if="!state.done" class="btn o_raffle_spin_btn"
+                        t-on-click="onSpinClick" t-att-disabled="state.spinBtnDisabled">
+                    <t t-esc="state.spinBtnLabel"/>
+                </button>
+                <span t-if="!state.done" class="o_raffle_spin_hint"><t t-esc="state.spinHint"/></span>
+                <div t-if="state.done and (!mascotEnabled or reducedMotion)" class="o_raffle_done_banner">
+                    🎉 Todos los premios ya tienen ganador.
+                </div>
+            </div>
+
+            <div t-if="state.history.length" class="o_raffle_history">
+                <div class="o_raffle_history_title">Ganadores hasta ahora</div>
+                <ul class="o_raffle_history_list">
+                    <li t-foreach="state.history" t-as="entry" t-key="entry.prize.id" class="o_raffle_history_item">
+                        <div class="o_raffle_history_thumb">
+                            <img t-if="entry.prize.has_image" t-att-src="prizeImageUrl(entry.prize.prize_id)"
+                                 t-on-error="onImageError" alt=""/>
+                            <span t-else="" class="o_raffle_history_thumb_fallback">🏆</span>
+                        </div>
+                        <div class="o_raffle_history_info">
+                            <div class="o_raffle_history_prize"><t t-esc="entry.prize.name"/></div>
+                            <div class="o_raffle_history_winner"><t t-esc="entry.name"/> · <t t-esc="entry.folio"/></div>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+
+            <canvas class="o_raffle_confetti" t-ref="confetti"/>
+        </div>
+    </t>
+</templates>

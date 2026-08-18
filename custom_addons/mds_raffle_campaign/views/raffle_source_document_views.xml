@@ -1,0 +1,59 @@
+<odoo>
+    <record id="view_raffle_source_document_list" model="ir.ui.view">
+        <field name="name">raffle.source.document.list</field>
+        <field name="model">raffle.source.document</field>
+        <field name="arch" type="xml">
+            <list string="Documentos de Venta de Origen" default_order="doc_date desc"
+                  decoration-muted="is_billed_duplicate">
+                <field name="folio"/>
+                <field name="source_file"/>
+                <field name="doc_date"/>
+                <field name="partner_name"/>
+                <field name="amount_total"/>
+                <field name="line_count"/>
+                <field name="linked_document_id"/>
+                <field name="is_billed_duplicate" optional="hide"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_raffle_source_document_form" model="ir.ui.view">
+        <field name="name">raffle.source.document.form</field>
+        <field name="model">raffle.source.document</field>
+        <field name="arch" type="xml">
+            <form string="Documento de Venta de Origen">
+                <sheet>
+                    <div class="alert alert-info mb-3" role="alert" invisible="not linked_document_id">
+                        <strong>Misma venta que otro documento.</strong> DIARIO (factura) y
+                        PEDIDOS (pedido B2B) se traslapan cuando un pedido se factura por
+                        lote: este documento y <field name="linked_document_id" nolabel="1"
+                        readonly="1" class="d-inline"/> son la MISMA venta, no dos ventas
+                        distintas — el desglose del boleto solo cuenta una vez.
+                    </div>
+                    <group>
+                        <group>
+                            <field name="folio"/>
+                            <field name="source_file"/>
+                            <field name="doc_date"/>
+                            <field name="partner_name"/>
+                        </group>
+                        <group>
+                            <field name="currency_id" invisible="1"/>
+                            <field name="amount_neto"/>
+                            <field name="amount_tax"/>
+                            <field name="amount_total"/>
+                            <field name="linked_document_id" readonly="1"/>
+                        </group>
+                    </group>
+                    <field name="line_ids">
+                        <list>
+                            <field name="product_name"/>
+                            <field name="qty"/>
+                            <field name="amount"/>
+                        </list>
+                    </field>
+                </sheet>
+            </form>
+        </field>
+    </record>
+</odoo>

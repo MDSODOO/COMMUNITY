@@ -1,0 +1,115 @@
+<odoo>
+    <record id="view_raffle_campaign_list" model="ir.ui.view">
+        <field name="name">raffle.campaign.list</field>
+        <field name="model">raffle.campaign</field>
+        <field name="arch" type="xml">
+            <list string="Campañas de Rifa">
+                <field name="name"/>
+                <field name="code"/>
+                <field name="date_start"/>
+                <field name="date_end"/>
+                <field name="date_draw"/>
+                <field name="ticket_count"/>
+                <field name="prize_count"/>
+                <field name="state" decoration-success="state == 'active'"
+                       decoration-info="state == 'drawn'"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_raffle_campaign_form" model="ir.ui.view">
+        <field name="name">raffle.campaign.form</field>
+        <field name="model">raffle.campaign</field>
+        <field name="arch" type="xml">
+            <form string="Campaña de Rifa">
+                <header>
+                    <button name="action_activate" type="object" string="Activar"
+                            invisible="state != 'draft'" class="btn-primary"/>
+                    <button name="action_close" type="object" string="Cerrar inscripciones"
+                            invisible="state != 'active'"/>
+                    <button name="action_open_wheel" type="object" string="Abrir Ruleta de Sorteo"
+                            invisible="state not in ('active', 'closed', 'drawn')" class="btn-primary"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,active,drawn"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="%(action_raffle_ticket)d" type="action"
+                                class="oe_stat_button" icon="fa-ticket"
+                                context="{'search_default_campaign_id': id}">
+                            <field name="ticket_count" widget="statinfo" string="Folios"/>
+                        </button>
+                        <button name="%(action_raffle_ticket_summary)d" type="action"
+                                class="oe_stat_button" icon="fa-users"
+                                context="{'search_default_campaign_id': id}">
+                            <field name="partner_summary_count" widget="statinfo" string="Clientes"/>
+                        </button>
+                    </div>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1><field name="name" placeholder="ej. 52 Aniversario"/></h1>
+                        <label for="code" string="Código (automático)"/>
+                        <h2><field name="code" placeholder="se genera al guardar"/></h2>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="date_start"/>
+                            <field name="date_end"/>
+                            <field name="date_draw"/>
+                            <field name="daily_ticket_limit"/>
+                        </group>
+                        <group>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                            <field name="winner_ticket_id" readonly="1"/>
+                            <field name="sequence_physical_id" readonly="1"/>
+                            <field name="sequence_online_id" readonly="1"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Reglas de Premiación">
+                            <field name="rule_ids">
+                                <list editable="bottom">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="name"/>
+                                    <field name="rule_type"/>
+                                    <field name="product_line_ids" widget="many2many_tags"
+                                           invisible="rule_type != 'amount_line'"/>
+                                    <field name="min_amount" invisible="rule_type != 'amount_line'"/>
+                                    <field name="computation_mode" invisible="rule_type != 'amount_line'"/>
+                                    <field name="product_ids" widget="many2many_tags"
+                                           invisible="rule_type != 'product'"/>
+                                    <field name="min_qty" invisible="rule_type != 'product'"/>
+                                    <field name="source_type" invisible="rule_type != 'order_source'"/>
+                                    <field name="tickets_awarded"/>
+                                    <field name="active" widget="boolean_toggle"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Premios">
+                            <field name="prize_ids">
+                                <list editable="bottom" decoration-success="state == 'awarded'"
+                                      decoration-muted="state == 'partial'">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="image" widget="image" class="oe_avatar" options="{'size': [40, 40]}"/>
+                                    <field name="name"/>
+                                    <field name="quantity"/>
+                                    <field name="progress" readonly="1" string="Sorteados"/>
+                                    <field name="state" widget="badge"
+                                           decoration-success="state == 'awarded'"
+                                           decoration-warning="state == 'partial'"
+                                           decoration-info="state == 'pending'"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_raffle_campaign" model="ir.actions.act_window">
+        <field name="name">Campañas de Rifa</field>
+        <field name="res_model">raffle.campaign</field>
+        <field name="view_mode">list,form</field>
+    </record>
+</odoo>

@@ -1,0 +1,17 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_raffle_campaign_salesman,raffle.campaign.salesman,model_raffle_campaign,sales_team.group_sale_salesman,1,0,0,0
+access_raffle_campaign_manager,raffle.campaign.manager,model_raffle_campaign,sales_team.group_sale_manager,1,1,1,1
+access_raffle_rule_salesman,raffle.rule.salesman,model_raffle_rule,sales_team.group_sale_salesman,1,0,0,0
+access_raffle_rule_manager,raffle.rule.manager,model_raffle_rule,sales_team.group_sale_manager,1,1,1,1
+access_raffle_ticket_salesman,raffle.ticket.salesman,model_raffle_ticket,sales_team.group_sale_salesman,1,0,0,0
+access_raffle_ticket_manager,raffle.ticket.manager,model_raffle_ticket,sales_team.group_sale_manager,1,1,1,1
+access_raffle_prize_salesman,raffle.prize.salesman,model_raffle_prize,sales_team.group_sale_salesman,1,0,0,0
+access_raffle_prize_manager,raffle.prize.manager,model_raffle_prize,sales_team.group_sale_manager,1,1,1,1
+access_raffle_prize_winner_salesman,raffle.prize.winner.salesman,model_raffle_prize_winner,sales_team.group_sale_salesman,1,0,0,0
+access_raffle_prize_winner_manager,raffle.prize.winner.manager,model_raffle_prize_winner,sales_team.group_sale_manager,1,1,1,1
+access_raffle_ticket_summary_salesman,raffle.ticket.summary.salesman,model_raffle_ticket_summary,sales_team.group_sale_salesman,1,0,0,0
+access_raffle_ticket_summary_manager,raffle.ticket.summary.manager,model_raffle_ticket_summary,sales_team.group_sale_manager,1,0,0,0
+access_raffle_source_document_salesman,raffle.source.document.salesman,model_raffle_source_document,sales_team.group_sale_salesman,1,0,0,0
+access_raffle_source_document_manager,raffle.source.document.manager,model_raffle_source_document,sales_team.group_sale_manager,1,1,1,1
+access_raffle_source_document_line_salesman,raffle.source.document.line.salesman,model_raffle_source_document_line,sales_team.group_sale_salesman,1,0,0,0
+access_raffle_source_document_line_manager,raffle.source.document.line.manager,model_raffle_source_document_line,sales_team.group_sale_manager,1,1,1,1

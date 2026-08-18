@@ -1,0 +1,91 @@
+<odoo>
+
+    <template id="portal_my_home_raffle" name="Portal my home : rifa" inherit_id="portal.portal_my_home" customize_show="True" priority="50">
+        <xpath expr="//div[hasclass('o_portal_docs')]" position="before">
+            <t t-set="portal_client_category_enable" t-value="True"/>
+        </xpath>
+        <div id="portal_client_category" position="inside">
+            <t t-call="portal.portal_docs_entry">
+                <t t-set="icon" t-value="'/mds_raffle_campaign/static/src/img/ticket.svg?v=3'"/>
+                <t t-set="title">Mis Boletos de Rifa</t>
+                <t t-set="text">Consulta tus boletos acumulados y de qué compras se generaron</t>
+                <t t-set="url" t-value="'/my/raffles'"/>
+                <t t-set="placeholder_count" t-value="'raffle_ticket_count'"/>
+            </t>
+        </div>
+    </template>
+
+    <template id="portal_breadcrumbs_raffle" name="Portal breadcrumbs : rifa" inherit_id="portal.portal_breadcrumbs" priority="30">
+        <xpath expr="//ol[hasclass('o_portal_submenu')]" position="inside">
+            <li t-if="page_name == 'raffle'" class="breadcrumb-item active">Mis Boletos de Rifa</li>
+        </xpath>
+    </template>
+
+    <template id="portal_my_raffles" name="Mis Boletos de Rifa">
+        <t t-call="portal.portal_layout">
+            <t t-set="breadcrumbs_searchbar" t-value="True"/>
+
+            <t t-call="portal.portal_searchbar">
+                <t t-set="title">Mis Boletos de Rifa</t>
+            </t>
+
+            <div class="o_mds_raffle_page">
+                <div t-if="not summaries" class="alert alert-warning" role="alert">
+                    Todavía no tienes boletos de rifa acumulados.
+                </div>
+
+                <div t-if="summaries" class="row g-2 mb-4">
+                    <div class="col-12" t-foreach="summaries" t-as="summary">
+                        <div class="d-flex align-items-center gap-3 py-3 px-3 rounded bg-100 border-start border-4 o_mds_raffle_summary_card shadow-sm">
+                            <img src="/mds_raffle_campaign/static/src/img/ticket.svg?v=3" alt="Boletos de rifa"
+                                 class="flex-shrink-0" style="width: 40px; height: 40px;"/>
+                            <div class="flex-grow-1">
+                                <div class="fs-5 fw-bold mb-1 o_mds_raffle_title" t-field="summary.campaign_id.name"/>
+                                <div class="d-flex flex-wrap gap-1">
+                                    <span t-if="summary.physical_count" class="badge rounded-pill o_mds_raffle_badge_physical">
+                                        R · <t t-esc="summary.physical_count"/>
+                                    </span>
+                                    <span t-if="summary.online_count" class="badge rounded-pill o_mds_raffle_badge_online">
+                                        BP · <t t-esc="summary.online_count"/>
+                                    </span>
+                                    <span t-if="summary.has_sponsor_line" class="badge rounded-pill o_mds_raffle_badge_sponsor">
+                                        LOEFFLER/GALIA
+                                    </span>
+                                    <span t-if="summary.has_sponsor_catalog" class="badge rounded-pill o_mds_raffle_badge_sponsor">
+                                        PATROCINIO
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="text-end flex-shrink-0 ps-2">
+                                <div class="fs-2 fw-bold o_mds_raffle_count lh-1" t-esc="summary.ticket_count"/>
+                                <div class="text-muted small o_mds_raffle_count_label">boletos</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <t t-if="tickets" t-call="portal.portal_table">
+                    <thead>
+                        <tr class="active">
+                            <th>Folio del Boleto</th>
+                            <th>Fecha de Generación</th>
+                            <th class="text-end">Folio de la Compra</th>
+                        </tr>
+                    </thead>
+                    <t t-foreach="tickets" t-as="ticket">
+                        <tr>
+                            <td><span t-field="ticket.name"/></td>
+                            <td><span t-field="ticket.create_date" t-options="{'widget': 'date'}"/></td>
+                            <td class="text-end">
+                                <span t-if="ticket.sale_order_id" t-field="ticket.sale_order_id.name"/>
+                                <span t-elif="ticket.pos_order_id" t-field="ticket.pos_order_id.name"/>
+                                <span t-else="1" t-field="ticket.legacy_ref"/>
+                            </td>
+                        </tr>
+                    </t>
+                </t>
+            </div>
+        </t>
+    </template>
+
+</odoo>

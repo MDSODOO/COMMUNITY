@@ -1,0 +1,570 @@
+// Montserrat: tipografía de cuerpo/botones de marca Quifamesa. Se
+// auto-hospeda desde el propio módulo (no depende de que el sistema del
+// usuario la tenga instalada) — solo los cortes latin de 400/700/800 que se
+// usan aquí. Baloo 2 (encabezados/cifras) e Inter (labels/meta) se cargan
+// desde Google Fonts, igual que en el artifact "Quifamesa Sorteo" aprobado
+// (Manual de marca 2026) — ver portal_raffle.scss para el mismo import en
+// el bundle de frontend.
+// Sintaxis v1 de la API de Google Fonts (comas, no ";") — ver el comentario
+// extendido en portal_raffle.scss: la v2 con ";" rompe el bundle CSS de
+// Odoo (el minificador corta la declaración a la mitad en cada ";").
+@import url('https://fonts.googleapis.com/css?family=Baloo+2:500,600,700,800&family=Inter:400,500,600,700&display=swap');
+
+@font-face {
+    font-family: 'Montserrat';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url('/mds_raffle_campaign/static/src/fonts/montserrat-400.woff2') format('woff2');
+}
+@font-face {
+    font-family: 'Montserrat';
+    font-style: normal;
+    font-weight: 700;
+    font-display: swap;
+    src: url('/mds_raffle_campaign/static/src/fonts/montserrat-700.woff2') format('woff2');
+}
+@font-face {
+    font-family: 'Montserrat';
+    font-style: normal;
+    font-weight: 800;
+    font-display: swap;
+    src: url('/mds_raffle_campaign/static/src/fonts/montserrat-800.woff2') format('woff2');
+}
+
+// Nombre de campaña en el Kanban "Resumen por Cliente" (view_raffle_ticket_summary_kanban).
+// Vive fuera de .o_raffle_wheel_page (kanban es un árbol de DOM distinto),
+// por eso es una regla de nivel superior en este mismo bundle de backend.
+.o_mds_kanban_campaign_name {
+    font-family: 'Montserrat', -apple-system, 'Helvetica Neue', Arial, sans-serif;
+    font-weight: 600;
+}
+
+.o_raffle_wheel_page {
+    // Tokens del sistema Odoo/Bootstrap existente, con los fallbacks del
+    // handoff de diseño. Se declaran acá (no en :root) para no filtrar
+    // estilos al resto del backend.
+    //
+    // Paleta del Manual de marca Quifamesa 2026 (artifact "Quifamesa
+    // Sorteo" aprobado): navy #1B365D, azul acero #285780 (acento primario
+    // de la ruleta), azules claros #7D9CC0 / #5E8AB4 para degradados y
+    // resplandores. Reemplaza la paleta anterior (#042455 / #00AEFF), que
+    // era la verificada contra quifamesa.com.mx antes de este rediseño.
+    --raffle-navy: #1B365D;
+    --raffle-steel: #285780;
+    --raffle-blue-light: #7D9CC0;
+    --raffle-blue-lighter: #5E8AB4;
+    --raffle-primary: #285780;
+    --raffle-gold-text: #8a6a2e;
+    --raffle-body-bg: #F6F7F8;
+    --raffle-body-color: #1B365D;
+    --raffle-border: #DDE5ED;
+    --raffle-muted: #5A7089;
+
+    position: relative;
+    min-height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 32px;
+    padding: 48px 20px;
+    overflow: hidden;
+    background: var(--raffle-body-bg);
+    color: var(--raffle-body-color);
+    font-family: 'Montserrat', -apple-system, 'SF Pro Text', 'Helvetica Neue', Arial, sans-serif;
+    text-transform: uppercase;
+}
+
+.o_raffle_glow {
+    position: fixed;
+    border-radius: 50%;
+    filter: blur(46px);
+    pointer-events: none;
+    z-index: 0;
+}
+.o_raffle_glow_1 { width: 280px; height: 280px; left: 4%; top: 8%; opacity: .16; background: var(--raffle-steel); }
+.o_raffle_glow_2 { width: 220px; height: 220px; right: 6%; top: 16%; opacity: .14; background: var(--raffle-blue-light); }
+.o_raffle_glow_3 { width: 260px; height: 260px; left: 10%; bottom: 6%; opacity: .12; background: var(--raffle-navy); }
+
+.o_raffle_header {
+    position: relative;
+    z-index: 1;
+    text-align: center;
+    max-width: #{"min(94vw, 900px)"};
+}
+
+.o_raffle_title {
+    margin: 0;
+    font-family: 'Baloo 2', 'Montserrat', -apple-system, 'SF Pro Text', 'Helvetica Neue', Arial, sans-serif;
+    font-weight: 700;
+    font-size: #{"clamp(24px, 4.4vw, 34px)"};
+    letter-spacing: -.01em;
+    color: var(--raffle-body-color);
+}
+
+// El "stage" solo centra el slot de la ruleta (mismo ancho/centro que el
+// título de arriba y el botón de abajo). La mascota vive en un ancla
+// position:absolute aparte, así NO participa del cálculo de centrado —
+// si estuviera en el flujo normal, el conjunto mascota+ruleta se centraría
+// como bloque y la ruleta quedaría desplazada respecto al resto de la página.
+.o_raffle_stage {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    justify-content: center;
+}
+
+// Como un presentador parado junto a la pantalla: pegada al borde
+// izquierdo del slot de la ruleta, centrada verticalmente contra su altura.
+// Cuando el sorteo termina (state.done) se cambia de lado — queda parada
+// fija a la derecha, como cerrando la presentación.
+.o_raffle_mascot_anchor {
+    position: absolute;
+    right: 100%;
+    top: 50%;
+    transform: translateY(-50%);
+    margin-right: clamp(8px, 3vw, 28px);
+    transition: left .3s ease, right .3s ease, margin .3s ease;
+
+    &.o_raffle_mascot_anchor_right {
+        right: auto;
+        left: 100%;
+        margin-right: 0;
+        margin-left: clamp(8px, 3vw, 28px);
+    }
+}
+
+@media (max-width: 760px) {
+    .o_raffle_mascot_anchor {
+        display: none;
+    }
+}
+
+// La ruleta y el panel de ganador comparten este slot y se cruzan
+// (crossfade) en vez de apilarse: solo uno de los dos ocupa el flujo
+// normal a la vez (position:relative), el otro queda position:absolute
+// y desvanecido — así el panel de ganador "reemplaza" visualmente a la
+// ruleta hasta el siguiente giro, en lugar de mostrarse ambos a la vez.
+.o_raffle_marquee_slot {
+    position: relative;
+    z-index: 1;
+    width: #{"min(94vw, 640px)"};
+    display: flex;
+    justify-content: center;
+}
+
+.o_raffle_marquee {
+    position: relative;
+    padding: 22px;
+    border-radius: 24px;
+    background: linear-gradient(155deg, var(--raffle-navy) 0%, var(--raffle-steel) 55%, var(--raffle-blue-lighter) 100%);
+    box-shadow: 0 26px 54px -18px rgba(27, 54, 93, .35), 0 0 0 1px rgba(255, 255, 255, .15) inset;
+    width: 100%;
+    transition: opacity .4s ease, transform .4s ease;
+
+    &.o_raffle_swapped_out {
+        position: absolute;
+        inset: 0;
+        opacity: 0;
+        transform: scale(.94);
+        pointer-events: none;
+        transition: opacity .35s ease, transform .35s ease;
+    }
+}
+
+.o_raffle_bulbs {
+    position: absolute;
+    left: 14px;
+    right: 14px;
+    display: flex;
+    justify-content: space-between;
+}
+.o_raffle_bulbs_top { top: 8px; }
+.o_raffle_bulbs_bottom { bottom: 8px; }
+
+.o_raffle_bulb {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 30%, #fff, var(--raffle-steel) 60%);
+    animation: mds_raffle_chase 1.6s ease-in-out infinite;
+}
+
+.o_raffle_reel_window {
+    position: relative;
+    margin-top: 18px;
+    padding: #{"clamp(14px, 3vw, 22px)"} #{"clamp(10px, 3vw, 20px)"};
+    border-radius: 16px;
+    background: linear-gradient(180deg, #0B1B30 0%, #152C4A 50%, #0B1B30 100%);
+    box-shadow: inset 0 3px 10px rgba(0, 0, 0, .55), inset 0 -3px 10px rgba(0, 0, 0, .5);
+    display: flex;
+    justify-content: center;
+    overflow: hidden;
+    mask-image: linear-gradient(180deg, transparent 0%, black 18%, black 82%, transparent 100%);
+    min-height: #{"clamp(42px, 9.5vw, 62px)"};
+}
+
+.o_raffle_reel_track {
+    display: flex;
+    flex-wrap: nowrap;
+    justify-content: center;
+    gap: #{"clamp(3px, .8vw, 6px)"};
+    transform-origin: center center;
+}
+
+.o_raffle_cell_literal {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: rgba(255, 255, 255, .6);
+    font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+    font-weight: 700;
+    font-size: #{"clamp(16px, 4vw, 24px)"};
+    width: #{"clamp(12px, 3vw, 18px)"};
+}
+
+.o_raffle_cell {
+    position: relative;
+    width: #{"clamp(28px, 6.6vw, 44px)"};
+    height: #{"clamp(42px, 9.5vw, 62px)"};
+    border-radius: 6px;
+    background: rgba(255, 255, 255, .04);
+    overflow: hidden;
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .08);
+
+    &.o_raffle_cell_locked {
+        box-shadow: inset 0 0 0 1px rgba(40, 87, 128, .85), 0 0 14px rgba(40, 87, 128, .6);
+    }
+}
+
+.o_raffle_cell_strip {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    display: flex;
+    flex-direction: column;
+    will-change: transform;
+}
+
+.o_raffle_cell_char {
+    height: #{"clamp(42px, 9.5vw, 62px)"};
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+    font-weight: 700;
+    font-size: #{"clamp(18px, 4.6vw, 28px)"};
+    color: #fff;
+    font-variant-numeric: tabular-nums;
+}
+
+.o_raffle_legend {
+    margin-top: 14px;
+    text-align: center;
+    font-family: 'Inter', sans-serif;
+    font-size: 11px;
+    color: rgba(255, 255, 255, .68);
+    line-height: 1.6;
+
+    code {
+        font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+        color: #fff;
+        background: rgba(255, 255, 255, .16);
+        padding: 1px 5px;
+        border-radius: 4px;
+        text-transform: none;
+    }
+}
+
+.o_raffle_action_zone {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+}
+
+.o_raffle_mascot {
+    width: 148px;
+    height: 188px;
+    opacity: 0;
+    position: relative;
+    transform-origin: center bottom;
+}
+
+.o_raffle_mascot_bubble {
+    position: absolute;
+    left: 50%;
+    bottom: 112%;
+    transform: translateX(-50%) scale(.85);
+    opacity: 0;
+    background: #fff;
+    color: var(--raffle-body-color);
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    text-align: center;
+    width: max-content;
+    max-width: 280px;
+    padding: 9px 16px;
+    border-radius: 14px;
+    box-shadow: 0 8px 18px -6px rgba(27, 54, 93, .28);
+    border: 1px solid var(--raffle-border);
+    transition: opacity .35s ease, transform .35s ease;
+}
+
+.o_raffle_mascot_pointer {
+    position: absolute;
+    left: 50%;
+    bottom: 100%;
+    transform: translateX(-50%);
+    width: 8px;
+    height: 8px;
+    border: 8px solid transparent;
+    border-top-color: #fff;
+    margin-bottom: -1px;
+}
+
+.o_raffle_mascot_img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    filter: drop-shadow(0 6px 8px rgba(0, 0, 0, .18));
+}
+
+.o_raffle_spin_btn {
+    position: relative;
+    font-family: 'Montserrat', -apple-system, 'Helvetica Neue', Arial, sans-serif;
+    font-weight: 800;
+    font-size: #{"clamp(15px, 2.6vw, 18px)"};
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    color: #fff;
+    background: linear-gradient(180deg, var(--raffle-steel) 0%, var(--raffle-navy) 100%);
+    border: none;
+    border-radius: 999px;
+    padding: 18px 46px;
+    cursor: pointer;
+    box-shadow: 0 10px 0 rgba(27, 54, 93, .85), 0 16px 28px -8px rgba(40, 87, 128, .55);
+    transition: filter .2s ease;
+
+    &:disabled {
+        filter: grayscale(.25) brightness(.92);
+        cursor: default;
+    }
+}
+
+.o_raffle_spin_hint {
+    display: block;
+    text-align: center;
+    font-family: 'Inter', sans-serif;
+    font-size: 11.5px;
+    color: var(--raffle-muted);
+    opacity: .85;
+}
+
+.o_raffle_done_banner {
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--raffle-gold-text);
+    padding: 8px 20px;
+    text-align: center;
+}
+
+.o_raffle_winner_panel {
+    position: absolute;
+    left: 50%;
+    top: 0;
+    z-index: 1;
+    width: #{"min(92vw, 460px)"};
+    padding: 22px 26px;
+    border-radius: 18px;
+    background: #{"color-mix(in srgb, var(--raffle-body-bg) 90%, transparent)"};
+    backdrop-filter: blur(14px);
+    border: 1px solid var(--raffle-border);
+    box-shadow: 0 20px 44px -16px rgba(27, 54, 93, .22);
+    text-align: center;
+    opacity: 0;
+    transform: translateX(-50%) translateY(14px) scale(.98);
+    pointer-events: none;
+    transition: opacity .5s ease, transform .5s cubic-bezier(.2, .8, .3, 1);
+
+    &.o_raffle_winner_visible {
+        position: relative;
+        left: auto;
+        opacity: 1;
+        transform: translateY(0) scale(1);
+        pointer-events: auto;
+    }
+}
+
+.o_raffle_winner_prize_img {
+    display: block;
+    width: 88px;
+    height: 88px;
+    object-fit: cover;
+    border-radius: 14px;
+    margin: 0 auto 12px;
+    box-shadow: 0 6px 16px -6px rgba(27, 54, 93, .35);
+}
+
+.o_raffle_winner_eyebrow {
+    font-family: 'Inter', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .13em;
+    text-transform: uppercase;
+    color: var(--raffle-gold-text);
+}
+
+.o_raffle_winner_folio {
+    margin: 9px 0 3px;
+    font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+    font-weight: 700;
+    font-size: #{"clamp(17px, 4vw, 22px)"};
+    color: var(--raffle-navy);
+    text-transform: none;
+}
+
+.o_raffle_winner_name {
+    font-family: 'Baloo 2', 'Montserrat', sans-serif;
+    font-weight: 700;
+    font-size: #{"clamp(18px, 4vw, 24px)"};
+    color: var(--raffle-body-color);
+    margin: 2px 0 5px;
+}
+
+.o_raffle_winner_meta {
+    font-family: 'Inter', sans-serif;
+    font-size: 12.5px;
+    color: var(--raffle-muted);
+    margin-bottom: 12px;
+}
+
+.o_raffle_history {
+    position: relative;
+    z-index: 1;
+    width: #{"min(92vw, 440px)"};
+    background: #EFEFED;
+    border: 1px solid var(--raffle-border);
+    border-radius: 12px;
+    padding: 12px 18px;
+
+    .o_raffle_history_title {
+        font-family: 'Inter', sans-serif;
+        font-weight: 700;
+        font-size: 13px;
+        margin-bottom: 8px;
+        color: var(--raffle-muted);
+        opacity: 1;
+    }
+}
+
+.o_raffle_history_list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.o_raffle_history_item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 12.5px;
+}
+
+.o_raffle_history_thumb {
+    flex: none;
+    width: 34px;
+    height: 34px;
+    border-radius: 9px;
+    overflow: hidden;
+    background: #fff;
+    border: 1px solid var(--raffle-border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+}
+
+.o_raffle_history_thumb_fallback {
+    font-size: 15px;
+    opacity: .5;
+}
+
+.o_raffle_history_info {
+    min-width: 0;
+}
+
+.o_raffle_history_prize {
+    font-weight: 700;
+    font-size: 13px;
+}
+
+.o_raffle_history_winner {
+    font-size: 12.5px;
+    color: var(--raffle-muted);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.o_raffle_confetti {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 20;
+}
+
+@keyframes mds_raffle_chase {
+    0%, 100% { opacity: .3; box-shadow: 0 0 3px rgba(40, 87, 128, .4); }
+    50% { opacity: 1; box-shadow: 0 0 9px 2px rgba(40, 87, 128, .85); }
+}
+@keyframes mds_raffle_lockPulse {
+    0% { transform: scale(1.14); }
+    100% { transform: scale(1); }
+}
+// Sin rotate(): la mascota ahora es un elemento fijo parado junto a la
+// ruleta (no un popup pasajero cerca del botón), así que inclinarla se ve
+// como un error de layout en vez de un gesto simpático. Se mueve derecha,
+// solo escala/opacidad/traslación vertical.
+@keyframes mds_raffle_mascotIn {
+    from { opacity: 0; transform: translateY(14px) scale(.92); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes mds_raffle_mascotOut {
+    from { opacity: 1; transform: translateY(0) scale(1); }
+    to { opacity: 0; transform: translateY(14px) scale(.92); }
+}
+@keyframes mds_raffle_armPull {
+    0% { transform: translateY(0); }
+    30% { transform: translateY(-8px); }
+    55% { transform: translateY(-8px); }
+    100% { transform: translateY(0); }
+}
+// Animación distinta a mascotIn/armPull, reservada para el cierre del
+// sorteo: un "pop" más triunfal (overshoot de escala) ya que la mascota
+// se queda parada ahí en vez de desvanecerse después.
+@keyframes mds_raffle_mascotFinal {
+    0% { opacity: 0; transform: translateY(20px) scale(.85); }
+    60% { opacity: 1; transform: translateY(-6px) scale(1.05); }
+    100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .o_raffle_bulb {
+        animation: none;
+    }
+}

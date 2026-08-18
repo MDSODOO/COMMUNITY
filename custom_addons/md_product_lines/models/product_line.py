@@ -6,6 +6,7 @@ class ProductLine(models.Model):
     _name = "md.product.line"
     _description = "Línea de Producto (independiente de product.category)"
     _order = "name"
+    _parent_name = "parent_line_id"
 
     name = fields.Char(required=True)
     active = fields.Boolean(default=True)

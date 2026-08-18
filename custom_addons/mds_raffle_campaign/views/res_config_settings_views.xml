@@ -1,0 +1,32 @@
+<odoo>
+    <record id="res_config_settings_view_form_raffle" model="ir.ui.view">
+        <field name="name">res.config.settings.form.inherit.mds.raffle</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="base_setup.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//form" position="inside">
+                <app data-string="Rifas" string="Rifas" name="mds_raffle_campaign"
+                     logo="/mds_raffle_campaign/static/description/icon.png">
+                    <block title="WhatsApp Business (Meta Cloud API)" name="mds_raffle_whatsapp">
+                        <setting id="mds_raffle_whatsapp_token_setting" string="Token API"
+                                 help="Token de acceso de la app de Meta Cloud API. Vacío = las notificaciones de boletos por WhatsApp quedan en no-op.">
+                            <field name="mds_raffle_whatsapp_api_token" password="True"/>
+                        </setting>
+                        <setting id="mds_raffle_whatsapp_phone_setting" string="Phone Number ID">
+                            <field name="mds_raffle_whatsapp_phone_number_id"/>
+                        </setting>
+                        <setting id="mds_raffle_whatsapp_waba_setting" string="Business Account ID">
+                            <field name="mds_raffle_whatsapp_business_account_id"/>
+                        </setting>
+                    </block>
+                    <block title="Automatización (n8n)" name="mds_raffle_n8n">
+                        <setting id="mds_raffle_n8n_webhook_setting" string="Webhook: boletos creados"
+                                 help="URL del webhook de n8n (evento tickets.created). Vacío = no se notifica nada al crear boletos.">
+                            <field name="mds_raffle_n8n_webhook_url" placeholder="https://.../webhook/raffle-tickets-created"/>
+                        </setting>
+                    </block>
+                </app>
+            </xpath>
+        </field>
+    </record>
+</odoo>

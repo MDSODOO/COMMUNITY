@@ -1,0 +1,12 @@
+<odoo>
+    <menuitem id="menu_raffle_root" name="Rifas" sequence="60"
+              web_icon="mds_raffle_campaign,static/description/icon.png"
+              groups="sales_team.group_sale_salesman"/>
+    <menuitem id="menu_raffle_campaign" name="Campañas"
+              parent="menu_raffle_root" action="action_raffle_campaign" sequence="10"/>
+    <menuitem id="menu_raffle_ticket" name="Folios"
+              parent="menu_raffle_root" action="action_raffle_ticket" sequence="20"/>
+    <menuitem id="menu_raffle_rule" name="Reglas de Premiación"
+              parent="menu_raffle_root" action="action_raffle_rule" sequence="30"
+              groups="sales_team.group_sale_manager"/>
+</odoo>

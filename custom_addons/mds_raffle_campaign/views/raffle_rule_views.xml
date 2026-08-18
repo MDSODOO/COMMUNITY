@@ -1,0 +1,76 @@
+<odoo>
+    <record id="view_raffle_rule_list" model="ir.ui.view">
+        <field name="name">raffle.rule.list</field>
+        <field name="model">raffle.rule</field>
+        <field name="arch" type="xml">
+            <list string="Reglas de Premiación">
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="rule_type"/>
+                <field name="product_line_ids" widget="many2many_tags"
+                       invisible="rule_type != 'amount_line'"/>
+                <field name="min_amount" invisible="rule_type != 'amount_line'"/>
+                <field name="computation_mode" invisible="rule_type != 'amount_line'"/>
+                <field name="product_ids" widget="many2many_tags"
+                       invisible="rule_type != 'product'"/>
+                <field name="min_qty" invisible="rule_type != 'product'"/>
+                <field name="source_type" invisible="rule_type not in ('order_source', 'daily_threshold')"/>
+                <field name="min_amount" invisible="rule_type != 'daily_threshold'"/>
+                <field name="product_line_ids" widget="many2many_tags"
+                       invisible="rule_type != 'daily_sponsor_line'"/>
+                <field name="product_ids" widget="many2many_tags"
+                       invisible="rule_type != 'daily_sponsor_catalog'"/>
+                <field name="tickets_awarded"/>
+                <field name="active" widget="boolean_toggle"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_raffle_rule_form" model="ir.ui.view">
+        <field name="name">raffle.rule.form</field>
+        <field name="model">raffle.rule</field>
+        <field name="arch" type="xml">
+            <form string="Regla de Premiación">
+                <sheet>
+                    <group>
+                        <field name="campaign_id"/>
+                        <field name="name"/>
+                        <field name="rule_type"/>
+                        <field name="tickets_awarded"/>
+                        <field name="active"/>
+                    </group>
+                    <group string="Monto por línea de producto" invisible="rule_type != 'amount_line'">
+                        <field name="product_line_ids" widget="many2many_tags"/>
+                        <field name="min_amount"/>
+                        <field name="computation_mode"/>
+                        <field name="currency_id" invisible="1"/>
+                    </group>
+                    <group string="Producto específico" invisible="rule_type != 'product'">
+                        <field name="product_ids" widget="many2many_tags"/>
+                        <field name="min_qty"/>
+                    </group>
+                    <group string="Origen del pedido" invisible="rule_type != 'order_source'">
+                        <field name="source_type"/>
+                    </group>
+                    <group string="Umbral diario acumulado" invisible="rule_type != 'daily_threshold'">
+                        <field name="source_type"/>
+                        <field name="min_amount"/>
+                        <field name="currency_id" invisible="1"/>
+                    </group>
+                    <group string="Línea patrocinadora del día" invisible="rule_type != 'daily_sponsor_line'">
+                        <field name="product_line_ids" widget="many2many_tags"/>
+                    </group>
+                    <group string="Catálogo patrocinado del día" invisible="rule_type != 'daily_sponsor_catalog'">
+                        <field name="product_ids" widget="many2many_tags"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_raffle_rule" model="ir.actions.act_window">
+        <field name="name">Reglas de Premiación</field>
+        <field name="res_model">raffle.rule</field>
+        <field name="view_mode">list,form</field>
+    </record>
+</odoo>
