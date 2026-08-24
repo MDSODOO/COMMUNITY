@@ -1,0 +1,15 @@
+<odoo>
+    <record id="rule_biometric_credential_own" model="ir.rule">
+        <field name="name">Empleado: solo sus propias credenciales biométricas</field>
+        <field name="model_id" ref="model_hr_employee_biometric_credential"/>
+        <field name="domain_force">[('employee_id.user_id', '=', user.id)]</field>
+        <field name="groups" eval="[(4, ref('base.group_user'))]"/>
+    </record>
+
+    <record id="rule_biometric_credential_manager" model="ir.rule">
+        <field name="name">Manager de asistencias: todas las credenciales biométricas</field>
+        <field name="model_id" ref="model_hr_employee_biometric_credential"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+        <field name="groups" eval="[(4, ref('hr_attendance.group_hr_attendance_manager'))]"/>
+    </record>
+</odoo>

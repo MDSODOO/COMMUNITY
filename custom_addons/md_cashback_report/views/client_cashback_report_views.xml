@@ -11,10 +11,15 @@
                 <field name="company_id"          string="Sucursal"   optional="show"/>
                 <field name="invoice_month"       string="Mes"        optional="show"/>
                 <field name="invoice_count"       string="# Facturas" optional="show" sum="Total facturas"/>
-                <field name="base_amount"         string="Monto Base"                 optional="show" sum="Total Base"/>
+                <field name="gross_invoiced_total" string="Total Facturado"            optional="show" sum="Total Facturado"/>
+                <field name="excluded_base_amount" string="Monto Base Excluido"        optional="show" sum="Total Excluido" decoration-warning="excluded_base_amount > 0"/>
+                <field name="excluded_total"       string="Total Facturado Excluido"   optional="hide" sum="Total Facturado Excluido"/>
+                <field name="base_amount"         string="Base Neta Computable"        optional="show" sum="Total Base Neta"/>
                 <field name="discount_amount"     string="Descuento Aplicado (2%)"     optional="show" sum="Total Descuento"/>
-                <field name="invoiced_total"       string="Total Facturado"            optional="show" sum="Total Facturado"/>
-                <field name="cashback_provision"  string="Provisión Cashback (5%)"     optional="show" sum="Total Cashback"/>
+                <field name="invoiced_total"       string="Total Facturado (líneas con 2%)" optional="hide" sum="Total Facturado c/2%"/>
+                <field name="cashback_provision"  string="Provisión Cashback (5%)"     optional="show" sum="Total Cashback Teórico"/>
+                <field name="cashback_real"       string="Cashback Real (5% s/ 2%)"   optional="show" sum="Total Cashback Real"/>
+                <field name="anomaly_line_count"  string="Líneas Anomalas"            optional="show" sum="Total Líneas Anomalas" decoration-danger="anomaly_line_count > 0"/>
                 <field name="currency_id"         invisible="1"/>
             </list>
         </field>
@@ -29,10 +34,12 @@
                 <field name="partner_id"         type="row"     string="Cliente"/>
                 <field name="company_id"         type="row"     string="Sucursal"/>
                 <field name="invoice_month"      type="col"     interval="month" string="Mes"/>
-                <field name="base_amount"        type="measure" string="Monto Base"/>
+                <field name="gross_invoiced_total" type="measure" string="Total Facturado"/>
+                <field name="excluded_base_amount" type="measure" string="Monto Base Excluido"/>
+                <field name="base_amount"        type="measure" string="Base Neta Computable"/>
                 <field name="discount_amount"    type="measure" string="Descuento Aplicado (2%)"/>
-                <field name="invoiced_total"     type="measure" string="Total Facturado"/>
                 <field name="cashback_provision" type="measure" string="Provisión Cashback (5%)"/>
+                <field name="cashback_real"      type="measure" string="Cashback Real (5%)"/>
             </pivot>
         </field>
     </record>
@@ -78,7 +85,7 @@
         <field name="context">{
             'search_default_group_partner': 1,
             'search_default_group_company': 1,
-            'pivot_measures': ['base_amount', 'discount_amount', 'invoiced_total', 'cashback_provision'],
+            'pivot_measures': ['gross_invoiced_total', 'excluded_base_amount', 'base_amount', 'discount_amount', 'cashback_provision'],
             'pivot_row_groupby': ['partner_id', 'company_id'],
             'pivot_column_groupby': ['invoice_month']
         }</field>
@@ -101,6 +108,15 @@
                 <strong>Si no aparecen datos:</strong> confirma que el cliente tiene el
                 campo activado en su ficha, y que sus facturas de venta llevan el
                 descuento del 2% capturado en la línea de producto.
+            </p>
+            <p>
+                <strong>Productos excluidos:</strong> si un cliente tiene productos no
+                elegibles para el esquema (ficha de contacto ▶ campo
+                <code>Productos Excluidos de Cashback</code>), sus líneas se descuentan
+                del cálculo. El desglose muestra <strong>Total Facturado</strong> (todo lo
+                facturado, incluidos excluidos), <strong>Monto Base Excluido</strong>
+                (lo apartado por exclusión) y <strong>Base Neta Computable</strong>
+                (la base real sobre la que se calcula el 5% de cashback).
             </p>
             <p>
                 <strong>Importante sobre "Provisión Cashback (5%)":</strong> es un

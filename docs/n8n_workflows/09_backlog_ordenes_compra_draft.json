@@ -1,0 +1,421 @@
+{
+  "name": "09_Backlog_Ordenes_Compra_Draft",
+  "nodes": [
+    {
+      "id": "schedule-09",
+      "name": "Schedule",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "15 8 * * 1"
+            }
+          ]
+        }
+      },
+      "notes": "Semanal, lunes 8:15am (offset de 07 para no coincidir exacto)."
+    },
+    {
+      "id": "autenticar-odoo-09",
+      "name": "Autenticar Odoo",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        220,
+        0
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.ODOO_INTERNAL_URL }}/jsonrpc",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ jsonrpc: '2.0', method: 'call', params: { service: 'common', method: 'authenticate', args: [$env.ODOO_DB, $env.ODOO_USER, $env.ODOO_PASSWORD, {}] }, id: 1 }) }}",
+        "options": {
+          "timeout": 10000
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 3000,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "id": "if-auth-ok-09",
+      "name": "IF - Auth OK?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        440,
+        -80
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.error }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "empty"
+              }
+            },
+            {
+              "leftValue": "={{ typeof $json.result }}",
+              "rightValue": "number",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        }
+      }
+    },
+    {
+      "id": "calcular-fecha-limite-09",
+      "name": "Calcular Fecha Limite",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        660,
+        -160
+      ],
+      "parameters": {
+        "jsCode": "const cutoff = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);\nconst cutoffStr = cutoff.toISOString().slice(0, 19).replace('T', ' ');\nreturn [{ json: { odoo_uid: $json.result, cutoff: cutoffStr } }];"
+      }
+    },
+    {
+      "id": "resumen-por-comprador-09",
+      "name": "Resumen Por Comprador",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        880,
+        -160
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.ODOO_INTERNAL_URL }}/jsonrpc",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ jsonrpc: '2.0', method: 'call', params: { service: 'object', method: 'execute_kw', args: [$env.ODOO_DB, $json.odoo_uid, $env.ODOO_PASSWORD, 'purchase.order', 'read_group', [[['state','=','draft'],['create_date','<',$json.cutoff]], ['amount_total:sum'], ['user_id']]] }, id: 1 }) }}",
+        "options": {
+          "timeout": 20000
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 3000,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "id": "ordenes-mas-antiguas-09",
+      "name": "Ordenes Mas Antiguas",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1100,
+        -160
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.ODOO_INTERNAL_URL }}/jsonrpc",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ jsonrpc: '2.0', method: 'call', params: { service: 'object', method: 'execute_kw', args: [$env.ODOO_DB, $('Calcular Fecha Limite').item.json.odoo_uid, $env.ODOO_PASSWORD, 'purchase.order', 'search_read', [[['state','=','draft'],['create_date','<',$('Calcular Fecha Limite').item.json.cutoff]]], { fields: ['id','name','partner_id','user_id','amount_total','create_date'], limit: 10, order: 'create_date asc' }] }, id: 1 }) }}",
+        "options": {
+          "timeout": 20000
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 3000,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "id": "if-hay-backlog-09",
+      "name": "IF - Hay Backlog?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        1320,
+        -160
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ ($json.result || []).length }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        }
+      }
+    },
+    {
+      "id": "formatear-resumen-backlog-po-09",
+      "name": "Formatear Resumen Backlog PO",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1540,
+        -240
+      ],
+      "parameters": {
+        "jsCode": "const oldest = $json.result || [];\nconst grupos = $('Resumen Por Comprador').first().json.result || [];\nconst totalCount = grupos.reduce((s, g) => s + (g.user_id_count || g.__count || 0), 0);\nconst totalAmount = grupos.reduce((s, g) => s + (g.amount_total || 0), 0);\n\nlet text = `🛒 <b>Backlog de Ordenes de Compra en Borrador</b>\\n<b>${totalCount}</b> orden(es) sin confirmar con mas de 7 dias, por un total de <code>$${totalAmount.toLocaleString('es-MX', {minimumFractionDigits: 2})} MXN</code>.\\n\\n`;\ntext += `<b>Por comprador:</b>\\n`;\nfor (const g of grupos) {\n  const cnt = g.user_id_count || g.__count || 0;\n  const nombre = g.user_id ? g.user_id[1] : 'Sin asignar';\n  text += `• ${nombre}: ${cnt} orden(es), $${(g.amount_total || 0).toLocaleString('es-MX', {minimumFractionDigits: 2})}\\n`;\n}\ntext += `\\n<b>Las 10 mas antiguas:</b>\\n`;\nfor (const o of oldest) {\n  const dias = Math.floor((Date.now() - new Date(o.create_date + 'Z')) / 86400000);\n  text += `• ${o.name} — ${o.partner_id?.[1] ?? 'N/D'} ($${o.amount_total}) — ${dias}d\\n`;\n}\ntext += `\\n<i>Revisar y confirmar o cancelar. Nota: gran parte de este backlog viene de la migracion de julio 2026, no necesariamente son ordenes nuevas sin atender.</i>`;\n\nreturn [{ json: { text } }];"
+      }
+    },
+    {
+      "id": "formatear-heartbeat-backlog-po-09",
+      "name": "Formatear Heartbeat Sin Backlog",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1540,
+        -80
+      ],
+      "parameters": {
+        "jsCode": "return [{ json: { text: '✅ Backlog de Ordenes de Compra: sin borradores de mas de 7 dias.' } }];"
+      }
+    },
+    {
+      "id": "preparar-alerta-fallo-auth-09",
+      "name": "Preparar Alerta - Fallo Autenticacion",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        440,
+        160
+      ],
+      "parameters": {
+        "jsCode": "const err = $input.first().json;\nconst detalle = err.error?.message ?? err.message ?? JSON.stringify(err);\nreturn [{ json: { text: `🔴 <b>Backlog Ordenes de Compra: fallo al autenticar contra Odoo</b>\\nDetalle: <code>${detalle}</code>` } }];"
+      }
+    },
+    {
+      "id": "preparar-alerta-fallo-consulta-09",
+      "name": "Preparar Alerta - Fallo Consulta",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        880,
+        160
+      ],
+      "parameters": {
+        "jsCode": "const err = $input.first().json;\nconst detalle = err.error?.message ?? err.message ?? JSON.stringify(err);\nreturn [{ json: { text: `🔴 <b>Backlog Ordenes de Compra: fallo al consultar purchase.order</b>\\nDetalle: <code>${detalle}</code>` } }];"
+      }
+    },
+    {
+      "id": "notificar-telegram-backlog-po-09",
+      "name": "Notificar Telegram Backlog PO",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1760,
+        0
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "=https://api.telegram.org/bot{{ $env.TELEGRAM_BOT_TOKEN }}/sendMessage",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ chat_id: $env.TELEGRAM_CHAT_ID, message_thread_id: 6, parse_mode: 'HTML', text: $json.text }) }}",
+        "options": {
+          "timeout": 10000
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 2,
+      "notes": "message_thread_id=6 = topic Compras."
+    }
+  ],
+  "connections": {
+    "Schedule": {
+      "main": [
+        [
+          {
+            "node": "Autenticar Odoo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Autenticar Odoo": {
+      "main": [
+        [
+          {
+            "node": "IF - Auth OK?",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Preparar Alerta - Fallo Autenticacion",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF - Auth OK?": {
+      "main": [
+        [
+          {
+            "node": "Calcular Fecha Limite",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Preparar Alerta - Fallo Autenticacion",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calcular Fecha Limite": {
+      "main": [
+        [
+          {
+            "node": "Resumen Por Comprador",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Resumen Por Comprador": {
+      "main": [
+        [
+          {
+            "node": "Ordenes Mas Antiguas",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Preparar Alerta - Fallo Consulta",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ordenes Mas Antiguas": {
+      "main": [
+        [
+          {
+            "node": "IF - Hay Backlog?",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Preparar Alerta - Fallo Consulta",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF - Hay Backlog?": {
+      "main": [
+        [
+          {
+            "node": "Formatear Resumen Backlog PO",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Formatear Heartbeat Sin Backlog",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Formatear Resumen Backlog PO": {
+      "main": [
+        [
+          {
+            "node": "Notificar Telegram Backlog PO",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Formatear Heartbeat Sin Backlog": {
+      "main": [
+        [
+          {
+            "node": "Notificar Telegram Backlog PO",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar Alerta - Fallo Autenticacion": {
+      "main": [
+        [
+          {
+            "node": "Notificar Telegram Backlog PO",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar Alerta - Fallo Consulta": {
+      "main": [
+        [
+          {
+            "node": "Notificar Telegram Backlog PO",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "errorWorkflow": "error-handler-global-uuid"
+  },
+  "id": "backlog-po-draft-uuid",
+  "meta": {
+    "instanceId": "medicinedepot"
+  }
+}

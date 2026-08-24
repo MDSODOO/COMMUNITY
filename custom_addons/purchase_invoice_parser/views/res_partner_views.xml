@@ -6,7 +6,7 @@
         del contacto, en la pestaña "Ventas y Compras", después del campo nativo
         de Plazos de pago de proveedor. Solo visibles cuando supplier_rank > 0.
     -->
-    <record id="res_partner_view_form_cfdi_format" model="ir.ui.view">
+    <record id="view_res_partner_form_cfdi_format" model="ir.ui.view">
         <field name="name">res.partner.form.cfdi.format</field>
         <field name="model">res.partner</field>
         <field name="inherit_id" ref="base.view_partner_form"/>

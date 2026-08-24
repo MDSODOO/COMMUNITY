@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     'name': 'Medicine Depot - Portal Bento',
-    'version': '19.0.2.10.10',
+    'version': '19.0.2.11.0',
     'category': 'Website/Portal',
     'summary': (
         "Rediseño Bento-box del Portal del Cliente (/my) con CSS Grid "
@@ -47,10 +47,10 @@ nombra siempre 'A la mano' — nunca 'Disponible'.
         'views/snippets/s_md_product_card.xml',
         'views/snippets/s_md_logos_ticker.xml',
         'views/public_templates.xml',
-        'views/auth_templates.xml',
         'views/portal_templates.xml',
         'views/afiliacion_templates.xml',
         'views/pharmacovigilance_views.xml',
+        'views/res_partner_views.xml',
         'data/website_pages.xml',
         'views/public_pages_inherit.xml',
         'views/shop_session_inherits.xml',
@@ -65,7 +65,6 @@ nombra siempre 'A la mano' — nunca 'Disponible'.
             # ORDEN CRITICO: _tokens.scss debe ir primero porque define
             # variables/mixins usados por los siguientes SCSS del bundle.
             'medicine_depot_portal/static/src/scss/_tokens.scss',
-            'medicine_depot_portal/static/src/scss/login_custom.scss',
             'medicine_depot_portal/static/src/scss/public_bento.scss',
             'medicine_depot_portal/static/src/scss/portal_bento.scss',
             'medicine_depot_portal/static/src/scss/afiliacion.scss',
@@ -77,7 +76,6 @@ nombra siempre 'A la mano' — nunca 'Disponible'.
             'medicine_depot_portal/static/src/js/md_wizard_base.js',
             'medicine_depot_portal/static/src/js/public_navbar.js',
             'medicine_depot_portal/static/src/js/public_surface_bridge.js',
-            'medicine_depot_portal/static/src/js/login_glass_island.js',
             'medicine_depot_portal/static/src/js/portal_bento.js',
             'medicine_depot_portal/static/src/js/portal_home_counters_patch.js',
             'medicine_depot_portal/static/src/js/md_toast_promoter.js',

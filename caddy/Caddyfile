@@ -1,10 +1,58 @@
 odoo.bodegademedicamentos.com {
-    encode gzip
+	encode gzip
 
-    @websocket {
-        path /websocket /websocket/*
-    }
-    reverse_proxy @websocket medicinedepot_dev_odoo:8072
+	# La API externa JSON-2 la consume n8n por la red interna de Docker
+	# (http://medicinedepot_dev_odoo:8069), que no pasa por Caddy.
+	# Se bloquea su exposicion publica para que no se puedan lanzar intentos
+	# de Bearer contra ella desde internet. Para habilitar un consumidor
+	# externo en el futuro: sustituir el respond por un matcher remote_ip.
+	@json_api path /json/2/*
+	respond @json_api 403
 
-    reverse_proxy medicinedepot_dev_odoo:8069
+	@websocket {
+		path /websocket /websocket/*
+	}
+	reverse_proxy @websocket medicinedepot_dev_odoo:8072
+
+	reverse_proxy medicinedepot_dev_odoo:8069
+}
+
+# UI de n8n. Caddy emite TLS automatico via Lets Encrypt en cuanto el
+# registro A de n8n.bodegademedicamentos.com apunte a 74.208.191.88.
+n8n.bodegademedicamentos.com {
+	encode gzip
+
+	# TEMPORAL: el registro A de n8n.bodegademedicamentos.com apunta hoy a
+	# 174.136.25.60 (otro host), no a este servidor (74.208.191.88). Mientras
+	# eso siga asi, Lets Encrypt no puede validar el dominio y Caddy reintenta
+	# en bucle, arriesgando el limite de validaciones fallidas.
+	# `tls internal` emite un certificado autofirmado y detiene los reintentos.
+	#
+	# CUANDO SE CORRIJA EL DNS: borrar la linea `tls internal` y recargar
+	# (docker exec md_caddy caddy reload --config /etc/caddy/Caddyfile).
+	# Caddy emitira el certificado publico automaticamente.
+	tls internal
+
+	reverse_proxy md_n8n:5678
+}
+
+# UI de prueba de mds_raffle_campaign (stack quifamesa_raffle_test, BD
+# separada de medicinedepot_dev). Mismo patron que n8n: el registro A de
+# quifamesa.bodegademedicamentos.com apunta hoy a 174.136.25.60, no a este
+# servidor (74.208.191.88), asi que Let's Encrypt no puede validar el
+# dominio. `tls internal` emite un certificado autofirmado y detiene los
+# reintentos.
+#
+# CUANDO SE CORRIJA EL DNS: borrar la linea `tls internal` y recargar
+# (docker exec md_caddy caddy reload --config /etc/caddy/Caddyfile).
+# Caddy emitira el certificado publico automaticamente.
+quifamesa.bodegademedicamentos.com {
+	encode gzip
+
+	@websocket {
+		path /websocket /websocket/*
+	}
+	reverse_proxy @websocket quifamesa_raffle_test_odoo:8072
+
+	reverse_proxy quifamesa_raffle_test_odoo:8069
 }

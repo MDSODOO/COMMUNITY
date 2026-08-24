@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- noupdate: si mañana se actualiza el módulo no queremos pisar los
+         valores que el usuario haya configurado. -->
+    <data noupdate="1">
+        <!-- Umbral en 0 = alerta de compras desactivada. Arrancar en silencio
+             es deliberado: nadie quiere que instalar un módulo empiece a
+             mandar mensajes a un grupo sin haberlo pedido. -->
+        <record id="param_purchase_threshold" model="ir.config_parameter">
+            <field name="key">md_telegram.purchase_threshold</field>
+            <field name="value">0</field>
+        </record>
+
+        <!-- Umbral de alerta de ventas: 0 = desactivado. -->
+        <record id="param_sale_threshold" model="ir.config_parameter">
+            <field name="key">md_telegram.sale_threshold</field>
+            <field name="value">0</field>
+        </record>
+    </data>
+</odoo>

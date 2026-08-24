@@ -1,0 +1,83 @@
+{
+  "name": "00_Error_Handler_Global",
+  "nodes": [
+    {
+      "id": "error-trigger-global",
+      "name": "Error Trigger",
+      "type": "n8n-nodes-base.errorTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "formatear-error",
+      "name": "Formatear Error",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        220,
+        0
+      ],
+      "parameters": {
+        "jsCode": "const e = $input.first().json;\nconst workflowName = e.workflow?.name ?? 'desconocido';\nconst nodeName = e.execution?.lastNodeExecuted ?? e.node?.name ?? 'desconocido';\nconst message = e.execution?.error?.message ?? e.error?.message ?? 'sin detalle';\nconst tsLocal = new Date().toLocaleString('es-MX', { timeZone: 'America/Merida', dateStyle: 'short', timeStyle: 'medium' });\nconst text = `🔴 <b>Fallo en workflow n8n</b>\\n<b>Workflow:</b> ${workflowName}\\n<b>Nodo:</b> ${nodeName}\\n<b>Error:</b> ${message}\\n<b>Hora:</b> ${tsLocal} (Mérida)`;\nreturn [{ json: { text } }];"
+      }
+    },
+    {
+      "id": "notificar-error-telegram",
+      "name": "Notificar Error Telegram",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        440,
+        0
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "=https://api.telegram.org/bot{{ $env.TELEGRAM_BOT_TOKEN }}/sendMessage",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ chat_id: $env.TELEGRAM_CHAT_ID, message_thread_id: 52, parse_mode: 'HTML', text: $json.text }) }}",
+        "options": {
+          "timeout": 10000
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 2
+    }
+  ],
+  "connections": {
+    "Error Trigger": {
+      "main": [
+        [
+          {
+            "node": "Formatear Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Formatear Error": {
+      "main": [
+        [
+          {
+            "node": "Notificar Error Telegram",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "id": "error-handler-global-uuid",
+  "meta": {
+    "instanceId": "medicinedepot"
+  }
+}

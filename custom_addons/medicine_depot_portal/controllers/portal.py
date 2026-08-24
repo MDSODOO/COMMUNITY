@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
 import base64
+import json
 import logging
 import os
 import re
+import urllib.request
 from datetime import timedelta
 from odoo import _, fields
 from odoo.http import request, route
@@ -29,6 +31,31 @@ class MedicineDepotPortal(CustomerPortal):
 
     def _get_request_ip(self):
         return request.httprequest.remote_addr or 'unknown'
+
+    def _notify_n8n_new_affiliation(self, partner_id):
+        """Avisa a n8n que llego una solicitud de afiliacion nueva (best-effort).
+
+        Nunca debe tirar la respuesta al usuario si n8n esta caido o lento:
+        esto es solo una notificacion, no parte del flujo critico de guardar
+        la solicitud (que ya paso exitosamente cuando se llama esto). Antes
+        de este webhook, nadie se enteraba de una solicitud nueva salvo
+        revisando Contactos en Odoo a mano.
+        """
+        try:
+            data = json.dumps({'partner_id': partner_id}).encode('utf-8')
+            req = urllib.request.Request(
+                'http://md_n8n:5678/webhook/afiliacion-nueva-solicitud',
+                data=data,
+                headers={'Content-Type': 'application/json'},
+                method='POST',
+            )
+            urllib.request.urlopen(req, timeout=3)
+        except Exception:
+            _logger.warning(
+                'Afiliacion: no se pudo notificar a n8n para partner_id=%s (no bloqueante)',
+                partner_id,
+                exc_info=True,
+            )
 
     def _is_affiliation_rate_limited(self, ip):
         """True si `ip` ya alcanzo el maximo de intentos en la ventana actual.
@@ -553,6 +580,11 @@ class MedicineDepotPortal(CustomerPortal):
             partner_vals['company_type'] = 'company' if is_company else 'person'
         if 'x_studio_contact_type' in model_fields:
             partner_vals['x_studio_contact_type'] = 'Cliente'
+        # Solo se marca pendiente en el alta nueva: un usuario ya logueado que
+        # actualiza sus datos (partner ya existe) no debe perder una afiliacion
+        # ya aprobada por reenviar el formulario.
+        if not partner and 'x_affiliation_status' in model_fields:
+            partner_vals['x_affiliation_status'] = 'pending'
 
         try:
             if partner:
@@ -565,6 +597,14 @@ class MedicineDepotPortal(CustomerPortal):
                 'success': False,
                 'message': _('Ocurrió un error inesperado al procesar tu solicitud.'),
             }, status=500)
+
+        # Commit explicito ANTES de notificar: sin esto, n8n consulta el partner
+        # por una conexion/transaccion separada mientras la de este request
+        # sigue abierta, y no lo encuentra (confirmado en vivo 2026-08-13: la
+        # notificacion "tenia exito" pero el mensaje real caia siempre en la
+        # rama de "partner no encontrado" porque la fila aun no era visible).
+        self.env.cr.commit()
+        self._notify_n8n_new_affiliation(target_partner.id)
 
         # Evidencia de consentimiento (privacy=on, validado en _validate_affiliation_post).
         # Queda en el log del servidor, no en base de datos: es una primera capa de

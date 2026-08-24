@@ -67,7 +67,7 @@
         </record>
 
         <!-- Vista de Lista: Números de serie/lote -->
-        <record id="view_production_lot_tree_customized" model="ir.ui.view">
+        <record id="view_production_lot_list_customized" model="ir.ui.view">
             <field name="name">Lotes - Lista</field>
             <field name="model">stock.lot</field>
             <field name="type">list</field>
@@ -186,7 +186,7 @@
         <record id="action_production_lot_customized_view_list" model="ir.actions.act_window.view">
             <field name="sequence" eval="1"/>
             <field name="view_mode">list</field>
-            <field name="view_id" ref="view_production_lot_tree_customized"/>
+            <field name="view_id" ref="view_production_lot_list_customized"/>
             <field name="act_window_id" ref="action_production_lot_customized"/>
         </record>
 

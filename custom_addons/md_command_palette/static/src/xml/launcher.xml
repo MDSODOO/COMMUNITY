@@ -163,6 +163,18 @@
                                     <span class="o_md_command_palette_chip">
                                         <t t-esc="item.onHand"/> <t t-esc="item.uom"/> A la mano
                                     </span>
+                                    <span t-if="productRowActions.length" class="o_md_command_palette_product_actions">
+                                        <t t-foreach="productRowActions" t-as="paction" t-key="paction.id">
+                                            <button t-if="!paction.visible || paction.visible(item.record)"
+                                                    type="button"
+                                                    t-attf-class="o_md_command_palette_product_action_btn {{ paction.colorClass ? 'o_md_command_palette_product_action_btn--' + paction.colorClass : '' }}"
+                                                    t-att-title="paction.title"
+                                                    t-att-aria-label="paction.title"
+                                                    t-on-click="(ev) => this.onProductRowAction(ev, paction, item.record)">
+                                                <i t-attf-class="fa {{ paction.icon }}" aria-hidden="true"/>
+                                            </button>
+                                        </t>
+                                    </span>
                                 </div>
                             </t>
                         </div>

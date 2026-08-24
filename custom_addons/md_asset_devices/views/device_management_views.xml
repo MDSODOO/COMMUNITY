@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <data>
-        <record id="device_management_view_form" model="ir.ui.view">
+        <record id="view_device_management_form" model="ir.ui.view">
             <field name="name">device.management.form</field>
             <field name="model">device.management</field>
             <field name="arch" type="xml">
@@ -19,6 +19,9 @@
                         <widget name="web_ribbon" title="Fuera de Servicio" bg_color="bg-danger" invisible="state != 'retired'"/>
 
                         <div class="oe_button_box" name="button_box">
+                            <button name="action_view_assignments" type="object" class="oe_stat_button" icon="fa-user">
+                                <field name="assignment_count" widget="statinfo" string="Asignaciones"/>
+                            </button>
                             <button name="action_view_maintenance" type="object" class="oe_stat_button position-relative" icon="fa-wrench">
                                 <field name="maintenance_count" widget="statinfo" string="Mantenimientos"/>
                                 <span class="md_stat_overdue_badge badge rounded-pill text-bg-danger" invisible="mantenimiento_vencido_count == 0" title="Mantenimientos vencidos">
@@ -346,7 +349,7 @@
             </field>
         </record>
 
-        <record id="device_management_view_search" model="ir.ui.view">
+        <record id="view_device_management_search" model="ir.ui.view">
             <field name="name">device.management.search</field>
             <field name="model">device.management</field>
             <field name="arch" type="xml">
@@ -368,7 +371,7 @@
             </field>
         </record>
 
-        <record id="device_management_view_kanban" model="ir.ui.view">
+        <record id="view_device_management_kanban" model="ir.ui.view">
             <field name="name">device.management.kanban</field>
             <field name="model">device.management</field>
             <field name="arch" type="xml">
@@ -504,7 +507,7 @@
             </field>
         </record>
 
-        <record id="device_management_view_tree" model="ir.ui.view">
+        <record id="view_device_management_list" model="ir.ui.view">
             <field name="name">device.management.list</field>
             <field name="model">device.management</field>
             <field name="arch" type="xml">
@@ -534,11 +537,11 @@
             </field>
         </record>
 
-        <record model="ir.actions.act_window" id="act_device_management_menu">
+        <record model="ir.actions.act_window" id="action_device_management">
             <field name="name">Dispositivos IT</field>
             <field name="res_model">device.management</field>
             <field name="view_mode">kanban,list,form</field>
-            <field name="view_id" ref="device_management_view_kanban"/>
+            <field name="view_id" ref="view_device_management_kanban"/>
             <field name="help" type="html">
                 <p class="o_view_nocontent_smiling_face">
                     Crear un nuevo dispositivo
@@ -549,8 +552,45 @@
             </field>
         </record>
 
-        <menuitem id="menu_device_management" name="Medicine Depot - Activos IT"
+        <!-- Application Root Menu -->
+        <menuitem id="menu_md_asset_devices_root" name="Activos IT"
             web_icon="fa-laptop,#2C3E50,#EAECEE"
-            sequence="10" action="act_device_management_menu"/>
+            sequence="10"/>
+
+        <!-- Submenus -->
+        <menuitem id="menu_device_management_dispositivos" name="Dispositivos"
+            parent="menu_md_asset_devices_root"
+            action="action_device_management"
+            sequence="10"/>
+
+        <menuitem id="menu_device_management_asignaciones" name="Asignaciones"
+            parent="menu_md_asset_devices_root"
+            action="action_device_assignment"
+            sequence="15"/>
+
+        <menuitem id="menu_device_management_mantenimiento" name="Mantenimientos"
+            parent="menu_md_asset_devices_root"
+            action="action_device_maintenance"
+            sequence="20"/>
+
+        <menuitem id="menu_device_management_suscripciones" name="Suscripciones"
+            parent="menu_md_asset_devices_root"
+            action="action_device_subscription"
+            sequence="30"/>
+
+        <menuitem id="menu_device_management_todos" name="Tareas"
+            parent="menu_md_asset_devices_root"
+            action="action_device_todo"
+            sequence="40"/>
+
+        <menuitem id="menu_device_management_docs" name="Documentación"
+            parent="menu_md_asset_devices_root"
+            action="action_device_documentation"
+            sequence="50"/>
+
+        <menuitem id="menu_device_management_pagos" name="Pagos"
+            parent="menu_md_asset_devices_root"
+            action="action_device_payment"
+            sequence="60"/>
     </data>
 </odoo>

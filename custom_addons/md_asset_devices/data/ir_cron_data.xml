@@ -60,5 +60,20 @@ for dispositivo in dispositivos:
             <field name="nextcall">2026-06-21 10:00:00</field>
         </record>
 
+        <!-- CRON PARA REFRESCAR CONTADORES DE VENCIMIENTO (stored + dependen de la fecha de hoy,
+             no de un campo editado; sin este cron quedan desactualizados hasta el próximo
+             write en el dispositivo o sus líneas relacionadas) -->
+        <record model="ir.cron" id="cron_device_refresh_alert_counts">
+            <field name="name">Device Management - Refrescar Contadores de Vencimiento</field>
+            <field name="model_id" ref="md_asset_devices.model_device_management"/>
+            <field name="state">code</field>
+            <field name="code"><![CDATA[
+env['device.management'].search([])._compute_alert_counts()
+]]></field>
+            <field name="interval_number">1</field>
+            <field name="interval_type">days</field>
+            <field name="nextcall">2026-06-21 06:00:00</field>
+        </record>
+
     </data>
 </odoo>

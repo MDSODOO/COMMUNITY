@@ -97,3 +97,16 @@ class DeviceAssignment(models.Model):
                     "No puedes asignar más unidades que la cantidad A la mano. "
                     "Actualiza el inventario antes de agregar más asignaciones."
                 ))
+
+    @api.constrains('device_id', 'estado')
+    def _check_device_available_for_assignment(self):
+        state_labels = dict(self.env['device.management']._fields['state'].selection)
+        for assignment in self.filtered(lambda a: a.estado == 'activa'):
+            if assignment.device_id.state != 'active':
+                raise ValidationError(_(
+                    "No se puede asignar '%(device)s': está en estado '%(state)s'. "
+                    "El dispositivo debe estar 'En uso' para asignarse a un usuario."
+                ) % {
+                    'device': assignment.device_id.nombre_dispositivo,
+                    'state': state_labels.get(assignment.device_id.state),
+                })

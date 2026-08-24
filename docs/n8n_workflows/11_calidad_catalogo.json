@@ -1,0 +1,380 @@
+{
+  "name": "11_Calidad_Catalogo",
+  "nodes": [
+    {
+      "id": "schedule-11",
+      "name": "Schedule",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "45 8 * * 1"
+            }
+          ]
+        }
+      },
+      "notes": "Semanal, lunes 8:45am."
+    },
+    {
+      "id": "autenticar-odoo-11",
+      "name": "Autenticar Odoo",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        220,
+        0
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.ODOO_INTERNAL_URL }}/jsonrpc",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ jsonrpc: '2.0', method: 'call', params: { service: 'common', method: 'authenticate', args: [$env.ODOO_DB, $env.ODOO_USER, $env.ODOO_PASSWORD, {}] }, id: 1 }) }}",
+        "options": {
+          "timeout": 10000
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 3000,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "id": "if-auth-ok-11",
+      "name": "IF - Auth OK?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        440,
+        -80
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.error }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "empty"
+              }
+            },
+            {
+              "leftValue": "={{ typeof $json.result }}",
+              "rightValue": "number",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        }
+      }
+    },
+    {
+      "id": "buscar-productos-problematicos-11",
+      "name": "Buscar Productos Problematicos",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        660,
+        -80
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.ODOO_INTERNAL_URL }}/jsonrpc",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ jsonrpc: '2.0', method: 'call', params: { service: 'object', method: 'execute_kw', args: [$env.ODOO_DB, $json.result, $env.ODOO_PASSWORD, 'product.product', 'search_read', [['&', ['active','=',true], '&', ['sale_ok','=',true], '|', '|', '|', ['default_code','=',false], ['list_price','=',0], ['categ_id','=',false], ['barcode','=',false]]], { fields: ['id','name','default_code','list_price','categ_id','barcode'], limit: 1000 }] }, id: 1 }) }}",
+        "options": {
+          "timeout": 20000
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 3000,
+      "onError": "continueErrorOutput",
+      "notes": "limit=1000 con headroom (839 detectados en la auditoria 2026-08-12, total de vendibles activos ~3342). No se chequea 'weight' — se probo y sale en 0 para 99.97% del catalogo, no es una senal util (asi opera el negocio), solo generaria ruido."
+    },
+    {
+      "id": "clasificar-problemas-11",
+      "name": "Clasificar Problemas",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        880,
+        -80
+      ],
+      "parameters": {
+        "jsCode": "const rows = $json.result || [];\nconst sinSku = [], precioCero = [], sinCategoria = [], sinBarcode = [];\nfor (const r of rows) {\n  if (!r.default_code) sinSku.push(r);\n  if (r.list_price === 0) precioCero.push(r);\n  if (!r.categ_id) sinCategoria.push(r);\n  if (!r.barcode) sinBarcode.push(r);\n}\nreturn [{ json: { total: rows.length, sin_sku: sinSku, precio_cero: precioCero, sin_categoria: sinCategoria, sin_barcode: sinBarcode } }];"
+      }
+    },
+    {
+      "id": "if-hay-problemas-11",
+      "name": "IF - Hay Problemas?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        1100,
+        -80
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.total }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        }
+      }
+    },
+    {
+      "id": "formatear-resumen-catalogo-11",
+      "name": "Formatear Resumen Catalogo",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1320,
+        -160
+      ],
+      "parameters": {
+        "jsCode": "const d = $json;\nfunction top(items, n) { return items.slice(0, n).map(i => `• ${i.name} (${i.default_code || 's/SKU'})`).join('\\n'); }\n\nlet text = `🏷️ <b>Calidad de Catalogo</b>\\n<b>${d.total}</b> producto(s) vendible(s) con al menos un dato incompleto.\\n\\n`;\ntext += `💲 <b>${d.precio_cero.length}</b> con precio de venta en $0:\\n${top(d.precio_cero, 8)}\\n\\n`;\ntext += `📂 <b>${d.sin_categoria.length}</b> sin categoria asignada:\\n${top(d.sin_categoria, 8)}\\n\\n`;\nif (d.sin_sku.length > 0) text += `🔖 <b>${d.sin_sku.length}</b> sin codigo/SKU:\\n${top(d.sin_sku, 5)}\\n\\n`;\nif (d.sin_barcode.length > 0) text += `📊 <b>${d.sin_barcode.length}</b> sin codigo de barras:\\n${top(d.sin_barcode, 5)}\\n\\n`;\ntext += `<i>Listas truncadas a los primeros ejemplos de cada categoria; ver Odoo (Inventario > Productos) para el detalle completo.</i>`;\n\nreturn [{ json: { text } }];"
+      }
+    },
+    {
+      "id": "formatear-heartbeat-catalogo-11",
+      "name": "Formatear Heartbeat Sin Problemas",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1320,
+        0
+      ],
+      "parameters": {
+        "jsCode": "return [{ json: { text: '✅ Calidad de Catalogo: sin productos vendibles con datos incompletos.' } }];"
+      }
+    },
+    {
+      "id": "preparar-alerta-fallo-auth-11",
+      "name": "Preparar Alerta - Fallo Autenticacion",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        440,
+        160
+      ],
+      "parameters": {
+        "jsCode": "const err = $input.first().json;\nconst detalle = err.error?.message ?? err.message ?? JSON.stringify(err);\nreturn [{ json: { text: `🔴 <b>Calidad de Catalogo: fallo al autenticar contra Odoo</b>\\nDetalle: <code>${detalle}</code>` } }];"
+      }
+    },
+    {
+      "id": "preparar-alerta-fallo-consulta-11",
+      "name": "Preparar Alerta - Fallo Consulta",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        660,
+        160
+      ],
+      "parameters": {
+        "jsCode": "const err = $input.first().json;\nconst detalle = err.error?.message ?? err.message ?? JSON.stringify(err);\nreturn [{ json: { text: `🔴 <b>Calidad de Catalogo: fallo al consultar product.product</b>\\nDetalle: <code>${detalle}</code>` } }];"
+      }
+    },
+    {
+      "id": "notificar-telegram-catalogo-11",
+      "name": "Notificar Telegram Catalogo",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1540,
+        0
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "=https://api.telegram.org/bot{{ $env.TELEGRAM_BOT_TOKEN }}/sendMessage",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ chat_id: $env.TELEGRAM_CHAT_ID, message_thread_id: 6, parse_mode: 'HTML', text: $json.text }) }}",
+        "options": {
+          "timeout": 10000
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 2,
+      "notes": "message_thread_id=6 = topic Compras. No se creo un topic dedicado de 'Catalogo' por ser R7 la recomendacion de menor prioridad/impacto del reporte; alta de productos es responsabilidad tipica del equipo de compras."
+    }
+  ],
+  "connections": {
+    "Schedule": {
+      "main": [
+        [
+          {
+            "node": "Autenticar Odoo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Autenticar Odoo": {
+      "main": [
+        [
+          {
+            "node": "IF - Auth OK?",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Preparar Alerta - Fallo Autenticacion",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF - Auth OK?": {
+      "main": [
+        [
+          {
+            "node": "Buscar Productos Problematicos",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Preparar Alerta - Fallo Autenticacion",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Buscar Productos Problematicos": {
+      "main": [
+        [
+          {
+            "node": "Clasificar Problemas",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Preparar Alerta - Fallo Consulta",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Clasificar Problemas": {
+      "main": [
+        [
+          {
+            "node": "IF - Hay Problemas?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF - Hay Problemas?": {
+      "main": [
+        [
+          {
+            "node": "Formatear Resumen Catalogo",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Formatear Heartbeat Sin Problemas",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Formatear Resumen Catalogo": {
+      "main": [
+        [
+          {
+            "node": "Notificar Telegram Catalogo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Formatear Heartbeat Sin Problemas": {
+      "main": [
+        [
+          {
+            "node": "Notificar Telegram Catalogo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar Alerta - Fallo Autenticacion": {
+      "main": [
+        [
+          {
+            "node": "Notificar Telegram Catalogo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar Alerta - Fallo Consulta": {
+      "main": [
+        [
+          {
+            "node": "Notificar Telegram Catalogo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "errorWorkflow": "error-handler-global-uuid"
+  },
+  "id": "calidad-catalogo-uuid",
+  "meta": {
+    "instanceId": "medicinedepot"
+  }
+}

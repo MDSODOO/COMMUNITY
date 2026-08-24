@@ -9,8 +9,12 @@
 
         No duplica el módulo Fleet: solo agrega el vínculo a hr.employee y lo
         expone en la vista de formulario existente.
+
+        v1.1: Valor Actual Estimado (depreciación lineal 10%/año sobre
+        net_car_value desde acquisition_date) — mismo criterio que
+        device.management en Activos IT (md_asset_devices).
     ''',
-    'version': '19.0.1.0.0',
+    'version': '19.0.1.1.0',
     'category': 'Tools/Asset Management',
     'license': 'LGPL-3',
     'author': 'Medicine Depot',

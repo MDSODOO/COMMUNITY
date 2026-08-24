@@ -2,7 +2,7 @@
 <odoo>
     <data>
         <!-- FORM VIEW -->
-        <record id="device_maintenance_view_form" model="ir.ui.view">
+        <record id="view_device_maintenance_form" model="ir.ui.view">
             <field name="name">device.maintenance.form</field>
             <field name="model">device.maintenance</field>
             <field name="arch" type="xml">
@@ -15,6 +15,11 @@
                         <field name="estado" widget="statusbar" statusbar_visible="draft,scheduled,in_progress,completed"/>
                     </header>
                     <sheet>
+                        <div class="oe_title">
+                            <h1>
+                                <field name="name" readonly="1"/>
+                            </h1>
+                        </div>
                         <group>
                             <group>
                                 <field name="device_id" required="True"/>
@@ -48,13 +53,14 @@
         </record>
 
         <!-- LIST VIEW -->
-        <record id="device_maintenance_view_tree" model="ir.ui.view">
-            <field name="name">device.maintenance.tree</field>
+        <record id="view_device_maintenance_list" model="ir.ui.view">
+            <field name="name">device.maintenance.list</field>
             <field name="model">device.maintenance</field>
             <field name="arch" type="xml">
                 <list string="Mantenimientos"
                     decoration-danger="fecha_programada and fecha_programada &lt; current_date and estado != 'completed' and estado != 'cancelled'"
                     decoration-warning="estado == 'in_progress'">
+                    <field name="name" string="Folio"/>
                     <field name="device_id" string="Dispositivo"/>
                     <field name="tipo" widget="badge"/>
                     <field name="fecha_programada" string="Fecha Prog"/>
@@ -68,7 +74,7 @@
         </record>
 
         <!-- CALENDAR VIEW -->
-        <record id="device_maintenance_view_calendar" model="ir.ui.view">
+        <record id="view_device_maintenance_calendar" model="ir.ui.view">
             <field name="name">device.maintenance.calendar</field>
             <field name="model">device.maintenance</field>
             <field name="arch" type="xml">
@@ -76,6 +82,7 @@
                     date_start="fecha_programada"
                     date_stop="fecha_fin"
                     color="tipo">
+                    <field name="name" string="Folio"/>
                     <field name="device_id" string="Dispositivo"/>
                     <field name="tipo" string="Tipo"/>
                     <field name="tecnico_asignado"/>
@@ -84,7 +91,7 @@
         </record>
 
         <!-- ACTION -->
-        <record model="ir.actions.act_window" id="act_device_maintenance">
+        <record model="ir.actions.act_window" id="action_device_maintenance">
             <field name="name">Mantenimientos</field>
             <field name="res_model">device.maintenance</field>
             <field name="view_mode">list,form,calendar</field>

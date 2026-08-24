@@ -1,0 +1,380 @@
+{
+  "name": "05_Reporte_Ventas_Diario",
+  "nodes": [
+    {
+      "id": "schedule-05",
+      "name": "Schedule",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 18
+            }
+          ]
+        }
+      },
+      "notes": "18:00 America/Merida (TZ del contenedor md_n8n). Ajustar triggerAtHour si el cierre real de caja es mas tarde."
+    },
+    {
+      "id": "autenticar-odoo-05",
+      "name": "Autenticar Odoo",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        220,
+        0
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.ODOO_INTERNAL_URL }}/jsonrpc",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ jsonrpc: '2.0', method: 'call', params: { service: 'common', method: 'authenticate', args: [$env.ODOO_DB, $env.ODOO_USER, $env.ODOO_PASSWORD, {}] }, id: 1 }) }}",
+        "options": {
+          "timeout": 10000
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 3000,
+      "onError": "continueErrorOutput",
+      "notes": "Mismo fix que 02/03: /jsonrpc en vez del envelope XML-RPC invalido del stub original."
+    },
+    {
+      "id": "if-auth-ok-05",
+      "name": "IF - Auth OK?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        440,
+        -80
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.error }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "empty"
+              }
+            },
+            {
+              "leftValue": "={{ typeof $json.result }}",
+              "rightValue": "number",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        }
+      }
+    },
+    {
+      "id": "calcular-rango-fecha",
+      "name": "Calcular Rango de Fecha",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        660,
+        -160
+      ],
+      "parameters": {
+        "jsCode": "const uid = $input.first().json.result;\nconst inicio = $now.setZone('America/Merida').startOf('day');\nconst fin = inicio.plus({ days: 1 });\nreturn [{ json: {\n  result: uid,\n  date_from: inicio.toFormat('yyyy-MM-dd HH:mm:ss'),\n  date_to: fin.toFormat('yyyy-MM-dd HH:mm:ss')\n} }];"
+      }
+    },
+    {
+      "id": "consultar-ventas-dia",
+      "name": "Consultar Ventas del Dia",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        880,
+        -160
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.ODOO_INTERNAL_URL }}/jsonrpc",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ jsonrpc: '2.0', method: 'call', params: { service: 'object', method: 'execute_kw', args: [$env.ODOO_DB, $json.result, $env.ODOO_PASSWORD, 'sale.report', 'search_read', [[['date', '>=', $json.date_from], ['date', '<', $json.date_to]]], { fields: ['name', 'product_id', 'product_uom_qty', 'price_total'], limit: 2000, order: 'date', context: { tz: 'America/Merida' } }] }, id: 1 }) }}",
+        "options": {
+          "timeout": 20000
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 3000,
+      "onError": "continueErrorOutput",
+      "notes": "context.tz='America/Merida' es necesario: Odoo interpreta los limites de fecha del dominio como UTC si no se pasa timezone, y Merida es UTC-6 — sin esto 'hoy' quedaria desfasado ~6 horas."
+    },
+    {
+      "id": "if-hay-ventas",
+      "name": "IF - Hay Ventas?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        1100,
+        -160
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ ($json.result || []).length }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        }
+      }
+    },
+    {
+      "id": "calcular-resumen-ventas",
+      "name": "Calcular Resumen Ventas",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1320,
+        -240
+      ],
+      "parameters": {
+        "jsCode": "const rows = $input.first().json.result || [];\nconst round2 = n => Math.round((n + Number.EPSILON) * 100) / 100;\n\n// Sumas explicitas con Number() para evitar concatenacion de strings en vez de suma.\nconst totalRevenue = round2(rows.reduce((sum, r) => sum + Number(r.price_total || 0), 0));\nconst totalQty = round2(rows.reduce((sum, r) => sum + Number(r.product_uom_qty || 0), 0));\nconst ordenesUnicas = new Set(rows.map(r => r.name)).size;\nconst ticketPromedio = ordenesUnicas > 0 ? round2(totalRevenue / ordenesUnicas) : 0; // guard contra division por cero\n\nconst porProducto = {};\nfor (const r of rows) {\n  const key = r.product_id?.[1] ?? 'N/D';\n  porProducto[key] = (porProducto[key] || 0) + Number(r.price_total || 0);\n}\nconst topProductos = Object.entries(porProducto)\n  .sort((a, b) => b[1] - a[1])\n  .slice(0, 5)\n  .map(([nombre, monto]) => `• ${nombre}: $${round2(monto).toFixed(2)}`);\n\nconst text = `📊 <b>Reporte de Ventas del Dia</b>\\n` +\n  `Ordenes: <b>${ordenesUnicas}</b>\\n` +\n  `Unidades vendidas: <b>${totalQty}</b>\\n` +\n  `Ingreso total: <b>$${totalRevenue.toFixed(2)}</b>\\n` +\n  `Ticket promedio: <b>$${ticketPromedio.toFixed(2)}</b>\\n\\n` +\n  `<b>Top 5 productos por ingreso:</b>\\n${topProductos.join('\\n')}`;\n\nreturn [{ json: { text } }];"
+      }
+    },
+    {
+      "id": "formatear-heartbeat-ventas",
+      "name": "Formatear Heartbeat Sin Ventas",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1320,
+        -80
+      ],
+      "parameters": {
+        "jsCode": "return [{ json: { text: '📊 Reporte de Ventas del Dia: no se registraron ventas hoy.' } }];"
+      }
+    },
+    {
+      "id": "preparar-alerta-fallo-auth-05",
+      "name": "Preparar Alerta - Fallo Autenticacion",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        440,
+        160
+      ],
+      "parameters": {
+        "jsCode": "const err = $input.first().json;\nconst detalle = err.error?.message ?? err.message ?? JSON.stringify(err);\nreturn [{ json: { text: `🔴 <b>Reporte de Ventas: fallo al autenticar contra Odoo</b>\\nDetalle: <code>${detalle}</code>` } }];"
+      }
+    },
+    {
+      "id": "preparar-alerta-fallo-query-05",
+      "name": "Preparar Alerta - Fallo Consulta",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        880,
+        160
+      ],
+      "parameters": {
+        "jsCode": "const err = $input.first().json;\nconst detalle = err.error?.message ?? err.message ?? JSON.stringify(err);\nreturn [{ json: { text: `🔴 <b>Reporte de Ventas: fallo al consultar sale.report</b>\\nDetalle: <code>${detalle}</code>` } }];"
+      }
+    },
+    {
+      "id": "notificar-telegram-ventas",
+      "name": "Notificar Telegram Reporte Ventas",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1560,
+        0
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "=https://api.telegram.org/bot{{ $env.TELEGRAM_BOT_TOKEN }}/sendMessage",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ chat_id: $env.TELEGRAM_CHAT_ID, message_thread_id: 53, parse_mode: 'HTML', text: $json.text }) }}",
+        "options": {
+          "timeout": 10000
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 2,
+      "notes": "Sin message_thread_id: va al chat General. Ninguno de los 4 temas existentes (Compras/Variacion/Recepcion/Caducidades) es el destino natural de un reporte de ventas; crear un tema dedicado queda como mejora futura opcional."
+    }
+  ],
+  "connections": {
+    "Schedule": {
+      "main": [
+        [
+          {
+            "node": "Autenticar Odoo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Autenticar Odoo": {
+      "main": [
+        [
+          {
+            "node": "IF - Auth OK?",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Preparar Alerta - Fallo Autenticacion",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF - Auth OK?": {
+      "main": [
+        [
+          {
+            "node": "Calcular Rango de Fecha",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Preparar Alerta - Fallo Autenticacion",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calcular Rango de Fecha": {
+      "main": [
+        [
+          {
+            "node": "Consultar Ventas del Dia",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Consultar Ventas del Dia": {
+      "main": [
+        [
+          {
+            "node": "IF - Hay Ventas?",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Preparar Alerta - Fallo Consulta",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF - Hay Ventas?": {
+      "main": [
+        [
+          {
+            "node": "Calcular Resumen Ventas",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Formatear Heartbeat Sin Ventas",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calcular Resumen Ventas": {
+      "main": [
+        [
+          {
+            "node": "Notificar Telegram Reporte Ventas",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Formatear Heartbeat Sin Ventas": {
+      "main": [
+        [
+          {
+            "node": "Notificar Telegram Reporte Ventas",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar Alerta - Fallo Autenticacion": {
+      "main": [
+        [
+          {
+            "node": "Notificar Telegram Reporte Ventas",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar Alerta - Fallo Consulta": {
+      "main": [
+        [
+          {
+            "node": "Notificar Telegram Reporte Ventas",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "errorWorkflow": "error-handler-global-uuid"
+  },
+  "id": "reporte-ventas-diario-uuid",
+  "meta": {
+    "instanceId": "medicinedepot"
+  }
+}

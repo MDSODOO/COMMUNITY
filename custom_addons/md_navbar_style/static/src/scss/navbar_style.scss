@@ -656,3 +656,57 @@ html[data-bs-theme="dark"] {
     letter-spacing: 0.05em !important;
     font-size: 10px !important;
 }
+
+// ============================================================================
+// 8. FIX — Iconografia rota por los overrides tipograficos de arriba (2026-08-07)
+// ============================================================================
+// Diagnostico confirmado con Playwright (getComputedStyle en vivo, ver
+// e2e_tests/audit_icon_regressions.spec.ts): tanto el boton "x" de remover
+// filtro (.o_facet_remove, marcado nativo "oi oi-close btn btn-link...") como
+// el icono de "Vista movil" del editor de Website (.o_mobile_preview span,
+// marcado nativo "fa fa-2x fa-mobile") resolvian su font-family real a
+// "Inter..." en vez de "odoo_ui_icons"/"FontAwesome" -- el glifo (codepoint
+// de area de uso privado) no existe en Inter, se pinta vacio.
+//
+// Causa raiz: Odoo aplica la clase de icono DIRECTAMENTE sobre el elemento
+// clickeable (no siempre hay un <i> anidado), y ese mismo elemento tambien
+// matchea nuestras reglas de tipografia (.btn en la seccion 3; span/button
+// dentro de .o_main_navbar en la seccion 1). Dos declaraciones !important
+// compitiendo por el mismo font-family en el mismo elemento: gana
+// especificidad y, en empate, quien carga despues -- este modulo carga
+// despues del CSS nucleo de Odoo (donde viven las reglas .oi/.fa), asi que
+// "Inter" ganaba siempre.
+//
+// No hace falta ningun fallback/sustituto: odoo_ui_icons y FontAwesome ya
+// estan cargados nativamente por Odoo, el problema es puramente de cascada
+// CSS. Se restaura font-family SOLO en elementos de icono, sin tocar las
+// reglas de tipografia originales (siguen aplicando igual a todo lo demas).
+// Los selectores de abajo igualan o superan la especificidad de la regla que
+// hay que vencer en cada caso, y van al FINAL del archivo para ganar
+// cualquier empate por orden de carga.
+.oi,
+[class^="oi-"],
+[class*=" oi-"] {
+    font-family: 'odoo_ui_icons' !important;
+}
+
+// Caso .o_facet_remove: vence a la regla generica ".btn" de la seccion 3
+// (misma especificidad, un solo selector de clase) por orden de carga.
+.fa,
+[class^="fa-"],
+[class*=" fa-"] {
+    font-family: "FontAwesome", "Font Awesome 5 Free", "Font Awesome 6 Free" !important;
+}
+
+// Caso .o_mobile_preview (dentro de .o_main_navbar): la regla de la seccion 1
+// (body .o_main_navbar span:not(...)) tiene mayor especificidad que ".fa" a
+// secas -- hace falta igualar su forma (body + .o_main_navbar + tipo de
+// elemento + clase) para poder ganarle.
+body .o_main_navbar span.fa,
+body .o_main_navbar span[class*="fa-"],
+body .o_main_navbar button.fa,
+body .o_main_navbar button[class*="fa-"],
+body .o_main_navbar i.fa,
+body .o_main_navbar i[class*="fa-"] {
+    font-family: "FontAwesome", "Font Awesome 5 Free", "Font Awesome 6 Free" !important;
+}

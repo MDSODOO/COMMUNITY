@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <data>
-        <record id="device_todo_view_form" model="ir.ui.view">
+        <record id="view_device_todo_form" model="ir.ui.view">
             <field name="name">device.todo.form</field>
             <field name="model">device.todo</field>
             <field name="arch" type="xml">
@@ -39,8 +39,8 @@
             </field>
         </record>
 
-        <record id="device_todo_view_tree" model="ir.ui.view">
-            <field name="name">device.todo.tree</field>
+        <record id="view_device_todo_list" model="ir.ui.view">
+            <field name="name">device.todo.list</field>
             <field name="model">device.todo</field>
             <field name="arch" type="xml">
                 <list string="Tareas"
@@ -57,7 +57,7 @@
             </field>
         </record>
 
-        <record id="device_todo_view_calendar" model="ir.ui.view">
+        <record id="view_device_todo_calendar" model="ir.ui.view">
             <field name="name">device.todo.calendar</field>
             <field name="model">device.todo</field>
             <field name="arch" type="xml">
@@ -69,6 +69,12 @@
                     <field name="prioridad"/>
                 </calendar>
             </field>
+        </record>
+
+        <record model="ir.actions.act_window" id="action_device_todo">
+            <field name="name">Tareas y Pendientes</field>
+            <field name="res_model">device.todo</field>
+            <field name="view_mode">list,form,calendar</field>
         </record>
     </data>
 </odoo>

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <data>
-        <record id="device_payment_view_form" model="ir.ui.view">
+        <record id="view_device_payment_form" model="ir.ui.view">
             <field name="name">device.payment.form</field>
             <field name="model">device.payment</field>
             <field name="arch" type="xml">
@@ -35,8 +35,8 @@
             </field>
         </record>
 
-        <record id="device_payment_view_tree" model="ir.ui.view">
-            <field name="name">device.payment.tree</field>
+        <record id="view_device_payment_list" model="ir.ui.view">
+            <field name="name">device.payment.list</field>
             <field name="model">device.payment</field>
             <field name="arch" type="xml">
                 <list string="Pagos" decoration-danger="estado == 'overdue'">
@@ -49,6 +49,12 @@
                     <field name="estado" widget="badge" decoration-danger="estado == 'overdue'" decoration-warning="estado == 'pending'"/>
                 </list>
             </field>
+        </record>
+
+        <record model="ir.actions.act_window" id="action_device_payment">
+            <field name="name">Pagos y Pólizas</field>
+            <field name="res_model">device.payment</field>
+            <field name="view_mode">list,form</field>
         </record>
     </data>
 </odoo>

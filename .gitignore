@@ -12,6 +12,8 @@ __pycache__/
 *.pyc
 ._*
 *.bak.*
+*.bak_*
+*.bak-*
 *.orig*
 .DS_Store
 oca_addons/*/

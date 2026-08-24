@@ -1,0 +1,355 @@
+{
+  "name": "02_Conciliacion_Inventario",
+  "nodes": [
+    {
+      "id": "schedule-02",
+      "name": "Schedule",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 8
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "autenticar-odoo-02",
+      "name": "Autenticar Odoo",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        220,
+        0
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.ODOO_INTERNAL_URL }}/jsonrpc",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ jsonrpc: '2.0', method: 'call', params: { service: 'common', method: 'authenticate', args: [$env.ODOO_DB, $env.ODOO_USER, $env.ODOO_PASSWORD, {}] }, id: 1 }) }}",
+        "options": {
+          "timeout": 10000
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 3000,
+      "onError": "continueErrorOutput",
+      "notes": "FIX: el stub original enviaba bodyParameters (form/JSON key-value) a /xmlrpc/2/object, que NO es un envelope XML-RPC valido: Odoo habria respondido error en cada corrida. Se cambia a /jsonrpc (JSON-RPC 2.0), verificado manualmente contra medicinedepot_dev."
+    },
+    {
+      "id": "if-auth-ok-02",
+      "name": "IF - Auth OK?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        440,
+        -80
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.error }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "empty"
+              }
+            },
+            {
+              "leftValue": "={{ typeof $json.result }}",
+              "rightValue": "number",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        }
+      }
+    },
+    {
+      "id": "buscar-discrepancias",
+      "name": "Buscar Discrepancias Stock",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        660,
+        -160
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.ODOO_INTERNAL_URL }}/jsonrpc",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ jsonrpc: '2.0', method: 'call', params: { service: 'object', method: 'execute_kw', args: [$env.ODOO_DB, $json.result, $env.ODOO_PASSWORD, 'stock.quant', 'search_read', [[['inventory_diff_quantity', '!=', 0]]], { fields: ['product_id', 'location_id', 'quantity', 'inventory_diff_quantity'], limit: 1000, order: 'id' }] }, id: 1 }) }}",
+        "options": {
+          "timeout": 20000
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 3000,
+      "onError": "continueErrorOutput",
+      "notes": "Consulta acotada con limit=1000 en vez de traer toda la tabla stock.quant (16,516 registros con stock al momento de la auditoria) para no saturar memoria. Ver plan #11. Paginacion incremental real (offset creciente) queda como TODO si el conteo de discrepancias llegara a superar 1000 de forma sostenida — no se implemento un loop ciego de offset sin poder probarlo contra datos reales de multiples paginas."
+    },
+    {
+      "id": "if-hay-discrepancias",
+      "name": "IF - Hay Discrepancias?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        880,
+        -160
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ ($json.result || []).length }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        }
+      }
+    },
+    {
+      "id": "formatear-resumen-discrepancias",
+      "name": "Formatear Resumen Discrepancias",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1100,
+        -240
+      ],
+      "parameters": {
+        "jsCode": "const rows = $input.first().json.result || [];\nconst top = rows.slice(0, 20);\nconst lineas = top.map(r => `• ${r.product_id?.[1] ?? 'N/D'} @ ${r.location_id?.[1] ?? 'N/D'}: cant=${r.quantity}, diff=${r.inventory_diff_quantity}`);\nlet text = `📦 <b>Conciliacion de Inventario</b>\\n<b>${rows.length}</b> producto(s) con discrepancia:\\n` + lineas.join('\\n');\nif (rows.length > 20) { text += `\\n… y ${rows.length - 20} mas (ver Odoo para detalle completo)`; }\nif (rows.length >= 1000) { text += `\\n⚠️ Se alcanzo el limite de la consulta (1000). Es posible que existan mas discrepancias no listadas.`; }\nreturn [{ json: { text } }];"
+      }
+    },
+    {
+      "id": "formatear-heartbeat-conciliacion",
+      "name": "Formatear Heartbeat Sin Discrepancias",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1100,
+        -80
+      ],
+      "parameters": {
+        "jsCode": "return [{ json: { text: '✅ Conciliacion de Inventario: sin discrepancias hoy.' } }];"
+      }
+    },
+    {
+      "id": "preparar-alerta-fallo-auth-02",
+      "name": "Preparar Alerta - Fallo Autenticacion",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        440,
+        160
+      ],
+      "parameters": {
+        "jsCode": "const err = $input.first().json;\nconst detalle = err.error?.message ?? err.message ?? JSON.stringify(err);\nreturn [{ json: { text: `🔴 <b>Conciliacion de Inventario: fallo al autenticar contra Odoo</b>\\nDetalle: <code>${detalle}</code>` } }];"
+      }
+    },
+    {
+      "id": "preparar-alerta-fallo-query-02",
+      "name": "Preparar Alerta - Fallo Consulta",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        660,
+        160
+      ],
+      "parameters": {
+        "jsCode": "const err = $input.first().json;\nconst detalle = err.error?.message ?? err.message ?? JSON.stringify(err);\nreturn [{ json: { text: `🔴 <b>Conciliacion de Inventario: fallo al consultar stock.quant</b>\\nDetalle: <code>${detalle}</code>` } }];"
+      }
+    },
+    {
+      "id": "notificar-telegram-conciliacion",
+      "name": "Notificar Telegram Conciliacion",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1320,
+        0
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "=https://api.telegram.org/bot{{ $env.TELEGRAM_BOT_TOKEN }}/sendMessage",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ chat_id: $env.TELEGRAM_CHAT_ID, message_thread_id: 8, parse_mode: 'HTML', text: $json.text }) }}",
+        "options": {
+          "timeout": 10000
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 2,
+      "notes": "message_thread_id=8 = topic Recepcion y Almacen (md_telegram_channel.code='recepcion_almacen')."
+    }
+  ],
+  "connections": {
+    "Schedule": {
+      "main": [
+        [
+          {
+            "node": "Autenticar Odoo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Autenticar Odoo": {
+      "main": [
+        [
+          {
+            "node": "IF - Auth OK?",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Preparar Alerta - Fallo Autenticacion",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF - Auth OK?": {
+      "main": [
+        [
+          {
+            "node": "Buscar Discrepancias Stock",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Preparar Alerta - Fallo Autenticacion",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Buscar Discrepancias Stock": {
+      "main": [
+        [
+          {
+            "node": "IF - Hay Discrepancias?",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Preparar Alerta - Fallo Consulta",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF - Hay Discrepancias?": {
+      "main": [
+        [
+          {
+            "node": "Formatear Resumen Discrepancias",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Formatear Heartbeat Sin Discrepancias",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Formatear Resumen Discrepancias": {
+      "main": [
+        [
+          {
+            "node": "Notificar Telegram Conciliacion",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Formatear Heartbeat Sin Discrepancias": {
+      "main": [
+        [
+          {
+            "node": "Notificar Telegram Conciliacion",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar Alerta - Fallo Autenticacion": {
+      "main": [
+        [
+          {
+            "node": "Notificar Telegram Conciliacion",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar Alerta - Fallo Consulta": {
+      "main": [
+        [
+          {
+            "node": "Notificar Telegram Conciliacion",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "errorWorkflow": "error-handler-global-uuid"
+  },
+  "id": "conciliacion-inventario-uuid",
+  "meta": {
+    "instanceId": "medicinedepot"
+  }
+}

@@ -7,6 +7,10 @@ Historial generado automáticamente a partir de `git log -- medicine_depot_porta
 ---
 
 
+## 2026-08-17
+
+- 🔄 `(pendiente commit)` refactor(medicine_depot_portal): se extrae toda la personalización de `/web/login` y `/web/signup` (`views/auth_templates.xml`, `md_login_layout_override`, `login_custom.scss`, `login_glass_island.js`) a un módulo independiente `md_web_login` (v19.0.1.0.0), que depende de este módulo solo por `_tokens.scss`. Motivo: `mds_raffle_campaign` (Quifamesa) estaba instalado junto a `medicine_depot_portal` en `medicinedepot_dev` y ambos heredaban `web.login`, produciendo un híbrido roto (panel navy de la rifa envolviendo el formulario con el CTA de Medicine Depot). Ver `docs/auditoria_login_medicinedepot_quifamesa.md`.
+
 ## 2026-07-03
 
 - ↩️ `(pendiente commit)` revert(medicine_depot_portal): se revierte el fix de `public_surface_bridge.js` de este mismo día — al corregir la asignación de `body.md-route-shop`, activó de golpe una docena de reglas en `site_unify.scss` que dependían de esa clase y llevaban tiempo (posiblemente siempre) dormidas, varias de las cuales chocan con el estilo de las cards bento del grid (`md_shop.scss`), rompiendo texto/tamaño/estilo visualmente. El riesgo de tocar la página principal de la tienda supera el beneficio de arreglar la barra sticky de "Añadir al carrito" en la PDP — queda pendiente como tarea separada (requiere auditar y armonizar las reglas de `site_unify.scss` contra `md_shop.scss` antes de reactivar `md-route-shop`).

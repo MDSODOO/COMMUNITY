@@ -4,8 +4,8 @@
     <!-- ===================================================================== -->
     <!-- VISTA DE LISTA (TREE) — Notificaciones de Precio                     -->
     <!-- ===================================================================== -->
-    <record id="view_purchase_price_notification_tree" model="ir.ui.view">
-        <field name="name">purchase.price.notification.tree</field>
+    <record id="view_purchase_price_notification_list" model="ir.ui.view">
+        <field name="name">purchase.price.notification.list</field>
         <field name="model">purchase.price.notification</field>
         <field name="arch" type="xml">
             <list string="Notificaciones de Precio" decoration-success="state == 'applied'" decoration-info="state == 'read'" decoration-warning="state == 'unread'">

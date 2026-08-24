@@ -1,0 +1,390 @@
+{
+  "name": "14_Conciliacion_Bancaria_Resumen",
+  "nodes": [
+    {
+      "id": "schedule-14",
+      "name": "Schedule",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "15 8 * * 1"
+            }
+          ]
+        }
+      },
+      "notes": "Semanal, lunes 8:15am. Subir a diaria una vez que haya datos bancarios reales fluyendo (hoy los 14 diarios reales creados 2026-08-13 estan vacios de movimientos)."
+    },
+    {
+      "id": "autenticar-odoo-14",
+      "name": "Autenticar Odoo",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        220,
+        0
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.ODOO_INTERNAL_URL }}/jsonrpc",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ jsonrpc: '2.0', method: 'call', params: { service: 'common', method: 'authenticate', args: [$env.ODOO_DB, $env.ODOO_USER, $env.ODOO_PASSWORD, {}] }, id: 1 }) }}",
+        "options": {
+          "timeout": 10000
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 3000,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "id": "if-auth-ok-14",
+      "name": "IF - Auth OK?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        440,
+        -80
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.error }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "empty"
+              }
+            },
+            {
+              "leftValue": "={{ typeof $json.result }}",
+              "rightValue": "number",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        }
+      }
+    },
+    {
+      "id": "buscar-por-conciliar-14",
+      "name": "Buscar Por Conciliar",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        660,
+        -80
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.ODOO_INTERNAL_URL }}/jsonrpc",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ jsonrpc: '2.0', method: 'call', params: { service: 'object', method: 'execute_kw', args: [$env.ODOO_DB, $json.result, $env.ODOO_PASSWORD, 'account.bank.statement.line', 'read_group', [[['journal_id','in',[52,71,72,73,74,75,76,77,78,79,80,81,82]],['is_reconciled','=',false]], ['id:count'], ['journal_id']]] }, id: 1 }) }}",
+        "options": {
+          "timeout": 20000
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 3000,
+      "onError": "continueErrorOutput",
+      "notes": "Los 13 diarios bancarios reales creados 2026-08-13 (replicando produccion, ver seccion 11 del reporte de auditoria). No incluye TC Santander Likeu (tarjeta de credito, journal_id 83) porque produccion no muestra badge 'por conciliar' en ese diario."
+    },
+    {
+      "id": "if-hay-pendientes-14",
+      "name": "IF - Hay Pendientes?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        880,
+        -80
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ ($json.result || []).length }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        }
+      }
+    },
+    {
+      "id": "formatear-resumen-conciliacion-14",
+      "name": "Formatear Resumen Conciliacion",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1100,
+        -160
+      ],
+      "parameters": {
+        "jsCode": "const names = {\"52\": \"Santander M\\u00e9rida\", \"71\": \"Santander Concentradora\", \"72\": \"Santander Canc\\u00fan y Playa\", \"73\": \"Santander Campeche\", \"74\": \"Santander Chetumal\", \"75\": \"BBVA Bancomer\", \"76\": \"Get Net M\\u00e9rida 1\", \"77\": \"Get Net M\\u00e9rida 2\", \"78\": \"Get Net Canc\\u00fan\", \"79\": \"Get Net Playa\", \"80\": \"Get Net Ticul\", \"81\": \"Get Net Campeche\", \"82\": \"Get Net Chetumal\"};\nconst rows = ($('Buscar Por Conciliar').first().json.result || []).map(r => ({\n  journalId: r.journal_id[0],\n  name: names[r.journal_id[0]] || r.journal_id[1],\n  count: r.journal_id_count || r.__count || 0\n})).sort((a, b) => b.count - a.count);\nconst total = rows.reduce((s, r) => s + r.count, 0);\n\nconst lines = $json.result || [];\nconst byJournal = {};\nfor (const l of lines) {\n  const jid = l.journal_id[0];\n  if (!byJournal[jid]) byJournal[jid] = [];\n  if (byJournal[jid].length < 3) byJournal[jid].push(l);\n}\n\nlet text = `🏦 <b>Resumen de Conciliacion Bancaria</b>\\n<b>${total}</b> transaccion(es) por conciliar en total:\\n\\n`;\nfor (const r of rows) {\n  text += `• <b>${r.name}</b>: ${r.count} por conciliar\\n`;\n  const oldest = byJournal[r.journalId] || [];\n  for (const l of oldest) {\n    text += `   ↳ ${l.date} — ${l.payment_ref || 'sin descripcion'} ($${l.amount})\\n`;\n  }\n}\ntext += `\\n<i>Se muestran hasta 3 transacciones mas antiguas por diario. Resumen ligero por Telegram — esta base no tiene el modulo Enterprise de conciliacion (account_accountant), asi que no hay vista kanban con auto-matching en Odoo mismo todavia.</i>`;\n\nreturn [{ json: { text } }];"
+      }
+    },
+    {
+      "id": "formatear-heartbeat-conciliacion-14",
+      "name": "Formatear Heartbeat Sin Pendientes",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1100,
+        0
+      ],
+      "parameters": {
+        "jsCode": "return [{ json: { text: '✅ Conciliacion Bancaria: sin transacciones pendientes por conciliar.' } }];"
+      }
+    },
+    {
+      "id": "preparar-alerta-fallo-auth-14",
+      "name": "Preparar Alerta - Fallo Autenticacion",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        440,
+        160
+      ],
+      "parameters": {
+        "jsCode": "const err = $input.first().json;\nconst detalle = err.error?.message ?? err.message ?? JSON.stringify(err);\nreturn [{ json: { text: `🔴 <b>Resumen Conciliacion: fallo al autenticar contra Odoo</b>\\nDetalle: <code>${detalle}</code>` } }];"
+      }
+    },
+    {
+      "id": "preparar-alerta-fallo-consulta-14",
+      "name": "Preparar Alerta - Fallo Consulta",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        660,
+        160
+      ],
+      "parameters": {
+        "jsCode": "const err = $input.first().json;\nconst detalle = err.error?.message ?? err.message ?? JSON.stringify(err);\nreturn [{ json: { text: `🔴 <b>Resumen Conciliacion: fallo al consultar account.bank.statement.line</b>\\nDetalle: <code>${detalle}</code>` } }];"
+      }
+    },
+    {
+      "id": "notificar-telegram-conciliacion-14",
+      "name": "Notificar Telegram Conciliacion",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1320,
+        0
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "=https://api.telegram.org/bot{{ $env.TELEGRAM_BOT_TOKEN }}/sendMessage",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ chat_id: $env.TELEGRAM_CHAT_ID, message_thread_id: 75, parse_mode: 'HTML', text: $json.text }) }}",
+        "options": {
+          "timeout": 10000
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 2,
+      "notes": "message_thread_id=75 = topic Finanzas y Conciliacion (mismo topic que 08)."
+    },
+    {
+      "id": "buscar-transacciones-antiguas-14",
+      "name": "Buscar Transacciones Mas Antiguas",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        880,
+        -240
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.ODOO_INTERNAL_URL }}/jsonrpc",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ jsonrpc: '2.0', method: 'call', params: { service: 'object', method: 'execute_kw', args: [$env.ODOO_DB, $('Autenticar Odoo').item.json.result, $env.ODOO_PASSWORD, 'account.bank.statement.line', 'search_read', [[['journal_id','in',[52,71,72,73,74,75,76,77,78,79,80,81,82]],['is_reconciled','=',false]]], { fields: ['id','journal_id','date','payment_ref','amount'], limit: 200, order: 'date asc' }] }, id: 1 }) }}",
+        "options": {
+          "timeout": 20000
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 2,
+      "notes": "limit=200 con headroom (backlog real en produccion va de 3 a 291 por diario). Se agrupan y truncan a 3 por diario en el nodo de formato."
+    }
+  ],
+  "connections": {
+    "Schedule": {
+      "main": [
+        [
+          {
+            "node": "Autenticar Odoo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Autenticar Odoo": {
+      "main": [
+        [
+          {
+            "node": "IF - Auth OK?",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Preparar Alerta - Fallo Autenticacion",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF - Auth OK?": {
+      "main": [
+        [
+          {
+            "node": "Buscar Por Conciliar",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Preparar Alerta - Fallo Autenticacion",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Buscar Por Conciliar": {
+      "main": [
+        [
+          {
+            "node": "IF - Hay Pendientes?",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Preparar Alerta - Fallo Consulta",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF - Hay Pendientes?": {
+      "main": [
+        [
+          {
+            "node": "Buscar Transacciones Mas Antiguas",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Formatear Heartbeat Sin Pendientes",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Formatear Resumen Conciliacion": {
+      "main": [
+        [
+          {
+            "node": "Notificar Telegram Conciliacion",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Formatear Heartbeat Sin Pendientes": {
+      "main": [
+        [
+          {
+            "node": "Notificar Telegram Conciliacion",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar Alerta - Fallo Autenticacion": {
+      "main": [
+        [
+          {
+            "node": "Notificar Telegram Conciliacion",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar Alerta - Fallo Consulta": {
+      "main": [
+        [
+          {
+            "node": "Notificar Telegram Conciliacion",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Buscar Transacciones Mas Antiguas": {
+      "main": [
+        [
+          {
+            "node": "Formatear Resumen Conciliacion",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "errorWorkflow": "error-handler-global-uuid"
+  },
+  "id": "conciliacion-bancaria-resumen-uuid",
+  "meta": {
+    "instanceId": "medicinedepot"
+  }
+}

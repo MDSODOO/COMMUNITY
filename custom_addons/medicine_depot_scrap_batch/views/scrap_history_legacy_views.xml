@@ -38,8 +38,8 @@
         </field>
     </record>
 
-    <record id="view_medicine_depot_scrap_history_legacy_tree" model="ir.ui.view">
-        <field name="name">medicine.depot.scrap.history.tree</field>
+    <record id="view_medicine_depot_scrap_history_legacy_list" model="ir.ui.view">
+        <field name="name">medicine.depot.scrap.history.list</field>
         <field name="model">medicine.depot.scrap.history</field>
         <field name="arch" type="xml">
             <list class="o_scrap_batch_module" create="0" edit="0" delete="0" default_order="date_done desc">

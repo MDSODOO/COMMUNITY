@@ -1,14 +1,16 @@
 # -*- coding: utf-8 -*-
 from odoo import api, fields, models, _
+from odoo.exceptions import ValidationError
 
 
 class DeviceMaintenance(models.Model):
     _name = "device.maintenance"
     _description = "Mantenimiento de Dispositivos"
-    _rec_name = "device_id"
+    _rec_name = "name"
     _inherit = ['mail.thread', 'mail.activity.mixin']
     _order = 'fecha_programada asc, id desc'
 
+    name = fields.Char(string="Folio", default="/", copy=False, readonly=True, tracking=True)
     device_id = fields.Many2one('device.management', string="Dispositivo", required=True, ondelete='cascade')
 
     # Tipo de mantenimiento
@@ -52,6 +54,16 @@ class DeviceMaintenance(models.Model):
         for maint in self:
             maint.costo_total = (maint.costo_mano_obra or 0) + (maint.costo_repuestos or 0)
 
+    # ─── VALIDACIONES / VALIDATIONS ─────────────────────────
+    @api.constrains('device_id')
+    def _check_device_not_retired(self):
+        for maint in self:
+            if maint.device_id.state == 'retired':
+                raise ValidationError(_(
+                    "No se puede programar un mantenimiento para '%(device)s': "
+                    "está Fuera de servicio."
+                ) % {'device': maint.device_id.nombre_dispositivo})
+
     # ─── ACTIONS ────────────────────────────────────────────
     def action_confirmar(self):
         self.estado = 'scheduled'
@@ -61,7 +73,9 @@ class DeviceMaintenance(models.Model):
 
     def action_completar(self):
         self.write({'estado': 'completed', 'fecha_fin': fields.Date.today()})
-        for maint in self.filtered(lambda m: m.proximo_mantenimiento):
+        for maint in self.filtered(
+            lambda m: m.proximo_mantenimiento and m.device_id.state != 'retired'
+        ):
             self.env['device.maintenance'].create({
                 'device_id': maint.device_id.id,
                 'tipo': maint.tipo,
@@ -83,6 +97,9 @@ class DeviceMaintenance(models.Model):
 
     @api.model_create_multi
     def create(self, vals_list):
+        for vals in vals_list:
+            if not vals.get('name') or vals.get('name') == '/':
+                vals['name'] = self.env['ir.sequence'].next_by_code('device.maintenance') or '/'
         maintenances = super().create(vals_list)
         maintenances.mapped('device_id')._sync_maintenance_state()
         return maintenances

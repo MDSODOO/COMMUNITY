@@ -1,0 +1,497 @@
+{
+  "name": "12_Afiliacion_Notificacion",
+  "nodes": [
+    {
+      "id": "webhook-12",
+      "name": "Webhook Inbound Afiliacion",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "afiliacion-nueva-solicitud",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "notes": "Llamado por Odoo (controllers/portal.py, metodo afiliacion(), best-effort con timeout 3s) justo despues de crear/actualizar el res.partner. Payload: { partner_id: <int> }.",
+      "webhookId": "afiliacion-nueva-solicitud-inbound"
+    },
+    {
+      "id": "validar-payload-12",
+      "name": "Validar Payload",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        220,
+        0
+      ],
+      "parameters": {
+        "jsCode": "const body = $json.body || $json;\nconst partnerId = parseInt(body.partner_id, 10);\nif (!partnerId) {\n  return [{ json: { is_valid: false, error_message: 'Falta partner_id.' } }];\n}\nreturn [{ json: { is_valid: true, partner_id: partnerId } }];"
+      }
+    },
+    {
+      "id": "if-payload-valido-12",
+      "name": "IF - Payload Valido?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        440,
+        0
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.is_valid }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        }
+      }
+    },
+    {
+      "id": "respond-validation-error-12",
+      "name": "Respond Validation Error",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        660,
+        160
+      ],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { success: false, error: $json.error_message } }}",
+        "options": {
+          "responseCode": 400
+        }
+      }
+    },
+    {
+      "id": "autenticar-odoo-12",
+      "name": "Autenticar Odoo",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        660,
+        -80
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.ODOO_INTERNAL_URL }}/jsonrpc",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ jsonrpc: '2.0', method: 'call', params: { service: 'common', method: 'authenticate', args: [$env.ODOO_DB, $env.ODOO_USER, $env.ODOO_PASSWORD, {}] }, id: 1 }) }}",
+        "options": {
+          "timeout": 8000
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 2,
+      "waitBetweenTries": 1000,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "id": "if-auth-ok-12",
+      "name": "IF - Auth OK?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        880,
+        -80
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.error }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "empty"
+              }
+            },
+            {
+              "leftValue": "={{ typeof $json.result }}",
+              "rightValue": "number",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        }
+      }
+    },
+    {
+      "id": "preparar-alerta-fallo-auth-12",
+      "name": "Preparar Alerta - Fallo Autenticacion",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        880,
+        160
+      ],
+      "parameters": {
+        "jsCode": "const err = $input.first().json;\nconst detalle = err.error?.message ?? err.message ?? JSON.stringify(err);\nreturn [{ json: { text: `🔴 <b>Notificacion Afiliacion: fallo al autenticar contra Odoo</b>\\nDetalle: <code>${detalle}</code>\\npartner_id: ${$('Validar Payload').first().json.partner_id}` } }];"
+      }
+    },
+    {
+      "id": "notificar-telegram-fallo-auth-12",
+      "name": "Notificar Telegram Fallo Auth",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1100,
+        160
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "=https://api.telegram.org/bot{{ $env.TELEGRAM_BOT_TOKEN }}/sendMessage",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ chat_id: $env.TELEGRAM_CHAT_ID, message_thread_id: 92, parse_mode: 'HTML', text: $json.text }) }}",
+        "options": {
+          "timeout": 10000
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 2
+    },
+    {
+      "id": "respond-auth-error-12",
+      "name": "Respond Auth Error",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        1320,
+        160
+      ],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { success: false, error: 'No se pudo autenticar contra Odoo.' } }}",
+        "options": {
+          "responseCode": 502
+        }
+      }
+    },
+    {
+      "id": "buscar-partner-12",
+      "name": "Buscar Partner",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1100,
+        -80
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.ODOO_INTERNAL_URL }}/jsonrpc",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ jsonrpc: '2.0', method: 'call', params: { service: 'object', method: 'execute_kw', args: [$env.ODOO_DB, $json.result, $env.ODOO_PASSWORD, 'res.partner', 'search_read', [[['id','=',$('Validar Payload').first().json.partner_id]]], { fields: ['id','name','email','phone','function','x_studio_contact_type','x_studio_person_type','x_studio_branch_office','x_studio_operation_notice','x_studio_sanitary_license','x_studio_sanitary_responsible_notice','x_studio_ine','x_studio_proof_of_address','x_studio_professional_license','x_studio_tax_status_certificate','x_affiliation_status'], context: { bin_size: true } }] }, id: 1 }) }}",
+        "options": {
+          "timeout": 10000
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 2,
+      "waitBetweenTries": 1000,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "id": "preparar-alerta-fallo-consulta-12",
+      "name": "Preparar Alerta - Fallo Consulta",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1100,
+        320
+      ],
+      "parameters": {
+        "jsCode": "const err = $input.first().json;\nconst detalle = err.error?.message ?? err.message ?? JSON.stringify(err);\nreturn [{ json: { text: `🔴 <b>Notificacion Afiliacion: fallo al consultar res.partner</b>\\nDetalle: <code>${detalle}</code>\\npartner_id: ${$('Validar Payload').first().json.partner_id}` } }];"
+      }
+    },
+    {
+      "id": "notificar-telegram-fallo-consulta-12",
+      "name": "Notificar Telegram Fallo Consulta",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1320,
+        320
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "=https://api.telegram.org/bot{{ $env.TELEGRAM_BOT_TOKEN }}/sendMessage",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ chat_id: $env.TELEGRAM_CHAT_ID, message_thread_id: 53, parse_mode: 'HTML', text: $json.text }) }}",
+        "options": {
+          "timeout": 10000
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 2
+    },
+    {
+      "id": "respond-query-error-12",
+      "name": "Respond Query Error",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        1540,
+        320
+      ],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { success: false, error: 'No se pudo consultar el partner en Odoo.' } }}",
+        "options": {
+          "responseCode": 502
+        }
+      }
+    },
+    {
+      "id": "formatear-mensaje-afiliacion-12",
+      "name": "Formatear Mensaje Afiliacion",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1320,
+        -80
+      ],
+      "parameters": {
+        "jsCode": "const rows = $json.result || [];\nif (rows.length === 0) {\n  return [{ json: { text: `🟡 <b>Nueva solicitud de afiliacion</b>\\nNo se encontro el partner_id=${$('Validar Payload').first().json.partner_id} en Odoo (¿se elimino despues de crear?).` } }];\n}\nconst p = rows[0];\nconst docs = [\n  ['Aviso de Funcionamiento', p.x_studio_operation_notice],\n  ['Licencia Sanitaria', p.x_studio_sanitary_license],\n  ['Aviso de Responsable Sanitario', p.x_studio_sanitary_responsible_notice],\n  ['INE', p.x_studio_ine],\n  ['Comprobante de domicilio', p.x_studio_proof_of_address],\n  ['Cedula profesional', p.x_studio_professional_license],\n  ['Constancia de situacion fiscal', p.x_studio_tax_status_certificate]\n];\nconst completos = docs.filter(([, v]) => v).length;\nconst faltantes = docs.filter(([, v]) => !v).map(([n]) => n);\n\nconst estado = p.x_affiliation_status === 'pending' ? '⏳ Pendiente de aprobacion' : (p.x_affiliation_status || 'N/D');\nlet text = `🆕 <b>Nueva solicitud de afiliacion</b>\\n`;\ntext += `<b>Estado:</b> ${estado}\\n`;\ntext += `<b>Nombre:</b> ${p.name || 'N/D'}\\n`;\ntext += `<b>Email:</b> ${p.email || 'N/D'}\\n`;\ntext += `<b>Telefono:</b> ${p.phone || 'N/D'}\\n`;\nif (p.function) text += `<b>Especialidad:</b> ${p.function}\\n`;\nif (p.x_studio_person_type) text += `<b>Tipo de persona:</b> ${p.x_studio_person_type}\\n`;\ntext += `\\n📎 <b>Documentos: ${completos}/7 completos</b>\\n`;\nif (faltantes.length > 0) {\n  text += `Faltan: ${faltantes.join(', ')}\\n`;\n} else {\n  text += `Todos los documentos fueron adjuntados.\\n`;\n}\ntext += `\\n<a href=\"${$env.ODOO_URL}/odoo/contacts/${p.id}\">Ver y aprobar en Odoo</a>`;\n\nreturn [{ json: { text } }];"
+      }
+    },
+    {
+      "id": "notificar-telegram-afiliacion-12",
+      "name": "Notificar Telegram Afiliacion",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1540,
+        -80
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "=https://api.telegram.org/bot{{ $env.TELEGRAM_BOT_TOKEN }}/sendMessage",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ chat_id: $env.TELEGRAM_CHAT_ID, message_thread_id: 92, parse_mode: 'HTML', text: $json.text }) }}",
+        "options": {
+          "timeout": 10000
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 2,
+      "notes": "message_thread_id=53 = topic Ventas (no hay topic dedicado 'Afiliaciones'; son altas de clientes nuevos, encaja con Ventas)."
+    },
+    {
+      "id": "respond-success-12",
+      "name": "Respond Success",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        1760,
+        -80
+      ],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { success: true } }}",
+        "options": {
+          "responseCode": 200
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Webhook Inbound Afiliacion": {
+      "main": [
+        [
+          {
+            "node": "Validar Payload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validar Payload": {
+      "main": [
+        [
+          {
+            "node": "IF - Payload Valido?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF - Payload Valido?": {
+      "main": [
+        [
+          {
+            "node": "Autenticar Odoo",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond Validation Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Autenticar Odoo": {
+      "main": [
+        [
+          {
+            "node": "IF - Auth OK?",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Preparar Alerta - Fallo Autenticacion",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF - Auth OK?": {
+      "main": [
+        [
+          {
+            "node": "Buscar Partner",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Preparar Alerta - Fallo Autenticacion",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar Alerta - Fallo Autenticacion": {
+      "main": [
+        [
+          {
+            "node": "Notificar Telegram Fallo Auth",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notificar Telegram Fallo Auth": {
+      "main": [
+        [
+          {
+            "node": "Respond Auth Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Buscar Partner": {
+      "main": [
+        [
+          {
+            "node": "Formatear Mensaje Afiliacion",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Preparar Alerta - Fallo Consulta",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar Alerta - Fallo Consulta": {
+      "main": [
+        [
+          {
+            "node": "Notificar Telegram Fallo Consulta",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notificar Telegram Fallo Consulta": {
+      "main": [
+        [
+          {
+            "node": "Respond Query Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Formatear Mensaje Afiliacion": {
+      "main": [
+        [
+          {
+            "node": "Notificar Telegram Afiliacion",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notificar Telegram Afiliacion": {
+      "main": [
+        [
+          {
+            "node": "Respond Success",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "errorWorkflow": "error-handler-global-uuid"
+  },
+  "id": "afiliacion-notificacion-uuid",
+  "meta": {
+    "instanceId": "medicinedepot"
+  }
+}

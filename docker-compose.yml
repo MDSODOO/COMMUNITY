@@ -30,17 +30,15 @@ services:
       db:
         condition: service_healthy
     ports:
-      - "${ODOO_PORT:-8069}:8069"
+      - "127.0.0.1:${ODOO_PORT:-8069}:8069"
     # Nota: Ollama NO corre en este host. Vive en el servidor `mds_agent1` y el
     # modulo local_ai_connector lo alcanza por su IP de Tailscale
     # (100.84.63.23:11434). Por eso ya no hace falta `extra_hosts` con
     # host.docker.internal: se retiro el 2026-07-31 por ser configuracion muerta.
-    environment:
-      HOST: db
-      PORT: 5432
-      USER: ${POSTGRES_USER:-odoo}
-      PASSWORD: ${POSTGRES_PASSWORD}
-      ADMIN_PASSWD: ${ADMIN_PASSWD}
+    # Credenciales de BD y admin_passwd viven en ./config/odoo.conf (chmod 600).
+    # Retiradas de `environment:` para que no aparezcan en `docker inspect`
+    # ni en la linea de comandos del proceso (el entrypoint las omite si
+    # ya estan en el archivo de configuracion).
     volumes:
       - medicinedepot_dev_odoo_data:/var/lib/odoo
       - ./custom_addons:/mnt/extra-addons
@@ -50,10 +48,8 @@ services:
       - ./oca_addons/reporting-engine:/mnt/oca-reporting-engine
       - ./oca_addons/server-ux:/mnt/oca-server-ux
       - ./config/odoo.conf:/etc/odoo/odoo.conf
-    command: >
-      odoo
-      --addons-path=/usr/lib/python3/dist-packages/odoo/addons,/mnt/extra-addons,/mnt/oca-account-financial-tools,/mnt/oca-account-reconcile,/mnt/oca-account-financial-reporting,/mnt/oca-reporting-engine,/mnt/oca-server-ux
-      --log-level=info
+    # addons_path y log_level ahora viven en ./config/odoo.conf (fuente unica).
+    command: ["odoo"]
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "python3", "-c", "import urllib.request; r=urllib.request.urlopen('http://localhost:8069/web/health'); assert r.status == 200"]
@@ -65,7 +61,7 @@ services:
       resources:
         limits:
           cpus: '6'
-          memory: 6G
+          memory: 9G
         reservations:
           memory: 1G
 

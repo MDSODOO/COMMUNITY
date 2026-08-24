@@ -90,8 +90,8 @@
     <!-- ═══════════════════════════════════════════════════════════════════
          LIST
     ═══════════════════════════════════════════════════════════════════════ -->
-    <record id="view_stock_scrap_batch_tree" model="ir.ui.view">
-        <field name="name">stock.scrap.batch.tree</field>
+    <record id="view_stock_scrap_batch_list" model="ir.ui.view">
+        <field name="name">stock.scrap.batch.list</field>
         <field name="model">stock.scrap.batch</field>
         <field name="arch" type="xml">
             <list class="o_scrap_batch_module"

@@ -1,0 +1,290 @@
+// ── Tokens locales (duplicados a propósito de _tokens.scss del portal) ──
+// El bundle backend (web.assets_backend) no comparte contexto Sass con el
+// bundle frontend/website — se copian los valores de marca en vez de
+// importar el archivo, para no acoplar un módulo backend a uno de site.
+// Fuente: custom_addons/medicine_depot_portal/static/src/scss/_tokens.scss
+$mdcp-blue:    #16A6D9;
+$mdcp-green:   #97D700;
+$mdcp-dark:    #073A4C;
+$mdcp-ink-950: #071316;
+$mdcp-white:   #FFFFFF;
+$mdcp-font-mono: 'IBM Plex Mono', 'Courier New', monospace;
+
+.o_md_command_palette_backdrop {
+    position: fixed;
+    inset: 0;
+    background:
+        radial-gradient(46rem 30rem at 12% -10%, rgba($mdcp-blue, 0.20), transparent 60%),
+        radial-gradient(40rem 28rem at 92% 106%, rgba($mdcp-green, 0.16), transparent 62%),
+        rgba($mdcp-ink-950, 0.46);
+    backdrop-filter: blur(6px);
+    z-index: 1100; // por encima de dialogs estándar de Odoo (1050)
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding-top: 12vh;
+}
+
+// ── Liquid Glass — misma receta que .bento-glass-card / md-liquid-glass
+// del portal (highlight diagonal + blanco translúcido + blur + inset) ──
+.o_md_command_palette {
+    width: 92vw;
+    max-width: 640px;
+    max-height: 64vh;
+    background:
+        linear-gradient(165deg, rgba($mdcp-white, 0.60), rgba($mdcp-white, 0.14) 42%, rgba($mdcp-white, 0.03) 72%),
+        rgba($mdcp-white, 0.86);
+    border: 1px solid rgba($mdcp-white, 0.75);
+    border-radius: 24px;
+    box-shadow:
+        0 0 0 1px rgba($mdcp-dark, 0.05),
+        0 28px 80px rgba($mdcp-dark, 0.28),
+        0 10px 24px rgba($mdcp-dark, 0.10),
+        inset 0 1px 0 rgba($mdcp-white, 0.9);
+    backdrop-filter: blur(22px) saturate(1.45);
+    -webkit-backdrop-filter: blur(22px) saturate(1.45);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    animation: o_md_command_palette_in 140ms ease-out;
+
+    @media (prefers-reduced-motion: reduce) {
+        animation-duration: 0.01ms;
+    }
+}
+
+@keyframes o_md_command_palette_in {
+    from { opacity: 0; transform: translateY(-8px) scale(0.98); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.o_md_command_palette_input_wrap {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 1rem 1.1rem;
+    border-bottom: 1px solid rgba($mdcp-dark, 0.08);
+
+    .o_md_command_palette_icon { opacity: 0.55; color: $mdcp-dark; }
+
+    .o_md_command_palette_input {
+        flex: 1 1 auto;
+        border: none;
+        outline: none;
+        font-size: 1.05rem;
+        background: transparent;
+        color: $mdcp-dark;
+
+        &::placeholder { color: rgba($mdcp-dark, 0.45); }
+    }
+
+    .o_md_command_palette_hint {
+        font-family: $mdcp-font-mono;
+        font-size: 0.7rem;
+        opacity: 0.6;
+        border: 1px solid currentColor;
+        border-radius: 4px;
+        padding: 1px 5px;
+    }
+}
+
+.o_md_command_palette_results {
+    overflow-y: auto;
+    padding: 0.75rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+}
+
+// ── Tiles bento: cada categoría de resultado es su propia tarjeta de
+// vidrio con tinte de marca — mismo patrón que .md-service-tile
+// nth-child(even/odd) del sitio (azul = menús, lima = productos). ──
+.o_md_command_palette_group {
+    border-radius: 16px;
+    border: 1px solid transparent;
+    padding: 0.4rem;
+    background: rgba($mdcp-white, 0.5);
+}
+
+.o_md_command_palette_group--menu {
+    background: linear-gradient(165deg, rgba($mdcp-blue, 0.14), rgba($mdcp-blue, 0.04) 55%, rgba($mdcp-white, 0.3));
+    border-color: rgba($mdcp-blue, 0.22);
+}
+
+.o_md_command_palette_group--product {
+    background: linear-gradient(165deg, rgba($mdcp-green, 0.16), rgba($mdcp-green, 0.04) 55%, rgba($mdcp-white, 0.3));
+    border-color: rgba($mdcp-green, 0.25);
+}
+
+.o_md_command_palette_group_label {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.68rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.09em;
+    padding: 0.35rem 0.6rem 0.3rem;
+
+    .o_md_command_palette_group--menu & { color: $mdcp-blue; }
+    .o_md_command_palette_group--product & { color: darken($mdcp-green, 15%); }
+}
+
+.o_md_command_palette_group_count {
+    font-family: $mdcp-font-mono;
+    font-weight: 600;
+    opacity: 0.55;
+    letter-spacing: normal;
+    text-transform: none;
+}
+
+// ── Avatar uniforme (28px): ícono real de la app para menús, foto
+// real del producto para productos — en vez de un glifo genérico
+// repetido en cada fila. ──
+.o_md_command_palette_avatar {
+    flex: 0 0 auto;
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    background: rgba($mdcp-white, 0.7);
+    border: 1px solid rgba($mdcp-dark, 0.08);
+    box-shadow: 0 1px 2px rgba($mdcp-dark, 0.06);
+
+    img { width: 100%; height: 100%; object-fit: contain; }
+    i { opacity: 0.55; font-size: 0.85rem; }
+
+    &--product img { object-fit: cover; }
+}
+
+.o_md_command_palette_group--menu .o_md_command_palette_item.active .o_md_command_palette_avatar,
+.o_md_command_palette_group--menu .o_md_command_palette_item:hover .o_md_command_palette_avatar {
+    border-color: rgba($mdcp-blue, 0.4);
+}
+.o_md_command_palette_group--product .o_md_command_palette_item.active .o_md_command_palette_avatar,
+.o_md_command_palette_group--product .o_md_command_palette_item:hover .o_md_command_palette_avatar {
+    border-color: rgba($mdcp-green, 0.45);
+}
+
+.o_md_command_palette_item {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.4rem 0.6rem;
+    border-radius: 10px;
+    cursor: pointer;
+
+    &::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0.35rem;
+        bottom: 0.35rem;
+        width: 3px;
+        border-radius: 2px;
+        background: transparent;
+    }
+
+    .o_md_command_palette_group--menu & {
+        &.active, &:hover { background: rgba($mdcp-blue, 0.14); }
+        &.active::before { background: $mdcp-blue; }
+    }
+    .o_md_command_palette_group--product & {
+        &.active, &:hover { background: rgba($mdcp-green, 0.20); }
+        &.active::before { background: $mdcp-green; }
+    }
+}
+
+// ── Chip "A la mano" — firma visual del componente: la regla de
+// negocio (nunca "Disponible"/"Stock") convertida en el elemento más
+// visible de cada resultado de producto. ──
+.o_md_command_palette_chip {
+    margin-left: auto;
+    display: inline-flex;
+    align-items: baseline;
+    gap: 0.3rem;
+    font-family: $mdcp-font-mono;
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: darken($mdcp-green, 20%);
+    background: linear-gradient(135deg, rgba($mdcp-green, 0.22), rgba($mdcp-green, 0.08));
+    border: 1px solid rgba($mdcp-green, 0.35);
+    border-radius: 999px;
+    padding: 2px 9px;
+    white-space: nowrap;
+}
+
+.o_md_command_palette_empty {
+    padding: 2rem 1.25rem;
+    opacity: 0.6;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.88rem;
+
+    .o_md_command_palette_empty_icon { font-size: 1.3rem; opacity: 0.5; }
+}
+
+.o_md_command_palette_footer {
+    display: flex;
+    gap: 1rem;
+    padding: 0.6rem 1.1rem;
+    border-top: 1px solid rgba($mdcp-dark, 0.08);
+    font-size: 0.72rem;
+    color: rgba($mdcp-dark, 0.65);
+
+    kbd {
+        font-family: $mdcp-font-mono;
+        background: rgba($mdcp-dark, 0.06);
+        border-radius: 4px;
+        padding: 1px 5px;
+    }
+}
+
+// ── Modo oscuro — convención real del backend (.o_md_dark_mode en
+// <html>, ver md_dark_mode), NO data-color-scheme (eso es solo frontend) ──
+.o_md_dark_mode {
+    .o_md_command_palette_backdrop {
+        background:
+            radial-gradient(46rem 30rem at 12% -10%, rgba($mdcp-blue, 0.18), transparent 60%),
+            radial-gradient(40rem 28rem at 92% 106%, rgba($mdcp-green, 0.14), transparent 62%),
+            rgba(#000, 0.66);
+    }
+
+    .o_md_command_palette {
+        background:
+            linear-gradient(165deg, rgba($mdcp-white, 0.08), rgba($mdcp-white, 0.02) 60%),
+            rgba($mdcp-ink-950, 0.82);
+        border-color: rgba($mdcp-white, 0.10);
+        box-shadow:
+            0 28px 80px rgba(#000, 0.5),
+            inset 0 1px 0 rgba($mdcp-white, 0.06);
+        color: #e8e8ec;
+    }
+
+    .o_md_command_palette_input_wrap,
+    .o_md_command_palette_footer {
+        border-color: rgba($mdcp-white, 0.08);
+    }
+
+    .o_md_command_palette_input { color: #e8e8ec; }
+    .o_md_command_palette_input_wrap .o_md_command_palette_icon { color: #e8e8ec; }
+
+    .o_md_command_palette_group { background: rgba($mdcp-white, 0.03); }
+    .o_md_command_palette_group--menu { background: linear-gradient(165deg, rgba($mdcp-blue, 0.16), rgba($mdcp-blue, 0.03) 60%); }
+    .o_md_command_palette_group--product { background: linear-gradient(165deg, rgba($mdcp-green, 0.14), rgba($mdcp-green, 0.03) 60%); }
+
+    .o_md_command_palette_footer { color: rgba(#fff, 0.55); }
+    .o_md_command_palette_footer kbd { background: rgba($mdcp-white, 0.08); }
+
+    .o_md_command_palette_avatar {
+        background: rgba($mdcp-white, 0.06);
+        border-color: rgba($mdcp-white, 0.10);
+    }
+}

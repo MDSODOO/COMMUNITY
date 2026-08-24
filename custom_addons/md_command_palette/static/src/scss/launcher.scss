@@ -375,6 +375,87 @@ $mdl-action-dark-2: #4F7100; // ~darken(#97D700, 20%) — texto del chip
     }
 }
 
+// ── Botones de acceso rápido dentro de una fila de producto (COFEPRIS,
+//    detalle de lotes, Ajustar A la mano — ver PRODUCT_ROW_ACTIONS_CATEGORY
+//    en launcher.js) — mismo idioma visual compacto que .md-card-top-actions
+//    del Kanban de Inventario (md_pharma_regulatory/product_kanban_pos_style.scss),
+//    pero en miniatura para caber en una fila de la paleta. ::before del
+//    item pinta el borde izquierdo del propio row; no interfiere.
+.o_md_command_palette_product_actions {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.2rem;
+    margin-left: var(--md-space-2);
+}
+
+.o_md_command_palette_product_action_btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    padding: 0;
+    border: 1px solid var(--md-border);
+    border-radius: 50%;
+    background: var(--md-surface);
+    color: $mdl-action-dark-2;
+    cursor: pointer;
+    transition: background 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+
+    i { font-size: 0.7rem; }
+
+    // Mismos 3 colores por acción que ya usa la card del Kanban de
+    // Inventario (.md-cofepris-btn / .md-adjust-qty-btn / .md-lot-detail-btn
+    // en md_pharma_regulatory/static/src/scss/product_kanban_pos_style.scss)
+    // -- no se inventa paleta nueva, se replica la ya asignada por acción.
+    &--cofepris {
+        background: rgba(44, 140, 153, 0.14);
+        border-color: rgba(44, 140, 153, 0.35);
+        color: #2c8c99;
+        &:hover, &:focus-visible {
+            background: #2c8c99;
+            border-color: #2c8c99;
+            color: #fff;
+            box-shadow: 0 4px 12px rgba(44, 140, 153, 0.35);
+        }
+    }
+    &--adjust {
+        background: rgba(22, 166, 217, 0.14);
+        border-color: rgba(22, 166, 217, 0.35);
+        color: #16a6d9;
+        &:hover, &:focus-visible {
+            background: #16a6d9;
+            border-color: #16a6d9;
+            color: #fff;
+            box-shadow: 0 4px 12px rgba(22, 166, 217, 0.35);
+        }
+    }
+    &--lot {
+        background: rgba(135, 90, 123, 0.14);
+        border-color: rgba(135, 90, 123, 0.35);
+        color: #875a7b;
+        &:hover, &:focus-visible {
+            background: #875a7b;
+            border-color: #875a7b;
+            color: #fff;
+            box-shadow: 0 4px 12px rgba(135, 90, 123, 0.35);
+        }
+    }
+}
+
+// ── Dialogs abiertos DESDE el Command Palette (los 3 botones de arriba)
+//    deben quedar por ENCIMA del propio Command Palette (z-index: 1100,
+//    ver comentario del autor mas abajo) para poder cerrarlos primero y
+//    seguir buscando -- normalmente el Command Palette va POR ENCIMA de
+//    los dialogs nativos (1055) a proposito, pero ese caso asume que el
+//    dialog ya estaba abierto ANTES de abrir la paleta; aqui es al revés
+//    (el dialog se abre CON la paleta ya abierta), asi que aplica la
+//    excepcion solo mientras el backdrop de la paleta sigue en el DOM.
+body:has(.o_md_command_palette_backdrop) .modal-backdrop,
+body:has(.o_md_command_palette_backdrop) .modal {
+    z-index: 1200;
+}
+
 // ── Grid de "Acciones Sugeridas" ──
 $mdl-app-tile-size: 112px;
 $mdl-app-icon-size: 56px;

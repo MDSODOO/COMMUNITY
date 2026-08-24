@@ -47,6 +47,18 @@ import { Component, useState, useRef, onMounted, onWillUnmount } from "@odoo/owl
 // launcher_quick_actions.js.
 const QUICK_ACTIONS_CATEGORY = "md_launcher_quick_actions";
 const CUSTOM_REPORTS_CATEGORY = "md_launcher_custom_reports";
+// Mismo desacoplamiento que QUICK_ACTIONS_CATEGORY, pero para botones que
+// aparecen DENTRO de cada fila de resultado de producto (no una entrada de
+// lista aparte) -- ej. md_pharma_regulatory registra aqui los 3 accesos
+// directos que ya existen como iconos en la barra superior de la card del
+// Kanban de Inventario (COFEPRIS, detalle de lotes, Ajustar A la mano),
+// para no duplicar esa logica de negocio en este modulo generico. Entrada:
+// { id, title, icon (clase fa-*), run(env, record), visible?(record) }.
+// "record" es el dict crudo de product.product que devuelve _searchProducts
+// (incluye product_tmpl_id y tracking); "visible" es opcional y por defecto
+// se muestra siempre (ej. el boton de lotes solo aplica a productos con
+// tracking lot/serial, igual que en el Kanban).
+const PRODUCT_ROW_ACTIONS_CATEGORY = "md_launcher_product_actions";
 
 function getAppIconUrl(app) {
     if (!app) return "/web/static/img/default_icon_app.png";
@@ -367,15 +379,23 @@ export class MdLauncher extends Component {
     }
 
     // La cookie `cids` (ej. "7" o "7-2-3") es la misma fuente que usa el
-    // propio cliente de Odoo para fijar allowed_company_ids en cada request;
-    // el primer id es la compañía/sucursal activa en el selector del navbar.
-    // Verificado en vivo: qty_available SIN este override suma las 6
-    // sucursales (269 uds.) en vez de solo la activa (5 uds. en Mérida).
-    _getActiveCompanyId() {
+    // propio cliente de Odoo para fijar allowed_company_ids en cada request:
+    // trae TODAS las compañías que el usuario tiene tildadas en el selector
+    // del navbar, no solo una. Devolvemos el array completo (antes solo se
+    // tomaba la primera) para que un administrador de inventario con varias
+    // sucursales seleccionadas ("todas las empresas") vea la suma real,
+    // igual que el propio cliente de Odoo -- y no solo la de una sucursal.
+    // Verificado en vivo: qty_available SIN NINGÚN override (contexto vacío)
+    // suma las 6 sucursales (269 uds.) en vez de solo la activa (5 uds. en
+    // Mérida) -- ese caso sigue cubierto: con una sola compañía tildada,
+    // este array trae un solo id, mismo comportamiento que antes.
+    _getAllowedCompanyIds() {
         const match = document.cookie.match(/(?:^|;\s*)cids=([^;]+)/);
-        if (!match) return null;
-        const id = parseInt(match[1].split(/[-,]/)[0], 10);
-        return Number.isNaN(id) ? null : id;
+        if (!match) return [];
+        return match[1]
+            .split(/[-,]/)
+            .map((v) => parseInt(v, 10))
+            .filter((v) => !Number.isNaN(v));
     }
 
     async _searchProducts(query) {
@@ -384,7 +404,7 @@ export class MdLauncher extends Component {
             this.state.productResults = [];
             return;
         }
-        const companyId = this._getActiveCompanyId();
+        const companyIds = this._getAllowedCompanyIds();
         const records = await this.orm.searchRead(
             "product.product",
             [
@@ -395,10 +415,10 @@ export class MdLauncher extends Component {
                 ["product_line_id.name", "ilike", q],
                 ["active_substance_ids.name", "ilike", q],
             ],
-            ["display_name", "qty_available", "uom_id", "product_tmpl_id"],
+            ["display_name", "qty_available", "uom_id", "product_tmpl_id", "tracking"],
             {
                 limit: 5,
-                context: companyId ? { allowed_company_ids: [companyId] } : {},
+                context: companyIds.length ? { allowed_company_ids: companyIds } : {},
             }
         );
         // Regla de oro e inquebrantable: Las cantidades físicas de inventario se expresan SIEMPRE como 'A la mano' (On Hand).
@@ -411,6 +431,20 @@ export class MdLauncher extends Component {
             imageUrl: `/web/image/product.product/${r.id}/image_128`,
             record: r,
         }));
+    }
+
+    // Entradas registradas por otros módulos (ej. md_pharma_regulatory) para
+    // los botones de acceso rápido dentro de cada fila de producto — ver
+    // PRODUCT_ROW_ACTIONS_CATEGORY.
+    get productRowActions() {
+        return registry.category(PRODUCT_ROW_ACTIONS_CATEGORY).getAll();
+    }
+
+    onProductRowAction(ev, action, record) {
+        // No debe abrir/navegar la fila completa (mismo motivo que
+        // ev.stopPropagation() en md_lot_detail_button.js del Kanban).
+        ev.stopPropagation();
+        action.run(this.env, record);
     }
 
     _activate(item) {

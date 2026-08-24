@@ -32,7 +32,7 @@
         - Calendario de actividades y mantenimientos
         - Auditoría completa con mail.thread
     ''',
-    'version': '19.0.1.3.0',
+    'version': '19.0.1.5.0',
     'category': 'Tools/Asset Management',
     'license': 'LGPL-3',
     'author': 'Medicine Depot, Odoo Community Association (OCA)',
@@ -53,16 +53,18 @@
         'security/device_management_security.xml',
         'security/ir.model.access.csv',
 
+        # Data
+        'data/ir_sequence_data.xml',
+        'data/ir_cron_data.xml',
+
         # Views
-        'views/device_management_views.xml',
+        'views/device_assignment_views.xml',
         'views/device_maintenance_views.xml',
         'views/device_documentation_views.xml',
         'views/device_payment_views.xml',
         'views/device_subscription_views.xml',
         'views/device_todo_views.xml',
-
-        # Data
-        'data/ir_cron_data.xml',
+        'views/device_management_views.xml',
     ],
     'assets': {
         'web.assets_backend': [

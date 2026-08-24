@@ -1,17 +1,42 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <odoo>
-    <!-- ══ Menú raíz de Farmacovigilancia ══
+    <!-- ══ Menú raíz Canónico de Farmacovigilancia ══
          web_icon registra el icono PNG del módulo en ir.ui.menu.web_icon_data
-         para que menu_service.js lo exponga como webIconData y el Command
-         Palette lo muestre igual que los módulos nativos de Odoo. -->
+         para que el Command Palette y la barra de aplicaciones lo muestren limpiamente. -->
     <menuitem id="menu_md_pharma_root"
               name="Farmacovigilancia"
               web_icon="md_pharma_regulatory,static/description/icon.png"
               sequence="90"/>
 
-    <!-- Submenú de agrupación para las vistas regulatorias -->
+    <!-- Reportes de Farmacovigilancia unificados bajo el menú raíz -->
+    <menuitem id="medicine_depot_portal.menu_medicine_depot_pharmacovigilance_root"
+              name="Reportes de Farmacovigilancia"
+              parent="menu_md_pharma_root"
+              action="medicine_depot_portal.action_medicine_depot_pharmacovigilance_report"
+              sequence="10"/>
+
+    <!-- Revisión regulatoria PLM bajo el menú raíz -->
+    <menuitem id="menu_md_pharma_regulatory_review"
+              name="Revisión PLM"
+              parent="menu_md_pharma_root"
+              action="action_md_regulatory_review"
+              sequence="20"/>
+
+    <!-- Submenú de configuración regulatoria -->
     <menuitem id="menu_md_pharma_config"
               name="Configuración Regulatoria"
               parent="menu_md_pharma_root"
+              sequence="50"/>
+
+    <menuitem id="menu_md_pharma_active_substance"
+              name="Sustancias Activas"
+              parent="menu_md_pharma_config"
+              action="action_md_active_substance"
               sequence="10"/>
+
+    <menuitem id="menu_md_pharma_name_abbreviation"
+              name="Diccionario de Abreviaturas"
+              parent="menu_md_pharma_config"
+              action="action_md_name_abbreviation"
+              sequence="20"/>
 </odoo>

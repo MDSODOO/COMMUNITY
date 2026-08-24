@@ -12,6 +12,24 @@ class FleetVehicle(models.Model):
         help="Empleado de Medicine Depot responsable del vehículo. "
              "Sincroniza automáticamente el Conductor (driver_id) con su contacto de trabajo.",
     )
+    valor_actual = fields.Float(
+        string="Valor Actual Estimado",
+        compute="_compute_valor_actual",
+        digits=(10, 2),
+        help="Depreciación lineal simple: 10% anual sobre el Purchase Value "
+             "(net_car_value), contado desde la fecha de adquisición. Mismo "
+             "criterio que 'Valor Actual' en Activos IT (device.management).",
+    )
+
+    @api.depends("net_car_value", "acquisition_date")
+    def _compute_valor_actual(self):
+        for vehicle in self:
+            if not vehicle.net_car_value or not vehicle.acquisition_date:
+                vehicle.valor_actual = vehicle.net_car_value or 0.0
+                continue
+            anos = (fields.Date.today() - vehicle.acquisition_date).days / 365.25
+            depreciacion = vehicle.net_car_value * (anos * 0.10)
+            vehicle.valor_actual = max(0, vehicle.net_car_value - depreciacion)
 
     @api.onchange("employee_id")
     def _onchange_employee_id_sync_driver(self):

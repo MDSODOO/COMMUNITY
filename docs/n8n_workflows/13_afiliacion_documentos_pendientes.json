@@ -1,0 +1,356 @@
+{
+  "name": "13_Afiliacion_Documentos_Pendientes",
+  "nodes": [
+    {
+      "id": "schedule-13",
+      "name": "Schedule",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 9 * * *"
+            }
+          ]
+        }
+      },
+      "notes": "Diario, 9:00am."
+    },
+    {
+      "id": "autenticar-odoo-13",
+      "name": "Autenticar Odoo",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        220,
+        0
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.ODOO_INTERNAL_URL }}/jsonrpc",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ jsonrpc: '2.0', method: 'call', params: { service: 'common', method: 'authenticate', args: [$env.ODOO_DB, $env.ODOO_USER, $env.ODOO_PASSWORD, {}] }, id: 1 }) }}",
+        "options": {
+          "timeout": 10000
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 3000,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "id": "if-auth-ok-13",
+      "name": "IF - Auth OK?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        440,
+        -80
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.error }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "empty"
+              }
+            },
+            {
+              "leftValue": "={{ typeof $json.result }}",
+              "rightValue": "number",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        }
+      }
+    },
+    {
+      "id": "buscar-afiliaciones-incompletas-13",
+      "name": "Buscar Afiliaciones Incompletas",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        660,
+        -80
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.ODOO_INTERNAL_URL }}/jsonrpc",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ jsonrpc: '2.0', method: 'call', params: { service: 'object', method: 'execute_kw', args: [$env.ODOO_DB, $json.result, $env.ODOO_PASSWORD, 'res.partner', 'search_read', [['&', ['x_studio_contact_type','=','Cliente'], '&', ['active','=',true], '|', '|', '|', '|', '|', '|', ['x_studio_operation_notice','=',false], ['x_studio_sanitary_license','=',false], ['x_studio_sanitary_responsible_notice','=',false], ['x_studio_ine','=',false], ['x_studio_proof_of_address','=',false], ['x_studio_professional_license','=',false], ['x_studio_tax_status_certificate','=',false]]], { fields: ['id','name','email','create_date','x_studio_operation_notice','x_studio_sanitary_license','x_studio_sanitary_responsible_notice','x_studio_ine','x_studio_proof_of_address','x_studio_professional_license','x_studio_tax_status_certificate'], limit: 500, context: { bin_size: true } }] }, id: 1 }) }}",
+        "options": {
+          "timeout": 20000
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 3000,
+      "onError": "continueErrorOutput",
+      "notes": "limit=500 (solo 2 registros existen al 2026-08-13, con headroom amplio para cuando crezca el flujo real de afiliacion)."
+    },
+    {
+      "id": "if-hay-pendientes-13",
+      "name": "IF - Hay Pendientes?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        880,
+        -80
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ ($json.result || []).length }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        }
+      }
+    },
+    {
+      "id": "formatear-resumen-pendientes-13",
+      "name": "Formatear Resumen Pendientes",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1100,
+        -160
+      ],
+      "parameters": {
+        "jsCode": "const rows = $json.result || [];\nconst docFields = [\n  ['x_studio_operation_notice', 'Aviso de Funcionamiento'],\n  ['x_studio_sanitary_license', 'Licencia Sanitaria'],\n  ['x_studio_sanitary_responsible_notice', 'Aviso de Responsable Sanitario'],\n  ['x_studio_ine', 'INE'],\n  ['x_studio_proof_of_address', 'Comprobante de domicilio'],\n  ['x_studio_professional_license', 'Cedula profesional'],\n  ['x_studio_tax_status_certificate', 'Constancia de situacion fiscal']\n];\n\nlet text = `📋 <b>Afiliaciones con documentos pendientes</b>\\n<b>${rows.length}</b> cliente(s) con al menos un documento sin adjuntar:\\n\\n`;\nfor (const p of rows.slice(0, 20)) {\n  const dias = Math.floor((Date.now() - new Date(p.create_date + 'Z')) / 86400000);\n  const faltan = docFields.filter(([f]) => !p[f]).map(([, label]) => label);\n  text += `• <b>${p.name}</b> (${p.email || 'sin email'}, ${dias}d) — faltan: ${faltan.join(', ')}\\n`;\n}\nif (rows.length > 20) text += `\\n… y ${rows.length - 20} mas.`;\ntext += `\\n\\n<i>Seguimiento manual: contactar al cliente o revisar en Odoo (Contactos).</i>`;\n\nreturn [{ json: { text } }];"
+      }
+    },
+    {
+      "id": "formatear-heartbeat-pendientes-13",
+      "name": "Formatear Heartbeat Sin Pendientes",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1100,
+        0
+      ],
+      "parameters": {
+        "jsCode": "return [{ json: { text: '✅ Afiliaciones: sin documentos pendientes hoy.' } }];"
+      }
+    },
+    {
+      "id": "preparar-alerta-fallo-auth-13",
+      "name": "Preparar Alerta - Fallo Autenticacion",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        440,
+        160
+      ],
+      "parameters": {
+        "jsCode": "const err = $input.first().json;\nconst detalle = err.error?.message ?? err.message ?? JSON.stringify(err);\nreturn [{ json: { text: `🔴 <b>Afiliaciones Pendientes: fallo al autenticar contra Odoo</b>\\nDetalle: <code>${detalle}</code>` } }];"
+      }
+    },
+    {
+      "id": "preparar-alerta-fallo-consulta-13",
+      "name": "Preparar Alerta - Fallo Consulta",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        660,
+        160
+      ],
+      "parameters": {
+        "jsCode": "const err = $input.first().json;\nconst detalle = err.error?.message ?? err.message ?? JSON.stringify(err);\nreturn [{ json: { text: `🔴 <b>Afiliaciones Pendientes: fallo al consultar res.partner</b>\\nDetalle: <code>${detalle}</code>` } }];"
+      }
+    },
+    {
+      "id": "notificar-telegram-pendientes-13",
+      "name": "Notificar Telegram Pendientes",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1320,
+        0
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "=https://api.telegram.org/bot{{ $env.TELEGRAM_BOT_TOKEN }}/sendMessage",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ chat_id: $env.TELEGRAM_CHAT_ID, message_thread_id: 92, parse_mode: 'HTML', text: $json.text }) }}",
+        "options": {
+          "timeout": 10000
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 2,
+      "notes": "message_thread_id=92 = topic Afiliaciones."
+    }
+  ],
+  "connections": {
+    "Schedule": {
+      "main": [
+        [
+          {
+            "node": "Autenticar Odoo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Autenticar Odoo": {
+      "main": [
+        [
+          {
+            "node": "IF - Auth OK?",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Preparar Alerta - Fallo Autenticacion",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF - Auth OK?": {
+      "main": [
+        [
+          {
+            "node": "Buscar Afiliaciones Incompletas",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Preparar Alerta - Fallo Autenticacion",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Buscar Afiliaciones Incompletas": {
+      "main": [
+        [
+          {
+            "node": "IF - Hay Pendientes?",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Preparar Alerta - Fallo Consulta",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF - Hay Pendientes?": {
+      "main": [
+        [
+          {
+            "node": "Formatear Resumen Pendientes",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Formatear Heartbeat Sin Pendientes",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Formatear Resumen Pendientes": {
+      "main": [
+        [
+          {
+            "node": "Notificar Telegram Pendientes",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Formatear Heartbeat Sin Pendientes": {
+      "main": [
+        [
+          {
+            "node": "Notificar Telegram Pendientes",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar Alerta - Fallo Autenticacion": {
+      "main": [
+        [
+          {
+            "node": "Notificar Telegram Pendientes",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar Alerta - Fallo Consulta": {
+      "main": [
+        [
+          {
+            "node": "Notificar Telegram Pendientes",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "errorWorkflow": "error-handler-global-uuid"
+  },
+  "id": "afiliacion-docs-pendientes-uuid",
+  "meta": {
+    "instanceId": "medicinedepot"
+  }
+}

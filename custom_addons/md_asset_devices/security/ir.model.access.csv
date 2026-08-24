@@ -18,7 +18,7 @@ access_device_payment_user,device.payment - User,model_device_payment,md_asset_d
 access_device_payment_manager,device.payment - Manager,model_device_payment,md_asset_devices.device_management_manager_group,1,1,1,0
 access_device_payment_admin,device.payment - Admin,model_device_payment,md_asset_devices.device_management_admin_group,1,1,1,1
 access_device_subscription_user,device.subscription - User,model_device_subscription,md_asset_devices.device_management_user_group,1,0,0,0
-access_device_subscription_manager,device.subscription - Manager,model_device_subscription,md_asset_devices.device_management_manager_group,1,1,0,0
+access_device_subscription_manager,device.subscription - Manager,model_device_subscription,md_asset_devices.device_management_manager_group,1,1,1,0
 access_device_subscription_admin,device.subscription - Admin,model_device_subscription,md_asset_devices.device_management_admin_group,1,1,1,1
 access_device_todo_user,device.todo - User,model_device_todo,md_asset_devices.device_management_user_group,1,1,1,0
 access_device_todo_manager,device.todo - Manager,model_device_todo,md_asset_devices.device_management_manager_group,1,1,1,1

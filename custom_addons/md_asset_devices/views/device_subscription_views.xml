@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <data>
-        <record id="device_subscription_view_form" model="ir.ui.view">
+        <record id="view_device_subscription_form" model="ir.ui.view">
             <field name="name">device.subscription.form</field>
             <field name="model">device.subscription</field>
             <field name="arch" type="xml">
@@ -39,8 +39,8 @@
             </field>
         </record>
 
-        <record id="device_subscription_view_tree" model="ir.ui.view">
-            <field name="name">device.subscription.tree</field>
+        <record id="view_device_subscription_list" model="ir.ui.view">
+            <field name="name">device.subscription.list</field>
             <field name="model">device.subscription</field>
             <field name="arch" type="xml">
                 <list string="Suscripciones"
@@ -56,6 +56,12 @@
                     <field name="estado" widget="badge" decoration-danger="estado == 'vencido'" decoration-warning="estado == 'proximo_vencer'"/>
                 </list>
             </field>
+        </record>
+
+        <record model="ir.actions.act_window" id="action_device_subscription">
+            <field name="name">Suscripciones y Licencias</field>
+            <field name="res_model">device.subscription</field>
+            <field name="view_mode">list,form</field>
         </record>
     </data>
 </odoo>

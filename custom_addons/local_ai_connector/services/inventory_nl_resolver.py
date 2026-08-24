@@ -12,7 +12,7 @@ from . import ollama_client, prompt_templates
 
 _logger = logging.getLogger(__name__)
 
-MODEL = "qwen2.5:14b"
+MODEL = "qwen2.5-coder:7b"
 
 
 def resolve_inventory_query(env, question):
@@ -66,18 +66,19 @@ def resolve_inventory_query(env, question):
         }
 
     Product = env["product.product"].sudo()
+    clean_mentioned = mentioned.strip("[]\"' \t\r\n")
     domain = [
         "|", "|",
-        ("name", "ilike", mentioned),
-        ("barcode", "=", mentioned),
-        ("default_code", "=", mentioned),
+        ("name", "ilike", clean_mentioned),
+        ("barcode", "=", clean_mentioned),
+        ("default_code", "=", clean_mentioned),
     ]
     products = Product.search(domain, limit=6)
 
     if not products:
         return {
             "status": "not_found",
-            "message": 'No encontre ningun producto que coincida con "{}".'.format(mentioned),
+            "message": 'No encontre ningun producto que coincida con "{}".'.format(clean_mentioned),
             "product_id": None,
             "on_hand": None,
             "raw_model_output": parsed,

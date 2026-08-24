@@ -1,17 +1,19 @@
 import logging
+import re
 
 _logger = logging.getLogger(__name__)
 
 
 class LotStockResolver:
     """
-    Resuelve stock.lot en batch para evitar el patrón N+1.
+    Resuelve stock.lot en batch para evitar el patrón N+1 con soporte de matching
+    fuzzy inteligente (normalización de prefijos LOTE/LT/L-, ceros a la izquierda y caracteres especiales).
 
     Uso:
         resolver = LotStockResolver(env, company_id)
         resolver.preload(product_ids, lot_names)   # 1 query total
-        lot = resolver.find(product, lot_name)      # lookup O(k) en memoria
-        lot = resolver.ensure(product, lot_name, expiration_date)  # crea si no existe
+        lot = resolver.find(product, lot_name)      # lookup O(k) en memoria con fallback fuzzy
+        lot = resolver.ensure(product, lot_name, expiration_date)  # crea o hereda caducidad
     """
 
     def __init__(self, env, company_id):
@@ -43,12 +45,20 @@ class LotStockResolver:
 
     @staticmethod
     def _compact(value):
-        normalized = (value or '').strip()
+        """
+        Normaliza códigos de lotes eliminando prefijos habituales (LOTE, LT, L-, #, etc.),
+        ceros a la izquierda, guiones, barras y espacios para comparación robusta.
+        """
+        normalized = (value or '').strip().upper()
         if not normalized:
             return ''
+        # Remover prefijos comunes de facturas mexicanas
+        normalized = re.sub(r'^(?:LOTE|LT|LOT|L|NO|NUM|#|LOTE:)\s*[-:]*\s*', '', normalized, flags=re.IGNORECASE)
+        # Remover caracteres de puntuación separadores
+        normalized = re.sub(r'[\s\-_\/\\\.:,]', '', normalized)
         if normalized.isdigit():
             return normalized.lstrip('0') or '0'
-        return normalized.upper()
+        return normalized
 
     def _as_global_lot(self, lot):
         if not lot or not lot.company_id:
@@ -101,16 +111,6 @@ class LotStockResolver:
         return self._cache_lot(self._as_global_lot(lot)) if lot else False
 
     def _find_or_convert_to_global(self, product, lot_name):
-        """
-        Búsqueda robusta con conversión a global (patrón multiempresa).
-
-        1. Busca lote global (company_id = False) — usa ese si existe.
-        2. Si no existe global pero hay uno empresa-específico, lo convierte.
-        3. Si no existe en ningún lado, retorna False.
-
-        Esto evita el ValidationError de unicidad en entornos multiempresa
-        donde el mismo lote/producto se importa desde varias sucursales.
-        """
         if not product or not lot_name:
             return False
 
@@ -146,7 +146,6 @@ class LotStockResolver:
                     lot_name_stripped,
                     product.display_name,
                 )
-                # Reintentar buscar uno que pudo haber sido creado concurrentemente
                 retry_lot = StockLot.search([
                     ('product_id', '=', product.id),
                     ('name', '=ilike', lot_name_stripped),
@@ -156,14 +155,14 @@ class LotStockResolver:
                     return self._cache_lot(retry_lot)
                 raise
 
-        # Paso 3: No existe en ningún lado
         return False
 
     def find(self, product, lot_name):
         """
-        Busca un lote por producto y nombre.
-        Intenta: exact case-insensitive → código compacto (strip ceros a la izq).
-        Retorna el lote o False.
+        Busca un lote por producto y nombre aplicando coincidencia jerárquica:
+        1. Exact case-insensitive.
+        2. Código compacto (remueve prefijos LOTE/LT/L-, guiones y ceros a la izq).
+        3. Contención fuzzy para códigos de longitud >= 4.
         """
         if not product or not lot_name:
             return False
@@ -171,59 +170,60 @@ class LotStockResolver:
         if not lot_name:
             return False
         lot_name_lower = lot_name.lower()
+        compact_target = self._compact(lot_name)
 
         if self._preloaded:
             product_lots = self._by_product.get(product.id, [])
+            # 1. Exact match
             for name, lot in product_lots:
                 if name.lower() == lot_name_lower:
                     return self._cache_lot(self._as_global_lot(lot))
-            compact = self._compact(lot_name)
-            if compact:
+            # 2. Compact match
+            if compact_target:
                 for name, lot in product_lots:
-                    if self._compact(name) == compact:
+                    if self._compact(name) == compact_target:
+                        return self._cache_lot(self._as_global_lot(lot))
+            # 3. Fuzzy substring match (solo para códigos con longitud >= 4)
+            if compact_target and len(compact_target) >= 4:
+                for name, lot in product_lots:
+                    comp_name = self._compact(name)
+                    if comp_name and len(comp_name) >= 4 and (compact_target in comp_name or comp_name in compact_target):
                         return self._cache_lot(self._as_global_lot(lot))
             return False
 
-        # Sin preload: búsqueda directa (comportamiento anterior)
+        # Sin preload: búsqueda directa en base de datos
         existing = self._search_db_lot(product, lot_name, '=ilike')
         if existing:
             return existing
-        compact = self._compact(lot_name)
-        if compact and compact != lot_name:
-            candidates = self._search_db_lot(product, compact, '=ilike')
+        if compact_target and compact_target != lot_name:
+            candidates = self._search_db_lot(product, compact_target, '=ilike')
             if candidates:
                 return candidates
         return False
 
     def ensure(self, product, lot_name, expiration_date=False):
-        """Devuelve el lote existente o lo crea (patrón get-or-create multiempresa).
-
-        Búsqueda en tres capas:
-        1. Caché en memoria (O(k), evita N+1 tras preload).
-        2. BD robusta: busca global, convierte empresa-específico, o crea nuevo.
-        3. Maneja race conditions con savepoint.
-        """
+        """Devuelve el lote existente o lo crea (patrón get-or-create multiempresa con herencia de caducidad)."""
         has_expiry = 'expiration_date' in self.env['stock.lot']._fields
         lot_name_stripped = (lot_name or '').strip()
 
         if not product or not lot_name_stripped:
             return False
 
-        # Capa 1: Caché en memoria
+        # Capa 1: Búsqueda en memoria con matching fuzzy/compacto
         existing = self.find(product, lot_name_stripped)
         if existing:
             if expiration_date and has_expiry and not existing.expiration_date:
                 existing.sudo().expiration_date = expiration_date
             return existing
 
-        # Capa 2: Búsqueda robusta en BD (global, empresa-específico, o nuevo)
+        # Capa 2: Búsqueda robusta en BD
         db_lot = self._find_or_convert_to_global(product, lot_name_stripped)
         if db_lot:
             if expiration_date and has_expiry and not db_lot.expiration_date:
                 db_lot.sudo().expiration_date = expiration_date
             return self._cache_lot(db_lot)
 
-        # Capa 3: Crear nuevo lote global si no existe en ningún lado
+        # Capa 3: Crear nuevo lote global
         lot_vals = {
             'name': lot_name_stripped,
             'product_id': product.id,
@@ -241,7 +241,6 @@ class LotStockResolver:
                 lot_name_stripped,
                 product.display_name,
             )
-            # Reintentar búsqueda robusta: pudo haber sido creado por otro proceso
             retry_lot = self._find_or_convert_to_global(product, lot_name_stripped)
             if retry_lot:
                 return self._cache_lot(retry_lot)

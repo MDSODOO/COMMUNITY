@@ -2,7 +2,7 @@
 <odoo>
     <data>
 
-        <record id="fleet_vehicle_view_form_employee" model="ir.ui.view">
+        <record id="view_fleet_vehicle_form_md_employee" model="ir.ui.view">
             <field name="name">fleet.vehicle.form.md.employee</field>
             <field name="model">fleet.vehicle</field>
             <field name="inherit_id" ref="fleet.fleet_vehicle_view_form"/>
@@ -10,10 +10,13 @@
                 <field name="driver_id" position="after">
                     <field name="employee_id"/>
                 </field>
+                <field name="residual_value" position="after">
+                    <field name="valor_actual" widget="monetary" readonly="1"/>
+                </field>
             </field>
         </record>
 
-        <record id="fleet_vehicle_view_tree_employee" model="ir.ui.view">
+        <record id="view_fleet_vehicle_list_md_employee" model="ir.ui.view">
             <field name="name">fleet.vehicle.list.md.employee</field>
             <field name="model">fleet.vehicle</field>
             <field name="inherit_id" ref="fleet.fleet_vehicle_view_tree"/>

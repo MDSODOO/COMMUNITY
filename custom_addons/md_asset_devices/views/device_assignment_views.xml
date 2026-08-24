@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- FORM VIEW -->
+        <record id="view_device_assignment_form" model="ir.ui.view">
+            <field name="name">device.assignment.form</field>
+            <field name="model">device.assignment</field>
+            <field name="arch" type="xml">
+                <form>
+                    <header>
+                        <field name="estado" widget="statusbar" statusbar_visible="activa,devuelto"/>
+                    </header>
+                    <sheet>
+                        <div class="oe_title">
+                            <h1>
+                                <field name="usuario_asignado" placeholder="Usuario asignado..."/>
+                            </h1>
+                        </div>
+                        <group>
+                            <group>
+                                <field name="device_id" required="True"/>
+                                <field name="inventory_id" domain="[('device_id', '=', device_id)]"/>
+                            </group>
+                            <group>
+                                <field name="fecha_asignacion"/>
+                                <field name="fecha_devolucion"/>
+                            </group>
+                        </group>
+                        <field name="observaciones" placeholder="Observaciones..."/>
+                    </sheet>
+                    <chatter/>
+                </form>
+            </field>
+        </record>
+
+        <!-- LIST VIEW -->
+        <record id="view_device_assignment_list" model="ir.ui.view">
+            <field name="name">device.assignment.list</field>
+            <field name="model">device.assignment</field>
+            <field name="arch" type="xml">
+                <list string="Asignaciones"
+                    decoration-muted="estado == 'devuelto'"
+                    decoration-danger="estado == 'perdido' or estado == 'roto'">
+                    <field name="device_id" string="Dispositivo"/>
+                    <field name="usuario_asignado" string="Usuario"/>
+                    <field name="fecha_asignacion" string="Desde"/>
+                    <field name="fecha_devolucion" string="Devuelto"/>
+                    <field name="estado" string="Estado" widget="badge"
+                        decoration-success="estado == 'activa'"
+                        decoration-muted="estado == 'devuelto'"
+                        decoration-danger="estado == 'perdido' or estado == 'roto'"/>
+                </list>
+            </field>
+        </record>
+
+        <!-- SEARCH VIEW -->
+        <record id="view_device_assignment_search" model="ir.ui.view">
+            <field name="name">device.assignment.search</field>
+            <field name="model">device.assignment</field>
+            <field name="arch" type="xml">
+                <search string="Buscar Asignaciones">
+                    <field name="device_id"/>
+                    <field name="usuario_asignado"/>
+                    <filter name="activas" string="Activas" domain="[('estado', '=', 'activa')]"/>
+                    <filter name="devueltas" string="Devueltas" domain="[('estado', '=', 'devuelto')]"/>
+                    <group>
+                        <filter name="by_usuario" string="Usuario" context="{'group_by': 'usuario_asignado'}"/>
+                        <filter name="by_estado" string="Estado" context="{'group_by': 'estado'}"/>
+                        <filter name="by_device" string="Dispositivo" context="{'group_by': 'device_id'}"/>
+                    </group>
+                </search>
+            </field>
+        </record>
+
+        <!-- ACTION -->
+        <record model="ir.actions.act_window" id="action_device_assignment">
+            <field name="name">Asignaciones</field>
+            <field name="res_model">device.assignment</field>
+            <field name="view_mode">list,form</field>
+            <field name="context">{'search_default_activas': 1}</field>
+        </record>
+    </data>
+</odoo>

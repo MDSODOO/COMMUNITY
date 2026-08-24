@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- ════════════════════════════════════════════════════════════════
+         Vistas: client.cashback.anomaly
+         Propósito: detectar líneas sin descuento (0%) en facturas de
+         clientes con el esquema cashback activo.
+         Se accede desde Contabilidad ▶ Reportes ▶ Anomalías Cashback.
+    ════════════════════════════════════════════════════════════════ -->
+
+    <!-- ── Vista lista ──────────────────────────────────────────────── -->
+    <record id="view_cashback_anomaly_list" model="ir.ui.view">
+        <field name="name">client.cashback.anomaly.list</field>
+        <field name="model">client.cashback.anomaly</field>
+        <field name="arch" type="xml">
+            <list string="Anomalías de Descuento — Clientes Cashback"
+                  decoration-danger="discount == 0"
+                  default_order="invoice_date desc">
+                <field name="invoice_date"/>
+                <field name="invoice_month" optional="hide"/>
+                <field name="partner_id"/>
+                <field name="company_id" groups="base.group_multi_company"/>
+                <field name="move_name"/>
+                <field name="product_id"/>
+                <field name="product_name" optional="hide"/>
+                <field name="quantity" optional="hide"/>
+                <field name="price_unit" optional="hide"/>
+                <field name="discount" widget="percentage"/>
+                <field name="currency_id" invisible="1"/>
+                <field name="base_amount" sum="Total Base"/>
+                <field name="cashback_missed"
+                       sum="Total Cashback 5% No Capturado"
+                       decoration-danger="cashback_missed > 0"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- ── Vista búsqueda ───────────────────────────────────────────── -->
+    <record id="view_cashback_anomaly_search" model="ir.ui.view">
+        <field name="name">client.cashback.anomaly.search</field>
+        <field name="model">client.cashback.anomaly</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="partner_id" string="Cliente"/>
+                <field name="move_name" string="Factura"/>
+                <field name="product_id" string="Producto"/>
+                <field name="company_id" string="Sucursal"/>
+                <field name="invoice_month" string="Mes"/>
+                <separator/>
+                <group>
+                    <filter string="Cliente"  name="group_partner" context="{'group_by':'partner_id'}"/>
+                    <filter string="Sucursal" name="group_company" context="{'group_by':'company_id'}"/>
+                    <filter string="Mes"      name="group_month"   context="{'group_by':'invoice_month'}"/>
+                    <filter string="Producto" name="group_product" context="{'group_by':'product_id'}"/>
+                    <filter string="Factura"  name="group_invoice" context="{'group_by':'move_name'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- ── Vista pivot ──────────────────────────────────────────────── -->
+    <record id="view_cashback_anomaly_pivot" model="ir.ui.view">
+        <field name="name">client.cashback.anomaly.pivot</field>
+        <field name="model">client.cashback.anomaly</field>
+        <field name="arch" type="xml">
+            <pivot string="Anomalías Cashback — Pivot" disable_linking="false">
+                <field name="invoice_month" type="row"/>
+                <field name="partner_id"   type="row"/>
+                <field name="company_id"   type="col"/>
+                <field name="base_amount"     type="measure"/>
+                <field name="cashback_missed" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <!-- ── Acción de ventana ────────────────────────────────────────── -->
+    <record id="action_cashback_anomaly" model="ir.actions.act_window">
+        <field name="name">Anomalías de Descuento Cashback</field>
+        <field name="res_model">client.cashback.anomaly</field>
+        <field name="view_mode">list,pivot</field>
+        <field name="context">{}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                ¡Sin anomalías! Todas las líneas de clientes con esquema cashback
+                tienen el 2% de descuento capturado correctamente.
+            </p>
+            <p>
+                Este reporte muestra las líneas de producto en facturas posteadas
+                de clientes con <b>Esquema de Descuento Cashback activo</b> donde
+                el descuento capturado es <b>0%</b>. Cada línea aquí representa
+                potencial cashback del 5% que <b>no se acumula</b> en el reporte
+                principal por falta de descuento.
+            </p>
+        </field>
+    </record>
+
+    <!-- ── Entrada en menú ──────────────────────────────────────────── -->
+    <menuitem id="menu_cashback_anomaly"
+              name="Anomalías Cashback"
+              parent="account.menu_finance_reports"
+              action="action_cashback_anomaly"
+              sequence="102"/>
+</odoo>

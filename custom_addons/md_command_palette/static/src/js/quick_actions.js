@@ -38,3 +38,18 @@ quickActions.add("md_command_palette.pharmacovigilance", {
         });
     },
 });
+
+quickActions.add("md_command_palette.purchase_xml_import", {
+    id: "md_command_palette.purchase_xml_import",
+    label: "Orden de Compra XML",
+    keywords: ["compra", "purchase", "orden", "xml", "cfdi", "importar", "proveedor", "factura"],
+    icon: "fa-file-code-o",
+    run: (env) => {
+        // Reutiliza la accion real del wizard de purchase_invoice_parser
+        // (purchase_invoice_parser.action_cfdi_import_wizard, ir.actions.act_window
+        // sobre purchase.invoice.import.wizard, target=new) via su external ID --
+        // se resuelve por RPC en tiempo de ejecucion, sin declarar dependencia de
+        // modulo (mismo desacoplamiento que el resto de este registry).
+        env.services.action.doAction("purchase_invoice_parser.action_cfdi_import_wizard");
+    },
+});

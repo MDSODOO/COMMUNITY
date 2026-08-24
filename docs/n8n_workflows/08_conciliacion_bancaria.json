@@ -1,0 +1,514 @@
+{
+  "name": "08_Conciliacion_Bancaria [ESQUELETO]",
+  "nodes": [
+    {
+      "id": "webhook-08",
+      "name": "Webhook Inbound Estado Cuenta",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "conciliacion-bancaria-inbound",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "notes": "Payload esperado: { journal_id: <int, id de account.journal tipo bank en Odoo>, transactions: [ { date: 'YYYY-MM-DD', amount: <float, positivo=entrada/negativo=salida>, description: <string>, reference?: <string>, partner_hint?: <string, nombre aproximado del cliente/proveedor si se puede extraer de la descripcion, mejora mucho el matching> } ] }"
+    },
+    {
+      "id": "validar-payload-08",
+      "name": "Validar Payload",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        220,
+        0
+      ],
+      "parameters": {
+        "jsCode": "const body = $json.body || $json;\nconst journalId = parseInt(body.journal_id, 10);\nconst transactions = Array.isArray(body.transactions) ? body.transactions : [];\n\nif (!journalId) {\n  return [{ json: { is_valid: false, error_message: 'Falta journal_id (id del diario bancario en Odoo, account.journal tipo bank).' } }];\n}\nif (transactions.length === 0) {\n  return [{ json: { is_valid: false, error_message: 'transactions debe ser un array con al menos 1 movimiento.' } }];\n}\nfor (const [i, t] of transactions.entries()) {\n  if (!t.date || typeof t.amount === 'undefined' || !t.description) {\n    return [{ json: { is_valid: false, error_message: `Transaccion #${i + 1} incompleta: requiere date, amount y description.` } }];\n  }\n}\n\nreturn [{\n  json: {\n    is_valid: true,\n    journal_id: journalId,\n    transactions,\n    odoo_db: $env.ODOO_DB,\n    odoo_user: $env.ODOO_USER,\n    odoo_password: $env.ODOO_PASSWORD\n  }\n}];"
+      }
+    },
+    {
+      "id": "if-payload-valido-08",
+      "name": "IF - Payload Valido?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        440,
+        0
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.is_valid }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        }
+      }
+    },
+    {
+      "id": "respond-validation-error-08",
+      "name": "Respond Validation Error",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        660,
+        160
+      ],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { success: false, error: $json.error_message } }}",
+        "options": {
+          "responseCode": 400
+        }
+      }
+    },
+    {
+      "id": "autenticar-odoo-08",
+      "name": "Autenticar Odoo",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        660,
+        -80
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.ODOO_INTERNAL_URL }}/jsonrpc",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ jsonrpc: '2.0', method: 'call', params: { service: 'common', method: 'authenticate', args: [$json.odoo_db, $json.odoo_user, $json.odoo_password, {}] }, id: 1 }) }}",
+        "options": {
+          "timeout": 10000
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 3000,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "id": "if-auth-ok-08",
+      "name": "IF - Auth OK?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        880,
+        -80
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.error }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "empty"
+              }
+            },
+            {
+              "leftValue": "={{ typeof $json.result }}",
+              "rightValue": "number",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        }
+      }
+    },
+    {
+      "id": "preparar-alerta-fallo-auth-08",
+      "name": "Preparar Alerta - Fallo Autenticacion",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        880,
+        160
+      ],
+      "parameters": {
+        "jsCode": "const err = $input.first().json;\nconst detalle = err.error?.message ?? err.message ?? JSON.stringify(err);\nreturn [{ json: { text: `🔴 <b>Conciliacion Bancaria: fallo al autenticar contra Odoo</b>\\nDetalle: <code>${detalle}</code>` } }];"
+      }
+    },
+    {
+      "id": "notificar-telegram-fallo-auth-08",
+      "name": "Notificar Telegram Fallo Auth",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1100,
+        260
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "=https://api.telegram.org/bot{{ $env.TELEGRAM_BOT_TOKEN }}/sendMessage",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ chat_id: $env.TELEGRAM_CHAT_ID, message_thread_id: 75, parse_mode: 'HTML', text: $json.text }) }}",
+        "options": {
+          "timeout": 10000
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 2
+    },
+    {
+      "id": "respond-auth-error-08",
+      "name": "Respond Auth Error",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        1100,
+        160
+      ],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { success: false, error: 'No se pudo autenticar contra Odoo.' } }}",
+        "options": {
+          "responseCode": 502
+        }
+      }
+    },
+    {
+      "id": "expandir-transacciones-08",
+      "name": "Expandir Transacciones",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1100,
+        -80
+      ],
+      "parameters": {
+        "jsCode": "const ctx = $('Validar Payload').first().json;\nconst uid = $json.result;\nreturn ctx.transactions.map(t => ({\n  json: {\n    date: String(t.date).slice(0, 10),\n    amount: Number(t.amount),\n    description: String(t.description),\n    reference: t.reference ? String(t.reference) : '',\n    partner_hint: t.partner_hint ? String(t.partner_hint) : '',\n    journal_id: ctx.journal_id,\n    odoo_uid: uid,\n    odoo_db: ctx.odoo_db,\n    odoo_password: ctx.odoo_password\n  }\n}));"
+      }
+    },
+    {
+      "id": "crear-linea-statement-08",
+      "name": "Crear Linea Bank Statement",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1320,
+        -80
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.ODOO_INTERNAL_URL }}/jsonrpc",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ jsonrpc: '2.0', method: 'call', params: { service: 'object', method: 'execute_kw', args: [$json.odoo_db, $json.odoo_uid, $json.odoo_password, 'account.bank.statement.line', 'create', [{ journal_id: $json.journal_id, date: $json.date, amount: $json.amount, payment_ref: $json.description, ref: $json.reference }]] }, id: 1 }) }}",
+        "options": {
+          "timeout": 15000
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 2,
+      "notes": "create() en account.bank.statement.line genera automaticamente el asiento contable (move_id) y lo marca posted. Verificado en vivo 2026-08-12 contra medicinedepot_dev (registro de prueba creado y eliminado)."
+    },
+    {
+      "id": "preparar-busqueda-candidatos-08",
+      "name": "Preparar Busqueda Candidatos",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1540,
+        -80
+      ],
+      "parameters": {
+        "jsCode": "const tx = $('Expandir Transacciones').item.json;\nconst lineId = $json.result;\nconst amount = Math.abs(tx.amount);\nconst tolerance = Math.max(amount * 0.02, 1);\nconst moveTypes = tx.amount > 0 ? ['out_invoice', 'out_refund'] : ['in_invoice', 'in_refund'];\nconst domain = [\n  ['state', '=', 'posted'],\n  ['payment_state', 'in', ['not_paid', 'partial']],\n  ['move_type', 'in', moveTypes],\n  ['amount_residual', '>=', amount - tolerance],\n  ['amount_residual', '<=', amount + tolerance]\n];\nif (tx.partner_hint) {\n  domain.push(['partner_id.name', 'ilike', tx.partner_hint]);\n}\nreturn [{ json: { ...tx, line_id: lineId, search_domain: JSON.stringify(domain) } }];"
+      }
+    },
+    {
+      "id": "buscar-facturas-candidatas-08",
+      "name": "Buscar Facturas Candidatas",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1760,
+        -80
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.ODOO_INTERNAL_URL }}/jsonrpc",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ jsonrpc: '2.0', method: 'call', params: { service: 'object', method: 'execute_kw', args: [$json.odoo_db, $('Expandir Transacciones').item.json.odoo_uid, $json.odoo_password, 'account.move', 'search_read', [JSON.parse($json.search_domain)], { fields: ['id', 'name', 'partner_id', 'amount_residual', 'invoice_date'], limit: 20, order: 'amount_residual asc' }] }, id: 1 }) }}",
+        "options": {
+          "timeout": 15000
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 2,
+      "notes": "limit=20 por transaccion (consulta acotada por monto+tipo, no un pull global). Con 44k+ facturas historicas sin pagar en la base de pruebas, el matching solo por monto puede topar el limite; por eso se marca 'requiere revision' cuando eso pasa en vez de asumir el primer resultado."
+    },
+    {
+      "id": "formatear-resultado-item-08",
+      "name": "Formatear Resultado Item",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1980,
+        -80
+      ],
+      "parameters": {
+        "jsCode": "const ctx = $('Preparar Busqueda Candidatos').item.json;\nconst candidates = $json.result || [];\nlet matchQuality;\nif (candidates.length === 0) matchQuality = 'sin_match';\nelse if (candidates.length === 1) matchQuality = 'match_unico';\nelse if (candidates.length >= 20) matchQuality = 'demasiados_candidatos';\nelse matchQuality = 'multiples_candidatos';\n\nreturn [{\n  json: {\n    description: ctx.description,\n    amount: ctx.amount,\n    date: ctx.date,\n    line_id: ctx.line_id,\n    match_quality: matchQuality,\n    candidates: candidates.slice(0, 5).map(c => ({ id: c.id, name: c.name, partner: c.partner_id?.[1] ?? 'N/D', residual: c.amount_residual }))\n  }\n}];"
+      }
+    },
+    {
+      "id": "agregar-resumen-final-08",
+      "name": "Agregar Resumen Final",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2200,
+        -80
+      ],
+      "parameters": {
+        "jsCode": "const items = $input.all().map(i => i.json);\nconst sinMatch = items.filter(i => i.match_quality === 'sin_match');\nconst matchUnico = items.filter(i => i.match_quality === 'match_unico');\nconst multiples = items.filter(i => i.match_quality === 'multiples_candidatos' || i.match_quality === 'demasiados_candidatos');\n\nlet text = `💱 <b>Conciliacion Bancaria</b>\\n<b>${items.length}</b> movimiento(s) importado(s) a Odoo (lineas creadas y contabilizadas).\\n\\n`;\ntext += `✅ <b>${matchUnico.length}</b> con match unico sugerido\\n`;\ntext += `⚠️ <b>${multiples.length}</b> con multiples candidatos (revisar manualmente)\\n`;\ntext += `❔ <b>${sinMatch.length}</b> sin ninguna factura abierta que coincida\\n`;\n\nif (matchUnico.length > 0) {\n  text += `\\n<b>Matches sugeridos:</b>\\n`;\n  for (const m of matchUnico.slice(0, 10)) {\n    const c = m.candidates[0];\n    text += `• ${m.description} ($${m.amount}) ➔ <code>${c.name}</code> (${c.partner}, residual $${c.residual})\\n`;\n  }\n}\nif (sinMatch.length > 0) {\n  text += `\\n<b>Sin match (requieren alta manual o son gastos no facturados):</b>\\n`;\n  for (const m of sinMatch.slice(0, 10)) {\n    text += `• ${m.description} ($${m.amount})\\n`;\n  }\n}\ntext += `\\n<i>Ningun movimiento se concilio automaticamente — todas las sugerencias requieren confirmacion manual en Odoo antes de aplicarse.</i>`;\n\nreturn [{ json: { text, total: items.length, sin_match: sinMatch.length, match_unico: matchUnico.length, multiples: multiples.length } }];"
+      }
+    },
+    {
+      "id": "notificar-telegram-conciliacion-bancaria-08",
+      "name": "Notificar Telegram Conciliacion Bancaria",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2420,
+        -80
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "=https://api.telegram.org/bot{{ $env.TELEGRAM_BOT_TOKEN }}/sendMessage",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ chat_id: $env.TELEGRAM_CHAT_ID, message_thread_id: 75, parse_mode: 'HTML', text: $json.text }) }}",
+        "options": {
+          "timeout": 10000
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 2,
+      "notes": "message_thread_id=75 = topic Finanzas y Conciliacion (creado 2026-08-12)."
+    },
+    {
+      "id": "respond-success-08",
+      "name": "Respond Success",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        2640,
+        -80
+      ],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { success: true, total: $json.total, sin_match: $json.sin_match, match_unico: $json.match_unico, multiples: $json.multiples } }}",
+        "options": {
+          "responseCode": 200
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Webhook Inbound Estado Cuenta": {
+      "main": [
+        [
+          {
+            "node": "Validar Payload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validar Payload": {
+      "main": [
+        [
+          {
+            "node": "IF - Payload Valido?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF - Payload Valido?": {
+      "main": [
+        [
+          {
+            "node": "Autenticar Odoo",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond Validation Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Autenticar Odoo": {
+      "main": [
+        [
+          {
+            "node": "IF - Auth OK?",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Preparar Alerta - Fallo Autenticacion",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF - Auth OK?": {
+      "main": [
+        [
+          {
+            "node": "Expandir Transacciones",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Preparar Alerta - Fallo Autenticacion",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar Alerta - Fallo Autenticacion": {
+      "main": [
+        [
+          {
+            "node": "Notificar Telegram Fallo Auth",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Respond Auth Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Expandir Transacciones": {
+      "main": [
+        [
+          {
+            "node": "Crear Linea Bank Statement",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Crear Linea Bank Statement": {
+      "main": [
+        [
+          {
+            "node": "Preparar Busqueda Candidatos",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar Busqueda Candidatos": {
+      "main": [
+        [
+          {
+            "node": "Buscar Facturas Candidatas",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Buscar Facturas Candidatas": {
+      "main": [
+        [
+          {
+            "node": "Formatear Resultado Item",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Formatear Resultado Item": {
+      "main": [
+        [
+          {
+            "node": "Agregar Resumen Final",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Agregar Resumen Final": {
+      "main": [
+        [
+          {
+            "node": "Notificar Telegram Conciliacion Bancaria",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notificar Telegram Conciliacion Bancaria": {
+      "main": [
+        [
+          {
+            "node": "Respond Success",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "errorWorkflow": "error-handler-global-uuid"
+  },
+  "id": "conciliacion-bancaria-uuid",
+  "meta": {
+    "instanceId": "medicinedepot"
+  }
+}

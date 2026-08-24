@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data noupdate="1">
+        <!-- Digest diario de stock bajo punto de reorden. -->
+        <!-- Corre a las 08:00 UTC (02:00 CST) para que llegue antes de arrancar la jornada. -->
+        <record id="cron_md_telegram_low_stock" model="ir.cron">
+            <field name="name">Telegram: alerta diaria de stock bajo minimo</field>
+            <field name="model_id" ref="model_stock_quant"/>
+            <field name="state">code</field>
+            <field name="code">model._cron_telegram_low_stock()</field>
+            <field name="user_id" ref="base.user_root"/>
+            <field name="interval_number">1</field>
+            <field name="interval_type">days</field>
+            <field name="active">True</field>
+            <field name="nextcall" eval="(DateTime.now().replace(hour=8, minute=0, second=0, microsecond=0))"/>
+        </record>
+    </data>
+</odoo>

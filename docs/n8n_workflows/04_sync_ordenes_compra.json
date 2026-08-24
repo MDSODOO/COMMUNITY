@@ -1,0 +1,858 @@
+{
+  "name": "04_Sync_Ordenes_Compra [DEV PRUEBAS]",
+  "nodes": [
+    {
+      "id": "247841ce-d772-43f5-9e76-1460b32b3d04",
+      "name": "Webhook Inbound PO",
+      "type": "n8n-nodes-base.webhook",
+      "position": [
+        100,
+        300
+      ],
+      "webhookId": "sync-purchase-order-inbound",
+      "parameters": {
+        "path": "sync-purchase-order",
+        "options": {},
+        "httpMethod": "POST",
+        "responseMode": "responseNode"
+      },
+      "typeVersion": 1.1
+    },
+    {
+      "id": "f4806734-be22-4e7d-8812-f6c13f209aa0",
+      "name": "Validar Payload",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        300,
+        300
+      ],
+      "parameters": {
+        "jsCode": "const body = $json.body || $json;\n\nif (!body.partner_vat && !body.partner_name && !body.partner_id) {\n  return [{\n    json: {\n      is_valid: false,\n      error_code: 'MISSING_PARTNER',\n      error_message: 'Debe especificar al menos partner_vat, partner_name o partner_id',\n      raw_body: body\n    }\n  }];\n}\n\nconst lines = Array.isArray(body.lines) ? body.lines : [];\nif (lines.length === 0) {\n  return [{\n    json: {\n      is_valid: false,\n      error_code: 'EMPTY_LINES',\n      error_message: 'La orden debe contener al menos una línea de producto en \"lines\"',\n      raw_body: body\n    }\n  }];\n}\n\nlet totalEstimated = 0;\nconst productCodes = [];\n\nconst normalizedLines = lines.map((line, idx) => {\n  const qty = parseFloat(line.quantity || line.product_qty || 1);\n  const price = parseFloat(line.price_unit || line.price || 0);\n  const subtotal = qty * price;\n  totalEstimated += subtotal;\n  const pCode = String(line.product_code || line.default_code || line.barcode || '').trim();\n  if (pCode) productCodes.push(pCode);\n  \n  return {\n    index: idx + 1,\n    product_code: pCode,\n    barcode: String(line.barcode || '').trim(),\n    product_name: String(line.product_name || line.name || 'Producto').trim(),\n    product_qty: qty,\n    price_unit: price,\n    subtotal: subtotal,\n    lot_number: String(line.lot_number || line.lote || '').trim(),\n    expiration_date: String(line.expiration_date || line.caducidad || '').trim()\n  };\n});\n\nconst dbName = $env.ODOO_DB;\nconst dbUser = $env.ODOO_USER;\nconst dbPass = $env.ODOO_PASSWORD;\nconst botToken = $env.TELEGRAM_BOT_TOKEN;\nconst defaultChatId = $env.TELEGRAM_CHAT_ID;\nconst threadCompras = '6';\nconst threadVariacionPrecios = '7';\n\nconst authXml = `<?xml version=\"1.0\"?>\n<methodCall>\n  <methodName>authenticate</methodName>\n  <params>\n    <param><value><string>${dbName}</string></value></param>\n    <param><value><string>${dbUser}</string></value></param>\n    <param><value><string>${dbPass}</string></value></param>\n    <param><value><struct></struct></value></param>\n  </params>\n</methodCall>`;\n\nreturn [{\n  json: {\n    is_valid: true,\n    stage: 'dev_testing',\n    is_dev_testing: true,\n    auto_confirm: body.auto_confirm !== false,\n    auto_receive: body.auto_receive !== false,\n    odoo_db: dbName,\n    odoo_user: dbUser,\n    odoo_password: dbPass,\n    telegram_bot_token: botToken,\n    telegram_chat_id: defaultChatId,\n    telegram_thread_compras: threadCompras,\n    telegram_thread_variacion_precios: threadVariacionPrecios,\n    auth_xml: authXml,\n    partner_vat: (body.partner_vat || '').trim().toUpperCase(),\n    partner_name: (body.partner_name || '').trim(),\n    partner_ref: (body.partner_ref || body.folio || '').trim(),\n    date_order: body.date_order || new Date().toISOString().split('T')[0],\n    note: `[PRUEBAS DEV MIGRACION] ${body.notes || body.note || 'Orden creada via RPA n8n'} (Base: ${dbName})`,\n    origin: 'RPA n8n (DEV)',\n    lines: normalizedLines,\n    product_codes: productCodes,\n    total_estimated: totalEstimated,\n    total_lines: normalizedLines.length,\n    raw_body: body\n  }\n}];"
+      },
+      "typeVersion": 2
+    },
+    {
+      "id": "9172d291-3850-4efc-a77a-eb6ab9d02290",
+      "name": "Payload Valido?",
+      "type": "n8n-nodes-base.if",
+      "position": [
+        500,
+        300
+      ],
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{ $json.is_valid }}",
+              "value2": true
+            }
+          ]
+        }
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "806479aa-173c-4a27-93c4-ed2a97d0b269",
+      "name": "Respond Validation Error",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "position": [
+        700,
+        480
+      ],
+      "parameters": {
+        "options": {
+          "responseCode": 400
+        },
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({\n  status: 'error',\n  error_code: $json.error_code,\n  message: $json.error_message,\n  notice: 'Validacion fallida antes de enviar a Odoo Dev',\n  timestamp: new Date().toISOString()\n}, null, 2) }}"
+      },
+      "typeVersion": 1.1
+    },
+    {
+      "id": "4098d438-4439-46c0-b687-72cc069ff56c",
+      "name": "Odoo Auth (XML-RPC)",
+      "type": "n8n-nodes-base.httpRequest",
+      "maxTries": 3,
+      "position": [
+        700,
+        240
+      ],
+      "parameters": {
+        "url": "http://medicinedepot_dev_odoo:8069/xmlrpc/2/common",
+        "body": "={{ $json.auth_xml }}",
+        "method": "POST",
+        "options": {},
+        "sendBody": true,
+        "contentType": "raw",
+        "sendHeaders": true,
+        "rawContentType": "text/xml",
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "text/xml"
+            }
+          ]
+        }
+      },
+      "retryOnFail": true,
+      "typeVersion": 4.1,
+      "waitBetweenTries": 3000
+    },
+    {
+      "id": "904f2559-7046-48c9-97ed-4b9fc246ff5e",
+      "name": "Parse Auth Response",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        900,
+        240
+      ],
+      "parameters": {
+        "jsCode": "const rawXml = $json.data || $json.body || JSON.stringify($json);\nconst match = rawXml.match(/<int>(\\d+)<\\/int>/) || rawXml.match(/<i4>(\\d+)<\\/i4>/);\nconst uid = match ? parseInt(match[1], 10) : null;\n\nconst payload = $('Validar Payload').first().json;\n\nif (!uid) {\n  return [{\n    json: {\n      authenticated: false,\n      error: 'No se pudo autenticar contra Odoo dev.',\n      ...payload\n    }\n  }];\n}\n\nconst searchField = payload.partner_vat ? 'vat' : 'name';\nconst searchValue = payload.partner_vat || payload.partner_name;\n\nconst searchPartnerXml = `<?xml version=\"1.0\"?>\n<methodCall>\n  <methodName>execute_kw</methodName>\n  <params>\n    <param><value><string>${payload.odoo_db}</string></value></param>\n    <param><value><int>${uid}</int></value></param>\n    <param><value><string>${payload.odoo_password}</string></value></param>\n    <param><value><string>res.partner</string></value></param>\n    <param><value><string>search_read</string></value></param>\n    <param>\n      <value>\n        <array>\n          <data>\n            <value>\n              <array>\n                <data>\n                  <value>\n                    <array>\n                      <data>\n                        <value><string>${searchField}</string></value>\n                        <value><string>=</string></value>\n                        <value><string>${searchValue}</string></value>\n                      </data>\n                    </array>\n                  </value>\n                </data>\n              </array>\n            </value>\n          </data>\n        </array>\n      </value>\n    </param>\n    <param>\n      <value>\n        <struct>\n          <member>\n            <name>fields</name>\n            <value><array><data><value><string>id</string></value><value><string>name</string></value></data></array></value>\n          </member>\n          <member>\n            <name>limit</name>\n            <value><int>1</int></value>\n          </member>\n          <member>\n            <name>order</name>\n            <value><string>supplier_rank desc</string></value>\n          </member>\n        </struct>\n      </value>\n    </param>\n  </params>\n</methodCall>`;\n\nconst pCodesXml = (payload.product_codes || []).map(c => `<value><string>${c}</string></value>`).join('');\nconst searchProductsXml = `<?xml version=\"1.0\"?>\n<methodCall>\n  <methodName>execute_kw</methodName>\n  <params>\n    <param><value><string>${payload.odoo_db}</string></value></param>\n    <param><value><int>${uid}</int></value></param>\n    <param><value><string>${payload.odoo_password}</string></value></param>\n    <param><value><string>product.product</string></value></param>\n    <param><value><string>search_read</string></value></param>\n    <param>\n      <value>\n        <array>\n          <data>\n            <value>\n              <array>\n                <data>\n                  <value>\n                    <array>\n                      <data>\n                        <value><string>default_code</string></value>\n                        <value><string>in</string></value>\n                        <value><array><data>${pCodesXml}</data></array></value>\n                      </data>\n                    </array>\n                  </value>\n                </data>\n              </array>\n            </value>\n          </data>\n        </array>\n      </value>\n    </param>\n    <param>\n      <value>\n        <struct>\n          <member>\n            <name>fields</name>\n            <value><array><data><value><string>id</string></value><value><string>name</string></value><value><string>default_code</string></value><value><string>barcode</string></value><value><string>list_price</string></value></data></array></value>\n          </member>\n        </struct>\n      </value>\n    </param>\n  </params>\n</methodCall>`;\n\nreturn [{\n  json: {\n    authenticated: true,\n    odoo_uid: uid,\n    search_partner_xml: searchPartnerXml,\n    search_products_xml: searchProductsXml,\n    ...payload\n  }\n}];"
+      },
+      "typeVersion": 2
+    },
+    {
+      "id": "8cc42fd3-1a24-409e-9b3f-cfee88760355",
+      "name": "Buscar Partner Odoo",
+      "type": "n8n-nodes-base.httpRequest",
+      "maxTries": 3,
+      "position": [
+        1100,
+        240
+      ],
+      "parameters": {
+        "url": "http://medicinedepot_dev_odoo:8069/xmlrpc/2/object",
+        "body": "={{ $json.search_partner_xml }}",
+        "method": "POST",
+        "options": {},
+        "sendBody": true,
+        "contentType": "raw",
+        "sendHeaders": true,
+        "rawContentType": "text/xml",
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "text/xml"
+            }
+          ]
+        }
+      },
+      "retryOnFail": true,
+      "typeVersion": 4.1,
+      "waitBetweenTries": 3000
+    },
+    {
+      "id": "332c17b3-b026-4ac6-8d8f-b23293561696",
+      "name": "Buscar Productos Odoo",
+      "type": "n8n-nodes-base.httpRequest",
+      "maxTries": 3,
+      "position": [
+        1300,
+        240
+      ],
+      "parameters": {
+        "url": "http://medicinedepot_dev_odoo:8069/xmlrpc/2/object",
+        "body": "={{ $('Parse Auth Response').first().json.search_products_xml }}",
+        "method": "POST",
+        "options": {},
+        "sendBody": true,
+        "contentType": "raw",
+        "sendHeaders": true,
+        "rawContentType": "text/xml",
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "text/xml"
+            }
+          ]
+        }
+      },
+      "retryOnFail": true,
+      "typeVersion": 4.1,
+      "waitBetweenTries": 3000
+    },
+    {
+      "id": "975d8b14-db13-4597-9ba9-a41d4a2a7293",
+      "name": "Preparar Preload Lotes",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        1500,
+        240
+      ],
+      "parameters": {
+        "jsCode": "const partnerRawXml = $('Buscar Partner Odoo').first().json.data || JSON.stringify($('Buscar Partner Odoo').first().json);\nconst productsRawXml = $('Buscar Productos Odoo').first().json.data || JSON.stringify($('Buscar Productos Odoo').first().json);\nconst context = $('Parse Auth Response').first().json;\n\nconst pIdMatch = partnerRawXml.match(/<name>id<\\/name>\\s*<value>(?:<int>|<i4>)(\\d+)(?:<\\/int>|<\\/i4>)<\\/value>/);\nconst pNameMatch = partnerRawXml.match(/<name>name<\\/name>\\s*<value><string>([^<]+)<\\/string><\\/value>/);\nconst partnerFound = !!pIdMatch;\nconst partnerId = partnerFound ? parseInt(pIdMatch[1], 10) : null;\nconst partnerFoundName = pNameMatch ? pNameMatch[1] : (context.partner_name || context.partner_vat || 'Proveedor desconocido');\n\nconst foundProdIds = [];\nconst prodIdRegex = /<name>id<\\/name>\\s*<value>(?:<int>|<i4>)(\\d+)(?:<\\/int>|<\\/i4>)<\\/value>/g;\nlet match;\nwhile ((match = prodIdRegex.exec(productsRawXml)) !== null) {\n  foundProdIds.push(parseInt(match[1], 10));\n}\n\nconst prodIdsXml = foundProdIds.map(id => `<value><int>${id}</int></value>`).join('');\nconst preloadLotsXml = `<?xml version=\"1.0\"?>\n<methodCall>\n  <methodName>execute_kw</methodName>\n  <params>\n    <param><value><string>${context.odoo_db}</string></value></param>\n    <param><value><int>${context.odoo_uid}</int></value></param>\n    <param><value><string>${context.odoo_password}</string></value></param>\n    <param><value><string>stock.lot</string></value></param>\n    <param><value><string>search_read</string></value></param>\n    <param>\n      <value>\n        <array>\n          <data>\n            <value>\n              <array>\n                <data>\n                  <value>\n                    <array>\n                      <data>\n                        <value><string>product_id</string></value>\n                        <value><string>in</string></value>\n                        <value><array><data>${prodIdsXml}</data></array></value>\n                      </data>\n                    </array>\n                  </value>\n                </data>\n              </array>\n            </value>\n          </data>\n        </array>\n      </value>\n    </param>\n    <param>\n      <value>\n        <struct>\n          <member>\n            <name>fields</name>\n            <value><array><data><value><string>id</string></value><value><string>name</string></value><value><string>product_id</string></value><value><string>expiration_date</string></value></data></array></value>\n          </member>\n        </struct>\n      </value>\n    </param>\n  </params>\n</methodCall>`;\n\nconst partnerRef = context.partner_ref || '';\nlet checkDuplicateXml = '';\nif (partnerFound) {\ncheckDuplicateXml = `<?xml version=\"1.0\"?>\n<methodCall>\n  <methodName>execute_kw</methodName>\n  <params>\n    <param><value><string>${context.odoo_db}</string></value></param>\n    <param><value><int>${context.odoo_uid}</int></value></param>\n    <param><value><string>${context.odoo_password}</string></value></param>\n    <param><value><string>purchase.order</string></value></param>\n    <param><value><string>search_read</string></value></param>\n    <param>\n      <value>\n        <array>\n          <data>\n            <value>\n              <array>\n                <data>\n                  <value>\n                    <array>\n                      <data>\n                        <value><string>partner_id</string></value>\n                        <value><string>=</string></value>\n                        <value><int>${partnerId}</int></value>\n                      </data>\n                    </array>\n                  </value>\n                  <value>\n                    <array>\n                      <data>\n                        <value><string>partner_ref</string></value>\n                        <value><string>=</string></value>\n                        <value><string>${partnerRef}</string></value>\n                      </data>\n                    </array>\n                  </value>\n                </data>\n              </array>\n            </value>\n          </data>\n        </array>\n      </value>\n    </param>\n    <param>\n      <value>\n        <struct>\n          <member>\n            <name>fields</name>\n            <value><array><data><value><string>id</string></value><value><string>name</string></value><value><string>state</string></value><value><string>amount_total</string></value></data></array></value>\n          </member>\n          <member>\n            <name>limit</name>\n            <value><int>1</int></value>\n          </member>\n        </struct>\n      </value>\n    </param>\n  </params>\n</methodCall>`;\n\n}\n\nreturn [{\n  json: {\n    ...context,\n    partner_found: partnerFound,\n    partner_id: partnerId,\n    partner_display_name: partnerFoundName,\n    preload_lots_xml: preloadLotsXml,\n    check_duplicate_xml: checkDuplicateXml\n  }\n}];"
+      },
+      "typeVersion": 2
+    },
+    {
+      "id": "c6ebaa75-77f4-498a-b16d-8b3a9e11e550",
+      "name": "Preload Lotes Batch",
+      "type": "n8n-nodes-base.httpRequest",
+      "maxTries": 3,
+      "position": [
+        1700,
+        240
+      ],
+      "parameters": {
+        "url": "http://medicinedepot_dev_odoo:8069/xmlrpc/2/object",
+        "body": "={{ $json.preload_lots_xml }}",
+        "method": "POST",
+        "options": {},
+        "sendBody": true,
+        "contentType": "raw",
+        "sendHeaders": true,
+        "rawContentType": "text/xml",
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "text/xml"
+            }
+          ]
+        }
+      },
+      "retryOnFail": true,
+      "typeVersion": 4.1,
+      "waitBetweenTries": 3000
+    },
+    {
+      "id": "c75778a2-3da3-4389-bb2a-6db52739d451",
+      "name": "Consultar Duplicados",
+      "type": "n8n-nodes-base.httpRequest",
+      "maxTries": 3,
+      "position": [
+        1900,
+        240
+      ],
+      "parameters": {
+        "url": "http://medicinedepot_dev_odoo:8069/xmlrpc/2/object",
+        "body": "={{ $('Preparar Preload Lotes').first().json.check_duplicate_xml }}",
+        "method": "POST",
+        "options": {},
+        "sendBody": true,
+        "contentType": "raw",
+        "sendHeaders": true,
+        "rawContentType": "text/xml",
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "text/xml"
+            }
+          ]
+        }
+      },
+      "retryOnFail": true,
+      "typeVersion": 4.1,
+      "waitBetweenTries": 3000
+    },
+    {
+      "id": "76c9a8f0-94ce-4063-8907-8a581751d615",
+      "name": "Resolver Lotes y Precios",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        2100,
+        240
+      ],
+      "parameters": {
+        "jsCode": "const duplicateXml = $json.data || JSON.stringify($json);\nconst productsRawXml = $('Buscar Productos Odoo').first().json.data || JSON.stringify($('Buscar Productos Odoo').first().json);\nconst lotsRawXml = $('Preload Lotes Batch').first().json.data || JSON.stringify($('Preload Lotes Batch').first().json);\nconst context = $('Preparar Preload Lotes').first().json;\n\n// 1. Verificar Duplicados\nconst dupIdMatch = duplicateXml.match(/<name>id<\\/name>\\s*<value>(?:<int>|<i4>)(\\d+)(?:<\\/int>|<\\/i4>)<\\/value>/);\nconst dupNameMatch = duplicateXml.match(/<name>name<\\/name>\\s*<value><string>([^<]+)<\\/string><\\/value>/);\nconst dupStateMatch = duplicateXml.match(/<name>state<\\/name>\\s*<value><string>([^<]+)<\\/string><\\/value>/);\nconst dupTotalMatch = duplicateXml.match(/<name>amount_total<\\/name>\\s*<value>(?:<double>|<int>|<i4>)([\\d\\.]+)(?:<\\/double>|<\\/int>|<\\/i4>)<\\/value>/);\n\nif (dupIdMatch && context.partner_ref) {\n  const dupId = parseInt(dupIdMatch[1], 10);\n  const odooBaseUrl = 'https://odoo.bodegademedicamentos.com';\n  return [{\n    json: {\n      is_duplicate: true,\n      po_id: dupId,\n      po_name: dupNameMatch ? dupNameMatch[1] : `PO${dupId}`,\n      po_url: `${odooBaseUrl}/odoo/purchase/${dupId}`,\n      partner: context.partner_display_name,\n      partner_ref: context.partner_ref,\n      state: dupStateMatch ? dupStateMatch[1] : 'draft',\n      amount_total: dupTotalMatch ? parseFloat(dupTotalMatch[1]) : context.total_estimated,\n      notice: 'DUPLICADO DETECTADO: Ya existe una orden de compra registrada con este folio de proveedor.'\n    }\n  }];\n}\n\n// 2. Mapear Productos existentes\nconst productMap = {};\nconst productRegex = /<struct>([\\s\\S]*?)<\\/struct>/g;\nlet pMatch;\nwhile ((pMatch = productRegex.exec(productsRawXml)) !== null) {\n  const s = pMatch[1];\n  const idM = s.match(/<name>id<\\/name>\\s*<value>(?:<int>|<i4>)(\\d+)(?:<\\/int>|<\\/i4>)<\\/value>/);\n  const codeM = s.match(/<name>default_code<\\/name>\\s*<value><string>([^<]+)<\\/string><\\/value>/);\n  const nameM = s.match(/<name>name<\\/name>\\s*<value><string>([^<]+)<\\/string><\\/value>/);\n  const priceM = s.match(/<name>list_price<\\/name>\\s*<value>(?:<double>|<int>|<i4>)([\\d\\.]+)(?:<\\/double>|<\\/int>|<\\/i4>)<\\/value>/);\n  if (idM && codeM) {\n    productMap[codeM[1].trim()] = {\n      id: parseInt(idM[1], 10),\n      name: nameM ? nameM[1] : 'Producto',\n      list_price: priceM ? parseFloat(priceM[1]) : 0\n    };\n  }\n}\n\nfunction compactLot(value) {\n  let n = (value || '').trim().toUpperCase();\n  if (!n) return '';\n  n = n.replace(/^(?:LOTE|LT|LOT|L|NO|NUM|#|LOTE:)\\s*[-:]*\\s*/i, '');\n  n = n.replace(/[\\s\\-_\\/\\\\\\.:,]/g, '');\n  if (/^\\d+$/.test(n)) {\n    n = n.replace(/^0+/, '') || '0';\n  }\n  return n;\n}\n\nconst lotsByProduct = {};\nlet lMatch;\nwhile ((lMatch = productRegex.exec(lotsRawXml)) !== null) {\n  const s = lMatch[1];\n  const idM = s.match(/<name>id<\\/name>\\s*<value>(?:<int>|<i4>)(\\d+)(?:<\\/int>|<\\/i4>)<\\/value>/);\n  const nameM = s.match(/<name>name<\\/name>\\s*<value><string>([^<]+)<\\/string><\\/value>/);\n  const expM = s.match(/<name>expiration_date<\\/name>\\s*<value>(?:<string>|<dateTime.iso8601>)([^<]+)(?:<\\/string>|<\\/dateTime.iso8601>)<\\/value>/);\n  const prodM = s.match(/<name>product_id<\\/name>[\\s\\S]*?<value>(?:<int>|<i4>)(\\d+)(?:<\\/int>|<\\/i4>)<\\/value>/);\n  if (idM && nameM && prodM) {\n    const pId = parseInt(prodM[1], 10);\n    const lName = nameM[1].trim();\n    if (!lotsByProduct[pId]) lotsByProduct[pId] = [];\n    lotsByProduct[pId].push({\n      id: parseInt(idM[1], 10),\n      name: lName,\n      compact: compactLot(lName),\n      expiration_date: expM ? expM[1] : ''\n    });\n  }\n}\n\nconst priceVariations = [];\nconst lotsResolved = [];\n\nconst orderLinesXml = context.lines.map(line => {\n  const matched = productMap[line.product_code] || productMap[line.barcode];\n  const prodId = matched ? matched.id : 8286;\n  let prodName = (line.product_name || (matched ? matched.name : 'Producto'));\n  \n  const inputLot = line.lot_number || '';\n  let expDate = line.expiration_date || '';\n  let lotId = false;\n  let matchType = 'none';\n  \n  if (inputLot) {\n    const pLots = lotsByProduct[prodId] || [];\n    const targetCompact = compactLot(inputLot);\n    \n    const exact = pLots.find(l => l.name.toLowerCase() === inputLot.toLowerCase());\n    if (exact) {\n      lotId = exact.id;\n      matchType = 'exact';\n      if (!expDate && exact.expiration_date) expDate = exact.expiration_date;\n    } else {\n      const comp = pLots.find(l => l.compact === targetCompact);\n      if (comp) {\n        lotId = comp.id;\n        matchType = 'compact_fuzzy';\n        if (!expDate && comp.expiration_date) expDate = comp.expiration_date;\n      } else if (targetCompact.length >= 4) {\n        const sub = pLots.find(l => l.compact.length >= 4 && (l.compact.includes(targetCompact) || targetCompact.includes(l.compact)));\n        if (sub) {\n          lotId = sub.id;\n          matchType = 'substring_fuzzy';\n          if (!expDate && sub.expiration_date) expDate = sub.expiration_date;\n        }\n      }\n    }\n    \n    lotsResolved.push({\n      product_id: prodId,\n      product_name: prodName,\n      input_lot: inputLot,\n      resolved_lot_id: lotId,\n      match_type: matchType,\n      inherited_expiration_date: expDate\n    });\n    \n    prodName += ` [Lote: ${inputLot}${expDate ? ' | Cad: ' + expDate : ''}]`;\n  }\n  \n  const listPrice = matched ? matched.list_price : 0;\n  if (listPrice > 0 && Math.abs(line.price_unit - listPrice) > 0.01) {\n    const deltaPct = ((line.price_unit - listPrice) / listPrice) * 100;\n    priceVariations.push({\n      product_id: prodId,\n      product_name: prodName,\n      old_price: listPrice,\n      new_price: line.price_unit,\n      delta_pct: parseFloat(deltaPct.toFixed(2)),\n      direction: deltaPct > 0 ? 'up' : 'down'\n    });\n  }\n  \n  const safeProdName = prodName.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');\n  let lineMembers = `\n    <member><name>product_id</name><value><int>${prodId}</int></value></member>\n    <member><name>name</name><value><string>${safeProdName}</string></value></member>\n    <member><name>product_qty</name><value><double>${line.product_qty}</double></value></member>\n    <member><name>price_unit</name><value><double>${line.price_unit}</double></value></member>`;\n  \n  if (lotId) {\n    lineMembers += `\n    <member><name>lot_id</name><value><int>${lotId}</int></value></member>`;\n  }\n  if (expDate) {\n    const safeExp = expDate.includes(' ') ? expDate : `${expDate} 00:00:00`;\n    lineMembers += `\n    <member><name>lot_expiration_date</name><value><string>${safeExp}</string></value></member>`;\n  }\n  \n  return `\n    <value>\n      <array>\n        <data>\n          <value><int>0</int></value>\n          <value><int>0</int></value>\n          <value>\n            <struct>${lineMembers}</struct>\n          </value>\n        </data>\n      </array>\n    </value>`;\n}).join('');\n\nconst createPoXml = `<?xml version=\"1.0\"?>\n<methodCall>\n  <methodName>execute_kw</methodName>\n  <params>\n    <param><value><string>${context.odoo_db}</string></value></param>\n    <param><value><int>${context.odoo_uid}</int></value></param>\n    <param><value><string>${context.odoo_password}</string></value></param>\n    <param><value><string>purchase.order</string></value></param>\n    <param><value><string>create</string></value></param>\n    <param>\n      <value>\n        <array>\n          <data>\n            <value>\n              <struct>\n                <member><name>partner_id</name><value><int>${context.partner_id}</int></value></member>\n                <member><name>partner_ref</name><value><string>${context.partner_ref || ''}</string></value></member>\n                <member><name>origin</name><value><string>${context.origin || 'RPA n8n'}</string></value></member>\n                <member><name>note</name><value><string>${context.note || ''}</string></value></member>\n                <member>\n                  <name>order_line</name>\n                  <value><array><data>${orderLinesXml}</data></array></value>\n                </member>\n              </struct>\n            </value>\n          </data>\n        </array>\n      </value>\n    </param>\n  </params>\n</methodCall>`;\n\nreturn [{\n  json: {\n    ...context,\n    is_duplicate: false,\n    price_variations: priceVariations,\n    lots_resolved: lotsResolved,\n    create_po_xml: createPoXml\n  }\n}];"
+      },
+      "typeVersion": 2
+    },
+    {
+      "id": "a01e19b6-b055-407a-afe1-6a03690a32e1",
+      "name": "Es Duplicado?",
+      "type": "n8n-nodes-base.if",
+      "position": [
+        2300,
+        240
+      ],
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{ $json.is_duplicate }}",
+              "value2": true
+            }
+          ]
+        }
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "ef36ebeb-93ee-4ba5-a578-8bc31cef61f8",
+      "name": "Respond Duplicate Found",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "position": [
+        2520,
+        120
+      ],
+      "parameters": {
+        "options": {
+          "responseCode": 200
+        },
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({\n  status: 'already_registered',\n  notice: $json.notice,\n  message: 'La orden con este folio ya existe en Odoo Dev.',\n  data: {\n    po_id: $json.po_id,\n    po_name: $json.po_name,\n    po_url: $json.po_url,\n    partner: $json.partner,\n    partner_ref: $json.partner_ref,\n    state: $json.state,\n    amount_total: $json.amount_total\n  }\n}, null, 2) }}"
+      },
+      "typeVersion": 1.1
+    },
+    {
+      "id": "ee71e840-3c27-4210-a187-59c95fd99d80",
+      "name": "Crear PO en Odoo",
+      "type": "n8n-nodes-base.httpRequest",
+      "maxTries": 3,
+      "position": [
+        2520,
+        320
+      ],
+      "parameters": {
+        "url": "http://medicinedepot_dev_odoo:8069/xmlrpc/2/object",
+        "body": "={{ $json.create_po_xml }}",
+        "method": "POST",
+        "options": {},
+        "sendBody": true,
+        "contentType": "raw",
+        "sendHeaders": true,
+        "rawContentType": "text/xml",
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "text/xml"
+            }
+          ]
+        }
+      },
+      "retryOnFail": true,
+      "typeVersion": 4.1,
+      "waitBetweenTries": 3000
+    },
+    {
+      "id": "600a337f-6f7a-4fa9-88f5-96270e102634",
+      "name": "Preparar Post-Creacion",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        2720,
+        320
+      ],
+      "parameters": {
+        "jsCode": "const rawXml = $json.data || $json.body || JSON.stringify($json);\nconst match = rawXml.match(/<int>(\\d+)<\\/int>/) || rawXml.match(/<i4>(\\d+)<\\/i4>/);\nconst poId = match ? parseInt(match[1], 10) : null;\n\nconst prev = $('Resolver Lotes y Precios').first().json;\n\nconst autoConfirmXml = poId ? `<?xml version=\"1.0\"?>\n<methodCall>\n  <methodName>execute_kw</methodName>\n  <params>\n    <param><value><string>${prev.odoo_db}</string></value></param>\n    <param><value><int>${prev.odoo_uid}</int></value></param>\n    <param><value><string>${prev.odoo_password}</string></value></param>\n    <param><value><string>purchase.order</string></value></param>\n    <param><value><string>button_confirm</string></value></param>\n    <param>\n      <value>\n        <array>\n          <data>\n            <value>\n              <array>\n                <data>\n                  <value><int>${poId}</int></value>\n                </data>\n              </array>\n            </value>\n          </data>\n        </array>\n      </value>\n    </param>\n  </params>\n</methodCall>` : '';\n\nconst notifXmls = (prev.price_variations || []).map(v => `\n<value>\n  <struct>\n    <member><name>product_id</name><value><int>${v.product_id}</int></value></member>\n    <member><name>product_name</name><value><string>${v.product_name}</string></value></member>\n    <member><name>partner_id</name><value><int>${prev.partner_id}</int></value></member>\n    <member><name>old_price</name><value><double>${v.old_price}</double></value></member>\n    <member><name>new_price</name><value><double>${v.new_price}</double></value></member>\n    <member><name>delta_pct</name><value><double>${v.delta_pct}</double></value></member>\n    <member><name>direction</name><value><string>${v.direction}</string></value></member>\n    <member><name>purchase_order_id</name><value><int>${poId || 1}</int></value></member>\n    <member><name>state</name><value><string>unread</string></value></member>\n  </struct>\n</value>`).join('');\n\nconst createNotifsXml = notifXmls ? `<?xml version=\"1.0\"?>\n<methodCall>\n  <methodName>execute_kw</methodName>\n  <params>\n    <param><value><string>${prev.odoo_db}</string></value></param>\n    <param><value><int>${prev.odoo_uid}</int></value></param>\n    <param><value><string>${prev.odoo_password}</string></value></param>\n    <param><value><string>purchase.price.notification</string></value></param>\n    <param><value><string>create</string></value></param>\n    <param>\n      <value>\n        <array>\n          <data>${notifXmls}</data>\n        </array>\n      </value>\n    </param>\n  </params>\n</methodCall>` : '';\n\nconst hasPriceVariations = (prev.price_variations || []).length > 0;\nconst tgMessageThreadId = hasPriceVariations\n  ? (prev.telegram_thread_variacion_precios || prev.telegram_thread_compras)\n  : prev.telegram_thread_compras;\n\nconst odooBaseUrl = 'https://odoo.bodegademedicamentos.com';\nconst poUrl = poId ? `${odooBaseUrl}/odoo/purchase/${poId}` : odooBaseUrl;\n\n// Construir mensaje enriquecido para Telegram (Estilo Tarjeta Ejecutiva)\nlet tgMsg = `━━━━━━━━━━━━━━━━━━━━━━\\n`;\ntgMsg += `🏢 <b>MEDICINE DEPOT</b> | <b>ORDEN DE COMPRA</b>\\n`;\ntgMsg += `━━━━━━━━━━━━━━━━━━━━━━\\n`;\ntgMsg += `🟢 <b>Estado:</b> <code>${prev.auto_confirm ? 'CONFIRMADA (purchase)' : 'PRESUPUESTO (draft)'}</code>\\n`;\ntgMsg += `📄 <b>Folio OC:</b> <code>PO${poId}</code> (ID: #${poId})\\n`;\ntgMsg += `🚚 <b>Proveedor:</b> <b>${prev.partner_display_name}</b>\\n`;\ntgMsg += `📑 <b>Folio Prov:</b> <code>${prev.partner_ref || 'N/A'}</code>\\n`;\ntgMsg += `💵 <b>Total Estimado:</b> <code>$${prev.total_estimated.toLocaleString('es-MX', {minimumFractionDigits: 2})} MXN</code>\\n`;\ntgMsg += `📦 <b>Partidas:</b> <code>${prev.total_lines} productos</code>\\n`;\n\nif (prev.lots_resolved && prev.lots_resolved.length > 0) {\n  tgMsg += `\\n━━━━━━━━━━━━━━━━━━━━━━\\n`;\n  tgMsg += `📦 <b>TRAZABILIDAD DE LOTES ASIGNADOS</b>\\n`;\n  tgMsg += `━━━━━━━━━━━━━━━━━━━━━━\\n`;\n  prev.lots_resolved.forEach(l => {\n    const exp = l.inherited_expiration_date ? l.inherited_expiration_date.split(' ')[0] : 'S/F';\n    const prodLabel = l.product_name ? l.product_name.split('[')[0].trim() : 'Producto';\n    tgMsg += `▫️ <b>${prodLabel}</b>\\n`;\n    tgMsg += `   🏷️ Lote: <code>${l.input_lot}</code> | ⏳ Cad: <code>${exp}</code> [${l.match_type}]\\n`;\n  });\n}\n\nif (prev.price_variations && prev.price_variations.length > 0) {\n  tgMsg += `\\n━━━━━━━━━━━━━━━━━━━━━━\\n`;\n  tgMsg += `⚠️ <b>AUDITORÍA DE PRECIOS</b>\\n`;\n  tgMsg += `━━━━━━━━━━━━━━━━━━━━━━\\n`;\n  prev.price_variations.forEach(pv => {\n    const icon = pv.direction === 'up' ? '🔺' : '🔻';\n    const pLabel = pv.product_name.split('[')[0].trim();\n    tgMsg += `${icon} <b>${pLabel}:</b> <b>${pv.delta_pct > 0 ? '+' : ''}${pv.delta_pct}%</b> (<code>$${pv.old_price}</code> ➔ <code>$${pv.new_price}</code>)\\n`;\n  });\n}\n\ntgMsg += `\\n━━━━━━━━━━━━━━━━━━━━━━\\n`;\ntgMsg += `🤖 <i>RPA Bot • Sincronizado con Odoo Dev 19</i>`;\n\nconst tgMarkup = {\n  inline_keyboard: [\n    [\n      {\"text\": \"🔗 Ver en Odoo\", \"url\": poUrl},\n      {\"text\": \"📦 Albarán Stock\", \"url\": \"https://odoo.bodegademedicamentos.com/odoo/action-stock.action_picking_tree_all\"}\n    ]\n  ]\n};\n\nreturn [{\n  json: {\n    success: !!poId,\n    po_id: poId,\n    po_url: poUrl,\n    auto_confirm: prev.auto_confirm,\n    auto_confirm_xml: autoConfirmXml,\n    create_notifs_xml: createNotifsXml,\n    telegram_bot_token: prev.telegram_bot_token,\n    tg_chat_id: prev.telegram_chat_id,\n    tg_message_thread_id: tgMessageThreadId,\n    tg_text: tgMsg,\n    tg_reply_markup: JSON.stringify(tgMarkup),\n    price_variations: prev.price_variations,\n    lots_resolved: prev.lots_resolved,\n    partner: prev.partner_display_name,\n    partner_ref: prev.partner_ref,\n    total_estimated: prev.total_estimated,\n    total_lines: prev.total_lines,\n    has_price_notifications: (prev.price_variations || []).length > 0\n  }\n}];"
+      },
+      "typeVersion": 2
+    },
+    {
+      "id": "d7124943-6c8b-49a0-9d38-d026c42c8674",
+      "name": "Hay Variaciones de Precio?",
+      "type": "n8n-nodes-base.if",
+      "position": [
+        2920,
+        320
+      ],
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{ $json.has_price_notifications }}",
+              "value2": true
+            }
+          ]
+        }
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "365b192c-6abc-471b-a136-440ba9173194",
+      "name": "Registrar Variacion Precios Odoo",
+      "type": "n8n-nodes-base.httpRequest",
+      "maxTries": 3,
+      "position": [
+        3140,
+        240
+      ],
+      "parameters": {
+        "url": "http://medicinedepot_dev_odoo:8069/xmlrpc/2/object",
+        "body": "={{ $json.create_notifs_xml }}",
+        "method": "POST",
+        "options": {},
+        "sendBody": true,
+        "contentType": "raw",
+        "sendHeaders": true,
+        "rawContentType": "text/xml",
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "text/xml"
+            }
+          ]
+        }
+      },
+      "retryOnFail": true,
+      "typeVersion": 4.1,
+      "waitBetweenTries": 3000
+    },
+    {
+      "id": "7d23e0c4-0229-4ede-b731-8681f1c92e47",
+      "name": "Auto-Confirmar?",
+      "type": "n8n-nodes-base.if",
+      "position": [
+        3340,
+        320
+      ],
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{ $('Preparar Post-Creacion').first().json.auto_confirm }}",
+              "value2": true
+            }
+          ]
+        }
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "aa9c265b-3061-4af9-9e87-50d175546dac",
+      "name": "Confirmar PO en Odoo",
+      "type": "n8n-nodes-base.httpRequest",
+      "maxTries": 3,
+      "position": [
+        3560,
+        240
+      ],
+      "parameters": {
+        "url": "http://medicinedepot_dev_odoo:8069/xmlrpc/2/object",
+        "body": "={{ $('Preparar Post-Creacion').first().json.auto_confirm_xml }}",
+        "method": "POST",
+        "options": {},
+        "sendBody": true,
+        "contentType": "raw",
+        "sendHeaders": true,
+        "rawContentType": "text/xml",
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "text/xml"
+            }
+          ]
+        }
+      },
+      "retryOnFail": true,
+      "typeVersion": 4.1,
+      "waitBetweenTries": 3000
+    },
+    {
+      "id": "b666d837-af97-43c9-b2f9-2d50881866e6",
+      "name": "Notificar Telegram",
+      "type": "n8n-nodes-base.httpRequest",
+      "maxTries": 2,
+      "position": [
+        3780,
+        320
+      ],
+      "parameters": {
+        "url": "=https://api.telegram.org/bot{{ $('Preparar Post-Creacion').first().json.telegram_bot_token }}/sendMessage",
+        "method": "POST",
+        "options": {},
+        "jsonBody": "={{ JSON.stringify({\n  chat_id: $('Preparar Post-Creacion').first().json.tg_chat_id,\n  message_thread_id: Number($('Preparar Post-Creacion').first().json.tg_message_thread_id),\n  parse_mode: 'HTML',\n  text: $('Preparar Post-Creacion').first().json.tg_text,\n  reply_markup: JSON.parse($('Preparar Post-Creacion').first().json.tg_reply_markup)\n}) }}",
+        "sendBody": true,
+        "specifyBody": "json"
+      },
+      "retryOnFail": true,
+      "typeVersion": 4.1,
+      "waitBetweenTries": 2000
+    },
+    {
+      "id": "b408c2e5-eeff-4943-95b3-1edad1b55a3c",
+      "name": "Respond Success",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "position": [
+        4000,
+        320
+      ],
+      "parameters": {
+        "options": {
+          "responseCode": 201
+        },
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({\n  status: 'success',\n  environment: 'dev_testing',\n  database: 'medicinedepot_dev',\n  message: 'Orden de compra procesada y notificada a Telegram exitosamente',\n  data: {\n    po_id: $('Preparar Post-Creacion').first().json.po_id,\n    po_url: $('Preparar Post-Creacion').first().json.po_url,\n    partner: $('Preparar Post-Creacion').first().json.partner,\n    partner_ref: $('Preparar Post-Creacion').first().json.partner_ref,\n    total_estimated: $('Preparar Post-Creacion').first().json.total_estimated,\n    total_lines: $('Preparar Post-Creacion').first().json.total_lines,\n    auto_confirmed: $('Preparar Post-Creacion').first().json.auto_confirm,\n    telegram_notified: true,\n    price_variations_detected: ($('Preparar Post-Creacion').first().json.price_variations || []).length,\n    price_variations: $('Preparar Post-Creacion').first().json.price_variations,\n    lots_resolved: $('Preparar Post-Creacion').first().json.lots_resolved\n  }\n}, null, 2) }}"
+      },
+      "typeVersion": 1.1
+    },
+    {
+      "id": "if-partner-encontrado-04",
+      "name": "Partner Encontrado?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        1320,
+        240
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.partner_found }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        }
+      }
+    },
+    {
+      "id": "preparar-alerta-partner-no-encontrado-04",
+      "name": "Preparar Alerta Partner No Encontrado",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1540,
+        400
+      ],
+      "parameters": {
+        "jsCode": "const ctx = $json;\nconst buscado = ctx.partner_vat || ctx.partner_name || 'N/D';\nconst text = `🟡 <b>Orden B2B rechazada: proveedor no encontrado</b>\\nVAT/nombre buscado: <code>${buscado}</code>\\nNo se creo ninguna orden de compra — antes se le atribuia por error a Brudifarma (bug corregido 2026-08-13).\\nRequiere revision manual: verificar VAT o dar de alta al proveedor.`;\nreturn [{ json: { text } }];"
+      }
+    },
+    {
+      "id": "notificar-telegram-partner-no-encontrado-04",
+      "name": "Notificar Telegram Partner No Encontrado",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1760,
+        400
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "=https://api.telegram.org/bot{{ $env.TELEGRAM_BOT_TOKEN }}/sendMessage",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ chat_id: $env.TELEGRAM_CHAT_ID, message_thread_id: 6, parse_mode: 'HTML', text: $json.text }) }}",
+        "options": {
+          "timeout": 10000
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 2,
+      "notes": "message_thread_id=6 = topic Compras."
+    },
+    {
+      "id": "respond-partner-not-found-04",
+      "name": "Respond Partner Not Found",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        1980,
+        400
+      ],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { success: false, error: 'Proveedor no encontrado (VAT/nombre no coincide con ningun proveedor existente en Odoo). Contactar a Compras para dar de alta al proveedor o corregir el VAT.' } }}",
+        "options": {
+          "responseCode": 404
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Webhook Inbound PO": {
+      "main": [
+        [
+          {
+            "node": "Validar Payload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validar Payload": {
+      "main": [
+        [
+          {
+            "node": "Payload Valido?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Payload Valido?": {
+      "main": [
+        [
+          {
+            "node": "Odoo Auth (XML-RPC)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond Validation Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Odoo Auth (XML-RPC)": {
+      "main": [
+        [
+          {
+            "node": "Parse Auth Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Auth Response": {
+      "main": [
+        [
+          {
+            "node": "Buscar Partner Odoo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Buscar Partner Odoo": {
+      "main": [
+        [
+          {
+            "node": "Buscar Productos Odoo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Buscar Productos Odoo": {
+      "main": [
+        [
+          {
+            "node": "Preparar Preload Lotes",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar Preload Lotes": {
+      "main": [
+        [
+          {
+            "node": "Partner Encontrado?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preload Lotes Batch": {
+      "main": [
+        [
+          {
+            "node": "Consultar Duplicados",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Consultar Duplicados": {
+      "main": [
+        [
+          {
+            "node": "Resolver Lotes y Precios",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Resolver Lotes y Precios": {
+      "main": [
+        [
+          {
+            "node": "Es Duplicado?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Es Duplicado?": {
+      "main": [
+        [
+          {
+            "node": "Respond Duplicate Found",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Crear PO en Odoo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Crear PO en Odoo": {
+      "main": [
+        [
+          {
+            "node": "Preparar Post-Creacion",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar Post-Creacion": {
+      "main": [
+        [
+          {
+            "node": "Hay Variaciones de Precio?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Hay Variaciones de Precio?": {
+      "main": [
+        [
+          {
+            "node": "Registrar Variacion Precios Odoo",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Auto-Confirmar?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Registrar Variacion Precios Odoo": {
+      "main": [
+        [
+          {
+            "node": "Auto-Confirmar?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Auto-Confirmar?": {
+      "main": [
+        [
+          {
+            "node": "Confirmar PO en Odoo",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Notificar Telegram",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Confirmar PO en Odoo": {
+      "main": [
+        [
+          {
+            "node": "Notificar Telegram",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notificar Telegram": {
+      "main": [
+        [
+          {
+            "node": "Respond Success",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Partner Encontrado?": {
+      "main": [
+        [
+          {
+            "node": "Preload Lotes Batch",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Preparar Alerta Partner No Encontrado",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar Alerta Partner No Encontrado": {
+      "main": [
+        [
+          {
+            "node": "Notificar Telegram Partner No Encontrado",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notificar Telegram Partner No Encontrado": {
+      "main": [
+        [
+          {
+            "node": "Respond Partner Not Found",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "errorWorkflow": "error-handler-global-uuid"
+  },
+  "id": "sync-ordenes-compra-uuid",
+  "meta": {
+    "instanceId": "medicinedepot"
+  }
+}

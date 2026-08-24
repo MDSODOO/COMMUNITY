@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!--
+        md_login_layout_override · Centra el contenedor nativo de autenticación
+        (oe_website_login_container) para que la tarjeta Glassmorphism flote
+        verticalmente. La clase .md-login-container habilita los fondos
+        difuminados definidos en login_custom.scss; el diseño se aplica sin
+        tocar el <form class="oe_login_form"> nativo de Odoo.
+    -->
+    <template id="md_login_layout_override"
+              inherit_id="website.login_layout"
+              name="MedicineDepot · Login layout centered"
+              priority="10">
+        <xpath expr="//div[hasclass('oe_website_login_container')]" position="attributes">
+            <attribute name="class" add="md-login-container d-flex flex-column align-items-center justify-content-center" separator=" "/>
+        </xpath>
+    </template>
+
+</odoo>

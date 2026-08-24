@@ -39,6 +39,12 @@
             'md_pharma_regulatory/static/src/kanban_lot_detail/kanban_lot_detail_popup.xml',
             'md_pharma_regulatory/static/src/kanban_lot_detail/md_lot_detail_button.js',
             'md_pharma_regulatory/static/src/kanban_lot_detail/md_lot_detail_button.xml',
+            # Reexpone estos mismos 3 accesos rápidos dentro del Command
+            # Palette custom (md_command_palette, registry
+            # "md_launcher_product_actions") -- no crea dependencia mutua,
+            # ver comentario en el propio archivo. Va al final: importa
+            # MdKanbanLotDetailPopup ya cargado arriba.
+            'md_pharma_regulatory/static/src/js/launcher_product_actions.js',
         ],
         # Solo se inyecta cuando el dark mode del backend está activo (mismo
         # patrón que medicine_depot_portal/backend_dark.scss) -- aplica el

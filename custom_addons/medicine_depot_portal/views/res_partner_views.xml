@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_partner_form_affiliation_approval" model="ir.ui.view">
+        <field name="name">res.partner.form.affiliation.approval</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//sheet" position="before">
+                <div class="alert alert-warning mb-0" role="alert"
+                     invisible="x_affiliation_status != 'pending'">
+                    <strong>Afiliación pendiente de aprobación.</strong>
+                    Esta cuenta no tiene acceso a la tienda hasta que se apruebe.
+                    <button name="action_approve_affiliation" type="object"
+                            string="Aprobar Afiliación" class="btn btn-primary btn-sm ms-2"/>
+                </div>
+            </xpath>
+            <xpath expr="//field[@name='category_id']" position="after">
+                <field name="x_affiliation_status" invisible="not x_affiliation_status"/>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

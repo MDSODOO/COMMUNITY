@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="hr_attendance_biometric_geofence.CheckinAction">
+        <div class="o_hr_attendance_biometric d-flex flex-column align-items-center justify-content-center gap-3 p-5 text-center">
+            <h2>Asistencia con huella digital</h2>
+            <p class="text-muted" style="max-width: 480px;">
+                Se te pedirá tu huella (o llave de seguridad) y, si tu red no
+                se reconoce como la de tu sucursal, tu ubicación GPS como
+                respaldo.
+            </p>
+            <div class="d-flex gap-2">
+                <button class="btn btn-primary btn-lg" t-on-click="onCheckin" t-att-disabled="state.busy">
+                    Marcar entrada / salida
+                </button>
+                <button class="btn btn-secondary" t-on-click="onEnroll" t-att-disabled="state.busy">
+                    Registrar mi huella
+                </button>
+            </div>
+        </div>
+    </t>
+</templates>

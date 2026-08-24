@@ -8,6 +8,17 @@ Historial generado automáticamente a partir de `git log -- md_asset_devices` (y
 
 ---
 
+## 2026-08-17
+
+- 🐛 fix(md_asset_devices): bloquear asignación activa a dispositivos que no estén en estado "En uso" (`device.assignment._check_device_available_for_assignment`) — antes se podía asignar un equipo en mantenimiento o retirado
+- 🐛 fix(md_asset_devices): `action_retire_device` ahora marca como "devuelto" las asignaciones activas del dispositivo al retirarlo — antes quedaba un usuario_asignado fantasma en un equipo dado de baja
+- 🐛 fix(md_asset_devices): `ir.model.access.csv` — Manager de `device.subscription` no tenía `perm_create` (inconsistente con el resto de managers del módulo); un gerente no podía dar de alta una suscripción nueva
+- 🐛 fix(md_asset_devices): contadores de vencimiento (`mantenimiento_vencido_count`, `documentos_vencidos_count`, `suscripciones_vencidas_count`) son `store=True` pero dependen de la fecha de hoy, no de un campo editado — sin recálculo forzado quedaban desactualizados hasta el próximo write; se agrega cron diario `cron_device_refresh_alert_counts`
+- ✨ feat(md_asset_devices): smart button "Asignaciones" en la ficha del dispositivo (antes solo visible embebido en la pestaña Inventario, sin acceso directo ni vista propia) + `views/device_assignment_views.xml` nuevo
+- ✨ feat(md_asset_devices): menú standalone "Asignaciones" (lista todos los dispositivos asignados por usuario/estado, con vista de búsqueda propia y filtro "Activas" por defecto) — antes solo se veían las asignaciones dispositivo por dispositivo
+- 🐛 fix(md_asset_devices): bloquear programar un mantenimiento nuevo sobre un dispositivo "Fuera de servicio" (`device.maintenance._check_device_not_retired`); `action_completar` ya no agenda un seguimiento automático si el dispositivo fue retirado mientras el mantenimiento estaba abierto
+- 🔄 refactor(md_asset_devices): eliminada `device_subscription_credentials_rule` (ir.rule) — su `domain_force` era siempre verdadero, no restringía nada a nivel de fila; la protección real de usuario/contraseña ya la da `groups=` a nivel de campo en el modelo
+
 ## 2026-08-13
 
 - 🔄 refactor(md_asset_devices): renombrar módulo (`quifamesa_it_management` → `md_asset_devices`), quitar referencias textuales a Quifamesa y agregar campo `company_id` (sucursal) con regla multi-compañía para operar en las 6 sucursales de Medicine Depot

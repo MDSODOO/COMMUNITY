@@ -109,13 +109,12 @@
         </field>
     </record>
 
-    <!-- Solo administradores (base.group_system) ven el módulo/menú de
-         Farmacovigilancia en la vista de aplicaciones. -->
+    <!-- Menú de Farmacovigilancia (unificado bajo md_pharma_regulatory.menu_md_pharma_root) -->
     <menuitem id="menu_medicine_depot_pharmacovigilance_root"
-              name="Farmacovigilancia"
+              name="Reportes de Farmacovigilancia"
               action="action_medicine_depot_pharmacovigilance_report"
               web_icon="medicine_depot_portal,static/description/icon.png"
               groups="base.group_system"
-              sequence="95"/>
+              sequence="10"/>
 
 </odoo>

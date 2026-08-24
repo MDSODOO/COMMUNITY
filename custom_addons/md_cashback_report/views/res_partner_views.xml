@@ -6,9 +6,51 @@
         <field name="model">res.partner</field>
         <field name="inherit_id" ref="base.view_partner_form"/>
         <field name="arch" type="xml">
-            <xpath expr="//field[@name='category_id']" position="after">
-                <field name="x_cashback_split_scheme"/>
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button name="action_view_cashback_excluded_products"
+                        type="object"
+                        class="oe_stat_button"
+                        icon="fa-ban"
+                        invisible="not x_cashback_split_scheme">
+                    <field name="x_cashback_excluded_count"
+                           widget="statinfo"
+                           string="Productos Excluidos"/>
+                </button>
             </xpath>
+            <xpath expr="//page[@name='sales_purchases']//group[@name='misc']" position="after">
+                <group name="cashback_settings" string="Configuración de Cashback">
+                    <field name="x_cashback_split_scheme"/>
+                </group>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_partner_form_cashback_excluded_popup" model="ir.ui.view">
+        <field name="name">res.partner.form.cashback.excluded.popup</field>
+        <field name="model">res.partner</field>
+        <field name="arch" type="xml">
+            <form string="Productos Excluidos de Cashback">
+                <sheet>
+                    <h1>
+                        <field name="display_name" readonly="1"/>
+                    </h1>
+                    <p class="text-muted">
+                        Productos que no son elegibles para el esquema de descuento 2% + cashback 5%
+                        de este cliente. Usa "Agregar línea" para vincular más productos, o el ícono
+                        de basura para quitarlos.
+                    </p>
+                    <field name="x_cashback_excluded_product_ids">
+                        <list editable="bottom">
+                            <field name="default_code" string="Referencia"/>
+                            <field name="name" string="Producto"/>
+                            <field name="barcode" string="Código de barras"/>
+                        </list>
+                    </field>
+                </sheet>
+                <footer>
+                    <button string="Cerrar" class="btn-primary" special="cancel"/>
+                </footer>
+            </form>
         </field>
     </record>
 

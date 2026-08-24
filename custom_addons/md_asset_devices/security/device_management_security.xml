@@ -36,17 +36,10 @@
             <field name="implied_ids" eval="[(4, ref('device_management_manager_group'))]"/>
         </record>
 
-        <!-- REGLA DE ACCESO PARA CAMPOS SENSIBLES (Credenciales) -->
-        <record model="ir.rule" id="device_subscription_credentials_rule">
-            <field name="name">Credenciales de Suscripción - Solo Admin</field>
-            <field name="model_id" ref="md_asset_devices.model_device_subscription"/>
-            <field name="groups" eval="[(4, ref('device_management_admin_group'))]"/>
-            <field name="perm_read">1</field>
-            <field name="perm_write">1</field>
-            <field name="perm_create">1</field>
-            <field name="perm_unlink">1</field>
-            <field name="domain_force">[('id', '!=', -1)]</field>
-        </record>
+        <!-- La protección real de usuario/contraseña en device.subscription es el
+             groups="...admin_group" de esos dos campos (field-level, en el modelo
+             Python); un ir.rule de record no puede restringir campos, solo filas,
+             así que aquí no se declara ninguna regla para eso. -->
 
         <!-- MULTI-SUCURSAL: cada usuario solo ve equipos de las compañías que tiene habilitadas -->
         <record model="ir.rule" id="device_management_company_rule">

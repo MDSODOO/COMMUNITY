@@ -1,0 +1,379 @@
+{
+  "name": "03_Alertas_Lotes_Vencimiento",
+  "nodes": [
+    {
+      "id": "schedule-03",
+      "name": "Schedule",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 9
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "autenticar-odoo-03",
+      "name": "Autenticar Odoo",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        220,
+        0
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.ODOO_INTERNAL_URL }}/jsonrpc",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ jsonrpc: '2.0', method: 'call', params: { service: 'common', method: 'authenticate', args: [$env.ODOO_DB, $env.ODOO_USER, $env.ODOO_PASSWORD, {}] }, id: 1 }) }}",
+        "options": {
+          "timeout": 10000
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 3000,
+      "onError": "continueErrorOutput",
+      "notes": "Mismo fix que 02: /jsonrpc en vez del envelope XML-RPC invalido que tenia el stub original."
+    },
+    {
+      "id": "if-auth-ok-03",
+      "name": "IF - Auth OK?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        440,
+        -80
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.error }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "empty"
+              }
+            },
+            {
+              "leftValue": "={{ typeof $json.result }}",
+              "rightValue": "number",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        }
+      }
+    },
+    {
+      "id": "calcular-fecha-limite",
+      "name": "Calcular Fecha Limite",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        660,
+        -160
+      ],
+      "parameters": {
+        "jsCode": "const uid = $input.first().json.result;\nconst limitDate = $now.plus({ days: 30 }).toFormat('yyyy-MM-dd');\nreturn [{ json: { result: uid, limit_date: limitDate } }];"
+      }
+    },
+    {
+      "id": "buscar-lotes-por-vencer",
+      "name": "Buscar Lotes Por Vencer",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        880,
+        -160
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.ODOO_INTERNAL_URL }}/jsonrpc",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ jsonrpc: '2.0', method: 'call', params: { service: 'object', method: 'execute_kw', args: [$env.ODOO_DB, $json.result, $env.ODOO_PASSWORD, 'stock.lot', 'search_read', [[['use_expiration_date', '=', true], ['expiration_date', '<=', $json.limit_date], ['product_qty', '>', 0]]], { fields: ['name', 'product_id', 'expiration_date', 'product_qty', 'md_expiry_color'], limit: 500, order: 'expiration_date asc' }] }, id: 1 }) }}",
+        "options": {
+          "timeout": 20000
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 3000,
+      "onError": "continueErrorOutput",
+      "notes": "Filtra por expiration_date <= hoy+30d (campo real verificado en stock.lot de medicinedepot_dev). md_is_short_expiry NO se puede usar en el dominio de busqueda: es un campo computado no almacenado en la BD (confirmado via error de Odoo al probarlo). md_expiry_color (danger/warning) si es un campo almacenado y se usa para consolidar la alerta por severidad."
+    },
+    {
+      "id": "if-hay-lotes",
+      "name": "IF - Hay Lotes Por Vencer?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        1100,
+        -160
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ ($json.result || []).length }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        }
+      }
+    },
+    {
+      "id": "consolidar-alertas-severidad",
+      "name": "Consolidar Alertas Por Severidad",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1320,
+        -240
+      ],
+      "parameters": {
+        "jsCode": "const rows = $input.first().json.result || [];\nconst fmt = r => `• ${r.name} — ${r.product_id?.[1] ?? 'N/D'} (cant=${r.product_qty}, vence=${(r.expiration_date||'').slice(0,10)})`;\nconst danger = rows.filter(r => r.md_expiry_color === 'danger');\nconst warning = rows.filter(r => r.md_expiry_color === 'warning');\nconst otros = rows.filter(r => r.md_expiry_color !== 'danger' && r.md_expiry_color !== 'warning');\nfunction seccion(titulo, items) {\n  if (!items.length) return '';\n  const top = items.slice(0, 20).map(fmt).join('\\n');\n  const extra = items.length > 20 ? `\\n… y ${items.length - 20} mas` : '';\n  return `\\n\\n<b>${titulo} (${items.length})</b>\\n${top}${extra}`;\n}\nlet text = `🚨 <b>Alertas de Lotes por Vencer (proximos 30 dias)</b>\\nTotal: ${rows.length} lote(s)`;\ntext += seccion('🔴 Critico / Ya vencidos', danger);\ntext += seccion('🟠 Proximos a vencer', warning);\ntext += seccion('⚪ Otros', otros);\nreturn [{ json: { text } }];"
+      }
+    },
+    {
+      "id": "formatear-heartbeat-lotes",
+      "name": "Formatear Heartbeat Sin Lotes",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1320,
+        -80
+      ],
+      "parameters": {
+        "jsCode": "return [{ json: { text: '✅ Alertas de Lotes: sin lotes por vencer en los proximos 30 dias.' } }];"
+      }
+    },
+    {
+      "id": "preparar-alerta-fallo-auth-03",
+      "name": "Preparar Alerta - Fallo Autenticacion",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        440,
+        160
+      ],
+      "parameters": {
+        "jsCode": "const err = $input.first().json;\nconst detalle = err.error?.message ?? err.message ?? JSON.stringify(err);\nreturn [{ json: { text: `🔴 <b>Alertas de Lotes: fallo al autenticar contra Odoo</b>\\nDetalle: <code>${detalle}</code>` } }];"
+      }
+    },
+    {
+      "id": "preparar-alerta-fallo-query-03",
+      "name": "Preparar Alerta - Fallo Consulta",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        880,
+        160
+      ],
+      "parameters": {
+        "jsCode": "const err = $input.first().json;\nconst detalle = err.error?.message ?? err.message ?? JSON.stringify(err);\nreturn [{ json: { text: `🔴 <b>Alertas de Lotes: fallo al consultar stock.lot</b>\\nDetalle: <code>${detalle}</code>` } }];"
+      }
+    },
+    {
+      "id": "notificar-telegram-caducidades",
+      "name": "Notificar Telegram Caducidades",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1560,
+        0
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "=https://api.telegram.org/bot{{ $env.TELEGRAM_BOT_TOKEN }}/sendMessage",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ chat_id: $env.TELEGRAM_CHAT_ID, message_thread_id: 9, parse_mode: 'HTML', text: $json.text }) }}",
+        "options": {
+          "timeout": 10000
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 2,
+      "notes": "message_thread_id=9 = topic Alertas de Caducidades (md_telegram_channel.code='alertas_caducidades')."
+    }
+  ],
+  "connections": {
+    "Schedule": {
+      "main": [
+        [
+          {
+            "node": "Autenticar Odoo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Autenticar Odoo": {
+      "main": [
+        [
+          {
+            "node": "IF - Auth OK?",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Preparar Alerta - Fallo Autenticacion",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF - Auth OK?": {
+      "main": [
+        [
+          {
+            "node": "Calcular Fecha Limite",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Preparar Alerta - Fallo Autenticacion",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calcular Fecha Limite": {
+      "main": [
+        [
+          {
+            "node": "Buscar Lotes Por Vencer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Buscar Lotes Por Vencer": {
+      "main": [
+        [
+          {
+            "node": "IF - Hay Lotes Por Vencer?",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Preparar Alerta - Fallo Consulta",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF - Hay Lotes Por Vencer?": {
+      "main": [
+        [
+          {
+            "node": "Consolidar Alertas Por Severidad",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Formatear Heartbeat Sin Lotes",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Consolidar Alertas Por Severidad": {
+      "main": [
+        [
+          {
+            "node": "Notificar Telegram Caducidades",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Formatear Heartbeat Sin Lotes": {
+      "main": [
+        [
+          {
+            "node": "Notificar Telegram Caducidades",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar Alerta - Fallo Autenticacion": {
+      "main": [
+        [
+          {
+            "node": "Notificar Telegram Caducidades",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar Alerta - Fallo Consulta": {
+      "main": [
+        [
+          {
+            "node": "Notificar Telegram Caducidades",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "errorWorkflow": "error-handler-global-uuid"
+  },
+  "id": "alertas-lotes-vencimiento-uuid",
+  "meta": {
+    "instanceId": "medicinedepot"
+  }
+}

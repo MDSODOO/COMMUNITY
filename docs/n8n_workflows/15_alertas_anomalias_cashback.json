@@ -1,0 +1,397 @@
+{
+  "name": "15_Alertas_Anomalias_Cashback",
+  "nodes": [
+    {
+      "id": "schedule-15",
+      "name": "Schedule",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "weeks",
+              "days": [
+                1,
+                4
+              ],
+              "triggerAtHour": 9,
+              "triggerAtMinute": 0
+            }
+          ]
+        }
+      },
+      "notes": "Lunes y Jueves a las 09:00 America/Merida. Permite detectar inconsistencias de descuentos 2%+5% antes del corte semanal y cierre de mes."
+    },
+    {
+      "id": "autenticar-odoo-15",
+      "name": "Autenticar Odoo",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        220,
+        0
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.ODOO_INTERNAL_URL }}/jsonrpc",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ jsonrpc: '2.0', method: 'call', params: { service: 'common', method: 'authenticate', args: [$env.ODOO_DB, $env.ODOO_USER, $env.ODOO_PASSWORD, {}] }, id: 1 }) }}",
+        "options": {
+          "timeout": 10000
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 3000,
+      "onError": "continueErrorOutput",
+      "notes": "Autenticación estándar JSON-RPC de Odoo."
+    },
+    {
+      "id": "if-auth-ok-15",
+      "name": "IF - Auth OK?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        440,
+        -80
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.error }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "empty"
+              }
+            },
+            {
+              "leftValue": "={{ typeof $json.result }}",
+              "rightValue": "number",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        }
+      }
+    },
+    {
+      "id": "preparar-parametros-busqueda",
+      "name": "Preparar Parametros Busqueda",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        660,
+        -160
+      ],
+      "parameters": {
+        "jsCode": "const uid = $input.first().json.result;\nconst now = $now.setZone('America/Merida');\nconst inicioMes = now.startOf('month').toFormat('yyyy-MM-dd');\nconst finMes = now.endOf('month').toFormat('yyyy-MM-dd');\n\nconst clientesTarget = [\n  'FARMACIAS ECONOMICAS DE OCCIDENTE SA DE C.V.',\n  'MARIA CECILIA PARADIS KERSTING',\n  'MARIA PAULINA RAMIREZ PARADIS'\n];\n\nreturn [{\n  json: {\n    uid,\n    date_from: inicioMes,\n    date_to: finMes,\n    clientes_target: clientesTarget,\n    mes_nombre: now.toFormat('MMMM yyyy')\n  }\n}];"
+      }
+    },
+    {
+      "id": "buscar-partners-cashback",
+      "name": "Buscar Clientes Target",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        880,
+        -160
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.ODOO_INTERNAL_URL }}/jsonrpc",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({\n  jsonrpc: '2.0',\n  method: 'call',\n  params: {\n    service: 'object',\n    method: 'execute_kw',\n    args: [\n      $env.ODOO_DB,\n      $json.uid,\n      $env.ODOO_PASSWORD,\n      'res.partner',\n      'search_read',\n      [[['name', 'in', $json.clientes_target]]],\n      { fields: ['id', 'name'] }\n    ]\n  },\n  id: 2\n}) }}",
+        "options": {
+          "timeout": 15000
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 3000,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "id": "consultar-facturas-mes",
+      "name": "Consultar Facturas del Mes",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1100,
+        -160
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.ODOO_INTERNAL_URL }}/jsonrpc",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ (() => {\n  const partners = $json.result || [];\n  const partnerIds = partners.map(p => p.id);\n  const params = $('Preparar Parametros Busqueda').first().json;\n  return JSON.stringify({\n    jsonrpc: '2.0',\n    method: 'call',\n    params: {\n      service: 'object',\n      method: 'execute_kw',\n      args: [\n        $env.ODOO_DB,\n        params.uid,\n        $env.ODOO_PASSWORD,\n        'account.move',\n        'search_read',\n        [[['partner_id', 'in', partnerIds], ['move_type', '=', 'out_invoice'], ['state', '=', 'posted'], ['invoice_date', '>=', params.date_from], ['invoice_date', '<=', params.date_to]]],\n        { fields: ['id', 'name', 'partner_id', 'company_id', 'invoice_date', 'amount_untaxed', 'amount_total'], order: 'invoice_date asc' }\n      ]\n    },\n    id: 3\n  });\n})() }}",
+        "options": {
+          "timeout": 20000
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 3000,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "id": "consultar-lineas-facturas",
+      "name": "Consultar Lineas de Facturas",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1320,
+        -160
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.ODOO_INTERNAL_URL }}/jsonrpc",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ (() => {\n  const moves = $json.result || [];\n  const moveIds = moves.map(m => m.id);\n  const params = $('Preparar Parametros Busqueda').first().json;\n  return JSON.stringify({\n    jsonrpc: '2.0',\n    method: 'call',\n    params: {\n      service: 'object',\n      method: 'execute_kw',\n      args: [\n        $env.ODOO_DB,\n        params.uid,\n        $env.ODOO_PASSWORD,\n        'account.move.line',\n        'search_read',\n        [[['move_id', 'in', moveIds], ['display_type', '=', 'product']]],\n        { fields: ['move_id', 'product_id', 'name', 'quantity', 'price_unit', 'discount', 'price_total'], limit: 10000 }\n      ]\n    },\n    id: 4\n  });\n})() }}",
+        "options": {
+          "timeout": 30000
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 3000,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "id": "analizar-anomalias-cashback",
+      "name": "Analizar Anomalias y Cashback",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1540,
+        -160
+      ],
+      "parameters": {
+        "jsCode": "const lines = $input.first().json.result || [];\nconst moves = $('Consultar Facturas del Mes').first().json.result || [];\nconst params = $('Preparar Parametros Busqueda').first().json;\n\nconst moveMap = {};\nfor (const m of moves) {\n  moveMap[m.id] = m;\n}\n\nlet totalBase = 0;\nlet totalDescAplicado = 0;\nlet cashbackTeorico5 = 0;\nlet cashbackReal5 = 0;\n\nlet lineasCon2 = 0;\nlet lineasSinDesc = 0;\nlet lineasDescAnomalo = 0;\n\nconst anomaliasPorFactura = {};\nconst detalleProductosAnomalos = {};\n\nfor (const l of lines) {\n  const m = moveMap[l.move_id?.[0]];\n  if (!m) continue;\n  \n  const qty = Number(l.quantity || 0);\n  const price = Number(l.price_unit || 0);\n  const base = qty * price;\n  const d = Number(l.discount || 0);\n  \n  totalBase += base;\n  totalDescAplicado += base * (d / 100);\n  cashbackTeorico5 += base * 0.05;\n  \n  if (Math.abs(d - 2.0) < 0.01) {\n    lineasCon2++;\n    cashbackReal5 += base * 0.05;\n  } else if (d === 0) {\n    lineasSinDesc++;\n    const invName = m.name || `ID:${m.id}`;\n    const partnerName = m.partner_id?.[1] || 'N/D';\n    const prodName = l.product_id?.[1] || l.name || 'Producto N/D';\n    \n    if (!anomaliasPorFactura[invName]) {\n      anomaliasPorFactura[invName] = {\n        cliente: partnerName,\n        fecha: m.invoice_date,\n        sucursal: m.company_id?.[1] || 'N/D',\n        lineas: 0,\n        basePerdida: 0,\n        cbPerdido: 0\n      };\n    }\n    anomaliasPorFactura[invName].lineas++;\n    anomaliasPorFactura[invName].basePerdida += base;\n    anomaliasPorFactura[invName].cbPerdido += base * 0.05;\n    \n    detalleProductosAnomalos[prodName] = (detalleProductosAnomalos[prodName] || 0) + (base * 0.05);\n  } else {\n    lineasDescAnomalo++;\n  }\n}\n\nconst round2 = n => Math.round((n + Number.EPSILON) * 100) / 100;\nconst totalAnomalias = lineasSinDesc + lineasDescAnomalo;\nconst cbEnRiesgo = round2(cashbackTeorico5 - cashbackReal5);\n\nconst topFacturas = Object.entries(anomaliasPorFactura)\n  .sort((a, b) => b[1].cbPerdido - a[1].cbPerdido)\n  .slice(0, 7)\n  .map(([inv, d]) => `• <b>${inv}</b> (${d.cliente.split(' ')[0]} / ${d.sucursal.replace('MDS ', '')}): ${d.lineas} líneas 0% ➔ <b>+$${round2(d.cbPerdido).toFixed(2)} CB</b>`);\n\nlet text = '';\nif (totalAnomalias > 0) {\n  text = `⚠️ <b>Auditoría Semanal: Inconsistencias Esquema Cashback (2%+5%)</b>\\n` +\n    `Periodo: <b>${params.mes_nombre}</b>\\n` +\n    `Facturas analizadas: <b>${moves.length}</b> · Líneas: <b>${lines.length}</b>\\n\\n` +\n    `📊 <b>Resumen de Cumplimiento:</b>\\n` +\n    `✅ Líneas con 2% correcto: <b>${lineasCon2}</b> (${lines.length > 0 ? (lineasCon2/lines.length*100).toFixed(1) : 0}%)\\n` +\n    `❌ Líneas con 0% descuento: <b>${lineasSinDesc}</b>\\n` +\n    `⚠️ Líneas con desc ≠ 2%: <b>${lineasDescAnomalo}</b>\\n\\n` +\n    `💰 <b>Impacto Financiero de Cashback 5%:</b>\\n` +\n    `• Provisión Teórica: <b>$${round2(cashbackTeorico5).toFixed(2)} MXN</b>\\n` +\n    `• Cashback Capturado: <b>$${round2(cashbackReal5).toFixed(2)} MXN</b>\\n` +\n    `• <b>Cashback No Acumulado (Riesgo): $${cbEnRiesgo.toFixed(2)} MXN</b>\\n\\n` +\n    `📋 <b>Facturas prioritarias a corregir antes del cierre:</b>\\n${topFacturas.join('\\n')}\\n\\n` +\n    `<i>Acción requerida: Revisar y ajustar el 2% por línea en las facturas listadas para asegurar la correcta bonificación a fin de mes.</i>`;\n} else {\n  text = `✅ <b>Auditoría Semanal: Esquema Cashback (2%+5%) al 100%</b>\\n` +\n    `Periodo: <b>${params.mes_nombre}</b>\\n` +\n    `Facturas analizadas: <b>${moves.length}</b> · Líneas: <b>${lines.length}</b>\\n` +\n    `Todas las líneas de los clientes del esquema cuentan con el 2% aplicado correctamente.\\n` +\n    `Provisión acumulada: <b>$${round2(cashbackReal5).toFixed(2)} MXN</b>`;\n}\n\nreturn [{\n  json: {\n    text,\n    total_anomalias: totalAnomalias,\n    cb_en_riesgo: cbEnRiesgo,\n    total_facturas: moves.length\n  }\n}];"
+      }
+    },
+    {
+      "id": "preparar-alerta-fallo-auth-15",
+      "name": "Preparar Alerta - Fallo Autenticacion",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        440,
+        160
+      ],
+      "parameters": {
+        "jsCode": "const err = $input.first().json;\nconst detalle = err.error?.message ?? err.message ?? JSON.stringify(err);\nreturn [{ json: { text: `🔴 <b>Auditoría Cashback: fallo al autenticar contra Odoo</b>\\nDetalle: <code>${detalle}</code>` } }];"
+      }
+    },
+    {
+      "id": "preparar-alerta-fallo-query-15",
+      "name": "Preparar Alerta - Fallo Consulta",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1100,
+        160
+      ],
+      "parameters": {
+        "jsCode": "const err = $input.first().json;\nconst detalle = err.error?.message ?? err.message ?? JSON.stringify(err);\nreturn [{ json: { text: `🔴 <b>Auditoría Cashback: fallo al consultar datos en Odoo</b>\\nDetalle: <code>${detalle}</code>` } }];"
+      }
+    },
+    {
+      "id": "notificar-telegram-cashback",
+      "name": "Notificar Telegram Finanzas",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1760,
+        0
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "=https://api.telegram.org/bot{{ $env.TELEGRAM_BOT_TOKEN }}/sendMessage",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ chat_id: $env.TELEGRAM_CHAT_ID, message_thread_id: 75, parse_mode: 'HTML', text: $json.text }) }}",
+        "options": {
+          "timeout": 10000
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 2,
+      "notes": "message_thread_id=75 = topic Finanzas y Conciliacion. Envia alerta con el resumen semanal y facturas a corregir."
+    }
+  ],
+  "connections": {
+    "Schedule": {
+      "main": [
+        [
+          {
+            "node": "Autenticar Odoo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Autenticar Odoo": {
+      "main": [
+        [
+          {
+            "node": "IF - Auth OK?",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Preparar Alerta - Fallo Autenticacion",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF - Auth OK?": {
+      "main": [
+        [
+          {
+            "node": "Preparar Parametros Busqueda",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Preparar Alerta - Fallo Autenticacion",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar Parametros Busqueda": {
+      "main": [
+        [
+          {
+            "node": "Buscar Clientes Target",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Buscar Clientes Target": {
+      "main": [
+        [
+          {
+            "node": "Consultar Facturas del Mes",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Preparar Alerta - Fallo Consulta",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Consultar Facturas del Mes": {
+      "main": [
+        [
+          {
+            "node": "Consultar Lineas de Facturas",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Preparar Alerta - Fallo Consulta",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Consultar Lineas de Facturas": {
+      "main": [
+        [
+          {
+            "node": "Analizar Anomalias y Cashback",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Preparar Alerta - Fallo Consulta",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Analizar Anomalias y Cashback": {
+      "main": [
+        [
+          {
+            "node": "Notificar Telegram Finanzas",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar Alerta - Fallo Autenticacion": {
+      "main": [
+        [
+          {
+            "node": "Notificar Telegram Finanzas",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar Alerta - Fallo Consulta": {
+      "main": [
+        [
+          {
+            "node": "Notificar Telegram Finanzas",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "errorWorkflow": "error-handler-global-uuid"
+  },
+  "id": "alertas-anomalias-cashback-uuid",
+  "meta": {
+    "instanceId": "medicinedepot"
+  }
+}

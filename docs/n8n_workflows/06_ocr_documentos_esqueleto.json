@@ -1,0 +1,547 @@
+{
+  "name": "06_OCR_Documentos [ESQUELETO]",
+  "nodes": [
+    {
+      "id": "webhook-ocr-inbound",
+      "name": "Webhook Inbound Documento",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1.1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "ocr-process-document",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "webhookId": "ocr-process-document-inbound"
+    },
+    {
+      "id": "validar-payload-ocr",
+      "name": "Validar Payload",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        220,
+        0
+      ],
+      "parameters": {
+        "jsCode": "const body = $input.first().json.body ?? $input.first().json;\nif (!body.doc_type) { throw new Error('doc_type es requerido'); }\nif (!body.file_url && !body.file_base64) { throw new Error('file_url o file_base64 es requerido'); }\nreturn [{ json: { doc_type: body.doc_type, file_url: body.file_url ?? null, file_base64: body.file_base64 ?? null, source: body.source ?? 'manual' } }];"
+      }
+    },
+    {
+      "id": "ocr-extraer-texto",
+      "name": "OCR - Extraer Texto (Local)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        440,
+        0
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "http://ocr-service:8000/extract",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ doc_type: $json.doc_type, file_url: $json.file_url, file_base64: $json.file_base64 }) }}",
+        "options": {
+          "timeout": 30000
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "id": "preparar-alerta-fallo-ocr",
+      "name": "Preparar Alerta - Fallo OCR",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        440,
+        260
+      ],
+      "parameters": {
+        "jsCode": "const err = $input.first().json;\nconst detalle = err.error?.message ?? err.message ?? JSON.stringify(err);\nreturn [{ json: { text: `🔴 <b>OCR: fallo al procesar documento</b>\\nDetalle: <code>${detalle}</code>` } }];"
+      }
+    },
+    {
+      "id": "normalizar-campos",
+      "name": "Normalizar Campos Extraidos",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        660,
+        0
+      ],
+      "parameters": {
+        "jsCode": "// Mapea la salida cruda del OCR al contrato normalizado (mejora #23).\n// Sin fallback cloud: bajo el umbral, el documento se marca requires_review\n// y se resuelve via revision humana (mejora #29), no via una segunda API.\nconst raw = $input.first().json;\nconst CONFIDENCE_THRESHOLD = 80;\nconst requiresReview = (raw.confidence_global ?? 0) < CONFIDENCE_THRESHOLD;\n\n// Normaliza RFC: sin espacios/guiones, mayusculas.\nconst vatRaw = raw.fields?.vendor_vat ?? '';\nconst vatNormalized = vatRaw.replace(/[\\s-]/g, '').toUpperCase();\n\n// Mejora #24 (match difuso): O/0 e I/1 son la confusion OCR mas comun en RFCs.\n// Genera variantes candidatas ademas de la lectura literal, para no mandar\n// a revision manual por un solo caracter ambiguo cuando el resto es correcto.\nfunction fuzzyVariants(rfc) {\n  const variants = new Set([rfc]);\n  for (let i = 0; i < rfc.length; i++) {\n    const c = rfc[i];\n    const swaps = { 'O': '0', '0': 'O', 'I': '1', '1': 'I' };\n    if (swaps[c]) {\n      variants.add(rfc.slice(0, i) + swaps[c] + rfc.slice(i + 1));\n    }\n  }\n  return Array.from(variants);\n}\nconst vatCandidates = vatNormalized ? fuzzyVariants(vatNormalized) : [];\n\n// Convierte fecha dd/mm/yyyy -> yyyy-mm-dd para Odoo. Si no matchea, usa hoy.\nlet invoiceDate = null;\nconst dateMatch = (raw.fields?.date ?? '').match(/(\\d{1,2})[/-](\\d{1,2})[/-](\\d{2,4})/);\nif (dateMatch) {\n  const [, d, m, y] = dateMatch;\n  const year = y.length === 2 ? `20${y}` : y;\n  invoiceDate = `${year}-${m.padStart(2,'0')}-${d.padStart(2,'0')}`;\n}\n\nreturn [{ json: {\n  invoice_number: raw.fields?.invoice_number ?? null,\n  vendor_vat: vatNormalized || null,\n  vendor_vat_candidates: vatCandidates,\n  invoice_date: invoiceDate,\n  lines: raw.fields?.lines ?? [],\n  confidence_global: raw.confidence_global ?? 0,\n  requires_review: requiresReview\n} }];"
+      }
+    },
+    {
+      "id": "autenticar-odoo-06",
+      "name": "Autenticar Odoo",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        880,
+        0
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.ODOO_INTERNAL_URL }}/jsonrpc",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ jsonrpc: '2.0', method: 'call', params: { service: 'common', method: 'authenticate', args: [$env.ODOO_DB, $env.ODOO_USER, $env.ODOO_PASSWORD, {}] }, id: 1 }) }}",
+        "options": {
+          "timeout": 10000
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 3000,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "id": "if-auth-ok-06",
+      "name": "IF - Auth OK?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        1100,
+        -80
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.error }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "empty"
+              }
+            },
+            {
+              "leftValue": "={{ typeof $json.result }}",
+              "rightValue": "number",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        }
+      }
+    },
+    {
+      "id": "buscar-partner-odoo",
+      "name": "Buscar Partner en Odoo",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1320,
+        -160
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.ODOO_INTERNAL_URL }}/jsonrpc",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ jsonrpc: '2.0', method: 'call', params: { service: 'object', method: 'execute_kw', args: [$env.ODOO_DB, $json.result, $env.ODOO_PASSWORD, 'res.partner', 'search_read', [[['vat', 'in', $('Normalizar Campos Extraidos').first().json.vendor_vat_candidates], ['supplier_rank', '>', 0]]], { fields: ['name', 'vat'], limit: 1, order: 'supplier_rank desc' }] }, id: 1 }) }}",
+        "options": {
+          "timeout": 15000
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "notes": "Mejora #24: busca contra TODAS las variantes O/0, I/1 del RFC leido (mejora de match difuso), ordenado por supplier_rank desc para preferir el proveedor mas usado si hay mas de un match real. Si no encuentra ninguna variante, va a revision manual en vez de crear un proveedor nuevo a ciegas."
+    },
+    {
+      "id": "if-partner-encontrado",
+      "name": "IF - Partner Encontrado?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        1540,
+        -160
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ ($json.result || []).length }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        }
+      }
+    },
+    {
+      "id": "crear-factura-borrador",
+      "name": "Crear Factura Borrador en Odoo",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1760,
+        -240
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.ODOO_INTERNAL_URL }}/jsonrpc",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ jsonrpc: '2.0', method: 'call', params: { service: 'object', method: 'execute_kw', args: [$env.ODOO_DB, $('Autenticar Odoo').first().json.result, $env.ODOO_PASSWORD, 'account.move', 'create', [{ move_type: 'in_invoice', partner_id: $json.result[0].id, journal_id: Number($env.OCR_DEFAULT_JOURNAL_ID || 48), invoice_date: $('Normalizar Campos Extraidos').first().json.invoice_date, ref: $('Normalizar Campos Extraidos').first().json.invoice_number, invoice_line_ids: $('Normalizar Campos Extraidos').first().json.lines.map(l => [0, 0, { name: l.description, quantity: l.qty, price_unit: l.unit_price }]) }]] }, id: 1 }) }}",
+        "options": {
+          "timeout": 15000
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "notes": "Mejora #25: account.move create en state=draft (default de Odoo al crear). journal_id por defecto = Purchases MDS MERIDA (48); TODO: mapear sucursal real cuando el payload la incluya."
+    },
+    {
+      "id": "adjuntar-documento",
+      "name": "Adjuntar Documento Original",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1980,
+        -240
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.ODOO_INTERNAL_URL }}/jsonrpc",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ jsonrpc: '2.0', method: 'call', params: { service: 'object', method: 'execute_kw', args: [$env.ODOO_DB, $('Autenticar Odoo').first().json.result, $env.ODOO_PASSWORD, 'ir.attachment', 'create', [{ name: (($('Normalizar Campos Extraidos').first().json.invoice_number) || 'documento_ocr') + '.png', datas: $('Validar Payload').first().json.file_base64, res_model: 'account.move', res_id: $json.result, mimetype: 'image/png' }]] }, id: 1 }) }}",
+        "options": {
+          "timeout": 20000
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 2,
+      "notes": "Mejora #26: ir.attachment ligado a la factura recien creada. TODO: detectar mimetype real (PDF vs imagen) en vez de asumir PNG."
+    },
+    {
+      "id": "preparar-alerta-revision-manual",
+      "name": "Preparar Alerta - Revision Manual",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1760,
+        -80
+      ],
+      "parameters": {
+        "jsCode": "const norm = $('Normalizar Campos Extraidos').first().json;\nreturn [{ json: { text: `🟡 <b>OCR: proveedor no encontrado en Odoo</b>\\nRFC detectado: <code>${norm.vendor_vat ?? 'N/D'}</code>\\nFactura: ${norm.invoice_number ?? 'N/D'}\\n\\nRequiere alta manual del proveedor o revision del RFC extraido.` } }];"
+      }
+    },
+    {
+      "id": "preparar-alerta-fallo-auth-06",
+      "name": "Preparar Alerta - Fallo Autenticacion",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1100,
+        160
+      ],
+      "parameters": {
+        "jsCode": "const err = $input.first().json;\nconst detalle = err.error?.message ?? err.message ?? JSON.stringify(err);\nreturn [{ json: { text: `🔴 <b>OCR: fallo al autenticar contra Odoo</b>\\nDetalle: <code>${detalle}</code>` } }];"
+      }
+    },
+    {
+      "id": "formatear-exito-ocr",
+      "name": "Formatear Exito OCR",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2200,
+        -240
+      ],
+      "parameters": {
+        "jsCode": "const norm = $('Normalizar Campos Extraidos').first().json;\nconst partner = $('Buscar Partner en Odoo').first().json.result[0];\nconst moveId = $('Crear Factura Borrador en Odoo').first().json.result;\nreturn [{ json: {\n  requires_review: norm.requires_review,\n  move_id: moveId,\n  text: `📄 <b>OCR procesado</b>\\nProveedor: ${partner.name}\\nFactura: ${norm.invoice_number ?? 'N/D'}\\nConfianza: ${norm.confidence_global}%\\nRevisión requerida: ${norm.requires_review ? 'Sí' : 'No'}\\nOdoo: account.move #${moveId} (borrador)`\n} }];"
+      }
+    },
+    {
+      "id": "notificar-telegram-ocr",
+      "name": "Notificar Telegram OCR",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2420,
+        -120
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "=https://api.telegram.org/bot{{ $env.TELEGRAM_BOT_TOKEN }}/sendMessage",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ chat_id: $env.TELEGRAM_CHAT_ID, parse_mode: 'HTML', text: $json.text }) }}",
+        "options": {}
+      },
+      "retryOnFail": true,
+      "maxTries": 2,
+      "notes": "Sin thread dedicado todavia; usa General. Asignar topic cuando se defina volumen real (mejora #27)."
+    },
+    {
+      "id": "respond-success-ocr",
+      "name": "Respond Success",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        2860,
+        -120
+      ],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify($json) }}"
+      }
+    },
+    {
+      "id": "preparar-respuesta-final",
+      "name": "Preparar Respuesta Final",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2640,
+        -120
+      ],
+      "parameters": {
+        "jsCode": "function safeGet(nodeName, field) {\n  try { return $(nodeName).first().json[field]; } catch (e) { return undefined; }\n}\nconst moveId = safeGet('Formatear Exito OCR', 'move_id');\nconst requiresReview = safeGet('Formatear Exito OCR', 'requires_review');\nconst isManualReview = safeGet('Preparar Alerta - Revision Manual', 'text') !== undefined;\nconst isFailure = safeGet('Preparar Alerta - Fallo OCR', 'text') !== undefined || safeGet('Preparar Alerta - Fallo Autenticacion', 'text') !== undefined;\nreturn [{ json: {\n  ok: !isFailure,\n  move_id: moveId ?? null,\n  requires_review: isManualReview ? true : (requiresReview ?? null)\n} }];"
+      }
+    }
+  ],
+  "connections": {
+    "Webhook Inbound Documento": {
+      "main": [
+        [
+          {
+            "node": "Validar Payload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validar Payload": {
+      "main": [
+        [
+          {
+            "node": "OCR - Extraer Texto (Local)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OCR - Extraer Texto (Local)": {
+      "main": [
+        [
+          {
+            "node": "Normalizar Campos Extraidos",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Preparar Alerta - Fallo OCR",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar Alerta - Fallo OCR": {
+      "main": [
+        [
+          {
+            "node": "Notificar Telegram OCR",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalizar Campos Extraidos": {
+      "main": [
+        [
+          {
+            "node": "Autenticar Odoo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Autenticar Odoo": {
+      "main": [
+        [
+          {
+            "node": "IF - Auth OK?",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Preparar Alerta - Fallo Autenticacion",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF - Auth OK?": {
+      "main": [
+        [
+          {
+            "node": "Buscar Partner en Odoo",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Preparar Alerta - Fallo Autenticacion",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar Alerta - Fallo Autenticacion": {
+      "main": [
+        [
+          {
+            "node": "Notificar Telegram OCR",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Buscar Partner en Odoo": {
+      "main": [
+        [
+          {
+            "node": "IF - Partner Encontrado?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF - Partner Encontrado?": {
+      "main": [
+        [
+          {
+            "node": "Crear Factura Borrador en Odoo",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Preparar Alerta - Revision Manual",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar Alerta - Revision Manual": {
+      "main": [
+        [
+          {
+            "node": "Notificar Telegram OCR",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Crear Factura Borrador en Odoo": {
+      "main": [
+        [
+          {
+            "node": "Adjuntar Documento Original",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Adjuntar Documento Original": {
+      "main": [
+        [
+          {
+            "node": "Formatear Exito OCR",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Formatear Exito OCR": {
+      "main": [
+        [
+          {
+            "node": "Notificar Telegram OCR",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notificar Telegram OCR": {
+      "main": [
+        [
+          {
+            "node": "Preparar Respuesta Final",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar Respuesta Final": {
+      "main": [
+        [
+          {
+            "node": "Respond Success",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "errorWorkflow": "error-handler-global-uuid"
+  },
+  "id": "ocr-documentos-esqueleto-uuid",
+  "meta": {
+    "templateCredsSetupCompleted": false
+  }
+}

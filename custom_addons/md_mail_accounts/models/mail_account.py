@@ -1,3 +1,4 @@
+import base64
 import imaplib
 import smtplib
 import logging
@@ -152,11 +153,12 @@ class MdMailAccount(models.Model):
                             ('message_id', '=', mail_values.get('message_id')),
                         ], limit=1)
                         if not existing:
-                            self.env['mail.mail'].with_context(
+                            mail = self.env['mail.mail'].with_context(
                                 mail_create_nosubscribe=True,
                                 notify=False,
                             ).create(mail_values)
                             count += 1
+                            self._create_attachments(email_message, mail)
 
                     conn.store(mid, '+FLAGS', '\\Seen')
                 except Exception as e:
@@ -281,6 +283,43 @@ class MdMailAccount(models.Model):
             content = '<pre style="font-family:inherit;white-space:pre-wrap">%s</pre>' % content
 
         return content
+
+    def _create_attachments(self, email_message, mail):
+        """Extrae los adjuntos del mensaje (XML/PDF/ZIP de facturas, etc.) y los
+        liga al mail.mail ya creado. Antes de este fix, _get_body_html() solo
+        tomaba text/html o text/plain y cualquier adjunto se descartaba en
+        silencio durante el fetch — nunca llegaba a ir.attachment."""
+        if not email_message.is_multipart():
+            return
+        Attachment = self.env['ir.attachment']
+        attachment_ids = []
+        for part in email_message.walk():
+            if part.is_multipart():
+                continue
+            filename = part.get_filename()
+            if not filename:
+                continue
+            try:
+                filename = self._decode_header_str(filename)
+            except Exception:
+                pass
+            payload = part.get_payload(decode=True)
+            if not payload:
+                continue
+            try:
+                attachment = Attachment.create({
+                    'name': filename,
+                    'datas': base64.b64encode(payload),
+                    'res_model': 'mail.mail',
+                    'res_id': mail.id,
+                    'mimetype': part.get_content_type(),
+                })
+                attachment_ids.append(attachment.id)
+            except Exception as e:
+                _logger.warning('Error al crear adjunto %r para mail %s (%s): %s',
+                                filename, mail.id, self.imap_user, e)
+        if attachment_ids:
+            mail.write({'attachment_ids': [(6, 0, attachment_ids)]})
 
     def _generate_message_id(self, email_message):
         import hashlib

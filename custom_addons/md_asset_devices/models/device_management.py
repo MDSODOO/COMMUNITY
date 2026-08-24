@@ -25,7 +25,7 @@ class DeviceManagement(models.Model):
     # Identificación
     nombre_dispositivo = fields.Char(string="Dispositivo", required=True, tracking=True)
     modelo_dispositivo = fields.Char(string="Modelo", tracking=True)
-    codigo_dispositivo = fields.Char(string="Código/Serial", tracking=True)
+    codigo_dispositivo = fields.Char(string="Código/Serial", default="/", copy=False, tracking=True)
     logo_dispositivo = fields.Binary(string="Logo/Imagen")
     categoria = fields.Selection([
         ('laptop', 'Laptop'),
@@ -82,6 +82,7 @@ class DeviceManagement(models.Model):
     todo_ids = fields.One2many('device.todo', 'device_id', string="Tareas")
 
     # Smart button counts / Contadores para botones inteligentes
+    assignment_count = fields.Integer(compute='_compute_assignment_count', string="Cant. Asignaciones")
     maintenance_count = fields.Integer(compute='_compute_maintenance_count', string="Cant. Mantenimientos")
     documentation_count = fields.Integer(compute='_compute_documentation_count', string="Documentos")
     payment_count = fields.Integer(compute='_compute_payment_count', string="Cant. Pagos")
@@ -186,6 +187,11 @@ class DeviceManagement(models.Model):
             else:
                 device.garantia_porcentaje_restante = max(0, int((dias_restantes / total_dias) * 100))
 
+    @api.depends('assignment_ids')
+    def _compute_assignment_count(self):
+        for device in self:
+            device.assignment_count = len(device.assignment_ids)
+
     @api.depends('maintenance_ids')
     def _compute_maintenance_count(self):
         for device in self:
@@ -285,6 +291,12 @@ class DeviceManagement(models.Model):
 
     def action_retire_device(self):
         self.state = 'retired'
+        active_assignments = self.assignment_ids.filtered(lambda a: a.estado == 'activa')
+        if active_assignments:
+            active_assignments.write({
+                'estado': 'devuelto',
+                'fecha_devolucion': fields.Date.today(),
+            })
 
     def _sync_assignment_summary(self):
         """Keep assignment summary aligned with active lines / Mantiene el resumen alineado."""
@@ -309,6 +321,17 @@ class DeviceManagement(models.Model):
             target_state = 'maintenance' if has_open_maintenance else 'active'
             if device.state != target_state:
                 device.state = target_state
+
+    def action_view_assignments(self):
+        self.ensure_one()
+        return {
+            'type': 'ir.actions.act_window',
+            'res_model': 'device.assignment',
+            'view_mode': 'list,form',
+            'domain': [('device_id', '=', self.id)],
+            'context': {'default_device_id': self.id},
+            'name': f'Asignaciones - {self.nombre_dispositivo}',
+        }
 
     def action_view_maintenance(self):
         self.ensure_one()
@@ -423,3 +446,10 @@ class DeviceManagement(models.Model):
             'context': {'default_device_id': self.id},
             'name': f'Tareas - {self.nombre_dispositivo}',
         }
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        for vals in vals_list:
+            if not vals.get('codigo_dispositivo') or vals.get('codigo_dispositivo') == '/':
+                vals['codigo_dispositivo'] = self.env['ir.sequence'].next_by_code('device.management') or '/'
+        return super().create(vals_list)

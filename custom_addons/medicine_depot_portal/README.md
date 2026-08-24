@@ -34,8 +34,9 @@ depends = [
 
 | Archivo | Rutas |
 |---|---|
-| `controllers/portal.py` | `/my`, `/my/orders`, `/my/invoices`, `/my/pickings` |
-| `controllers/public.py` | `/afiliacion`, `/farmacovigilancia` |
+| `controllers/portal.py` | `/my`, `/my/orders`, `/my/invoices`, `/my/pickings`, `/afiliacion` |
+| `controllers/public.py` | `/`, `/sucursales`, `/shop/compare`, `/my/picking`, `/my/documents`, `/medicd`, `/contactanos`, `/contactus`, `/contacto-quejas`, `/farmacovigilancia` |
+| `controllers/portal_digitization.py` | `/my/dashboard/digitize` (JSON-RPC) |
 | `controllers/utils.py` | Helpers compartidos entre controllers |
 
 ## Vistas principales
@@ -84,7 +85,8 @@ Cubre: templates de portal, redirección del dashboard, template de farmacovigil
 ## Notas técnicas
 
 - El shop restringido usa `website.is_public_user()` para redirigir a login
-- La afiliación no crea usuario automáticamente — genera un lead en CRM
+- La afiliación no crea usuario automáticamente — escribe directo en `res.partner` (`create()`/`write()` con `sudo()`), **no genera un lead en CRM** (corregido 2026-08-13; la afirmación anterior de este README era incorrecta)
+- Tras guardar el partner, `afiliacion()` notifica de forma best-effort (timeout 3s, nunca bloquea la respuesta) al workflow de n8n `12_Afiliacion_Notificacion` vía `_notify_n8n_new_affiliation()`, que avisa por Telegram al tema "Afiliaciones"
 - Farmacovigilancia genera PDF y notifica al equipo médico por correo
 
 [⏳ MÓDULO(S) ACTUALIZADO(S)/AUDITADO(S) EN ESTE PASO: medicine_depot_portal]
