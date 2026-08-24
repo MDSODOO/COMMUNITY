@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="0">
+        <!-- Reporte base MIS Builder: Balance General + P&amp;G sobre el
+             agrupador SAT (1=Activo, 2=Pasivo, 3=Capital, 4=Ingresos,
+             5=Costo de ventas, 6=Gastos generales). No cubre los grupos 7/8
+             (cuentas de orden, muy pocas cuentas en este chart); ver
+             docs/plans/PLAN_ADAPTACION_CONTABILIDAD_COMMUNITY.md. -->
+        <record id="mis_report_balance_pyg_mx" model="mis.report">
+            <field name="name">Balance General y Pérdidas y Ganancias (MX)</field>
+        </record>
+
+        <record id="kpi_activo" model="mis.report.kpi">
+            <field name="report_id" ref="mis_report_balance_pyg_mx"/>
+            <field name="name">activo</field>
+            <field name="description">Activo</field>
+            <field name="sequence">10</field>
+        </record>
+        <record id="kpi_activo_expr" model="mis.report.kpi.expression">
+            <field name="kpi_id" ref="kpi_activo"/>
+            <field name="name">bale[1%]</field>
+        </record>
+
+        <record id="kpi_pasivo" model="mis.report.kpi">
+            <field name="report_id" ref="mis_report_balance_pyg_mx"/>
+            <field name="name">pasivo</field>
+            <field name="description">Pasivo</field>
+            <field name="sequence">20</field>
+        </record>
+        <record id="kpi_pasivo_expr" model="mis.report.kpi.expression">
+            <field name="kpi_id" ref="kpi_pasivo"/>
+            <field name="name">-bale[2%]</field>
+        </record>
+
+        <record id="kpi_capital" model="mis.report.kpi">
+            <field name="report_id" ref="mis_report_balance_pyg_mx"/>
+            <field name="name">capital</field>
+            <field name="description">Capital</field>
+            <field name="sequence">30</field>
+        </record>
+        <record id="kpi_capital_expr" model="mis.report.kpi.expression">
+            <field name="kpi_id" ref="kpi_capital"/>
+            <field name="name">-bale[3%]</field>
+        </record>
+
+        <record id="kpi_pasivo_capital" model="mis.report.kpi">
+            <field name="report_id" ref="mis_report_balance_pyg_mx"/>
+            <field name="name">pasivo_capital</field>
+            <field name="description">Pasivo + Capital</field>
+            <field name="expression">pasivo + capital</field>
+            <field name="sequence">40</field>
+        </record>
+
+        <record id="kpi_ingresos" model="mis.report.kpi">
+            <field name="report_id" ref="mis_report_balance_pyg_mx"/>
+            <field name="name">ingresos</field>
+            <field name="description">Ingresos</field>
+            <field name="sequence">50</field>
+        </record>
+        <record id="kpi_ingresos_expr" model="mis.report.kpi.expression">
+            <field name="kpi_id" ref="kpi_ingresos"/>
+            <field name="name">-bal[4%]</field>
+        </record>
+
+        <record id="kpi_costos" model="mis.report.kpi">
+            <field name="report_id" ref="mis_report_balance_pyg_mx"/>
+            <field name="name">costos</field>
+            <field name="description">Costo de Ventas</field>
+            <field name="sequence">60</field>
+        </record>
+        <record id="kpi_costos_expr" model="mis.report.kpi.expression">
+            <field name="kpi_id" ref="kpi_costos"/>
+            <field name="name">bal[5%]</field>
+        </record>
+
+        <record id="kpi_gastos" model="mis.report.kpi">
+            <field name="report_id" ref="mis_report_balance_pyg_mx"/>
+            <field name="name">gastos</field>
+            <field name="description">Gastos Generales</field>
+            <field name="sequence">70</field>
+        </record>
+        <record id="kpi_gastos_expr" model="mis.report.kpi.expression">
+            <field name="kpi_id" ref="kpi_gastos"/>
+            <field name="name">bal[6%]</field>
+        </record>
+
+        <record id="kpi_utilidad_neta" model="mis.report.kpi">
+            <field name="report_id" ref="mis_report_balance_pyg_mx"/>
+            <field name="name">utilidad_neta</field>
+            <field name="description">Utilidad Neta</field>
+            <field name="expression">ingresos - costos - gastos</field>
+            <field name="sequence">80</field>
+        </record>
+    </data>
+</odoo>

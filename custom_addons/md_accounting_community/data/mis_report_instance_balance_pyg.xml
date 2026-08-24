@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="0">
+        <!-- company_id se deja vacío a propósito: mis_builder usa
+             self.env.company por defecto, así cada sucursal ve su propio
+             balance sin necesidad de una instancia por compañía. -->
+        <record id="mis_report_instance_balance_pyg" model="mis.report.instance">
+            <field name="name">Balance General y P&amp;G — Año actual</field>
+            <field name="report_id" ref="mis_report_balance_pyg_mx"/>
+        </record>
+        <record id="mis_report_instance_balance_pyg_period" model="mis.report.instance.period">
+            <field name="report_instance_id" ref="mis_report_instance_balance_pyg"/>
+            <field name="name">Año actual</field>
+            <field name="source">actuals</field>
+            <field name="mode">relative</field>
+            <field name="type">y</field>
+            <field name="offset">0</field>
+            <field name="duration">1</field>
+            <field name="sequence">10</field>
+        </record>
+
+        <record id="action_md_accounting_balance_pyg" model="ir.actions.act_window">
+            <field name="name">Balance General y P&amp;G</field>
+            <field name="res_model">mis.report.instance</field>
+            <field name="view_mode">form</field>
+            <field name="res_id" ref="mis_report_instance_balance_pyg"/>
+        </record>
+    </data>
+</odoo>

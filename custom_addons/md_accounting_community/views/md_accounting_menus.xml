@@ -67,13 +67,18 @@
                   sequence="30"/>
 
         <!-- Revisión y Reportes
-             NOTA: Balance General, Pérdidas y Ganancias, DIOT y Contabilidad
-             Electrónica XML (SAT) no aparecen aquí a propósito: ningún módulo
-             instalado los provee todavía. Ver plan de adaptación. -->
+             NOTA: DIOT y Contabilidad Electrónica XML (SAT) no aparecen aquí
+             a propósito: ningún módulo instalado los provee todavía. Ver
+             plan de adaptación. -->
         <menuitem id="menu_md_accounting_review_reports"
                   name="Revisión y Reportes"
                   parent="menu_md_accounting_root"
                   sequence="40"/>
+        <menuitem id="menu_md_accounting_balance_pyg"
+                  name="Balance General y P&amp;G"
+                  parent="menu_md_accounting_review_reports"
+                  action="action_md_accounting_balance_pyg"
+                  sequence="5"/>
         <menuitem id="menu_md_accounting_trial_balance"
                   name="Balanza de Comprobación"
                   parent="menu_md_accounting_review_reports"
