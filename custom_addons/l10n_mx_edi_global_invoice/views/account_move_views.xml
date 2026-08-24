@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="account_move_global_inv_form" model="ir.ui.view">
+        <field name="name">account.move.global.inv.form</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="account.view_move_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//group[@id='header_right_group']" position="inside">
+                <field name="is_global_invoice" invisible="1"/>
+                <field name="md_cancelled_pos_order_ids"
+                       widget="many2many_tags"
+                       readonly="1"
+                       invisible="not md_cancelled_pos_order_ids"/>
+            </xpath>
+
+            <xpath expr="//button[@name='action_invoice_sent']" position="attributes">
+                <attribute name="invisible" separator="or" add="is_global_invoice"/>
+            </xpath>
+
+            <xpath expr="//button[@name='action_invoice_sent']" position="after">
+                <field name="cfdi_document_id" invisible="1"/>
+                <button name="action_open_global_cfdi_wizard"
+                                type="object"
+                                string="Enviar factura global"
+                                invisible="state != 'posted' or move_type not in ('out_invoice', 'out_refund') or not is_global_invoice or cfdi_document_id"
+                                class="oe_highlight"
+                                data-hotkey="y"/>
+            </xpath>
+
+            <xpath expr="//header" position="after">
+                <field name="is_global_invoice" invisible="1"/>
+                <div
+                     class="alert alert-warning mb-0" role="alert"
+                     invisible="not is_global_invoice">
+                    <span>Esta factura ha sido creada como una factura global, por lo que se timbrara con el cliente PUBLICO EN GENERAL</span>
+                </div>
+            </xpath>
+
+        </field>
+    </record>
+</odoo>

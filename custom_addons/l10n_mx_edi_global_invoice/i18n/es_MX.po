@@ -1,0 +1,70 @@
+# Spanish (Mexico) translation for l10n_mx_edi_global_invoice
+# Copyright (C) 2026 Medicine Depot
+# License: OPL-1
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 19.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-06-10 00:00+0000\n"
+"PO-Revision-Date: 2026-06-10 00:00+0000\n"
+"Last-Translator: Daniel Cervera <daniel.cervera.2029@gmail.com>\n"
+"Language-Team: Spanish (Mexico) <noreply@medicinedepot.mx>\n"
+"Language: es_MX\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#. module: l10n_mx_edi_global_invoice
+msgid "Factura Global CFDI 4.0"
+msgstr "Factura Global CFDI 4.0"
+
+#. module: l10n_mx_edi_global_invoice
+msgid "Generar Factura Global"
+msgstr "Generar Factura Global"
+
+#. module: l10n_mx_edi_global_invoice
+msgid "Periodicidad"
+msgstr "Periodicidad"
+
+#. module: l10n_mx_edi_global_invoice
+msgid "Diaria"
+msgstr "Diaria"
+
+#. module: l10n_mx_edi_global_invoice
+msgid "Semanal"
+msgstr "Semanal"
+
+#. module: l10n_mx_edi_global_invoice
+msgid "Mensual"
+msgstr "Mensual"
+
+#. module: l10n_mx_edi_global_invoice
+msgid "Bimestral"
+msgstr "Bimestral"
+
+#. module: l10n_mx_edi_global_invoice
+msgid "RFC Público en General"
+msgstr "RFC Público en General"
+
+#. module: l10n_mx_edi_global_invoice
+msgid "Habilitar Factura Global en POS"
+msgstr "Habilitar Factura Global en POS"
+
+#. module: l10n_mx_edi_global_invoice
+msgid "Órdenes POS seleccionadas"
+msgstr "Órdenes POS seleccionadas"
+
+#. module: l10n_mx_edi_global_invoice
+msgid "Fecha Inicio"
+msgstr "Fecha Inicio"
+
+#. module: l10n_mx_edi_global_invoice
+msgid "Fecha Fin"
+msgstr "Fecha Fin"
+
+#. module: l10n_mx_edi_global_invoice
+msgid "Facturar al público en general"
+msgstr "Facturar al público en general"
+

@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_pos_order_invoice_global_form" model="ir.ui.view">
+        <field name="name">Factura Global</field>
+        <field name="model">pos.order.make.inv</field>
+        <field name="arch" type="xml">
+            <form string="Factura Global">
+                <p class="oe_grey">
+                    La factura global se publicará y conciliará al crearla.
+                </p>
+                <group>
+                    <field name="pos_order_ids" invisible="1"/>
+                    <field name="count" string="Numero de órdenes" invisible="count == 1"/>
+                    <field name="journal_id" string="Diario" required="1"/>
+                    <field name="amount" string="Monto total" readonly="1" force_save="1"/>
+                    <field name="partner_id" string="Cliente" readonly="1" invisible="1"/>
+                </group>
+                <footer>
+                    <button name="create_invoices" type="object"
+                        id="create_invoice_open"
+                        string="Crear factura global"
+                        class="btn-primary" data-hotkey="q"/>
+
+                    <button string="Cancel" class="btn-secondary" special="cancel" data-hotkey="z"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_view_pos_order_inv_global" model="ir.actions.act_window">
+        <field name="name">Crear Factura Global (Agrupada)</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">pos.order.make.inv</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+        <field name="binding_model_id" ref="point_of_sale.model_pos_order"/>
+        <field name="binding_view_types">list</field>
+    </record>
+
+</odoo>

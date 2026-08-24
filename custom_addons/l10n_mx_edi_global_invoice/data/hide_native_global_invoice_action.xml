@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="0">
+
+        <function model="ir.actions.actions" name="write">
+            <value model="ir.actions.actions" search="[
+                ('binding_model_id.model', '=', 'pos.order'),
+                ('name', 'in', ['Crear factura global', 'Create Global Invoice', 'Create global invoice']),
+            ]"/>
+            <value eval="{'binding_model_id': False, 'binding_view_types': False}"/>
+        </function>
+
+        <function model="ir.actions.server" name="write">
+            <value model="ir.actions.server" search="[
+                ('binding_model_id.model', '=', 'pos.order'),
+                ('name', 'in', ['Crear factura global', 'Create Global Invoice', 'Create global invoice']),
+            ]"/>
+            <value eval="{'binding_model_id': False, 'binding_view_types': False}"/>
+        </function>
+
+        <function model="ir.actions.act_window" name="write">
+            <value model="ir.actions.act_window" search="[
+                ('binding_model_id.model', '=', 'pos.order'),
+                ('name', 'in', ['Crear factura global', 'Create Global Invoice', 'Create global invoice']),
+            ]"/>
+            <value eval="{'binding_model_id': False, 'binding_view_types': False}"/>
+        </function>
+
+    </data>
+</odoo>

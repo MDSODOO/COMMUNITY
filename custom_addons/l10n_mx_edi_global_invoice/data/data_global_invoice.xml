@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="res_partner_publico_en_general" model="res.partner">
+        <field name="name">PUBLICO EN GENERAL</field>
+        <field name="country_id" ref="base.mx"/>
+        <field name="vat">XAXX010101000</field>
+        <field name="property_payment_term_id" ref="account.account_payment_term_immediate"/>
+        <!-- l10n_mx_edi_fiscal_regime (Enterprise) reemplazado por tax_regime,
+             el campo real que usa l10n_mx_cfdi (OCA) sobre res.partner. -->
+        <field name="tax_regime" ref="l10n_mx_catalogs.c_regimen_fiscal_616"/>
+    </record>
+</odoo>

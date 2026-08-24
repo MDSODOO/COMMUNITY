@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record model="ir.module.category" id="module_category_invoice_global">
+        <field name="name">Facturacion global</field>
+        <field name="description">Límite de credito</field>
+        <field name="sequence">21</field>
+    </record>
+
+    <record model="res.groups.privilege" id="res_groups_privilege_invoice_global">
+        <field name="name">Crear Factura Global</field>
+        <field name="category_id" ref="module_category_invoice_global"/>
+    </record>
+
+
+    <record id="create_global_invoice_group" model="res.groups">
+        <field name="name">Si</field>
+        <field name="comment">Permite crear factura global</field>
+        <field name="privilege_id" ref="res_groups_privilege_invoice_global"/>
+    </record>
+
+
+</odoo>

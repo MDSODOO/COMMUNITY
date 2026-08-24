@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_sale_order_invoice_global_form" model="ir.ui.view">
+        <field name="name">Factura Global</field>
+        <field name="model">sale.order.make.inv</field>
+        <field name="arch" type="xml">
+            <form string="Factura Global">
+
+                <group>
+                    <field name="sale_order_ids" invisible="1"/>
+                    <field name="count" string="Numero de órdenes" invisible="count == 1"/>
+                    <field name="fecha_factura" string="Fecha Factura" required="1"/>
+                    <field name="journal_id" string="Diario" options="{'no_quick_create':True,'no_create_edit':True,'no_open': True,'no_create': True}" required="1"/>
+                </group>
+                <separator string="Resumen de órdenes"/>
+                <field name="summary_html" nolabel="1" class="oe_inline" widget="html"/>
+                <footer>
+                    <button name="create_invoices" type="object"
+                        id="create_invoice_open"
+                        string="Crear y ver factura"
+                        class="btn-primary" data-hotkey="q"/>
+
+                    <button string="Cancel" class="btn-secondary" special="cancel" data-hotkey="z"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_view_sale_order_inv_global" model="ir.actions.act_window">
+        <field name="name">Crear Factura Global</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">sale.order.make.inv</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+        <field name="binding_model_id" ref="sale.model_sale_order"/>
+        <field name="binding_view_types">list</field>
+    </record>
+
+</odoo>

@@ -1,0 +1,4 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_sale_order_make_inv,access.sale.order.make.inv,model_sale_order_make_inv,l10n_mx_edi_global_invoice.create_global_invoice_group,1,1,1,0
+access_pos_order_make_inv,access.pos.order.make.inv,model_pos_order_make_inv,l10n_mx_edi_global_invoice.create_global_invoice_group,1,1,1,0
+
