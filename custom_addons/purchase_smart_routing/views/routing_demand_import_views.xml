@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ═══════════════════════════════════════════════════════════════
+         ROUTING DEMAND IMPORT — Importar demanda desde OCs existentes
+         ═══════════════════════════════════════════════════════════════ -->
+    <record id="view_routing_demand_import_form" model="ir.ui.view">
+        <field name="name">routing.demand.import.form</field>
+        <field name="model">routing.demand.import</field>
+        <field name="arch" type="xml">
+            <form string="Importar Demanda desde Órdenes de Compra">
+
+                <!-- ── Paso 1: Configurar filtros ──────────────────── -->
+                <group invisible="state != 'config'">
+                    <group string="Filtros de Órdenes de Compra">
+                        <field name="routing_id" invisible="1"/>
+                        <field name="state" invisible="1"/>
+                        <field name="po_state"/>
+                        <field name="date_from"/>
+                        <field name="date_to"/>
+                        <field name="partner_ids" widget="many2many_tags"/>
+                    </group>
+                    <group string="Opciones">
+                        <field name="consolidate_by_product"/>
+                    </group>
+                </group>
+
+                <!-- ── Paso 2: Vista previa ────────────────────────── -->
+                <group invisible="state != 'preview'">
+                    <group string="Resumen">
+                        <field name="state" invisible="1"/>
+                        <field name="po_count_found" readonly="1"/>
+                        <field name="line_count_found" readonly="1"/>
+                        <field name="product_count_found" readonly="1"/>
+                    </group>
+                    <group string="Advertencias"
+                           invisible="not preview_warnings">
+                        <field name="preview_warnings" nolabel="1"
+                               readonly="1" colspan="2"/>
+                    </group>
+                </group>
+
+                <footer>
+                    <!-- Botones estado config -->
+                    <button name="action_preview"
+                            string="Validar y Ver Resumen"
+                            type="object"
+                            class="oe_highlight"
+                            invisible="state != 'config'"/>
+
+                    <!-- Botones estado preview -->
+                    <button name="action_import"
+                            string="Importar Demanda"
+                            type="object"
+                            class="oe_highlight"
+                            invisible="state != 'preview'"
+                            confirm="¿Importar la demanda? Se reemplazarán las líneas actuales del routing."/>
+                    <button name="action_back"
+                            string="Atrás"
+                            type="object"
+                            invisible="state != 'preview'"/>
+
+                    <button string="Cancelar" class="btn-secondary"
+                            special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_routing_demand_import" model="ir.actions.act_window">
+        <field name="name">Importar Demanda desde OCs</field>
+        <field name="res_model">routing.demand.import</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+        <field name="context">{'default_routing_id': active_id}</field>
+    </record>
+
+</odoo>

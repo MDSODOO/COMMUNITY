@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="res_config_settings_view_form_inherit_smart_routing"
+            model="ir.ui.view">
+        <field name="name">res.config.settings.form.inherit.smart.routing</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="purchase.res_config_settings_view_form_purchase"/>
+        <field name="arch" type="xml">
+            <!-- Odoo 19: la vista de ajustes usa <block>/<setting>.
+                 inherit_id correcto: purchase.res_config_settings_view_form_purchase -->
+            <xpath expr="//block[@name='purchase_setting_container']" position="inside">
+                <setting string="Umbral de routing inteligente"
+                         help="Diferencia mínima de precio para cambiar de proveedor. Con 0% siempre elige al más barato.">
+                    <div class="content-group mt8">
+                        <div class="row">
+                            <field name="routing_threshold_percent" class="col-3" widget="float"/>
+                            <span class="col-1 mt4">%</span>
+                        </div>
+                    </div>
+                </setting>
+                <setting string="Estado inicial de las OCs del routing"
+                         help="Estado de las órdenes de compra al ser creadas por el routing.">
+                    <field name="routing_po_initial_state"/>
+                </setting>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

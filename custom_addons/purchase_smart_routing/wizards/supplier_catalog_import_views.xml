@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ═══════════════════════════════════════════════════════════════
+         SUPPLIER CATALOG IMPORT WIZARD
+         ═══════════════════════════════════════════════════════════════ -->
+    <record id="view_supplier_catalog_import_form" model="ir.ui.view">
+        <field name="name">supplier.catalog.import.form</field>
+        <field name="model">supplier.catalog.import</field>
+        <field name="arch" type="xml">
+            <form>
+                <group>
+                    <group>
+                        <field name="partner_id"/>
+                        <field name="preset"/>
+                        <field name="file_data" filename="file_name"/>
+                        <field name="file_name" invisible="1"/>
+                    </group>
+                </group>
+
+                <!-- Campos de mapeo personalizado -->
+                <group string="Mapeo de Columnas"
+                       invisible="preset != 'custom'">
+                    <group>
+                        <field name="col_barcode"/>
+                        <field name="col_price"/>
+                        <field name="col_stock"/>
+                    </group>
+                    <group>
+                        <field name="col_name"/>
+                        <field name="sheet_name"
+                               placeholder="Primera hoja"/>
+                        <field name="header_row"/>
+                    </group>
+                </group>
+
+                <!-- Resultados -->
+                <group string="Resultado"
+                       invisible="result_log == False">
+                    <field name="result_log" readonly="1" nolabel="1"
+                           colspan="2"/>
+                </group>
+
+                <footer>
+                    <button name="action_import" string="Importar Catálogo"
+                            type="object" class="oe_highlight"
+                            invisible="result_log != False"/>
+                    <button string="Cerrar" class="btn-secondary"
+                            special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_supplier_catalog_import" model="ir.actions.act_window">
+        <field name="name">Importar Catálogo de Proveedor</field>
+        <field name="res_model">supplier.catalog.import</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+    <!-- ═══════════════════════════════════════════════════════════════
+         ROUTING IMPORT WIZARD (importar demanda desde Excel)
+         ═══════════════════════════════════════════════════════════════ -->
+    <record id="view_routing_import_wizard_form" model="ir.ui.view">
+        <field name="name">purchase.routing.import.wizard.form</field>
+        <field name="model">purchase.routing.import.wizard</field>
+        <field name="arch" type="xml">
+            <form>
+                <group>
+                    <field name="routing_id" invisible="1"/>
+                    <field name="file_data" filename="file_name"/>
+                    <field name="file_name" invisible="1"/>
+                </group>
+
+                <group string="Configuración de Columnas">
+                    <group>
+                        <field name="col_barcode"/>
+                        <field name="col_qty"/>
+                    </group>
+                    <group>
+                        <field name="col_brand"/>
+                        <field name="header_row"/>
+                    </group>
+                </group>
+
+                <!-- Resultados -->
+                <group string="Resultado"
+                       invisible="result_log == False">
+                    <field name="result_log" readonly="1" nolabel="1"
+                           colspan="2"/>
+                </group>
+
+                <footer>
+                    <button name="action_import"
+                            string="Importar Demanda"
+                            type="object" class="oe_highlight"
+                            invisible="result_log != False"/>
+                    <button string="Cerrar" class="btn-secondary"
+                            special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_routing_import_wizard" model="ir.actions.act_window">
+        <field name="name">Importar Demanda</field>
+        <field name="res_model">purchase.routing.import.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+        <field name="context">{'default_routing_id': active_id}</field>
+    </record>
+
+</odoo>

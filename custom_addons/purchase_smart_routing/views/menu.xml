@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Menú principal bajo Compras -->
+    <menuitem id="menu_purchase_routing_root"
+              name="Smart Routing"
+              parent="purchase.menu_purchase_root"
+              sequence="5"/>
+
+    <menuitem id="menu_purchase_routing"
+              name="Routing de Compras"
+              parent="menu_purchase_routing_root"
+              action="action_purchase_routing"
+              sequence="10"/>
+
+    <menuitem id="menu_supplier_catalog_import"
+              name="Importar Catálogo Proveedor"
+              parent="menu_purchase_routing_root"
+              action="action_supplier_catalog_import"
+              sequence="20"/>
+
+</odoo>

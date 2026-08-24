@@ -1,0 +1,13 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_stock_warehouse_purchase_user,stock.warehouse.purchase.user,stock.model_stock_warehouse,purchase.group_purchase_user,1,0,0,0
+access_stock_warehouse_purchase_manager,stock.warehouse.purchase.manager,stock.model_stock_warehouse,purchase.group_purchase_manager,1,0,0,0
+access_purchase_routing_user,purchase.routing.user,model_purchase_routing,purchase.group_purchase_user,1,1,1,0
+access_purchase_routing_manager,purchase.routing.manager,model_purchase_routing,purchase.group_purchase_manager,1,1,1,1
+access_purchase_routing_line_user,purchase.routing.line.user,model_purchase_routing_line,purchase.group_purchase_user,1,1,1,0
+access_purchase_routing_line_manager,purchase.routing.line.manager,model_purchase_routing_line,purchase.group_purchase_manager,1,1,1,1
+access_purchase_routing_line_detail_user,purchase.routing.line.detail.user,model_purchase_routing_line_detail,purchase.group_purchase_user,1,1,1,0
+access_purchase_routing_line_detail_manager,purchase.routing.line.detail.manager,model_purchase_routing_line_detail,purchase.group_purchase_manager,1,1,1,1
+access_supplier_catalog_import,supplier.catalog.import,model_supplier_catalog_import,purchase.group_purchase_manager,1,1,1,1
+access_routing_import_wizard,purchase.routing.import.wizard,model_purchase_routing_import_wizard,purchase.group_purchase_user,1,1,1,1
+access_routing_demand_import,routing.demand.import,model_routing_demand_import,purchase.group_purchase_user,1,1,1,1
+access_routing_catalog_compare,routing.catalog.compare,model_routing_catalog_compare,purchase.group_purchase_manager,1,1,1,1

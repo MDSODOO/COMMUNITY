@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ═══════════════════════════════════════════════════════════════
+         ROUTING CATALOG COMPARE — Comparar catálogos A/B con fuzzy matching
+         ═══════════════════════════════════════════════════════════════ -->
+    <record id="view_routing_catalog_compare_form" model="ir.ui.view">
+        <field name="name">routing.catalog.compare.form</field>
+        <field name="model">routing.catalog.compare</field>
+        <field name="arch" type="xml">
+            <form string="Comparar Catálogos de Proveedores A y B">
+
+                <!-- ── Paso 1: Configurar ──────────────────────────── -->
+                <group invisible="state != 'config'">
+                    <field name="routing_id" invisible="1"/>
+                    <field name="state" invisible="1"/>
+
+                    <group string="Proveedor A — Preferido/Principal">
+                        <field name="partner_a_id"/>
+                        <field name="catalog_a_file" filename="catalog_a_filename"
+                               widget="binary"/>
+                        <field name="catalog_a_filename" invisible="1"/>
+                    </group>
+                    <group string="Proveedor B — Alternativo">
+                        <field name="partner_b_id"/>
+                        <field name="catalog_b_file" filename="catalog_b_filename"
+                               widget="binary"/>
+                        <field name="catalog_b_filename" invisible="1"/>
+                    </group>
+
+                    <group string="Regla de Asignación">
+                        <field name="threshold_percent" widget="float"/>
+                        <div class="text-muted col-12" colspan="2">
+                            Se selecciona B solo si precio_B ≤ precio_A × (1 − umbral/100).
+                            Con el 6% predeterminado: B debe ser al menos 6% más barato que A.
+                        </div>
+                    </group>
+
+                    <group string="Mapeo de Columnas del Excel"
+                           col="4">
+                        <field name="col_sku"/>
+                        <field name="col_desc"/>
+                        <field name="col_price"/>
+                        <field name="col_stock"/>
+                        <field name="header_row"/>
+                    </group>
+                </group>
+
+                <!-- ── Paso 2: Vista previa ────────────────────────── -->
+                <group invisible="state != 'preview'">
+                    <field name="state" invisible="1"/>
+                    <group string="Estadísticas de Coincidencia">
+                        <field name="lines_total" readonly="1"/>
+                        <field name="matched_a" readonly="1"/>
+                        <field name="matched_b" readonly="1"/>
+                        <field name="unmatched_count" readonly="1"/>
+                        <field name="assigned_a" readonly="1"
+                               string="Ganadores estimados A"/>
+                        <field name="assigned_b" readonly="1"
+                               string="Ganadores estimados B"/>
+                    </group>
+                    <group string="Artículos sin coincidencia"
+                           invisible="not unmatched_detail">
+                        <field name="unmatched_detail" nolabel="1"
+                               readonly="1" colspan="2"/>
+                    </group>
+                </group>
+
+                <!-- ── Paso 3: Resultado ───────────────────────────── -->
+                <group invisible="state != 'done'">
+                    <field name="state" invisible="1"/>
+                    <field name="result_html" nolabel="1" readonly="1"
+                           colspan="2"/>
+                </group>
+
+                <footer>
+                    <!-- config -->
+                    <button name="action_preview"
+                            string="Validar y Ver Estadísticas"
+                            type="object" class="oe_highlight"
+                            invisible="state != 'config'"/>
+
+                    <!-- preview -->
+                    <button name="action_apply"
+                            string="Aplicar Catálogos y Recalcular Routing"
+                            type="object" class="oe_highlight"
+                            invisible="state != 'preview'"
+                            confirm="¿Aplicar los catálogos? Se actualizarán los precios en product.supplierinfo y se recalculará el routing con la regla del umbral configurado."/>
+                    <button name="action_back"
+                            string="Volver"
+                            type="object"
+                            invisible="state != 'preview'"/>
+
+                    <button string="Cerrar" class="btn-secondary"
+                            special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_routing_catalog_compare" model="ir.actions.act_window">
+        <field name="name">Comparar Catálogos A/B</field>
+        <field name="res_model">routing.catalog.compare</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+        <field name="context">{'default_routing_id': active_id}</field>
+    </record>
+
+</odoo>

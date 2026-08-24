@@ -1,0 +1,259 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ═══════════════════════════════════════════════════════════════
+         PURCHASE ROUTING - LIST
+         ═══════════════════════════════════════════════════════════════ -->
+    <record id="view_purchase_routing_tree" model="ir.ui.view">
+        <field name="name">purchase.routing.tree</field>
+        <field name="model">purchase.routing</field>
+        <field name="arch" type="xml">
+            <list decoration-info="state == 'draft'"
+                   decoration-warning="state == 'calculated'"
+                   decoration-success="state in ('confirmed', 'done')">
+                <field name="name"/>
+                <field name="date"/>
+                <field name="warehouse_id" optional="show"/>
+                <field name="user_id" widget="many2one_avatar_user"/>
+                <field name="threshold_percent" optional="hide" string="Umbral %"/>
+                <field name="total_products"/>
+                <field name="total_qty_demanded" sum="Total"/>
+                <field name="total_qty_satisfied" sum="Total"/>
+                <field name="total_qty_unsatisfied" sum="Total"/>
+                <field name="total_amount" sum="Total"/>
+                <field name="state" widget="badge"
+                       decoration-info="state == 'draft'"
+                       decoration-warning="state == 'calculated'"
+                       decoration-success="state in ('confirmed', 'done')"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- ═══════════════════════════════════════════════════════════════
+         PURCHASE ROUTING - FORM
+         ═══════════════════════════════════════════════════════════════ -->
+    <record id="view_purchase_routing_form" model="ir.ui.view">
+        <field name="name">purchase.routing.form</field>
+        <field name="model">purchase.routing</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_calculate"
+                            string="Calcular Routing"
+                            type="object"
+                            class="oe_highlight"
+                            invisible="state != 'draft'"
+                            confirm="¿Calcular el routing? Se asignará cada producto al proveedor óptimo según precio, stock y umbral."/>
+                    <button name="action_calculate"
+                            string="Recalcular"
+                            type="object"
+                            invisible="state != 'calculated'"/>
+                    <button name="action_confirm"
+                            string="Confirmar"
+                            type="object"
+                            class="oe_highlight"
+                            invisible="state != 'calculated'"/>
+                    <button name="action_generate_pos"
+                            string="Generar Órdenes de Compra"
+                            type="object"
+                            class="oe_highlight"
+                            invisible="state != 'confirmed'"
+                            confirm="¿Generar las órdenes de compra? Se creará una PO por proveedor con las cantidades asignadas."/>
+                    <button name="action_reset_draft"
+                            string="Volver a Borrador"
+                            type="object"
+                            invisible="state not in ('calculated', 'confirmed')"/>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="draft,calculated,confirmed,done"/>
+                </header>
+
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_pos"
+                                type="object"
+                                class="oe_stat_button"
+                                icon="fa-shopping-cart"
+                                invisible="po_count == 0">
+                            <field name="po_count" widget="statinfo" string="POs"/>
+                        </button>
+                    </div>
+
+                    <div class="oe_title">
+                        <h1><field name="name" readonly="1"/></h1>
+                    </div>
+
+                    <group>
+                        <group>
+                            <field name="date"/>
+                            <field name="warehouse_id"/>
+                            <field name="company_id" invisible="1"/>
+                        </group>
+                        <group>
+                            <field name="user_id" widget="many2one_avatar_user"/>
+                            <field name="threshold_percent"
+                                   readonly="state not in ('draft', 'calculated')"
+                                   widget="float"/>
+                            <field name="po_initial_state"
+                                   readonly="state not in ('draft', 'calculated')"/>
+                        </group>
+                    </group>
+
+                    <!-- ── Resumen ejecutivo ───────────────────────── -->
+                    <group string="Resumen" invisible="state == 'draft'">
+                        <group>
+                            <field name="total_products"/>
+                            <field name="total_qty_demanded"/>
+                        </group>
+                        <group>
+                            <field name="total_qty_satisfied"/>
+                            <field name="total_qty_unsatisfied"/>
+                            <field name="total_amount"/>
+                        </group>
+                    </group>
+
+                    <notebook>
+                        <!-- ── Pestaña: Líneas de demanda ─────────── -->
+                        <page string="Líneas de Demanda" name="lines">
+                            <field name="line_ids" nolabel="1">
+                                <list editable="bottom"
+                                       decoration-danger="line_state == 'none'"
+                                       decoration-warning="line_state == 'partial'"
+                                       decoration-success="line_state == 'fulfilled'">
+                                    <field name="barcode" optional="show"/>
+                                    <field name="default_code" optional="show"
+                                           string="Ref. Interna"/>
+                                    <field name="line_brand" optional="show"/>
+                                    <field name="product_id"/>
+                                    <field name="qty_demanded"/>
+                                    <field name="source_partner_id" optional="show"
+                                           string="Proveedor Preferido"/>
+                                    <field name="winner_partner_id"
+                                           readonly="1" optional="show"/>
+                                    <field name="qty_satisfied"
+                                           readonly="1" optional="show"/>
+                                    <field name="qty_unsatisfied"
+                                           readonly="1" optional="show"/>
+                                    <field name="line_state" widget="badge"
+                                           readonly="1" optional="show"
+                                           decoration-danger="line_state == 'none'"
+                                           decoration-warning="line_state == 'partial'"
+                                           decoration-success="line_state == 'fulfilled'"/>
+                                    <field name="notes" readonly="1" optional="show"/>
+                                </list>
+                            </field>
+
+                            <!-- Botones de importación / comparación -->
+                            <div invisible="state != 'draft'" class="mt-2">
+                                <button name="%(action_routing_import_wizard)d"
+                                        string="Importar demanda desde Excel"
+                                        type="action"
+                                        class="btn-link"
+                                        icon="fa-file-excel-o"/>
+                                <button name="%(action_routing_demand_import)d"
+                                        string="Importar demanda desde OCs"
+                                        type="action"
+                                        class="btn-link"
+                                        icon="fa-shopping-cart"/>
+                                <button name="%(action_routing_catalog_compare)d"
+                                        string="Comparar catálogos Proveedor A / B"
+                                        type="action"
+                                        class="btn-link"
+                                        icon="fa-balance-scale"/>
+                            </div>
+                        </page>
+
+                        <!-- ── Pestaña: Detalle por proveedor ─────── -->
+                        <page string="Detalle por Proveedor" name="details"
+                              invisible="state == 'draft'">
+                            <field name="all_detail_ids" nolabel="1" readonly="1">
+                                <list decoration-success="is_winner == True"
+                                       decoration-muted="qty_assigned == 0">
+                                    <field name="barcode" optional="hide"/>
+                                    <field name="product_id"/>
+                                    <field name="rank"/>
+                                    <field name="partner_id"/>
+                                    <field name="price_unit"/>
+                                    <field name="supplier_stock"/>
+                                    <field name="qty_assigned"/>
+                                    <field name="is_winner" optional="show"/>
+                                    <field name="motivo" optional="show"/>
+                                    <field name="subtotal" sum="Total"/>
+                                </list>
+                            </field>
+                        </page>
+
+                        <!-- ── Pestaña: Notas ─────────────────────── -->
+                        <page string="Notas" name="notes_page">
+                            <field name="notes" nolabel="1"
+                                   placeholder="Notas adicionales sobre este routing..."/>
+                        </page>
+                    </notebook>
+                </sheet>
+
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <!-- ═══════════════════════════════════════════════════════════════
+         PURCHASE ROUTING - SEARCH
+         ═══════════════════════════════════════════════════════════════ -->
+    <record id="view_purchase_routing_search" model="ir.ui.view">
+        <field name="name">purchase.routing.search</field>
+        <field name="model">purchase.routing</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="warehouse_id"/>
+                <field name="user_id"/>
+                <filter name="filter_draft" string="Borrador"
+                        domain="[('state', '=', 'draft')]"/>
+                <filter name="filter_calculated" string="Calculado"
+                        domain="[('state', '=', 'calculated')]"/>
+                <filter name="filter_confirmed" string="Confirmado"
+                        domain="[('state', '=', 'confirmed')]"/>
+                <filter name="filter_done" string="POs Generadas"
+                        domain="[('state', '=', 'done')]"/>
+                <separator/>
+                <group name="group_by_section">
+                    <filter name="group_state" string="Estado"
+                            context="{'group_by': 'state'}"/>
+                    <filter name="group_warehouse" string="Almacén"
+                            context="{'group_by': 'warehouse_id'}"/>
+                    <filter name="group_date" string="Fecha"
+                            context="{'group_by': 'date'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- ═══════════════════════════════════════════════════════════════
+         ACTION
+         ═══════════════════════════════════════════════════════════════ -->
+    <record id="action_purchase_routing" model="ir.actions.act_window">
+        <field name="name">Routing de Compras</field>
+        <field name="res_model">purchase.routing</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_purchase_routing_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Cree su primer routing de compras
+            </p>
+            <p>
+                Compare precios entre proveedores y genere órdenes de compra
+                optimizadas con lógica de fallback por stock y umbral de precio configurable.
+            </p>
+        </field>
+    </record>
+
+    <!-- ═══════════════════════════════════════════════════════════════
+         SECUENCIA
+         ═══════════════════════════════════════════════════════════════ -->
+    <record id="seq_purchase_routing" model="ir.sequence">
+        <field name="name">Routing de Compras</field>
+        <field name="code">purchase.routing</field>
+        <field name="prefix">RT/%(year)s/</field>
+        <field name="padding">4</field>
+    </record>
+
+</odoo>

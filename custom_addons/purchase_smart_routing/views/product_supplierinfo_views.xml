@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Heredar la vista de product.supplierinfo para mostrar los campos nuevos -->
+    <record id="view_product_supplierinfo_form_inherit" model="ir.ui.view">
+        <field name="name">product.supplierinfo.form.inherit.smart.routing</field>
+        <field name="model">product.supplierinfo</field>
+        <field name="inherit_id" ref="product.product_supplierinfo_form_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='price']" position="after">
+                <field name="effective_price" readonly="1"/>
+                <field name="offer_price"/>
+                <field name="offer_date_end"/>
+            </xpath>
+            <xpath expr="//field[@name='delay']" position="after">
+                <field name="supplier_stock"/>
+                <field name="supplier_stock_date"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Heredar tree de supplierinfo en el form del producto -->
+    <record id="view_product_supplierinfo_tree_inherit" model="ir.ui.view">
+        <field name="name">product.supplierinfo.tree.inherit.smart.routing</field>
+        <field name="model">product.supplierinfo</field>
+        <field name="inherit_id" ref="product.product_supplierinfo_tree_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='price']" position="after">
+                <field name="effective_price" optional="show"/>
+                <field name="supplier_stock" optional="show"/>
+                <field name="supplier_stock_date" optional="hide"/>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>
