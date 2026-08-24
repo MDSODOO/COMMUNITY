@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+    <record id="product_tag_abbott" model="product.tag">
+        <field name="name">MARCA_RESTRINGIDA_ABBOTT</field>
+    </record>
+    <record id="product_tag_armstrong" model="product.tag">
+        <field name="name">MARCA_RESTRINGIDA_ARMSTRONG</field>
+    </record>
+    <record id="product_tag_bayer" model="product.tag">
+        <field name="name">MARCA_RESTRINGIDA_BAYER</field>
+    </record>
+    <record id="product_tag_broncolin" model="product.tag">
+        <field name="name">MARCA_RESTRINGIDA_BRONCOLIN</field>
+    </record>
+    <record id="product_tag_chinoin" model="product.tag">
+        <field name="name">MARCA_RESTRINGIDA_CHINOIN</field>
+    </record>
+    <record id="product_tag_colgate" model="product.tag">
+        <field name="name">MARCA_RESTRINGIDA_COLGATE</field>
+    </record>
+    <record id="product_tag_cosbel" model="product.tag">
+        <field name="name">MARCA_RESTRINGIDA_COSBEL</field>
+    </record>
+    <record id="product_tag_genomma" model="product.tag">
+        <field name="name">MARCA_RESTRINGIDA_GENOMMA</field>
+    </record>
+    <record id="product_tag_glaxo" model="product.tag">
+        <field name="name">MARCA_RESTRINGIDA_GLAXO</field>
+    </record>
+    <record id="product_tag_grin" model="product.tag">
+        <field name="name">MARCA_RESTRINGIDA_GRIN</field>
+    </record>
+    <record id="product_tag_grisi" model="product.tag">
+        <field name="name">MARCA_RESTRINGIDA_GRISI</field>
+    </record>
+    <record id="product_tag_grupo_bic" model="product.tag">
+        <field name="name">MARCA_RESTRINGIDA_GRUPO_BIC</field>
+    </record>
+    <record id="product_tag_electrolit" model="product.tag">
+        <field name="name">MARCA_RESTRINGIDA_ELECTROLIT</field>
+    </record>
+    <record id="product_tag_electrolife" model="product.tag">
+        <field name="name">MARCA_RESTRINGIDA_ELECTROLIFE</field>
+    </record>
+    <record id="product_tag_kimberly" model="product.tag">
+        <field name="name">MARCA_RESTRINGIDA_KIMBERLY</field>
+    </record>
+    <record id="product_tag_pfizer" model="product.tag">
+        <field name="name">MARCA_RESTRINGIDA_PFIZER</field>
+    </record>
+    <record id="product_tag_procter" model="product.tag">
+        <field name="name">MARCA_RESTRINGIDA_PROCTER</field>
+    </record>
+    <record id="product_tag_sanfer" model="product.tag">
+        <field name="name">MARCA_RESTRINGIDA_SANFER</field>
+    </record>
+    <record id="product_tag_sanofi" model="product.tag">
+        <field name="name">MARCA_RESTRINGIDA_SANOFI</field>
+    </record>
+    <record id="product_tag_senosiain" model="product.tag">
+        <field name="name">MARCA_RESTRINGIDA_SENOSIAIN</field>
+    </record>
+    <record id="product_tag_sophia" model="product.tag">
+        <field name="name">MARCA_RESTRINGIDA_SOPHIA</field>
+    </record>
+    <record id="product_tag_unilever" model="product.tag">
+        <field name="name">MARCA_RESTRINGIDA_UNILEVER</field>
+    </record>
+</odoo>

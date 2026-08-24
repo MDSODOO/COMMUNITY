@@ -1,0 +1,1019 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+    <!-- Restricted SKUs from Artículos sin descuento.xlsx -->
+    <record id="restricted_sku_0000" model="sale.restricted.sku">
+        <field name="ean">7501033954061</field>
+        <field name="marca">ABBOTT</field>
+        <field name="nombre">ENSURE CHOCOLATE C/237ML</field>
+    </record>
+    <record id="restricted_sku_0001" model="sale.restricted.sku">
+        <field name="ean">7501033954085</field>
+        <field name="marca">ABBOTT</field>
+        <field name="nombre">ENSURE VAINILLA C/237ML</field>
+    </record>
+    <record id="restricted_sku_0002" model="sale.restricted.sku">
+        <field name="ean">7501033956140</field>
+        <field name="marca">ABBOTT</field>
+        <field name="nombre">GLUCERNA FRESA C/ 237ML</field>
+    </record>
+    <record id="restricted_sku_0003" model="sale.restricted.sku">
+        <field name="ean">7501033956126</field>
+        <field name="marca">ABBOTT</field>
+        <field name="nombre">GLUCERNA VAINILLA C/237ML</field>
+    </record>
+    <record id="restricted_sku_0004" model="sale.restricted.sku">
+        <field name="ean">7501089809490</field>
+        <field name="marca">ARMSTRONG</field>
+        <field name="nombre">ESKAPAR 200MG C/16 CAPS (NIFUROXAZIDA)(ARMSTRONG)</field>
+    </record>
+    <record id="restricted_sku_0005" model="sale.restricted.sku">
+        <field name="ean">7501089809513</field>
+        <field name="marca">ARMSTRONG</field>
+        <field name="nombre">ESKAPAR 220MG/5ML SUSPENSION 90ML (NIFUROXAZIDA)(ARMSTRONG)</field>
+    </record>
+    <record id="restricted_sku_0006" model="sale.restricted.sku">
+        <field name="ean">7501089809506</field>
+        <field name="marca">ARMSTRONG</field>
+        <field name="nombre">ESKAPAR 400MG C/16 CAPS (NIFUROXAZIDA)(ARMSTRONG)</field>
+    </record>
+    <record id="restricted_sku_0007" model="sale.restricted.sku">
+        <field name="ean">7501089809445</field>
+        <field name="marca">ARMSTRONG</field>
+        <field name="nombre">ESKAPAR COMPUESTO 200/600MG C/20 CAPS (NIFUROXAZIDA, METRONIDAZOL)(ARMSTRONG)</field>
+    </record>
+    <record id="restricted_sku_0008" model="sale.restricted.sku">
+        <field name="ean">7501089809315</field>
+        <field name="marca">ARMSTRONG</field>
+        <field name="nombre">ESKAPAR COMPUESTO SUSPENSION 120ML (NIFUROXAZIDA, METRONIDAZOL)(ARMSTRONG)</field>
+    </record>
+    <record id="restricted_sku_0009" model="sale.restricted.sku">
+        <field name="ean">7501089809179</field>
+        <field name="marca">ARMSTRONG</field>
+        <field name="nombre">KAOMYCIN "S" SIMPLE C/180ML SUSP(CAOLIN, PECTINA)(ARMSTRONG)</field>
+    </record>
+    <record id="restricted_sku_0010" model="sale.restricted.sku">
+        <field name="ean">7501089809452</field>
+        <field name="marca">ARMSTRONG</field>
+        <field name="nombre">KAOMYCIN C/180ML SUSP (NEOMICINA,CAOLIN, PECTINA)(ARMSTRONG)</field>
+    </record>
+    <record id="restricted_sku_0011" model="sale.restricted.sku">
+        <field name="ean">7501089809469</field>
+        <field name="marca">ARMSTRONG</field>
+        <field name="nombre">KAOMYCIN C/20 TABLETAS (NEOMICINA, CAOLIN, PECTINA)(ARMSTRONG)</field>
+    </record>
+    <record id="restricted_sku_0012" model="sale.restricted.sku">
+        <field name="ean">7501089804327</field>
+        <field name="marca">ARMSTRONG</field>
+        <field name="nombre">RECOVERON NC CREMA 40GR (ACIDO ACEXAMICO, NEOMICINA)(ARMSTRONG)</field>
+    </record>
+    <record id="restricted_sku_0013" model="sale.restricted.sku">
+        <field name="ean">7501089804013</field>
+        <field name="marca">ARMSTRONG</field>
+        <field name="nombre">RECOVERON UNG 40GR (ACIDO ACEXAMICO) (ARMSTRONG)</field>
+    </record>
+    <record id="restricted_sku_0014" model="sale.restricted.sku">
+        <field name="ean">7501089804136</field>
+        <field name="marca">ARMSTRONG</field>
+        <field name="nombre">RECOVERON-C CREMA 40GR (ACIDO ACEXAMICO)(ARMSTRONG)</field>
+    </record>
+    <record id="restricted_sku_0015" model="sale.restricted.sku">
+        <field name="ean">7501089804310</field>
+        <field name="marca">ARMSTRONG</field>
+        <field name="nombre">RECOVERON-N UNG 40GR (ACIDO ACEXAMICO/NEOMICINA)(ARMSTRONG)</field>
+    </record>
+    <record id="restricted_sku_0016" model="sale.restricted.sku">
+        <field name="ean">7501089830081</field>
+        <field name="marca">ARMSTRONG</field>
+        <field name="nombre">VALPROATO DE MAGNESIO 200MG / SOL GTA C/40ML (ARMSTRONG)</field>
+    </record>
+    <record id="restricted_sku_0017" model="sale.restricted.sku">
+        <field name="ean">7501089809919</field>
+        <field name="marca">ARMSTRONG</field>
+        <field name="nombre">ZYPLO 60MG C/20 TBS (LEVODROPROPIZINA)(ARMSTRONG)</field>
+    </record>
+    <record id="restricted_sku_0018" model="sale.restricted.sku">
+        <field name="ean">7501089809421</field>
+        <field name="marca">ARMSTRONG</field>
+        <field name="nombre">ZYPLO 60MG SOL GOTAS C/15ML (LEVODROPROPIZINA)(ARMSTRONG)</field>
+    </record>
+    <record id="restricted_sku_0019" model="sale.restricted.sku">
+        <field name="ean">7501089809438</field>
+        <field name="marca">ARMSTRONG</field>
+        <field name="nombre">ZYPLO JARABE 60MG C/120ML (LEVODROPROPIZINA)(ARMSTRONG)</field>
+    </record>
+    <record id="restricted_sku_0020" model="sale.restricted.sku">
+        <field name="ean">7501088507168</field>
+        <field name="marca">ARMSTRONG</field>
+        <field name="nombre">ZYRTEC 10MG C/10 TAB (CETIRIZINA)(ARMSTRONG)</field>
+    </record>
+    <record id="restricted_sku_0021" model="sale.restricted.sku">
+        <field name="ean">7501089803511</field>
+        <field name="marca">ARMSTRONG</field>
+        <field name="nombre">ZYRTEC ORODISPERSABLE 10 MG C/10 TAB SABOR TORONJA (CETIRIZINA)(ARMSTRONG)</field>
+    </record>
+    <record id="restricted_sku_0022" model="sale.restricted.sku">
+        <field name="ean">7501088507113</field>
+        <field name="marca">ARMSTRONG</field>
+        <field name="nombre">ZYRTEC SOL 5MG/5ML FCO C/50 ML (CETIRIZINA)(ARMSTRONG)</field>
+    </record>
+    <record id="restricted_sku_0023" model="sale.restricted.sku">
+        <field name="ean">7501008497593</field>
+        <field name="marca">BAYER/ LAKESIDE</field>
+        <field name="nombre">ALKA-SELTZER BOOST C/10 TABS EFERVESCENTES (ACIDO ACETILSALICILICO, CAFEINA)(BAYER/ LAKESIDE)</field>
+    </record>
+    <record id="restricted_sku_0024" model="sale.restricted.sku">
+        <field name="ean">7501008443033</field>
+        <field name="marca">BAYER/ LAKESIDE</field>
+        <field name="nombre">ALKA-SELTZER C/12 TABS EFERVESCENTES (ACIDO ACETILSALICILICO, BICARBONATO DE SODIO, AC CITRICO)(BAYER/LAKESIDE)</field>
+    </record>
+    <record id="restricted_sku_0025" model="sale.restricted.sku">
+        <field name="ean">7501008496701</field>
+        <field name="marca">BAYER/ LAKESIDE</field>
+        <field name="nombre">ASPIRINA 500 MG C/12 TABS EFERV ( ACIDO ACETILSALICILICO ) ( BAYER )</field>
+    </record>
+    <record id="restricted_sku_0026" model="sale.restricted.sku">
+        <field name="ean">7501008491966</field>
+        <field name="marca">BAYER/ LAKESIDE</field>
+        <field name="nombre">ASPIRINA 500MG C/40 TABS (ACIDO ACETILSALICILICO )(BAYER/LAKESIDE)</field>
+    </record>
+    <record id="restricted_sku_0027" model="sale.restricted.sku">
+        <field name="ean">7501318612655</field>
+        <field name="marca">BAYER/ LAKESIDE</field>
+        <field name="nombre">ASPIRINA PROTEC 100MG C/28 TAB (ACIDO ACETILSALICILICO)(BAYER/LAKESIDE)</field>
+    </record>
+    <record id="restricted_sku_0028" model="sale.restricted.sku">
+        <field name="ean">7501008427347</field>
+        <field name="marca">BAYER/ LAKESIDE</field>
+        <field name="nombre">BEPANTHEN 5% C/30GR POMADA ( DEXPANTENOL ) ( BAYER )</field>
+    </record>
+    <record id="restricted_sku_0029" model="sale.restricted.sku">
+        <field name="ean">7501258215046</field>
+        <field name="marca">BAYER/ LAKESIDE</field>
+        <field name="nombre">BINOTAL 1GR C/28 TABS (AMPICILINA)(BAYER/LAKESIDE)</field>
+    </record>
+    <record id="restricted_sku_0030" model="sale.restricted.sku">
+        <field name="ean">7501258214520</field>
+        <field name="marca">BAYER/ LAKESIDE</field>
+        <field name="nombre">BINOTAL 500MG C/20 CAP (AMPICILINA)(BAYER/LAKESIDE)</field>
+    </record>
+    <record id="restricted_sku_0031" model="sale.restricted.sku">
+        <field name="ean">7501008433676</field>
+        <field name="marca">BAYER/ LAKESIDE</field>
+        <field name="nombre">CAFIASPIRINA 500/30MG C/40 TAB (ACIDO ACETILSALICILICO/CAFEINA)(BAYER/LAKESIDE)</field>
+    </record>
+    <record id="restricted_sku_0032" model="sale.restricted.sku">
+        <field name="ean">7501318645080</field>
+        <field name="marca">BAYER/ LAKESIDE</field>
+        <field name="nombre">CANESTEN V 2% CRE C/20GR C/3 APLICADORES ( CLOTRIMAZOL ) ( BAYER )</field>
+    </record>
+    <record id="restricted_sku_0033" model="sale.restricted.sku">
+        <field name="ean">7502276040375</field>
+        <field name="marca">BAYER/ LAKESIDE</field>
+        <field name="nombre">DESENFRIOL D TAB C/12 2/5/500 MG ( CLORFENAMINA/FENILEFRINA/PARACETAMOL )( BAYER/ LAKESIDE )</field>
+    </record>
+    <record id="restricted_sku_0034" model="sale.restricted.sku">
+        <field name="ean">7502276040368</field>
+        <field name="marca">BAYER/ LAKESIDE</field>
+        <field name="nombre">DESENFRIOL D TAB C/30 2/5/500 MG ( CLORFENAMINA/FENILEFRINA/PARACETAMOL ) ( BAYER )</field>
+    </record>
+    <record id="restricted_sku_0035" model="sale.restricted.sku">
+        <field name="ean">7502276040405</field>
+        <field name="marca">BAYER/ LAKESIDE</field>
+        <field name="nombre">DESENFRIOL-ITO PLUS 1/2.5/80 MG C/24 TAB (MASTICABLES)(CLORFEN,FENILEF,PARACET)(BAYER/ LAKESIDE)</field>
+    </record>
+    <record id="restricted_sku_0036" model="sale.restricted.sku">
+        <field name="ean">7501008497357</field>
+        <field name="marca">BAYER/ LAKESIDE</field>
+        <field name="nombre">FLANAX 275 MG C/20 TABS ( NAPROXENO SODICO ) ( BAYER )</field>
+    </record>
+    <record id="restricted_sku_0037" model="sale.restricted.sku">
+        <field name="ean">7501008499719</field>
+        <field name="marca">BAYER/ LAKESIDE</field>
+        <field name="nombre">FLANAX 550 MG C/12 TABS ( NAPROXENO SODICO ) ( BAYER )</field>
+    </record>
+    <record id="restricted_sku_0038" model="sale.restricted.sku">
+        <field name="ean">7501008499375</field>
+        <field name="marca">BAYER/ LAKESIDE</field>
+        <field name="nombre">FLANAX FEM 550MG C/6 TAB ( NAPROXENO ) ( BAYER )</field>
+    </record>
+    <record id="restricted_sku_0039" model="sale.restricted.sku">
+        <field name="ean">7501008499023</field>
+        <field name="marca">BAYER/ LAKESIDE</field>
+        <field name="nombre">REDOXON AOX 1000MG/400 UI/10MG C/10 TAB (ACIDO ASCORBICO/COLECALCEFIROL/ZINC)(BAYER/ LAKESIDE)</field>
+    </record>
+    <record id="restricted_sku_0040" model="sale.restricted.sku">
+        <field name="ean">7501008498439</field>
+        <field name="marca">BAYER/ LAKESIDE</field>
+        <field name="nombre">REDOXON INF 100 MG C/100 TAB MASTICABLES ( ACIDO ASCORBICO ) ( BAYER )</field>
+    </record>
+    <record id="restricted_sku_0041" model="sale.restricted.sku">
+        <field name="ean">7501008497784</field>
+        <field name="marca">BAYER/ LAKESIDE</field>
+        <field name="nombre">SARIDON 500MG/50MG C/20 TAB ( PARACETAMOL, CAFEINA ) ( BAYER )</field>
+    </record>
+    <record id="restricted_sku_0042" model="sale.restricted.sku">
+        <field name="ean">7501008485408</field>
+        <field name="marca">BAYER/ LAKESIDE</field>
+        <field name="nombre">TABCIN 500/8/2 MG TABS EFERV C/12 ( ACIDO ACETILSALICILICO, FENILEFRINA, CLORFENAMINA ) ( BAYER )</field>
+    </record>
+    <record id="restricted_sku_0043" model="sale.restricted.sku">
+        <field name="ean">7501008499689</field>
+        <field name="marca">BAYER/ LAKESIDE</field>
+        <field name="nombre">TABCIN ACTIVE C/12 CAPS (DEXTROMETORFANO, FENILEFRINA, CLORFENAMINA, PARACETAMOL)(BAYER/ LAKESIDE)</field>
+    </record>
+    <record id="restricted_sku_0044" model="sale.restricted.sku">
+        <field name="ean">7501008485316</field>
+        <field name="marca">BAYER/ LAKESIDE</field>
+        <field name="nombre">TABCIN EFEV 324/8/2MG 12 TAB ACETILSALICILICO/CLORFENAMINA/FENILEFRINA(BAYER/LAKESIDE)</field>
+    </record>
+    <record id="restricted_sku_0045" model="sale.restricted.sku">
+        <field name="ean">7501008499702</field>
+        <field name="marca">BAYER/ LAKESIDE</field>
+        <field name="nombre">TABCIN NOCHE C/12 CAPS (DEXTROMETORFANO, FENILEFRINA, DOXILAMINA, PARACETAMOL)(BAYER/ LAKESIDE)</field>
+    </record>
+    <record id="restricted_sku_0046" model="sale.restricted.sku">
+        <field name="ean">714706910609</field>
+        <field name="marca">BRONCOLIN</field>
+        <field name="nombre">BRONCOLIN ETIQUETA VERDE JBE 140ML (GLOBULUS/OXYPHYLLUM/SAMBUCUS NIGRA)(BRONCOLIN)</field>
+    </record>
+    <record id="restricted_sku_0047" model="sale.restricted.sku">
+        <field name="ean">714706100307</field>
+        <field name="marca">BRONCOLIN</field>
+        <field name="nombre">BRONCOLIN NATURAL (ETIQ AZUL) JBE C/140ML (MENTOL/EUCALIPTO/SAUCO/GORDOLOBO)(BRONCOLIN)</field>
+    </record>
+    <record id="restricted_sku_0048" model="sale.restricted.sku">
+        <field name="ean">7501088506062</field>
+        <field name="marca">CHINOIN</field>
+        <field name="nombre">ZYMIR-AB 6MG C/60ML SUSP (OSELTAMIVIR)</field>
+    </record>
+    <record id="restricted_sku_0049" model="sale.restricted.sku">
+        <field name="ean">7509546073033</field>
+        <field name="marca">COLGATE-PALMOLIVE</field>
+        <field name="nombre">CAPRICE ESPECIALIDADES C/200ML (COLGATE/PALMOLIVE)</field>
+    </record>
+    <record id="restricted_sku_0050" model="sale.restricted.sku">
+        <field name="ean">7509546073453</field>
+        <field name="marca">COLGATE-PALMOLIVE</field>
+        <field name="nombre">COLGATE CEPILLO DENTAL EXT SUAVE KIDS C/2 PZS (IVA)(COLGATE/PALMOLIVE)</field>
+    </record>
+    <record id="restricted_sku_0051" model="sale.restricted.sku">
+        <field name="ean">7702010631207</field>
+        <field name="marca">COLGATE-PALMOLIVE</field>
+        <field name="nombre">COLGATE CEPILLO DENTAL TRIPLE ACC 2 PACK (IVA)(COLGATE/PALMOLIVE)</field>
+    </record>
+    <record id="restricted_sku_0052" model="sale.restricted.sku">
+        <field name="ean">7509546000985</field>
+        <field name="marca">COLGATE-PALMOLIVE</field>
+        <field name="nombre">COLGATE PASTA DENTAL TRIPLE ACCION 75ML (COLGATE/PALMOLIVE)</field>
+    </record>
+    <record id="restricted_sku_0053" model="sale.restricted.sku">
+        <field name="ean">7501035911017</field>
+        <field name="marca">COLGATE-PALMOLIVE</field>
+        <field name="nombre">CREMA DENTAL COLGATE MFP 150ML (COLGATE/PALMOLIVE)</field>
+    </record>
+    <record id="restricted_sku_0054" model="sale.restricted.sku">
+        <field name="ean">7509546078434</field>
+        <field name="marca">COLGATE-PALMOLIVE</field>
+        <field name="nombre">STEFANO ALPHA C/159ML SPRAY (COLGATE/PALMOLIVE)</field>
+    </record>
+    <record id="restricted_sku_0055" model="sale.restricted.sku">
+        <field name="ean">7509546073767</field>
+        <field name="marca">COLGATE-PALMOLIVE</field>
+        <field name="nombre">STEFANO BLACK C/159ML SPRAY (COLGATE/PALMOLIVE)</field>
+    </record>
+    <record id="restricted_sku_0056" model="sale.restricted.sku">
+        <field name="ean">7509546077260</field>
+        <field name="marca">COLGATE-PALMOLIVE</field>
+        <field name="nombre">STEFANO COSMO C/159ML SPRAY (COLGATE/PALMOLIVE)</field>
+    </record>
+    <record id="restricted_sku_0057" model="sale.restricted.sku">
+        <field name="ean">7509546068619</field>
+        <field name="marca">COLGATE-PALMOLIVE</field>
+        <field name="nombre">STEFANO IMPERIAL C/159ML SPRAY (COLGATE/PALMOLIVE)</field>
+    </record>
+    <record id="restricted_sku_0058" model="sale.restricted.sku">
+        <field name="ean">7509546073774</field>
+        <field name="marca">COLGATE-PALMOLIVE</field>
+        <field name="nombre">STEFANO SPAZIO C/159ML SPRAY (COLGATE/PALMOLIVE)</field>
+    </record>
+    <record id="restricted_sku_0059" model="sale.restricted.sku">
+        <field name="ean">7509552839012</field>
+        <field name="marca">COSBEL/FRABEL</field>
+        <field name="nombre">DESODORANTE OBAO ROLL-ON MISS SEXY C/65 G  (IVA)(COSBEL/FRABEL)</field>
+    </record>
+    <record id="restricted_sku_0060" model="sale.restricted.sku">
+        <field name="ean">7501027286024</field>
+        <field name="marca">COSBEL/FRABEL</field>
+        <field name="nombre">OBAO MEN ACTIVE 48H 65G ROLL-ON (IVA)(COSBEL/FRABEL)</field>
+    </record>
+    <record id="restricted_sku_0061" model="sale.restricted.sku">
+        <field name="ean">7501027293473</field>
+        <field name="marca">COSBEL/FRABEL</field>
+        <field name="nombre">OBAO MEN AUDAZ C/65G ROLL ON (IVA) (COSBEL/FRABEL)</field>
+    </record>
+    <record id="restricted_sku_0062" model="sale.restricted.sku">
+        <field name="ean">7509552827606</field>
+        <field name="marca">COSBEL/FRABEL</field>
+        <field name="nombre">OBAO MEN CAMPEON C/65G ROLL ON (IVA)(COSBEL/FRABEL)</field>
+    </record>
+    <record id="restricted_sku_0063" model="sale.restricted.sku">
+        <field name="ean">7501027286017</field>
+        <field name="marca">COSBEL/FRABEL</field>
+        <field name="nombre">OBAO MEN CLASSIC C/65G ROLL ON (IVA) (COSBEL/FRABEL)</field>
+    </record>
+    <record id="restricted_sku_0064" model="sale.restricted.sku">
+        <field name="ean">7501839106268</field>
+        <field name="marca">COSBEL/FRABEL</field>
+        <field name="nombre">OBAO MEN COOL METAL 48H C/65G ROLL ON (IVA)(COSBEL/FRABEL)</field>
+    </record>
+    <record id="restricted_sku_0065" model="sale.restricted.sku">
+        <field name="ean">7501027286000</field>
+        <field name="marca">COSBEL/FRABEL</field>
+        <field name="nombre">OBAO MEN OCEANICO 48H C/65G ROLL ON (IVA)(COSBEL/FRABEL)</field>
+    </record>
+    <record id="restricted_sku_0066" model="sale.restricted.sku">
+        <field name="ean">7509552800494</field>
+        <field name="marca">COSBEL/FRABEL</field>
+        <field name="nombre">OBAO MEN WILD C/65 G ROLL ON (IVA) (COSBEL/FRABEL)</field>
+    </record>
+    <record id="restricted_sku_0067" model="sale.restricted.sku">
+        <field name="ean">7501839107852</field>
+        <field name="marca">COSBEL/FRABEL</field>
+        <field name="nombre">OBAO WOMAN FRESCURA BAMBOO C/65G ROLL ON (IVA)(COSBEL/FRABEL)</field>
+    </record>
+    <record id="restricted_sku_0068" model="sale.restricted.sku">
+        <field name="ean">7501027278487</field>
+        <field name="marca">COSBEL/FRABEL</field>
+        <field name="nombre">OBAO WOMAN FRESCURA SUAVE 65G ROLL-ON (IVA)(COSBEL/FRABEL)</field>
+    </record>
+    <record id="restricted_sku_0069" model="sale.restricted.sku">
+        <field name="ean">7501027250612</field>
+        <field name="marca">COSBEL/FRABEL</field>
+        <field name="nombre">OBAO WOMAN PIEL DELICADA 65G ROLL-ON (IVA)(COSBEL/FRABEL)</field>
+    </record>
+    <record id="restricted_sku_0070" model="sale.restricted.sku">
+        <field name="ean">650240013805</field>
+        <field name="marca">GENOMMA</field>
+        <field name="nombre">ALLIVIAX 550MG C/10 TAB (NAPROXENO SODICO)(GENOMMA)</field>
+    </record>
+    <record id="restricted_sku_0071" model="sale.restricted.sku">
+        <field name="ean">650240007651</field>
+        <field name="marca">GENOMMA</field>
+        <field name="nombre">BIO ELECTRO C/24 TABS (PARACETAMOL/ACIDO ACETILSALICILICO/CAFEINA)(GENOMMA)</field>
+    </record>
+    <record id="restricted_sku_0072" model="sale.restricted.sku">
+        <field name="ean">650240065293</field>
+        <field name="marca">GENOMMA</field>
+        <field name="nombre">NEXT - FWD 375/50/3MG C/24 TAB (PARACETAMOL/AMANTADINA/CLORFENAMINA)(GENOMMA)</field>
+    </record>
+    <record id="restricted_sku_0073" model="sale.restricted.sku">
+        <field name="ean">650240010538</field>
+        <field name="marca">GENOMMA</field>
+        <field name="nombre">NEXT 25/5/4/500MG C/10 TAB (CAFEINA/FENILEFRINA/CLORFENAMINA)(GENOMMA)</field>
+    </record>
+    <record id="restricted_sku_0074" model="sale.restricted.sku">
+        <field name="ean">7501065628121</field>
+        <field name="marca">GENOMMA</field>
+        <field name="nombre">POMADA DE LA CAMPANA C/19GR OXIDO DE ZINC (GENOMMA)</field>
+    </record>
+    <record id="restricted_sku_0075" model="sale.restricted.sku">
+        <field name="ean">7501065628145</field>
+        <field name="marca">GENOMMA</field>
+        <field name="nombre">POMADA DE LA CAMPANA TARRO 35G (GENOMMA)</field>
+    </record>
+    <record id="restricted_sku_0076" model="sale.restricted.sku">
+        <field name="ean">650240005398</field>
+        <field name="marca">GENOMMA</field>
+        <field name="nombre">SILKA MEDIC C/30G GEL</field>
+    </record>
+    <record id="restricted_sku_0077" model="sale.restricted.sku">
+        <field name="ean">650240031502</field>
+        <field name="marca">GENOMMA</field>
+        <field name="nombre">TUKOL D INFANTIL C/125ML JBE (GUAIFENESINA/DEXTROMETORFANO)(GENOMMA)</field>
+    </record>
+    <record id="restricted_sku_0078" model="sale.restricted.sku">
+        <field name="ean">650240010712</field>
+        <field name="marca">GENOMMA</field>
+        <field name="nombre">TUKOL-D ADULTO C/125ML JBE (GUAIFENESINA/DEXTROMETORFANO)(GENOMMA)</field>
+    </record>
+    <record id="restricted_sku_0079" model="sale.restricted.sku">
+        <field name="ean">650240011351</field>
+        <field name="marca">GENOMMA</field>
+        <field name="nombre">UNESIA C/20G UNG (BIFONAZOL)(GENOMMA)</field>
+    </record>
+    <record id="restricted_sku_0080" model="sale.restricted.sku">
+        <field name="ean">650240052545</field>
+        <field name="marca">GENOMMA</field>
+        <field name="nombre">XL-3 ANTIGRIPAL 325/10/4MG C/10 TAB (PARACETAMOL/FENILEFRINA/CLORFENAMINA)(GENOMMA)</field>
+    </record>
+    <record id="restricted_sku_0081" model="sale.restricted.sku">
+        <field name="ean">650240017100</field>
+        <field name="marca">GENOMMA</field>
+        <field name="nombre">XL-3 VR 375/50/3MG C/24 TAB (PARACETAMOL/AMANTADINA/CLORFENAMINA) (GENOMMA)</field>
+    </record>
+    <record id="restricted_sku_0082" model="sale.restricted.sku">
+        <field name="ean">650240017094</field>
+        <field name="marca">GENOMMA</field>
+        <field name="nombre">XL3 XTRA 250/10/5/2MG C/12 CAP (PARACETAMOL/DEXTROMETORFANO/FENILEFRINA/CLORFENAMINA)(GENOMMA)</field>
+    </record>
+    <record id="restricted_sku_0083" model="sale.restricted.sku">
+        <field name="ean">7501065054043</field>
+        <field name="marca">GLAXO</field>
+        <field name="nombre">TUMS EXTRA SURTIDO 3 ROLLOS C/8 TAB (CARBONATO DE CALCIO)</field>
+    </record>
+    <record id="restricted_sku_0084" model="sale.restricted.sku">
+        <field name="ean">7501065054029</field>
+        <field name="marca">GLAXO</field>
+        <field name="nombre">TUMS EXTRA SURTIDO C/48 TAB (CARBONATO DE CALCIO)</field>
+    </record>
+    <record id="restricted_sku_0085" model="sale.restricted.sku">
+        <field name="ean">8400007551</field>
+        <field name="marca">GRIN</field>
+        <field name="nombre">ALCOHOL POLIVINILICO 14MG/ML SOL GT C/10ML (GRIN)</field>
+    </record>
+    <record id="restricted_sku_0086" model="sale.restricted.sku">
+        <field name="ean">8400007148</field>
+        <field name="marca">GRIN</field>
+        <field name="nombre">CIPROFLOXACINO 3MG/ML SOL GT C/5ML (GRIN)</field>
+    </record>
+    <record id="restricted_sku_0087" model="sale.restricted.sku">
+        <field name="ean">8400007261</field>
+        <field name="marca">GRIN</field>
+        <field name="nombre">CLORANFENICOL C/5 G UNGÜENTO OFTALMICO (GRIN)</field>
+    </record>
+    <record id="restricted_sku_0088" model="sale.restricted.sku">
+        <field name="ean">8400005809</field>
+        <field name="marca">GRIN</field>
+        <field name="nombre">CROMOGLICATO DE SODIO SOL OFT 4% GTS C/5ML (GRIN)</field>
+    </record>
+    <record id="restricted_sku_0089" model="sale.restricted.sku">
+        <field name="ean">8400005816</field>
+        <field name="marca">GRIN</field>
+        <field name="nombre">DORZOLAMIDA TIMOLOL SOL C/5ML 20MG/5MG/ML (GRIN)</field>
+    </record>
+    <record id="restricted_sku_0090" model="sale.restricted.sku">
+        <field name="ean">8400009265</field>
+        <field name="marca">GRIN</field>
+        <field name="nombre">HIALURONATO DE SODIO 4.0 MG/ML SOL C/15ML (GRIN)</field>
+    </record>
+    <record id="restricted_sku_0091" model="sale.restricted.sku">
+        <field name="ean">8400005830</field>
+        <field name="marca">GRIN</field>
+        <field name="nombre">HIPROMELOSA 0.5 % C/10ML GOTAS OFT (GRIN)</field>
+    </record>
+    <record id="restricted_sku_0092" model="sale.restricted.sku">
+        <field name="ean">8400007674</field>
+        <field name="marca">GRIN</field>
+        <field name="nombre">KETOROLACO TROMETAMINA SOL 5MG/5ML (GRIN)</field>
+    </record>
+    <record id="restricted_sku_0093" model="sale.restricted.sku">
+        <field name="ean">8400007063</field>
+        <field name="marca">GRIN</field>
+        <field name="nombre">NAFAZOLINA NASAL SOL C/15ML (GRIN)</field>
+    </record>
+    <record id="restricted_sku_0094" model="sale.restricted.sku">
+        <field name="ean">8400005656</field>
+        <field name="marca">GRIN</field>
+        <field name="nombre">OPTIMILA H  OFT C/15ML GOTAS (HIALURONICO, MANZANILLA)(GRIN)</field>
+    </record>
+    <record id="restricted_sku_0095" model="sale.restricted.sku">
+        <field name="ean">8400001313</field>
+        <field name="marca">GRIN</field>
+        <field name="nombre">TETRAZOL OFT SOL C/15ML (TETRAHIDROZOLINA)(GRIN)</field>
+    </record>
+    <record id="restricted_sku_0096" model="sale.restricted.sku">
+        <field name="ean">8400005823</field>
+        <field name="marca">GRIN</field>
+        <field name="nombre">TOBRAMICINA/DEXAMETA SOL OFT 5ML (GRIN)</field>
+    </record>
+    <record id="restricted_sku_0097" model="sale.restricted.sku">
+        <field name="ean">7506295800057</field>
+        <field name="marca">GRISI</field>
+        <field name="nombre">C-BOOST MANDARINA SIN AZUCAR CAJA C/10 SOBRES EFERVESCENTES (GRISI)</field>
+    </record>
+    <record id="restricted_sku_0098" model="sale.restricted.sku">
+        <field name="ean">7501022132944</field>
+        <field name="marca">GRISI</field>
+        <field name="nombre">GRISI KIDS SHAMPOO ANTIPIOJOS C/300ML (GRISI)</field>
+    </record>
+    <record id="restricted_sku_0099" model="sale.restricted.sku">
+        <field name="ean">7501022101209</field>
+        <field name="marca">GRISI</field>
+        <field name="nombre">JABON DE AZUFRE C/LANOLINA 100GR (GRISI)</field>
+    </record>
+    <record id="restricted_sku_0100" model="sale.restricted.sku">
+        <field name="ean">37836050770</field>
+        <field name="marca">GRISI</field>
+        <field name="nombre">JABON LIQ NEUTRO C/250ML (GRISI)</field>
+    </record>
+    <record id="restricted_sku_0101" model="sale.restricted.sku">
+        <field name="ean">7501022105344</field>
+        <field name="marca">GRISI</field>
+        <field name="nombre">JABON RICITOS DE ORO LAVANDA LECHUGA C/90G (IVA)(GRISI)</field>
+    </record>
+    <record id="restricted_sku_0102" model="sale.restricted.sku">
+        <field name="ean">7501022150221</field>
+        <field name="marca">GRISI</field>
+        <field name="nombre">JABON RICITOS DE ORO NEUTRO C/90G (IVA)(GRISI)</field>
+    </record>
+    <record id="restricted_sku_0103" model="sale.restricted.sku">
+        <field name="ean">7501022105191</field>
+        <field name="marca">GRISI</field>
+        <field name="nombre">NEUTRO GRISI JAB C/100GR (IVA)(GRISI)</field>
+    </record>
+    <record id="restricted_sku_0104" model="sale.restricted.sku">
+        <field name="ean">7501022133118</field>
+        <field name="marca">GRISI</field>
+        <field name="nombre">SHAMPOO RICITOS DE ORO LAVANDA Y LECHUGA 250ML</field>
+    </record>
+    <record id="restricted_sku_0105" model="sale.restricted.sku">
+        <field name="ean">7501022103166</field>
+        <field name="marca">GRISI</field>
+        <field name="nombre">SHAMPOO RICITOS DE ORO MANZANILLA 250ML</field>
+    </record>
+    <record id="restricted_sku_0106" model="sale.restricted.sku">
+        <field name="ean">7501022133286</field>
+        <field name="marca">GRISI</field>
+        <field name="nombre">SHAMPOO RICITOS DE ORO MIEL Y ARGAN 250ML</field>
+    </record>
+    <record id="restricted_sku_0107" model="sale.restricted.sku">
+        <field name="ean">70330717534</field>
+        <field name="marca">GRUPO BIC</field>
+        <field name="nombre">RASTRILLO BIC COMFORT 3 ADVANCE 1PZ - IVA</field>
+    </record>
+    <record id="restricted_sku_0108" model="sale.restricted.sku">
+        <field name="ean">70330717565</field>
+        <field name="marca">GRUPO BIC</field>
+        <field name="nombre">RASTRILLO BIC COMFORT 3 ADVANCE SENSITIVE 1PZ - IVA</field>
+    </record>
+    <record id="restricted_sku_0109" model="sale.restricted.sku">
+        <field name="ean">70330731806</field>
+        <field name="marca">GRUPO BIC</field>
+        <field name="nombre">RASTRILLO BIC SOLEIL 1 PZ - IVA</field>
+    </record>
+    <record id="restricted_sku_0110" model="sale.restricted.sku">
+        <field name="ean">7501943471900</field>
+        <field name="marca">KIMBERLY - CLARK</field>
+        <field name="nombre">ABSORSEC TOALLITAS HUMEDAS KLEENBEBÉ C/120 PZS (IVA)(KIMBERLY-CLARK)</field>
+    </record>
+    <record id="restricted_sku_0111" model="sale.restricted.sku">
+        <field name="ean">7501017362950</field>
+        <field name="marca">KIMBERLY - CLARK</field>
+        <field name="nombre">PAÑUELOS KLEENEX DE BOLSILLO (KIMBERLY/CLARK)</field>
+    </record>
+    <record id="restricted_sku_0112" model="sale.restricted.sku">
+        <field name="ean">7501287630506</field>
+        <field name="marca">PFIZER</field>
+        <field name="nombre">TERRAMICINA 125MG C/24 PAS (OXITETRACICLINA)(PFIZER)</field>
+    </record>
+    <record id="restricted_sku_0113" model="sale.restricted.sku">
+        <field name="ean">7501287630926</field>
+        <field name="marca">PFIZER</field>
+        <field name="nombre">TERRAMICINA 500MG C/16 CAP(PFIZER)</field>
+    </record>
+    <record id="restricted_sku_0114" model="sale.restricted.sku">
+        <field name="ean">7503041640233</field>
+        <field name="marca">PISA</field>
+        <field name="nombre">ELECTROLIFE ZERO FRAMBUESA AZUL 625ML (ELECTROLITO)(PISA)</field>
+    </record>
+    <record id="restricted_sku_0115" model="sale.restricted.sku">
+        <field name="ean">7502268541484</field>
+        <field name="marca">PISA</field>
+        <field name="nombre">ELECTROLIFE ZERO FRESA-KIWI 625ML (PISA)</field>
+    </record>
+    <record id="restricted_sku_0116" model="sale.restricted.sku">
+        <field name="ean">7502268541446</field>
+        <field name="marca">PISA</field>
+        <field name="nombre">ELECTROLIFE ZERO MORA AZUL 625ML ( ELECTROLITO ) ( PISA )</field>
+    </record>
+    <record id="restricted_sku_0117" model="sale.restricted.sku">
+        <field name="ean">7502268541477</field>
+        <field name="marca">PISA</field>
+        <field name="nombre">ELECTROLIFE ZERO NARANJA-MANDA 625ML ( ELECTROLITO ) ( PISA )</field>
+    </record>
+    <record id="restricted_sku_0118" model="sale.restricted.sku">
+        <field name="ean">7502268541460</field>
+        <field name="marca">PISA</field>
+        <field name="nombre">ELECTROLIFE ZERO PONCHE DE FRUTAS 625ML (PISA)</field>
+    </record>
+    <record id="restricted_sku_0119" model="sale.restricted.sku">
+        <field name="ean">7502268541491</field>
+        <field name="marca">PISA</field>
+        <field name="nombre">ELECTROLIFE ZERO UVA 625ML (ELECTROLITO)(PISA)</field>
+    </record>
+    <record id="restricted_sku_0120" model="sale.restricted.sku">
+        <field name="ean">7501125104411</field>
+        <field name="marca">PISA</field>
+        <field name="nombre">ELECTROLIT COCO C/625ML  (ELECTROLITO)(PISA)</field>
+    </record>
+    <record id="restricted_sku_0121" model="sale.restricted.sku">
+        <field name="ean">7501125104268</field>
+        <field name="marca">PISA</field>
+        <field name="nombre">ELECTROLIT FRESA C/625ML SOL (ELECTROLITO)(PISA)</field>
+    </record>
+    <record id="restricted_sku_0122" model="sale.restricted.sku">
+        <field name="ean">7501125149221</field>
+        <field name="marca">PISA</field>
+        <field name="nombre">ELECTROLIT FRESA-KIWI C/625ML (ELECTROLITO)(PISA)</field>
+    </record>
+    <record id="restricted_sku_0123" model="sale.restricted.sku">
+        <field name="ean">7501125187179</field>
+        <field name="marca">PISA</field>
+        <field name="nombre">ELECTROLIT GUAYABA C/625ML (ELECTROLITOS) (PISA)</field>
+    </record>
+    <record id="restricted_sku_0124" model="sale.restricted.sku">
+        <field name="ean">7501125187131</field>
+        <field name="marca">PISA</field>
+        <field name="nombre">ELECTROLIT HORCHATA SOL C/625ML (ELECTROLITO)(PISA)</field>
+    </record>
+    <record id="restricted_sku_0125" model="sale.restricted.sku">
+        <field name="ean">7501125174803</field>
+        <field name="marca">PISA</field>
+        <field name="nombre">ELECTROLIT JAMAICA SOL C/625ML (ELECTROLITO) (PISA)</field>
+    </record>
+    <record id="restricted_sku_0126" model="sale.restricted.sku">
+        <field name="ean">7501125118562</field>
+        <field name="marca">PISA</field>
+        <field name="nombre">ELECTROLIT LIMA-LIMON C/625ML (ELECTROLITO)(PISA)</field>
+    </record>
+    <record id="restricted_sku_0127" model="sale.restricted.sku">
+        <field name="ean">7501125104343</field>
+        <field name="marca">PISA</field>
+        <field name="nombre">ELECTROLIT MANZANA C/625ML (ELECTROLITO) (PISA)</field>
+    </record>
+    <record id="restricted_sku_0128" model="sale.restricted.sku">
+        <field name="ean">7501125174797</field>
+        <field name="marca">PISA</field>
+        <field name="nombre">ELECTROLIT MORA AZUL C/625ML (ELECTROLITO)(PISA)</field>
+    </record>
+    <record id="restricted_sku_0129" model="sale.restricted.sku">
+        <field name="ean">7501125104688</field>
+        <field name="marca">PISA</field>
+        <field name="nombre">ELECTROLIT NARANJA-MANDARINA C/625ML (ELECTROLITO)(PISA)</field>
+    </record>
+    <record id="restricted_sku_0130" model="sale.restricted.sku">
+        <field name="ean">7501125177637</field>
+        <field name="marca">PISA</field>
+        <field name="nombre">ELECTROLIT PED FRESA SOL C/ 300ML (PISA)</field>
+    </record>
+    <record id="restricted_sku_0131" model="sale.restricted.sku">
+        <field name="ean">7501125143205</field>
+        <field name="marca">PISA</field>
+        <field name="nombre">ELECTROLIT PED FRESA SOL C/500ML (PISA)</field>
+    </record>
+    <record id="restricted_sku_0132" model="sale.restricted.sku">
+        <field name="ean">7501125177651</field>
+        <field name="marca">PISA</field>
+        <field name="nombre">ELECTROLIT PED MANZANA SOL C/300ML (PISA)</field>
+    </record>
+    <record id="restricted_sku_0133" model="sale.restricted.sku">
+        <field name="ean">7501125143182</field>
+        <field name="marca">PISA</field>
+        <field name="nombre">ELECTROLIT PED MANZANA SOL C/500ML (PISA)</field>
+    </record>
+    <record id="restricted_sku_0134" model="sale.restricted.sku">
+        <field name="ean">7501125177644</field>
+        <field name="marca">PISA</field>
+        <field name="nombre">ELECTROLIT PED UVA SOL C/300ML (PISA)</field>
+    </record>
+    <record id="restricted_sku_0135" model="sale.restricted.sku">
+        <field name="ean">7501125143199</field>
+        <field name="marca">PISA</field>
+        <field name="nombre">ELECTROLIT PED UVA SOL C/500ML (PISA)</field>
+    </record>
+    <record id="restricted_sku_0136" model="sale.restricted.sku">
+        <field name="ean">7501125103582</field>
+        <field name="marca">PISA</field>
+        <field name="nombre">ELECTROLIT PIÑA C/625ML (ELECTROLITO)(PISA)</field>
+    </record>
+    <record id="restricted_sku_0137" model="sale.restricted.sku">
+        <field name="ean">7501125144851</field>
+        <field name="marca">PISA</field>
+        <field name="nombre">ELECTROLIT UVA C/625ML (ELECTROLITO)(PISA)</field>
+    </record>
+    <record id="restricted_sku_0138" model="sale.restricted.sku">
+        <field name="ean">7501050613453</field>
+        <field name="marca">PROCTER</field>
+        <field name="nombre">AFRIN ADULTO C/20ML SOL NASAL (OXIMETAZOLINA)(PROCTER)</field>
+    </record>
+    <record id="restricted_sku_0139" model="sale.restricted.sku">
+        <field name="ean">7501050613460</field>
+        <field name="marca">PROCTER</field>
+        <field name="nombre">AFRIN LUB AD SOL C/20ML .05% (PROCTER)</field>
+    </record>
+    <record id="restricted_sku_0140" model="sale.restricted.sku">
+        <field name="ean">7506195178188</field>
+        <field name="marca">PROCTER</field>
+        <field name="nombre">ALWAYS NOCTURNA TOALLAS C/ALAS C/8 (PROCTER)</field>
+    </record>
+    <record id="restricted_sku_0141" model="sale.restricted.sku">
+        <field name="ean">7501006711387</field>
+        <field name="marca">PROCTER</field>
+        <field name="nombre">CEPILLO DENTAL ORAL B MEDIO MAYOR ALCANCE 2X1 (IVA)(PROCTER)</field>
+    </record>
+    <record id="restricted_sku_0142" model="sale.restricted.sku">
+        <field name="ean">3014260846725</field>
+        <field name="marca">PROCTER</field>
+        <field name="nombre">CEPILLO ORAL B  PRO COMPACT ONDULADO (PROCTER)</field>
+    </record>
+    <record id="restricted_sku_0143" model="sale.restricted.sku">
+        <field name="ean">7501054549796</field>
+        <field name="marca">PROCTER</field>
+        <field name="nombre">CREMA NIVEA CORPORAL NUTRITIVA 100ML (PROCTER)</field>
+    </record>
+    <record id="restricted_sku_0144" model="sale.restricted.sku">
+        <field name="ean">7501006733907</field>
+        <field name="marca">PROCTER</field>
+        <field name="nombre">CREST COMPLETE 4 EN 1 100ML (PASTA DENTAL)(PROCTER)</field>
+    </record>
+    <record id="restricted_sku_0145" model="sale.restricted.sku">
+        <field name="ean">7702018072439</field>
+        <field name="marca">PROCTER</field>
+        <field name="nombre">GILLETE VENUS RASTRILLO SIMPLY 3 (PROCTER)</field>
+    </record>
+    <record id="restricted_sku_0146" model="sale.restricted.sku">
+        <field name="ean">7506309864839</field>
+        <field name="marca">PROCTER</field>
+        <field name="nombre">GILLETTE COOL WAVE 93G/150ML SPRAY (IVA)(PROCTER)</field>
+    </record>
+    <record id="restricted_sku_0147" model="sale.restricted.sku">
+        <field name="ean">7702018874729</field>
+        <field name="marca">PROCTER</field>
+        <field name="nombre">GILLETTE PRESTOBARBA 3 RASTRILLO COMFORTGEL C/2PZ (IVA)</field>
+    </record>
+    <record id="restricted_sku_0148" model="sale.restricted.sku">
+        <field name="ean">47400141490</field>
+        <field name="marca">PROCTER</field>
+        <field name="nombre">GILLETTE SATIN CARE SENSITIVE GEL 198GR (PROCTER)</field>
+    </record>
+    <record id="restricted_sku_0149" model="sale.restricted.sku">
+        <field name="ean">7501095409004</field>
+        <field name="marca">PROCTER</field>
+        <field name="nombre">GRANEODIN B FRAMBUESA 10MG C/24 PASTILLAS(PROCTER)</field>
+    </record>
+    <record id="restricted_sku_0150" model="sale.restricted.sku">
+        <field name="ean">7506195148686</field>
+        <field name="marca">PROCTER</field>
+        <field name="nombre">HEAD&amp;SHOULDERS 90ML LIMPIEZA RENOVADORA (PROCTER)</field>
+    </record>
+    <record id="restricted_sku_0151" model="sale.restricted.sku">
+        <field name="ean">7506195110171</field>
+        <field name="marca">PROCTER</field>
+        <field name="nombre">HERBAL ESSENCES ACONDICIONADOR C/300ML (PROCTER)</field>
+    </record>
+    <record id="restricted_sku_0152" model="sale.restricted.sku">
+        <field name="ean">7506195110195</field>
+        <field name="marca">PROCTER</field>
+        <field name="nombre">HERBAL ESSENCES CREMA P/PEINAR 300ML (PROCTER)</field>
+    </record>
+    <record id="restricted_sku_0153" model="sale.restricted.sku">
+        <field name="ean">7506295302322</field>
+        <field name="marca">PROCTER</field>
+        <field name="nombre">HERBAL ESSENCES SHAMPOO PROLONGALO 300ML (PROCTER)</field>
+    </record>
+    <record id="restricted_sku_0154" model="sale.restricted.sku">
+        <field name="ean">7501072310378</field>
+        <field name="marca">PROCTER</field>
+        <field name="nombre">MELOX PLUS SABOR MENTA SUS C/360ML (ALUMINIO/MAGNESIO/DIMETICONA)(PROCTER)</field>
+    </record>
+    <record id="restricted_sku_0155" model="sale.restricted.sku">
+        <field name="ean">7501165011427</field>
+        <field name="marca">PROCTER</field>
+        <field name="nombre">MUCOANGIN LIMON 20MG C/18 PASTILLAS (PROCTER)</field>
+    </record>
+    <record id="restricted_sku_0156" model="sale.restricted.sku">
+        <field name="ean">7506339394719</field>
+        <field name="marca">PROCTER</field>
+        <field name="nombre">NATURELLA NOCTURNA C/ALAS 8 PZAS (PROCTER)</field>
+    </record>
+    <record id="restricted_sku_0157" model="sale.restricted.sku">
+        <field name="ean">7590002046234</field>
+        <field name="marca">PROCTER</field>
+        <field name="nombre">NATURELLA PROTECTORES DIARIOS C/40 (PROCTER)</field>
+    </record>
+    <record id="restricted_sku_0158" model="sale.restricted.sku">
+        <field name="ean">7506309895208</field>
+        <field name="marca">PROCTER</field>
+        <field name="nombre">NATURELLA REGULAR C/ALAS TOALLAS C/8 (PROCTER)</field>
+    </record>
+    <record id="restricted_sku_0159" model="sale.restricted.sku">
+        <field name="ean">7506195158739</field>
+        <field name="marca">PROCTER</field>
+        <field name="nombre">NATURELLA REGULAR TOALLAS SIN ALAS C/8 (PROCTER)</field>
+    </record>
+    <record id="restricted_sku_0160" model="sale.restricted.sku">
+        <field name="ean">7501001163983</field>
+        <field name="marca">PROCTER</field>
+        <field name="nombre">OLD SPICE FRESH 50G BARRA (IVA) (PROCTER)</field>
+    </record>
+    <record id="restricted_sku_0161" model="sale.restricted.sku">
+        <field name="ean">7506339349023</field>
+        <field name="marca">PROCTER</field>
+        <field name="nombre">OLD SPICE VIP 96G AER (IVA)(PROCTER)</field>
+    </record>
+    <record id="restricted_sku_0162" model="sale.restricted.sku">
+        <field name="ean">7891051037878</field>
+        <field name="marca">PROCTER</field>
+        <field name="nombre">ORAL B COMPLETE ENJUAGUE 250ML (PROCTER)</field>
+    </record>
+    <record id="restricted_sku_0163" model="sale.restricted.sku">
+        <field name="ean">7500435125000</field>
+        <field name="marca">PROCTER</field>
+        <field name="nombre">ORAL B PASTA DENT 3D WHITE GLAM C/67ML (PROCTER)</field>
+    </record>
+    <record id="restricted_sku_0164" model="sale.restricted.sku">
+        <field name="ean">7500435115926</field>
+        <field name="marca">PROCTER</field>
+        <field name="nombre">ORAL B PASTA DENTAL 100% C/66ML (PROCTER)</field>
+    </record>
+    <record id="restricted_sku_0165" model="sale.restricted.sku">
+        <field name="ean">7501001303396</field>
+        <field name="marca">PROCTER</field>
+        <field name="nombre">PANTENE PROV SHAMPOO CONTROL CAIDA 200ML (PROCTER)</field>
+    </record>
+    <record id="restricted_sku_0166" model="sale.restricted.sku">
+        <field name="ean">7506309840000</field>
+        <field name="marca">PROCTER</field>
+        <field name="nombre">PANTENE PROV SHAMPOO HIDRATACION 200ML ( PROCTER )</field>
+    </record>
+    <record id="restricted_sku_0167" model="sale.restricted.sku">
+        <field name="ean">7501006721119</field>
+        <field name="marca">PROCTER</field>
+        <field name="nombre">PANTENE PROV SHAMPOO RESTAURACION 200ML (PROCTER)</field>
+    </record>
+    <record id="restricted_sku_0168" model="sale.restricted.sku">
+        <field name="ean">7506309837239</field>
+        <field name="marca">PROCTER</field>
+        <field name="nombre">PANTENE RESTAURACION CREMA P/PEINAR 160ML (PROCTER)</field>
+    </record>
+    <record id="restricted_sku_0169" model="sale.restricted.sku">
+        <field name="ean">7506309837253</field>
+        <field name="marca">PROCTER</field>
+        <field name="nombre">PANTENE RIZOS CREMA P/PEINAR 160ML (PROCTER)</field>
+    </record>
+    <record id="restricted_sku_0170" model="sale.restricted.sku">
+        <field name="ean">7500435131834</field>
+        <field name="marca">PROCTER</field>
+        <field name="nombre">PEPTO BISMOL 262.4MG CON 12 TABLETAS MAST (SUBSILATO DE BISMUTO)(PROCTER)</field>
+    </record>
+    <record id="restricted_sku_0171" model="sale.restricted.sku">
+        <field name="ean">7501001353377</field>
+        <field name="marca">PROCTER</field>
+        <field name="nombre">PEPTO-BISMOL CEREZA 262MG TAB MASTICABLES C/24(PROCTER)</field>
+    </record>
+    <record id="restricted_sku_0172" model="sale.restricted.sku">
+        <field name="ean">20800756440</field>
+        <field name="marca">PROCTER</field>
+        <field name="nombre">PEPTO-BISMOL CEREZA SUSP 118ML (SUBSALICILATO DE BISMUTO)(PROCTER)</field>
+    </record>
+    <record id="restricted_sku_0173" model="sale.restricted.sku">
+        <field name="ean">20800753067</field>
+        <field name="marca">PROCTER</field>
+        <field name="nombre">PEPTO-BISMOL SUSP 118ML (PROCTER)</field>
+    </record>
+    <record id="restricted_sku_0174" model="sale.restricted.sku">
+        <field name="ean">41333666426</field>
+        <field name="marca">PROCTER</field>
+        <field name="nombre">PILA DURACELL AA ALCALINA (PROCTER)</field>
+    </record>
+    <record id="restricted_sku_0175" model="sale.restricted.sku">
+        <field name="ean">41333428482</field>
+        <field name="marca">PROCTER</field>
+        <field name="nombre">PILA DURACELL AAA ALCALINA (PROCTER)</field>
+    </record>
+    <record id="restricted_sku_0176" model="sale.restricted.sku">
+        <field name="ean">7501095451096</field>
+        <field name="marca">PROCTER</field>
+        <field name="nombre">SAL DE UVAS PICOT C/10 SOBRES (AC CITRICO, AC TARTARICO, BICARBONATO DE SODIO)(PROCTER)</field>
+    </record>
+    <record id="restricted_sku_0177" model="sale.restricted.sku">
+        <field name="ean">7501298281209</field>
+        <field name="marca">PROCTER</field>
+        <field name="nombre">SEDALMERCK 500/50/5MG C/20 TAB (PARACETAMOL/CAFEINA/FENILEFRINA)(PROCTER)</field>
+    </record>
+    <record id="restricted_sku_0178" model="sale.restricted.sku">
+        <field name="ean">7500435019811</field>
+        <field name="marca">PROCTER</field>
+        <field name="nombre">SHAMPOO H&amp;S 2 EN1 SUAVE Y MANEJABLE 180ML (PROCTER)</field>
+    </record>
+    <record id="restricted_sku_0179" model="sale.restricted.sku">
+        <field name="ean">7500435019958</field>
+        <field name="marca">PROCTER</field>
+        <field name="nombre">SHAMPOO H&amp;S LIMPIEZA RENOVADORA C/180ML (PROCTER)</field>
+    </record>
+    <record id="restricted_sku_0180" model="sale.restricted.sku">
+        <field name="ean">7500435019705</field>
+        <field name="marca">PROCTER</field>
+        <field name="nombre">SHAMPOO H&amp;S PROTECCION CAIDA C/180ML (PROCTER)</field>
+    </record>
+    <record id="restricted_sku_0181" model="sale.restricted.sku">
+        <field name="ean">7501035908116</field>
+        <field name="marca">PROCTER</field>
+        <field name="nombre">TALCO BABY MAGIC MENNEN AZUL (PROCTER)</field>
+    </record>
+    <record id="restricted_sku_0182" model="sale.restricted.sku">
+        <field name="ean">7501035908123</field>
+        <field name="marca">PROCTER</field>
+        <field name="nombre">TALCO BABY MAGIC MENNEN ROSA (PROCTER)</field>
+    </record>
+    <record id="restricted_sku_0183" model="sale.restricted.sku">
+        <field name="ean">20800600347</field>
+        <field name="marca">PROCTER</field>
+        <field name="nombre">TAMPAX SUPER PLUS C/10 ABSORBENTES (IVA)(PROCTER)</field>
+    </record>
+    <record id="restricted_sku_0184" model="sale.restricted.sku">
+        <field name="ean">7590002012468</field>
+        <field name="marca">PROCTER</field>
+        <field name="nombre">VAPORUB UNGÜENTO TARRO C/50G (PROCTER)</field>
+    </record>
+    <record id="restricted_sku_0185" model="sale.restricted.sku">
+        <field name="ean">7501001116187</field>
+        <field name="marca">PROCTER</field>
+        <field name="nombre">VICK 44 CEREZA JBE 120ML (PROCTER)</field>
+    </record>
+    <record id="restricted_sku_0186" model="sale.restricted.sku">
+        <field name="ean">7501001168797</field>
+        <field name="marca">PROCTER</field>
+        <field name="nombre">VICK BABYBALM UNG CON 50GR (PROCTER)</field>
+    </record>
+    <record id="restricted_sku_0187" model="sale.restricted.sku">
+        <field name="ean">7501001248062</field>
+        <field name="marca">PROCTER</field>
+        <field name="nombre">VICK VAPORUB INHALADOR PIEZA (PROCTER)</field>
+    </record>
+    <record id="restricted_sku_0188" model="sale.restricted.sku">
+        <field name="ean">75916565</field>
+        <field name="marca">PROCTER</field>
+        <field name="nombre">VICK VAPORUB UNGÜENTO C/12 LATAS DE 12GR (PROCTER)</field>
+    </record>
+    <record id="restricted_sku_0189" model="sale.restricted.sku">
+        <field name="ean">354312225140</field>
+        <field name="marca">PROCTER</field>
+        <field name="nombre">VITACILINA UNG C/16GR (PROCTER)</field>
+    </record>
+    <record id="restricted_sku_0190" model="sale.restricted.sku">
+        <field name="ean">354312225133</field>
+        <field name="marca">PROCTER</field>
+        <field name="nombre">VITACILINA UNG C/28GR (PROCTER)</field>
+    </record>
+    <record id="restricted_sku_0191" model="sale.restricted.sku">
+        <field name="ean">7501385491146</field>
+        <field name="marca">SANFER</field>
+        <field name="nombre">DEFLAMOX PLUS NIÑOS 125/100MG/5ML SUSP 75ML (NAPROXENO/PARACETAMOL)(SANFER)</field>
+    </record>
+    <record id="restricted_sku_0192" model="sale.restricted.sku">
+        <field name="ean">7501070637057</field>
+        <field name="marca">SANFER</field>
+        <field name="nombre">ORMOCYN T-5 500 MG C/12 CAPS ( AMOXICILINA ) ( SANFER )</field>
+    </record>
+    <record id="restricted_sku_0193" model="sale.restricted.sku">
+        <field name="ean">7501385491207</field>
+        <field name="marca">SANFER</field>
+        <field name="nombre">PROVAY 500MG C/14 TABS (CIPROFLOXACINO)</field>
+    </record>
+    <record id="restricted_sku_0194" model="sale.restricted.sku">
+        <field name="ean">7501070600556</field>
+        <field name="marca">SANFER</field>
+        <field name="nombre">SYNCOL 500/25/15MG C/24 COMP  (PARACETAMOL/PAMABROM/PIRILAMINA)</field>
+    </record>
+    <record id="restricted_sku_0195" model="sale.restricted.sku">
+        <field name="ean">7501070636395</field>
+        <field name="marca">SANFER</field>
+        <field name="nombre">ZOTANIXIN 500MG C/6 TABS (NITAZOXANIDA)(SANFER)</field>
+    </record>
+    <record id="restricted_sku_0196" model="sale.restricted.sku">
+        <field name="ean">7501165010826</field>
+        <field name="marca">SANOFI</field>
+        <field name="nombre">ENTEROGERMINA 5ML SUS C/10 AMP (ESPORAS DE BACILLUS CLAUSII)(SANOFI)</field>
+    </record>
+    <record id="restricted_sku_0197" model="sale.restricted.sku">
+        <field name="ean">7501328980119</field>
+        <field name="marca">SANOFI</field>
+        <field name="nombre">ENTEROGERMINA SUS C/20 AMP C/5ML (ESPORAS DE BACILLUS CLAUSII)(SANOFI)</field>
+    </record>
+    <record id="restricted_sku_0198" model="sale.restricted.sku">
+        <field name="ean">7501314704156</field>
+        <field name="marca">SENOSIAIN</field>
+        <field name="nombre">SENOSIAIN SUPOSITORIOS ADULTO C/10 (GLICEROL)(SENOSIAIN)</field>
+    </record>
+    <record id="restricted_sku_0199" model="sale.restricted.sku">
+        <field name="ean">7501314704187</field>
+        <field name="marca">SENOSIAIN</field>
+        <field name="nombre">SENOSIAIN SUPOSITORIOS BEBE C/10 (GLICEROL)(SENOSIAIN)</field>
+    </record>
+    <record id="restricted_sku_0200" model="sale.restricted.sku">
+        <field name="ean">7501314704163</field>
+        <field name="marca">SENOSIAIN</field>
+        <field name="nombre">SENOSIAIN SUPOSITORIOS NIÑO C/10 (GLICEROL)(SENOSIAIN)</field>
+    </record>
+    <record id="restricted_sku_0201" model="sale.restricted.sku">
+        <field name="ean">736085278507</field>
+        <field name="marca">SOPHIA</field>
+        <field name="nombre">MANZANILLA SOPHIA OFT SOL GOT C/15ML (SOPHIA)</field>
+    </record>
+    <record id="restricted_sku_0202" model="sale.restricted.sku">
+        <field name="ean">7501056326142</field>
+        <field name="marca">UNILEVER</field>
+        <field name="nombre">PONDS CREMA S AZUL C/100G (CREMA FACIAL)(UNILEVER)</field>
+    </record>
+</odoo>

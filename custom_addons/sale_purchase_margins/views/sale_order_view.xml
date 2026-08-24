@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- Herencia en vista de formulario de Pedido/Cotizacion de Venta -->
+        <record id="view_sale_order_form_margin" model="ir.ui.view">
+            <field name="name">sale.order.form.margin</field>
+            <field name="model">sale.order</field>
+            <field name="inherit_id" ref="sale.view_order_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='order_line']/list/field[@name='price_unit']" position="after">
+                    <field name="qfm_margin_pct" widget="percentage" force_save="1"/>
+                    <field name="qfm_margin_abs" readonly="1"/>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>

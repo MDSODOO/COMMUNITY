@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- List view for sale.discount.policy -->
+    <record id="sale_discount_policy_list" model="ir.ui.view">
+        <field name="name">sale.discount.policy list</field>
+        <field name="model">sale.discount.policy</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="name"/>
+                <field name="discount_pct"/>
+                <field name="partner_ids" widget="many2many_tags"/>
+                <field name="active"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Form view for sale.discount.policy -->
+    <record id="sale_discount_policy_form" model="ir.ui.view">
+        <field name="name">sale.discount.policy form</field>
+        <field name="model">sale.discount.policy</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <div class="oe_button_box" name="button_box"/>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group string="Basic Information">
+                            <field name="active"/>
+                            <field name="discount_pct"/>
+                            <field name="company_id"/>
+                        </group>
+                        <group string="Scope">
+                            <field name="partner_ids" widget="many2many_tags"/>
+                            <field name="warehouse_ids" widget="many2many_tags"/>
+                        </group>
+                    </group>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_ids" widget="mail_thread"/>
+                    <field name="message_follower_ids" widget="mail_followers"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <!-- Action: open discount policies -->
+    <record id="action_sale_discount_policy" model="ir.actions.act_window">
+        <field name="name">Discount Policies</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">sale.discount.policy</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create or manage discount policies for customer groups.
+            </p>
+        </field>
+    </record>
+</odoo>

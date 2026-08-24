@@ -1,0 +1,4 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_product_product_sale_stock_availability,access_product_product_sale_stock_availability,product.model_product_product,base.group_user,1,0,0,0
+access_sale_order_sale_stock_availability,access_sale_order_sale_stock_availability,sale.model_sale_order,base.group_user,1,0,0,0
+access_sale_order_line_sale_stock_availability,access_sale_order_line_sale_stock_availability,sale.model_sale_order_line,base.group_user,1,0,0,0

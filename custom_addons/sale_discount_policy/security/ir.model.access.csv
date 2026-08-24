@@ -1,0 +1,6 @@
+id,name,model_id:id,group_id:id,perm_create,perm_read,perm_write,perm_unlink
+access_sale_discount_policy_user,sale.discount.policy user,model_sale_discount_policy,sales_team.group_sale_salesman,0,1,0,0
+access_sale_discount_policy_manager,sale.discount.policy manager,model_sale_discount_policy,sales_team.group_sale_manager,1,1,1,1
+access_sale_restricted_sku_user,sale.restricted.sku user,model_sale_restricted_sku,sales_team.group_sale_salesman,0,1,0,0
+access_sale_restricted_sku_manager,sale.restricted.sku manager,model_sale_restricted_sku,sales_team.group_sale_manager,1,1,1,1
+access_restricted_product_import,restricted.product.import,sale_discount_policy.model_restricted_product_import,base.group_user,0,1,0,0

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+    <record id="partner_category_farmacias_economicas" model="res.partner.category">
+        <field name="name">Farmacias Económicas</field>
+    </record>
+</odoo>

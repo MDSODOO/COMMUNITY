@@ -1,0 +1,58 @@
+# Spanish (Mexico) translation for sale_purchase_margins
+# Copyright (C) 2026 Medicine Depot
+# License: LGPL-3
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 19.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-06-10 00:00+0000\n"
+"PO-Revision-Date: 2026-06-10 00:00+0000\n"
+"Last-Translator: Daniel Cervera <daniel.cervera.2029@gmail.com>\n"
+"Language-Team: Spanish (Mexico) <noreply@medicinedepot.mx>\n"
+"Language: es_MX\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#. module: sale_purchase_margins
+msgid "Margen (%)"
+msgstr "Margen (%)"
+
+#. module: sale_purchase_margins
+msgid "Margen ($)"
+msgstr "Margen ($)"
+
+#. module: sale_purchase_margins
+msgid "Margen mínimo"
+msgstr "Margen mínimo"
+
+#. module: sale_purchase_margins
+msgid "Margen por categoría"
+msgstr "Margen por categoría"
+
+#. module: sale_purchase_margins
+msgid "Alerta de Margen"
+msgstr "Alerta de Margen"
+
+#. module: sale_purchase_margins
+msgid "Margen real"
+msgstr "Margen real"
+
+#. module: sale_purchase_margins
+msgid "Costo estándar"
+msgstr "Costo estándar"
+
+#. module: sale_purchase_margins
+msgid "Márgenes de Venta"
+msgstr "Márgenes de Venta"
+
+#. module: sale_purchase_margins
+msgid "Márgenes de Compra"
+msgstr "Márgenes de Compra"
+
+#. module: sale_purchase_margins
+msgid "Umbral de alerta (%)"
+msgstr "Umbral de alerta (%)"
+

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- Herencia en vista de formulario de Orden de Compra -->
+        <record id="view_purchase_order_form_margin" model="ir.ui.view">
+            <field name="name">purchase.order.form.margin</field>
+            <field name="model">purchase.order</field>
+            <field name="inherit_id" ref="purchase.purchase_order_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='order_line']/list/field[@name='price_unit']" position="after">
+                    <field name="qfm_margin_pct" readonly="1"/>
+                    <field name="qfm_margin_abs" readonly="1"/>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>

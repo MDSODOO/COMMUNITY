@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+    <!-- Discount Policy Configuration -->
+    <!-- NOTE: Partner assignment happens via post-install migration (post_assign_partners_to_policy.py) -->
+    <!-- This ensures the policy finds the correct customer even if ID varies between environments -->
+    <record id="discount_policy_default" model="sale.discount.policy">
+        <field name="name">Política 2% Farmacias Económicas</field>
+        <field name="discount_pct">2.0</field>
+        <field name="active">True</field>
+        <!-- partner_ids will be populated by post-install migration -->
+    </record>
+</odoo>

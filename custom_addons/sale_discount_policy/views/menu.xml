@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Menu items -->
+    <menuitem
+        id="menu_sale_discount_policy"
+        name="Discount Policy"
+        parent="sale.menu_sale_config"
+        action="action_sale_discount_policy"
+        sequence="10"/>
+</odoo>

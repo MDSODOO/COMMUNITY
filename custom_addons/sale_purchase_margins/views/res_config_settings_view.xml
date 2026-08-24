@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="res_config_settings_view_form_inherit_qfm_margins" model="ir.ui.view">
+        <field name="name">res.config.settings.form.inherit.qfm.margins</field>
+        <field name="model">res.config.settings</field>
+        <field name="active" eval="False"/>
+        <field name="priority" eval="30"/>
+        <field name="inherit_id" ref="base.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//app[@name='purchase']/block[@name='purchase_setting_container']" position="inside">
+                <setting
+                    id="qfm_receipt_price_update_policy_setting"
+                    string="Política de actualización de precio por recepción"
+                    help="Controla si la recepción actualiza el precio de venta siempre, solo cuando sube o solo como sugerencia."
+                >
+                    <field name="qfm_receipt_price_update_policy"/>
+                </setting>
+            </xpath>
+        </field>
+    </record>
+</odoo>
