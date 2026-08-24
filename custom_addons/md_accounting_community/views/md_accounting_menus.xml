@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+        <!-- Menú raíz: app "Contabilidad Community", separado de Accounting/Invoicing
+             nativos para no interferir con esos menús mientras se valida el mapeo OCA. -->
+        <menuitem id="menu_md_accounting_root"
+                  name="Contabilidad Community"
+                  sequence="45"
+                  groups="account.group_account_invoice,account.group_account_manager"/>
+
+        <!-- Transacciones -->
+        <menuitem id="menu_md_accounting_transactions"
+                  name="Transacciones"
+                  parent="menu_md_accounting_root"
+                  sequence="10"/>
+        <menuitem id="menu_md_accounting_journal_entries"
+                  name="Asientos"
+                  parent="menu_md_accounting_transactions"
+                  action="account.action_move_journal_line"
+                  sequence="10"/>
+        <menuitem id="menu_md_accounting_transfers"
+                  name="Transferencias"
+                  parent="menu_md_accounting_transactions"
+                  action="account.action_account_payments_transfer"
+                  sequence="20"/>
+        <menuitem id="menu_md_accounting_analytic_items"
+                  name="Apuntes analíticos"
+                  parent="menu_md_accounting_transactions"
+                  action="analytic.account_analytic_line_action_entries"
+                  sequence="30"/>
+
+        <!-- Activos y Pasivos -->
+        <menuitem id="menu_md_accounting_assets_liabilities"
+                  name="Activos y Pasivos"
+                  parent="menu_md_accounting_root"
+                  sequence="20"/>
+        <menuitem id="menu_md_accounting_fixed_assets"
+                  name="Activos fijos"
+                  parent="menu_md_accounting_assets_liabilities"
+                  action="account_asset_management.account_asset_action"
+                  sequence="10"/>
+        <menuitem id="menu_md_accounting_fleet"
+                  name="Flotilla"
+                  parent="menu_md_accounting_assets_liabilities"
+                  action="fleet.fleet_vehicle_action"
+                  sequence="20"/>
+
+        <!-- Bloqueo -->
+        <menuitem id="menu_md_accounting_lock"
+                  name="Bloqueo"
+                  parent="menu_md_accounting_root"
+                  sequence="30"/>
+        <menuitem id="menu_md_accounting_bank_reconciliation"
+                  name="Conciliación bancaria"
+                  parent="menu_md_accounting_lock"
+                  action="account_reconcile_oca.action_bank_statement_line_reconcile_all"
+                  sequence="10"/>
+        <menuitem id="menu_md_accounting_tax_returns"
+                  name="Declaraciones fiscales (IVA)"
+                  parent="menu_md_accounting_lock"
+                  action="account_tax_balance.action_open_tax_balances"
+                  sequence="20"/>
+        <menuitem id="menu_md_accounting_lock_dates"
+                  name="Fechas de bloqueo"
+                  parent="menu_md_accounting_lock"
+                  action="account_journal_lock_date.update_journal_lock_dates_wizard_action"
+                  sequence="30"/>
+
+        <!-- Revisión y Reportes
+             NOTA: Balance General, Pérdidas y Ganancias, DIOT y Contabilidad
+             Electrónica XML (SAT) no aparecen aquí a propósito: ningún módulo
+             instalado los provee todavía. Ver plan de adaptación. -->
+        <menuitem id="menu_md_accounting_review_reports"
+                  name="Revisión y Reportes"
+                  parent="menu_md_accounting_root"
+                  sequence="40"/>
+        <menuitem id="menu_md_accounting_trial_balance"
+                  name="Balanza de Comprobación"
+                  parent="menu_md_accounting_review_reports"
+                  action="account_financial_report.action_trial_balance_wizard"
+                  sequence="10"/>
+        <menuitem id="menu_md_accounting_general_ledger"
+                  name="Libro Mayor"
+                  parent="menu_md_accounting_review_reports"
+                  action="account_financial_report.action_general_ledger_wizard"
+                  sequence="20"/>
+        <menuitem id="menu_md_accounting_journal_ledger"
+                  name="Libro Diario"
+                  parent="menu_md_accounting_review_reports"
+                  action="account_financial_report.action_journal_ledger_wizard"
+                  sequence="30"/>
+        <menuitem id="menu_md_accounting_open_items"
+                  name="Partidas Abiertas"
+                  parent="menu_md_accounting_review_reports"
+                  action="account_financial_report.action_open_items_wizard"
+                  sequence="40"/>
+        <menuitem id="menu_md_accounting_aged_partner_balance"
+                  name="Antigüedad de Saldos"
+                  parent="menu_md_accounting_review_reports"
+                  action="account_financial_report.action_aged_partner_balance_wizard"
+                  sequence="50"/>
+        <menuitem id="menu_md_accounting_vat_report"
+                  name="Informe de Impuestos (VAT)"
+                  parent="menu_md_accounting_review_reports"
+                  action="account_financial_report.action_vat_report_wizard"
+                  sequence="60"/>
+    </data>
+</odoo>
