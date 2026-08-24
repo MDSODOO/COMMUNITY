@@ -43,6 +43,7 @@ services:
       - medicinedepot_dev_odoo_data:/var/lib/odoo
       - ./custom_addons:/mnt/extra-addons
       - ./oca_addons/account-financial-tools:/mnt/oca-account-financial-tools
+      - ./oca_addons/l10n-mexico:/mnt/oca-l10n-mexico
       - ./oca_addons/mis-builder:/mnt/oca-mis-builder
       - ./oca_addons/account-reconcile:/mnt/oca-account-reconcile
       - ./oca_addons/account-financial-reporting:/mnt/oca-account-financial-reporting
