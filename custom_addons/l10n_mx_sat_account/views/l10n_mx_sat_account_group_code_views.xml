@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+        <record id="view_l10n_mx_sat_account_group_code_list" model="ir.ui.view">
+            <field name="name">l10n_mx.sat.account.group.code.list</field>
+            <field name="model">l10n_mx.sat.account.group.code</field>
+            <field name="arch" type="xml">
+                <list create="0" delete="0" edit="0">
+                    <field name="code"/>
+                    <field name="name"/>
+                    <field name="level"/>
+                </list>
+            </field>
+        </record>
+
+        <record id="action_l10n_mx_sat_account_group_code" model="ir.actions.act_window">
+            <field name="name">Código Agrupador SAT</field>
+            <field name="res_model">l10n_mx.sat.account.group.code</field>
+            <field name="view_mode">list</field>
+        </record>
+
+        <menuitem id="menu_l10n_mx_sat_account_group_code"
+                  name="Código Agrupador SAT"
+                  parent="account.account_account_menu"
+                  action="action_l10n_mx_sat_account_group_code"
+                  sequence="50"/>
+    </data>
+</odoo>

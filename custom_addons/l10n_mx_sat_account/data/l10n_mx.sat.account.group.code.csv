@@ -1,0 +1,1081 @@
+id,code,name,level
+code_100,100,Activo,0
+code_100_01,100.01,Activo a corto plazo,0
+code_101,101,Caja,1
+code_101_01,101.01,Caja y efectivo,2
+code_102,102,Bancos,1
+code_102_01,102.01,Bancos nacionales,2
+code_102_02,102.02,Bancos extranjeros,2
+code_103,103,Inversiones,1
+code_103_01,103.01,Inversiones temporales,2
+code_103_02,103.02,Inversiones en fideicomisos,2
+code_103_03,103.03,Otras inversiones,2
+code_104,104,Otros instrumentos financieros,1
+code_104_01,104.01,Otros instrumentos financieros,2
+code_105,105,Clientes,1
+code_105_01,105.01,Clientes nacionales,2
+code_105_02,105.02,Clientes extranjeros,2
+code_105_03,105.03,Clientes nacionales parte relacionada,2
+code_105_04,105.04,Clientes extranjeros parte relacionada,2
+code_106,106,Cuentas y documentos por cobrar a corto plazo,1
+code_106_01,106.01,Cuentas y documentos por cobrar a corto plazo nacional,2
+code_106_02,106.02,Cuentas y documentos por cobrar a corto plazo extranjero,2
+code_106_03,106.03,Cuentas y documentos por cobrar a corto plazo nacional parte relacionada,2
+code_106_04,106.04,Cuentas y documentos por cobrar a corto plazo extranjero parte relacionada,2
+code_106_05,106.05,Intereses por cobrar a corto plazo nacional,2
+code_106_06,106.06,Intereses por cobrar a corto plazo extranjero,2
+code_106_07,106.07,Intereses por cobrar a corto plazo nacional parte relacionada,2
+code_106_08,106.08,Intereses por cobrar a corto plazo extranjero parte relacionada,2
+code_106_09,106.09,Otras cuentas y documentos por cobrar a corto plazo,2
+code_106_10,106.10,Otras cuentas y documentos por cobrar a corto plazo parte relacionada,2
+code_107,107,Deudores diversos,1
+code_107_01,107.01,Funcionarios y empleados,2
+code_107_02,107.02,Socios y accionistas,2
+code_107_03,107.03,Partes relacionadas nacionales,2
+code_107_04,107.04,Partes relacionadas extranjeros,2
+code_107_05,107.05,Otros deudores diversos,2
+code_108,108,Estimación de cuentas incobrables,1
+code_108_01,108.01,Estimación de cuentas incobrables nacional,2
+code_108_02,108.02,Estimación de cuentas incobrables extranjero,2
+code_108_03,108.03,Estimación de cuentas incobrables nacional parte relacionada,2
+code_108_04,108.04,Estimación de cuentas incobrables extranjero parte relacionada,2
+code_109,109,Pagos anticipados,1
+code_109_01,109.01,Seguros y fianzas pagados por anticipado nacional,2
+code_109_02,109.02,Seguros y fianzas pagados por anticipado extranjero,2
+code_109_03,109.03,Seguros y fianzas pagados por anticipado nacional parte relacionada,2
+code_109_04,109.04,Seguros y fianzas pagados por anticipado extranjero parte relacionada,2
+code_109_05,109.05,Rentas pagadas por anticipado nacional,2
+code_109_06,109.06,Rentas pagadas por anticipado extranjero,2
+code_109_07,109.07,Rentas pagadas por anticipado nacional parte relacionada,2
+code_109_08,109.08,Rentas pagadas por anticipado extranjero parte relacionada,2
+code_109_09,109.09,Intereses pagados por anticipado nacional,2
+code_109_10,109.10,Intereses pagados por anticipado extranjero,2
+code_109_11,109.11,Intereses pagados por anticipado nacional parte relacionada,2
+code_109_12,109.12,Intereses pagados por anticipado extranjero parte relacionada,2
+code_109_13,109.13,Factoraje financiero pagados por anticipado nacional,2
+code_109_14,109.14,Factoraje financiero pagados por anticipado extranjero,2
+code_109_15,109.15,Factoraje financiero pagados por anticipado nacional parte relacionada,2
+code_109_16,109.16,Factoraje financiero pagados por anticipado extranjero parte relacionada,2
+code_109_17,109.17,Arrendamiento financiero pagados por anticipado nacional,2
+code_109_18,109.18,Arrendamiento financiero pagados por anticipado extranjero,2
+code_109_19,109.19,Arrendamiento financiero pagados por anticipado nacional parte relacionada,2
+code_109_20,109.20,Arrendamiento financiero pagados por anticipado extranjero parte relacionada,2
+code_109_21,109.21,Pérdida por deterioro de pagos anticipados,2
+code_109_22,109.22,Derechos fiduciarios,2
+code_109_23,109.23,Otros pagos anticipados,2
+code_110,110,Subsidio al empleo por aplicar,1
+code_110_01,110.01,Subsidio al empleo por aplicar,2
+code_111,111,Crédito al diésel por acreditar,1
+code_111_01,111.01,Crédito al diésel por acreditar,2
+code_112,112,Otros estímulos,1
+code_112_01,112.01,Otros estímulos,2
+code_113,113,Impuestos a favor,1
+code_113_01,113.01,IVA a favor,2
+code_113_02,113.02,ISR a favor,2
+code_113_03,113.03,IETU a favor,2
+code_113_04,113.04,IDE a favor,2
+code_113_05,113.05,IA a favor,2
+code_113_06,113.06,Subsidio al empleo,2
+code_113_07,113.07,Pago de lo indebido,2
+code_113_08,113.08,Otros impuestos a favor,2
+code_114,114,Pagos provisionales,1
+code_114_01,114.01,Pagos provisionales de ISR,2
+code_115,115,Inventario,1
+code_115_01,115.01,Inventario,2
+code_115_02,115.02,Materia prima y materiales,2
+code_115_03,115.03,Producción en proceso,2
+code_115_04,115.04,Productos terminados,2
+code_115_05,115.05,Mercancías en tránsito,2
+code_115_06,115.06,Mercancías en poder de terceros,2
+code_115_07,115.07,Otros,2
+code_116,116,Estimación de inventarios obsoletos y de lento movimiento,1
+code_116_01,116.01,Estimación de inventarios obsoletos y de lento movimiento,2
+code_117,117,Obras en proceso de inmuebles,1
+code_117_01,117.01,Obras en proceso de inmuebles,2
+code_118,118,Impuestos acreditables pagados,1
+code_118_01,118.01,IVA acreditable pagado,2
+code_118_02,118.02,IVA acreditable de importación pagado,2
+code_118_03,118.03,IEPS acreditable pagado,2
+code_118_04,118.04,IEPS pagado en importación,2
+code_119,119,Impuestos acreditables por pagar,1
+code_119_01,119.01,IVA pendiente de pago,2
+code_119_02,119.02,IVA de importación pendiente de pago,2
+code_119_03,119.03,IEPS pendiente de pago,2
+code_119_04,119.04,IEPS pendiente de pago en importación,2
+code_120,120,Anticipo a proveedores,1
+code_120_01,120.01,Anticipo a proveedores nacional,2
+code_120_02,120.02,Anticipo a proveedores extranjero,2
+code_120_03,120.03,Anticipo a proveedores nacional parte relacionada,2
+code_120_04,120.04,Anticipo a proveedores extranjero parte relacionada,2
+code_121,121,Otros activos a corto plazo,1
+code_121_01,121.01,Otros activos a corto plazo,2
+code_100_02,100.02,Activo a largo plazo,0
+code_151,151,Terrenos,1
+code_151_01,151.01,Terrenos,2
+code_152,152,Edificios,1
+code_152_01,152.01,Edificios,2
+code_153,153,Maquinaria y equipo,1
+code_153_01,153.01,Maquinaria y equipo,2
+code_154,154,"Automóviles, autobuses, camiones de carga, tractocamiones, montacargas y remolques",1
+code_154_01,154.01,"Automóviles, autobuses, camiones de carga, tractocamiones, montacargas y remolques",2
+code_155,155,Mobiliario y equipo de oficina,1
+code_155_01,155.01,Mobiliario y equipo de oficina,2
+code_156,156,Equipo de cómputo,1
+code_156_01,156.01,Equipo de cómputo,2
+code_157,157,Equipo de comunicación,1
+code_157_01,157.01,Equipo de comunicación,2
+code_158,158,"Activos biológicos, vegetales y semovientes",1
+code_158_01,158.01,"Activos biológicos, vegetales y semovientes",2
+code_159,159,Obras en proceso de activos fijos,1
+code_159_01,159.01,Obras en proceso de activos fijos,2
+code_160,160,Otros activos fijos,1
+code_160_01,160.01,Otros activos fijos,2
+code_161,161,Ferrocarriles,1
+code_161_01,161.01,Ferrocarriles,2
+code_162,162,Embarcaciones,1
+code_162_01,162.01,Embarcaciones,2
+code_163,163,Aviones,1
+code_163_01,163.01,Aviones,2
+code_164,164,"Troqueles, moldes, matrices y herramental",1
+code_164_01,164.01,"Troqueles, moldes, matrices y herramental",2
+code_165,165,Equipo de comunicaciones telefónicas,1
+code_165_01,165.01,Equipo de comunicaciones telefónicas,2
+code_166,166,Equipo de comunicación satelital,1
+code_166_01,166.01,Equipo de comunicación satelital,2
+code_167,167,Equipo de adaptaciones para personas con capacidades diferentes,1
+code_167_01,167.01,Equipo de adaptaciones para personas con capacidades diferentes,2
+code_168,168,Maquinaria y equipo de generación de energía de fuentes renovables o de sistemas de cogeneración de electricidad eficiente,1
+code_168_01,168.01,Maquinaria y equipo de generación de energía de fuentes renovables o de sistemas de cogeneración de electricidad eficiente,2
+code_169,169,Otra maquinaria y equipo,1
+code_169_01,169.01,Otra maquinaria y equipo,2
+code_170,170,Adaptaciones y mejoras,1
+code_170_01,170.01,Adaptaciones y mejoras,2
+code_171,171,Depreciación acumulada de activos fijos,1
+code_171_01,171.01,Depreciación acumulada de edificios,2
+code_171_02,171.02,Depreciación acumulada de maquinaria y equipo,2
+code_171_03,171.03,"Depreciación acumulada de automóviles, autobuses, camiones de carga, tractocamiones, montacargas y remolques",2
+code_171_04,171.04,Depreciación acumulada de mobiliario y equipo de oficina,2
+code_171_05,171.05,Depreciación acumulada de equipo de cómputo,2
+code_171_06,171.06,Depreciación acumulada de equipo de comunicación,2
+code_171_07,171.07,"Depreciación acumulada de activos biológicos, vegetales y semovientes",2
+code_171_08,171.08,Depreciación acumulada de otros activos fijos,2
+code_171_09,171.09,Depreciación acumulada de ferrocarriles,2
+code_171_10,171.10,Depreciación acumulada de embarcaciones,2
+code_171_11,171.11,Depreciación acumulada de aviones,2
+code_171_12,171.12,"Depreciación acumulada de troqueles, moldes, matrices y herramental",2
+code_171_13,171.13,Depreciación acumulada de equipo de comunicaciones telefónicas,2
+code_171_14,171.14,Depreciación acumulada de equipo de comunicación satelital,2
+code_171_15,171.15,Depreciación acumulada de equipo de adaptaciones para personas con capacidades diferentes,2
+code_171_16,171.16,Depreciación acumulada de maquinaria y equipo de generación de energía de fuentes renovables o de sistemas de cogeneración de electricidad eficiente,2
+code_171_17,171.17,Depreciación acumulada de adaptaciones y mejoras,2
+code_171_18,171.18,Depreciación acumulada de otra maquinaria y equipo,2
+code_172,172,Pérdida por deterioro acumulado de activos fijos,1
+code_172_01,172.01,Pérdida por deterioro acumulado de edificios,2
+code_172_02,172.02,Pérdida por deterioro acumulado de maquinaria y equipo,2
+code_172_03,172.03,"Pérdida por deterioro acumulado de automóviles, autobuses, camiones de carga, tractocamiones, montacargas y remolques",2
+code_172_04,172.04,Pérdida por deterioro acumulado de mobiliario y equipo de oficina,2
+code_172_05,172.05,Pérdida por deterioro acumulado de equipo de cómputo,2
+code_172_06,172.06,Pérdida por deterioro acumulado de equipo de comunicación,2
+code_172_07,172.07,"Pérdida por deterioro acumulado de activos biológicos, vegetales y semovientes",2
+code_172_08,172.08,Pérdida por deterioro acumulado de otros activos fijos,2
+code_172_09,172.09,Pérdida por deterioro acumulado de ferrocarriles,2
+code_172_10,172.10,Pérdida por deterioro acumulado de embarcaciones,2
+code_172_11,172.11,Pérdida por deterioro acumulado de aviones,2
+code_172_12,172.12,"Pérdida por deterioro acumulado de troqueles, moldes, matrices y herramental",2
+code_172_13,172.13,Pérdida por deterioro acumulado de equipo de comunicaciones telefónicas,2
+code_172_14,172.14,Pérdida por deterioro acumulado de equipo de comunicación satelital,2
+code_172_15,172.15,Pérdida por deterioro acumulado de equipo de adaptaciones para personas con capacidades diferentes,2
+code_172_16,172.16,Pérdida por deterioro acumulado de maquinaria y equipo de generación de energía de fuentes renovables o de sistemas de cogeneración de electricidad eficiente,2
+code_172_17,172.17,Pérdida por deterioro acumulado de adaptaciones y mejoras,2
+code_172_18,172.18,Pérdida por deterioro acumulado de otra maquinaria y equipo,2
+code_173,173,Gastos diferidos,1
+code_173_01,173.01,Gastos diferidos,2
+code_174,174,Gastos pre operativos,1
+code_174_01,174.01,Gastos pre operativos,2
+code_175,175,"Regalías, asistencia técnica y otros gastos diferidos",1
+code_175_01,175.01,"Regalías, asistencia técnica y otros gastos diferidos",2
+code_176,176,Activos intangibles,1
+code_176_01,176.01,Activos intangibles,2
+code_177,177,Gastos de organización,1
+code_177_01,177.01,Gastos de organización,2
+code_178,178,Investigación y desarrollo de mercado,1
+code_178_01,178.01,Investigación y desarrollo de mercado,2
+code_179,179,Marcas y patentes,1
+code_179_01,179.01,Marcas y patentes,2
+code_180,180,Crédito mercantil,1
+code_180_01,180.01,Crédito mercantil,2
+code_181,181,Gastos de instalación,1
+code_181_01,181.01,Gastos de instalación,2
+code_182,182,Otros activos diferidos,1
+code_182_01,182.01,Otros activos diferidos,2
+code_183,183,Amortización acumulada de activos diferidos,1
+code_183_01,183.01,Amortización acumulada de gastos diferidos,2
+code_183_02,183.02,Amortización acumulada de gastos pre operativos,2
+code_183_03,183.03,"Amortización acumulada de regalías, asistencia técnica y otros gastos diferidos",2
+code_183_04,183.04,Amortización acumulada de activos intangibles,2
+code_183_05,183.05,Amortización acumulada de gastos de organización,2
+code_183_06,183.06,Amortización acumulada de investigación y desarrollo de mercado,2
+code_183_07,183.07,Amortización acumulada de marcas y patentes,2
+code_183_08,183.08,Amortización acumulada de crédito mercantil,2
+code_183_09,183.09,Amortización acumulada de gastos de instalación,2
+code_183_10,183.10,Amortización acumulada de otros activos diferidos,2
+code_184,184,Depósitos en garantía,1
+code_184_01,184.01,Depósitos de fianzas,2
+code_184_02,184.02,Depósitos de arrendamiento de bienes inmuebles,2
+code_184_03,184.03,Otros depósitos en garantía,2
+code_185,185,Impuestos diferidos,1
+code_185_01,185.01,Impuestos diferidos ISR,2
+code_186,186,Cuentas y documentos por cobrar a largo plazo,1
+code_186_01,186.01,Cuentas y documentos por cobrar a largo plazo nacional,2
+code_186_02,186.02,Cuentas y documentos por cobrar a largo plazo extranjero,2
+code_186_03,186.03,Cuentas y documentos por cobrar a largo plazo nacional parte relacionada,2
+code_186_04,186.04,Cuentas y documentos por cobrar a largo plazo extranjero parte relacionada,2
+code_186_05,186.05,Intereses por cobrar a largo plazo nacional,2
+code_186_06,186.06,Intereses por cobrar a largo plazo extranjero,2
+code_186_07,186.07,Intereses por cobrar a largo plazo nacional parte relacionada,2
+code_186_08,186.08,Intereses por cobrar a largo plazo extranjero parte relacionada,2
+code_186_09,186.09,Otras cuentas y documentos por cobrar a largo plazo,2
+code_186_10,186.10,Otras cuentas y documentos por cobrar a largo plazo parte relacionada,2
+code_187,187,Participación de los trabajadores en las utilidades diferidas,1
+code_187_01,187.01,Participación de los trabajadores en las utilidades diferidas,2
+code_188,188,Inversiones permanentes en acciones,1
+code_188_01,188.01,Inversiones a largo plazo en subsidiarias,2
+code_188_02,188.02,Inversiones a largo plazo en asociadas,2
+code_188_03,188.03,Otras inversiones permanentes en acciones,2
+code_189,189,Estimación por deterioro de inversiones permanentes en acciones,1
+code_189_01,189.01,Estimación por deterioro de inversiones permanentes en acciones,2
+code_190,190,Otros instrumentos financieros,1
+code_190_01,190.01,Otros instrumentos financieros,2
+code_191,191,Otros activos a largo plazo,1
+code_191_01,191.01,Otros activos a largo plazo,2
+code_200,200,Pasivo,0
+code_200_01,200.01,Pasivo a corto plazo,0
+code_201,201,Proveedores,1
+code_201_01,201.01,Proveedores nacionales,2
+code_201_02,201.02,Proveedores extranjeros,2
+code_201_03,201.03,Proveedores nacionales parte relacionada,2
+code_201_04,201.04,Proveedores extranjeros parte relacionada,2
+code_202,202,Cuentas por pagar a corto plazo,1
+code_202_01,202.01,Documentos por pagar bancario y financiero nacional,2
+code_202_02,202.02,Documentos por pagar bancario y financiero extranjero,2
+code_202_03,202.03,Documentos y cuentas por pagar a corto plazo nacional,2
+code_202_04,202.04,Documentos y cuentas por pagar a corto plazo extranjero,2
+code_202_05,202.05,Documentos y cuentas por pagar a corto plazo nacional parte relacionada,2
+code_202_06,202.06,Documentos y cuentas por pagar a corto plazo extranjero parte relacionada,2
+code_202_07,202.07,Intereses por pagar a corto plazo nacional,2
+code_202_08,202.08,Intereses por pagar a corto plazo extranjero,2
+code_202_09,202.09,Intereses por pagar a corto plazo nacional parte relacionada,2
+code_202_10,202.10,Intereses por pagar a corto plazo extranjero parte relacionada,2
+code_202_11,202.11,Dividendo por pagar nacional,2
+code_202_12,202.12,Dividendo por pagar extranjero,2
+code_203,203,Cobros anticipados a corto plazo,1
+code_203_01,203.01,Rentas cobradas por anticipado a corto plazo nacional,2
+code_203_02,203.02,Rentas cobradas por anticipado a corto plazo extranjero,2
+code_203_03,203.03,Rentas cobradas por anticipado a corto plazo nacional parte relacionada,2
+code_203_04,203.04,Rentas cobradas por anticipado a corto plazo extranjero parte relacionada,2
+code_203_05,203.05,Intereses cobrados por anticipado a corto plazo nacional,2
+code_203_06,203.06,Intereses cobrados por anticipado a corto plazo extranjero,2
+code_203_07,203.07,Intereses cobrados por anticipado a corto plazo nacional parte relacionada,2
+code_203_08,203.08,Intereses cobrados por anticipado a corto plazo extranjero parte relacionada,2
+code_203_09,203.09,Factoraje financiero cobrados por anticipado a corto plazo nacional,2
+code_203_10,203.10,Factoraje financiero cobrados por anticipado a corto plazo extranjero,2
+code_203_11,203.11,Factoraje financiero cobrados por anticipado a corto plazo nacional parte relacionada,2
+code_203_12,203.12,Factoraje financiero cobrados por anticipado a corto plazo extranjero parte relacionada,2
+code_203_13,203.13,Arrendamiento financiero cobrados por anticipado a corto plazo nacional,2
+code_203_14,203.14,Arrendamiento financiero cobrados por anticipado a corto plazo extranjero,2
+code_203_15,203.15,Arrendamiento financiero cobrados por anticipado a corto plazo nacional parte relacionada,2
+code_203_16,203.16,Arrendamiento financiero cobrados por anticipado a corto plazo extranjero parte relacionada,2
+code_203_17,203.17,Derechos fiduciarios,2
+code_203_18,203.18,Otros cobros anticipados,2
+code_204,204,Instrumentos financieros a corto plazo,1
+code_204_01,204.01,Instrumentos financieros a corto plazo,2
+code_205,205,Acreedores diversos a corto plazo,1
+code_205_01,205.01,"Socios, accionistas o representante legal",2
+code_205_02,205.02,Acreedores diversos a corto plazo nacional,2
+code_205_03,205.03,Acreedores diversos a corto plazo extranjero,2
+code_205_04,205.04,Acreedores diversos a corto plazo nacional parte relacionada,2
+code_205_05,205.05,Acreedores diversos a corto plazo extranjero parte relacionada,2
+code_205_06,205.06,Otros acreedores diversos a corto plazo,2
+code_206,206,Anticipo de cliente,1
+code_206_01,206.01,Anticipo de cliente nacional,2
+code_206_02,206.02,Anticipo de cliente extranjero,2
+code_206_03,206.03,Anticipo de cliente nacional parte relacionada,2
+code_206_04,206.04,Anticipo de cliente extranjero parte relacionada,2
+code_206_05,206.05,Otros anticipos de clientes,2
+code_207,207,Impuestos trasladados,1
+code_207_01,207.01,IVA trasladado,2
+code_207_02,207.02,IEPS trasladado,2
+code_208,208,Impuestos trasladados cobrados,1
+code_208_01,208.01,IVA trasladado cobrado,2
+code_208_02,208.02,IEPS trasladado cobrado,2
+code_209,209,Impuestos trasladados no cobrados,1
+code_209_01,209.01,IVA trasladado no cobrado,2
+code_209_02,209.02,IEPS trasladado no cobrado,2
+code_210,210,Provisión de sueldos y salarios por pagar,1
+code_210_01,210.01,Provisión de sueldos y salarios por pagar,2
+code_210_02,210.02,Provisión de vacaciones por pagar,2
+code_210_03,210.03,Provisión de aguinaldo por pagar,2
+code_210_04,210.04,Provisión de fondo de ahorro por pagar,2
+code_210_05,210.05,Provisión de asimilados a salarios por pagar,2
+code_210_06,210.06,Provisión de anticipos o remanentes por distribuir,2
+code_210_07,210.07,Provisión de otros sueldos y salarios por pagar,2
+code_211,211,Provisión de contribuciones de seguridad social por pagar,1
+code_211_01,211.01,Provisión de IMSS patronal por pagar,2
+code_211_02,211.02,Provisión de SAR por pagar,2
+code_211_03,211.03,Provisión de INFONAVIT por pagar,2
+code_212,212,Provisión de impuesto estatal sobre nómina por pagar,1
+code_212_01,212.01,Provisión de impuesto estatal sobre nómina por pagar,2
+code_213,213,Impuestos y derechos por pagar,1
+code_213_01,213.01,IVA por pagar,2
+code_213_02,213.02,IEPS por pagar,2
+code_213_03,213.03,ISR por pagar,2
+code_213_04,213.04,Impuesto estatal sobre nómina por pagar,2
+code_213_05,213.05,Impuesto estatal y municipal por pagar,2
+code_213_06,213.06,Derechos por pagar,2
+code_213_07,213.07,Otros impuestos por pagar,2
+code_214,214,Dividendos por pagar,1
+code_214_01,214.01,Dividendos por pagar,2
+code_215,215,PTU por pagar,1
+code_215_01,215.01,PTU por pagar,2
+code_215_02,215.02,PTU por pagar de ejercicios anteriores,2
+code_215_03,215.03,Provisión de PTU por pagar,2
+code_216,216,Impuestos retenidos,1
+code_216_01,216.01,Impuestos retenidos de ISR por sueldos y salarios,2
+code_216_02,216.02,Impuestos retenidos de ISR por asimilados a salarios,2
+code_216_03,216.03,Impuestos retenidos de ISR por arrendamiento,2
+code_216_04,216.04,Impuestos retenidos de ISR por servicios profesionales,2
+code_216_05,216.05,Impuestos retenidos de ISR por dividendos,2
+code_216_06,216.06,Impuestos retenidos de ISR por intereses,2
+code_216_07,216.07,Impuestos retenidos de ISR por pagos al extranjero,2
+code_216_08,216.08,Impuestos retenidos de ISR por venta de acciones,2
+code_216_09,216.09,Impuestos retenidos de ISR por venta de partes sociales,2
+code_216_10,216.10,Impuestos retenidos de IVA,2
+code_216_11,216.11,Retenciones de IMSS a los trabajadores,2
+code_216_12,216.12,Otras impuestos retenidos,2
+code_217,217,Pagos realizados por cuenta de terceros,1
+code_217_01,217.01,Pagos realizados por cuenta de terceros,2
+code_218,218,Otros pasivos a corto plazo,1
+code_218_01,218.01,Otros pasivos a corto plazo,2
+code_200_02,200.02,Pasivo a largo plazo,0
+code_251,251,Acreedores diversos a largo plazo,1
+code_251_01,251.01,"Socios, accionistas o representante legal",2
+code_251_02,251.02,Acreedores diversos a largo plazo nacional,2
+code_251_03,251.03,Acreedores diversos a largo plazo extranjero,2
+code_251_04,251.04,Acreedores diversos a largo plazo nacional parte relacionada,2
+code_251_05,251.05,Acreedores diversos a largo plazo extranjero parte relacionada,2
+code_251_06,251.06,Otros acreedores diversos a largo plazo,2
+code_252,252,Cuentas por pagar a largo plazo,1
+code_252_01,252.01,Documentos bancarios y financieros por pagar a largo plazo nacional,2
+code_252_02,252.02,Documentos bancarios y financieros por pagar a largo plazo extranjero,2
+code_252_03,252.03,Documentos y cuentas por pagar a largo plazo nacional,2
+code_252_04,252.04,Documentos y cuentas por pagar a largo plazo extranjero,2
+code_252_05,252.05,Documentos y cuentas por pagar a largo plazo nacional parte relacionada,2
+code_252_06,252.06,Documentos y cuentas por pagar a largo plazo extranjero parte relacionada,2
+code_252_07,252.07,Hipotecas por pagar a largo plazo nacional,2
+code_252_08,252.08,Hipotecas por pagar a largo plazo extranjero,2
+code_252_09,252.09,Hipotecas por pagar a largo plazo nacional parte relacionada,2
+code_252_10,252.10,Hipotecas por pagar a largo plazo extranjero parte relacionada,2
+code_252_11,252.11,Intereses por pagar a largo plazo nacional,2
+code_252_12,252.12,Intereses por pagar a largo plazo extranjero,2
+code_252_13,252.13,Intereses por pagar a largo plazo nacional parte relacionada,2
+code_252_14,252.14,Intereses por pagar a largo plazo extranjero parte relacionada,2
+code_252_15,252.15,Dividendos por pagar nacionales,2
+code_252_16,252.16,Dividendos por pagar extranjeros,2
+code_252_17,252.17,Otras cuentas y documentos por pagar a largo plazo,2
+code_253,253,Cobros anticipados a largo plazo,1
+code_253_01,253.01,Rentas cobradas por anticipado a largo plazo nacional,2
+code_253_02,253.02,Rentas cobradas por anticipado a largo plazo extranjero,2
+code_253_03,253.03,Rentas cobradas por anticipado a largo plazo nacional parte relacionada,2
+code_253_04,253.04,Rentas cobradas por anticipado a largo plazo extranjero parte relacionada,2
+code_253_05,253.05,Intereses cobrados por anticipado a largo plazo nacional,2
+code_253_06,253.06,Intereses cobrados por anticipado a largo plazo extranjero,2
+code_253_07,253.07,Intereses cobrados por anticipado a largo plazo nacional parte relacionada,2
+code_253_08,253.08,Intereses cobrados por anticipado a largo plazo extranjero parte relacionada,2
+code_253_09,253.09,Factoraje financiero cobrados por anticipado a largo plazo nacional,2
+code_253_10,253.10,Factoraje financiero cobrados por anticipado a largo plazo extranjero,2
+code_253_11,253.11,Factoraje financiero cobrados por anticipado a largo plazo nacional parte relacionada,2
+code_253_12,253.12,Factoraje financiero cobrados por anticipado a largo plazo extranjero parte relacionada,2
+code_253_13,253.13,Arrendamiento financiero cobrados por anticipado a largo plazo nacional,2
+code_253_14,253.14,Arrendamiento financiero cobrados por anticipado a largo plazo extranjero,2
+code_253_15,253.15,Arrendamiento financiero cobrados por anticipado a largo plazo nacional parte relacionada,2
+code_253_16,253.16,Arrendamiento financiero cobrados por anticipado a largo plazo extranjero parte relacionada,2
+code_253_17,253.17,Derechos fiduciarios,2
+code_253_18,253.18,Otros cobros anticipados,2
+code_254,254,Instrumentos financieros a largo plazo,1
+code_254_01,254.01,Instrumentos financieros a largo plazo,2
+code_255,255,Pasivos por beneficios a los empleados a largo plazo,1
+code_255_01,255.01,Pasivos por beneficios a los empleados a largo plazo,2
+code_256,256,Otros pasivos a largo plazo,1
+code_256_01,256.01,Otros pasivos a largo plazo,2
+code_257,257,Participación de los trabajadores en las utilidades diferida,1
+code_257_01,257.01,Participación de los trabajadores en las utilidades diferida,2
+code_258,258,Obligaciones contraídas de fideicomisos,1
+code_258_01,258.01,Obligaciones contraídas de fideicomisos,2
+code_259,259,Impuestos diferidos,1
+code_259_01,259.01,ISR diferido,2
+code_259_02,259.02,ISR por dividendo diferido,2
+code_259_03,259.03,Otros impuestos diferidos,2
+code_260,260,Pasivos diferidos,1
+code_260_01,260.01,Pasivos diferidos,2
+code_300,300,Capital contable,0
+code_301,301,Capital social,1
+code_301_01,301.01,Capital fijo,2
+code_301_02,301.02,Capital variable,2
+code_301_03,301.03,Aportaciones para futuros aumentos de capital,2
+code_301_04,301.04,Prima en suscripción de acciones,2
+code_301_05,301.05,Prima en suscripción de partes sociales,2
+code_302,302,Patrimonio,1
+code_302_01,302.01,Patrimonio,2
+code_302_02,302.02,Aportación patrimonial,2
+code_302_03,302.03,Déficit o remanente del ejercicio,2
+code_303,303,Reserva legal,1
+code_303_01,303.01,Reserva legal,2
+code_304,304,Resultado de ejercicios anteriores,1
+code_304_01,304.01,Utilidad de ejercicios anteriores,2
+code_304_02,304.02,Pérdida de ejercicios anteriores,2
+code_304_03,304.03,Resultado integral de ejercicios anteriores,2
+code_304_04,304.04,Déficit o remanente de ejercicio anteriores,2
+code_305,305,Resultado del ejercicio,1
+code_305_01,305.01,Utilidad del ejercicio,2
+code_305_02,305.02,Pérdida del ejercicio,2
+code_305_03,305.03,Resultado integral,2
+code_306,306,Otras cuentas de capital,1
+code_306_01,306.01,Otras cuentas de capital,2
+code_400,400,Ingresos,0
+code_401,401,Ingresos,1
+code_401_01,401.01,Ventas y/o servicios gravados a la tasa general,2
+code_401_02,401.02,Ventas y/o servicios gravados a la tasa general de contado,2
+code_401_03,401.03,Ventas y/o servicios gravados a la tasa general a crédito,2
+code_401_04,401.04,Ventas y/o servicios gravados al 0%,2
+code_401_05,401.05,Ventas y/o servicios gravados al 0% de contado,2
+code_401_06,401.06,Ventas y/o servicios gravados al 0% a crédito,2
+code_401_07,401.07,Ventas y/o servicios exentos,2
+code_401_08,401.08,Ventas y/o servicios exentos de contado,2
+code_401_09,401.09,Ventas y/o servicios exentos a crédito,2
+code_401_10,401.10,Ventas y/o servicios gravados a la tasa general nacionales partes relacionadas,2
+code_401_11,401.11,Ventas y/o servicios gravados a la tasa general extranjeros partes relacionadas,2
+code_401_12,401.12,Ventas y/o servicios gravados al 0% nacionales partes relacionadas,2
+code_401_13,401.13,Ventas y/o servicios gravados al 0% extranjeros partes relacionadas,2
+code_401_14,401.14,Ventas y/o servicios exentos nacionales partes relacionadas,2
+code_401_15,401.15,Ventas y/o servicios exentos extranjeros partes relacionadas,2
+code_401_16,401.16,Ingresos por servicios administrativos,2
+code_401_17,401.17,Ingresos por servicios administrativos nacionales partes relacionadas,2
+code_401_18,401.18,Ingresos por servicios administrativos extranjeros partes relacionadas,2
+code_401_19,401.19,Ingresos por servicios profesionales,2
+code_401_20,401.20,Ingresos por servicios profesionales nacionales partes relacionadas,2
+code_401_21,401.21,Ingresos por servicios profesionales extranjeros partes relacionadas,2
+code_401_22,401.22,Ingresos por arrendamiento,2
+code_401_23,401.23,Ingresos por arrendamiento nacionales partes relacionadas,2
+code_401_24,401.24,Ingresos por arrendamiento extranjeros partes relacionadas,2
+code_401_25,401.25,Ingresos por exportación,2
+code_401_26,401.26,Ingresos por comisiones,2
+code_401_27,401.27,Ingresos por maquila,2
+code_401_28,401.28,Ingresos por coordinados,2
+code_401_29,401.29,Ingresos por regalías,2
+code_401_30,401.30,Ingresos por asistencia técnica,2
+code_401_31,401.31,Ingresos por donativos,2
+code_401_32,401.32,Ingresos por intereses (actividad propia),2
+code_401_33,401.33,Ingresos de copropiedad,2
+code_401_34,401.34,Ingresos por fideicomisos,2
+code_401_35,401.35,Ingresos por factoraje financiero,2
+code_401_36,401.36,Ingresos por arrendamiento financiero,2
+code_401_37,401.37,Ingresos de extranjeros con establecimiento en el país,2
+code_401_38,401.38,Otros ingresos propios,2
+code_401_39,401.39,Ventas y/o servicios gravados realizados en zona fronteriza norte,2
+code_401_40,401.40,Ventas y/o servicios gravados realizados en zona fronteriza norte de contado,2
+code_401_41,401.41,Ventas y/o servicios gravados realizados en zona fronteriza norte a crédito,2
+code_402,402,"Devoluciones, descuentos o bonificaciones sobre ingresos",1
+code_402_01,402.01,"Devoluciones, descuentos o bonificaciones sobre ventas y/o servicios a la tasa general",2
+code_402_02,402.02,"Devoluciones, descuentos o bonificaciones sobre ventas y/o servicios al 0%",2
+code_402_03,402.03,"Devoluciones, descuentos o bonificaciones sobre ventas y/o servicios exentos",2
+code_402_04,402.04,"Devoluciones, descuentos o bonificaciones de otros ingresos",2
+code_402_05,402.05,"Devoluciones, descuentos o bonificaciones sobre ventas y/o servicios en zona fronteriza norte",2
+code_403,403,Otros ingresos,1
+code_403_01,403.01,Otros Ingresos,2
+code_403_02,403.02,Otros ingresos nacionales parte relacionada,2
+code_403_03,403.03,Otros ingresos extranjeros parte relacionada,2
+code_403_04,403.04,Ingresos por operaciones discontinuas,2
+code_403_05,403.05,Ingresos por condonación de adeudo,2
+code_500,500,Costos,0
+code_501,501,Costo de venta y/o servicio,1
+code_501_01,501.01,Costo de venta,2
+code_501_02,501.02,Costo de servicios (Mano de obra),2
+code_501_03,501.03,Materia prima directa utilizada para la producción,2
+code_501_04,501.04,Materia prima consumida en el proceso productivo,2
+code_501_05,501.05,Mano de obra directa consumida,2
+code_501_06,501.06,Mano de obra directa,2
+code_501_07,501.07,Cargos indirectos de producción,2
+code_501_08,501.08,Otros conceptos de costo,2
+code_502,502,Compras,1
+code_502_01,502.01,Compras nacionales,2
+code_502_02,502.02,Compras nacionales parte relacionada,2
+code_502_03,502.03,Compras de Importación,2
+code_502_04,502.04,Compras de Importación partes relacionadas,2
+code_503,503,"Devoluciones, descuentos o bonificaciones sobre compras",1
+code_503_01,503.01,"Devoluciones, descuentos o bonificaciones sobre compras",2
+code_504,504,Otras cuentas de costos,1
+code_504_01,504.01,Gastos indirectos de fabricación,2
+code_504_02,504.02,Gastos indirectos de fabricación de partes relacionadas nacionales,2
+code_504_03,504.03,Gastos indirectos de fabricación de partes relacionadas extranjeras,2
+code_504_04,504.04,Otras cuentas de costos incurridos,2
+code_504_05,504.05,Otras cuentas de costos incurridos con partes relacionadas nacionales,2
+code_504_06,504.06,Otras cuentas de costos incurridos con partes relacionadas extranjeras,2
+code_504_07,504.07,Depreciación de edificios,2
+code_504_08,504.08,Depreciación de maquinaria y equipo,2
+code_504_09,504.09,"Depreciación de automóviles, autobuses, camiones de carga, tractocamiones, montacargas y remolques",2
+code_504_10,504.10,Depreciación de mobiliario y equipo de oficina,2
+code_504_11,504.11,Depreciación de equipo de cómputo,2
+code_504_12,504.12,Depreciación de equipo de comunicación,2
+code_504_13,504.13,"Depreciación de activos biológicos, vegetales y semovientes",2
+code_504_14,504.14,Depreciación de otros activos fijos,2
+code_504_15,504.15,Depreciación de ferrocarriles,2
+code_504_16,504.16,Depreciación de embarcaciones,2
+code_504_17,504.17,Depreciación de aviones,2
+code_504_18,504.18,"Depreciación de troqueles, moldes, matrices y herramental",2
+code_504_19,504.19,Depreciación de equipo de comunicaciones telefónicas,2
+code_504_20,504.20,Depreciación de equipo de comunicación satelital,2
+code_504_21,504.21,Depreciación de equipo de adaptaciones para personas con capacidades diferentes,2
+code_504_22,504.22,Depreciación de maquinaria y equipo de generación de energía de fuentes renovables o de sistemas de cogeneración de electricidad eficiente,2
+code_504_23,504.23,Depreciación de adaptaciones y mejoras,2
+code_504_24,504.24,Depreciación de otra maquinaria y equipo,2
+code_504_25,504.25,Otras cuentas de costos,2
+code_505,505,Costo de activo fijo,1
+code_505_01,505.01,Costo por venta de activo fijo,2
+code_505_02,505.02,Costo por baja de activo fijo,2
+code_600,600,Gastos,0
+code_601,601,Gastos generales,1
+code_601_01,601.01,Sueldos y salarios,2
+code_601_02,601.02,Compensaciones,2
+code_601_03,601.03,Tiempos extras,2
+code_601_04,601.04,Premios de asistencia,2
+code_601_05,601.05,Premios de puntualidad,2
+code_601_06,601.06,Vacaciones,2
+code_601_07,601.07,Prima vacacional,2
+code_601_08,601.08,Prima dominical,2
+code_601_09,601.09,Días festivos,2
+code_601_10,601.10,Gratificaciones,2
+code_601_11,601.11,Primas de antigüedad,2
+code_601_12,601.12,Aguinaldo,2
+code_601_13,601.13,Indemnizaciones,2
+code_601_14,601.14,Destajo,2
+code_601_15,601.15,Despensa,2
+code_601_16,601.16,Transporte,2
+code_601_17,601.17,Servicio médico,2
+code_601_18,601.18,Ayuda en gastos funerarios,2
+code_601_19,601.19,Fondo de ahorro,2
+code_601_20,601.20,Cuotas sindicales,2
+code_601_21,601.21,PTU,2
+code_601_22,601.22,Estímulo al personal,2
+code_601_23,601.23,Previsión social,2
+code_601_24,601.24,Aportaciones para el plan de jubilación,2
+code_601_25,601.25,Otras prestaciones al personal,2
+code_601_26,601.26,Cuotas al IMSS,2
+code_601_27,601.27,Aportaciones al INFONAVIT,2
+code_601_28,601.28,Aportaciones al SAR,2
+code_601_29,601.29,Impuesto estatal sobre nóminas,2
+code_601_30,601.30,Otras aportaciones,2
+code_601_31,601.31,Asimilados a salarios,2
+code_601_32,601.32,Servicios administrativos,2
+code_601_33,601.33,Servicios administrativos partes relacionadas,2
+code_601_34,601.34,Honorarios a personas físicas residentes nacionales,2
+code_601_35,601.35,Honorarios a personas físicas residentes nacionales partes relacionadas,2
+code_601_36,601.36,Honorarios a personas físicas residentes del extranjero,2
+code_601_37,601.37,Honorarios a personas físicas residentes del extranjero partes relacionadas,2
+code_601_38,601.38,Honorarios a personas morales residentes nacionales,2
+code_601_39,601.39,Honorarios a personas morales residentes nacionales partes relacionadas,2
+code_601_40,601.40,Honorarios a personas morales residentes del extranjero,2
+code_601_41,601.41,Honorarios a personas morales residentes del extranjero partes relacionadas,2
+code_601_42,601.42,Honorarios aduanales personas físicas,2
+code_601_43,601.43,Honorarios aduanales personas morales,2
+code_601_44,601.44,Honorarios al consejo de administración,2
+code_601_45,601.45,Arrendamiento a personas físicas residentes nacionales,2
+code_601_46,601.46,Arrendamiento a personas morales residentes nacionales,2
+code_601_47,601.47,Arrendamiento a residentes del extranjero,2
+code_601_48,601.48,Combustibles y lubricantes,2
+code_601_49,601.49,Viáticos y gastos de viaje,2
+code_601_50,601.50,"Teléfono, internet",2
+code_601_51,601.51,Agua,2
+code_601_52,601.52,Energía eléctrica,2
+code_601_53,601.53,Vigilancia y seguridad,2
+code_601_54,601.54,Limpieza,2
+code_601_55,601.55,Papelería y artículos de oficina,2
+code_601_56,601.56,Mantenimiento y conservación,2
+code_601_57,601.57,Seguros y fianzas,2
+code_601_58,601.58,Otros impuestos y derechos,2
+code_601_59,601.59,Recargos fiscales,2
+code_601_60,601.60,Cuotas y suscripciones,2
+code_601_61,601.61,Propaganda y publicidad,2
+code_601_62,601.62,Capacitación al personal,2
+code_601_63,601.63,Donativos y ayudas,2
+code_601_64,601.64,Asistencia técnica,2
+code_601_65,601.65,Regalías sujetas a otros porcentajes,2
+code_601_66,601.66,Regalías sujetas al 5%,2
+code_601_67,601.67,Regalías sujetas al 10%,2
+code_601_68,601.68,Regalías sujetas al 15%,2
+code_601_69,601.69,Regalías sujetas al 25%,2
+code_601_70,601.70,Regalías sujetas al 30%,2
+code_601_71,601.71,Regalías sin retención,2
+code_601_72,601.72,Fletes y acarreos,2
+code_601_73,601.73,Gastos de importación,2
+code_601_74,601.74,Comisiones sobre ventas,2
+code_601_75,601.75,Comisiones por tarjetas de crédito,2
+code_601_76,601.76,Patentes y marcas,2
+code_601_77,601.77,Uniformes,2
+code_601_78,601.78,Prediales,2
+code_601_79,601.79,Gastos generales de urbanización,2
+code_601_80,601.80,Gastos generales de construcción,2
+code_601_81,601.81,Fletes del extranjero,2
+code_601_82,601.82,Recolección de bienes del sector agropecuario y/o ganadero,2
+code_601_83,601.83,Gastos no deducibles (sin requisitos fiscales),2
+code_601_84,601.84,Otros gastos generales,2
+code_602,602,Gastos de venta,1
+code_602_01,602.01,Sueldos y salarios,2
+code_602_02,602.02,Compensaciones,2
+code_602_03,602.03,Tiempos extras,2
+code_602_04,602.04,Premios de asistencia,2
+code_602_05,602.05,Premios de puntualidad,2
+code_602_06,602.06,Vacaciones,2
+code_602_07,602.07,Prima vacacional,2
+code_602_08,602.08,Prima dominical,2
+code_602_09,602.09,Días festivos,2
+code_602_10,602.10,Gratificaciones,2
+code_602_11,602.11,Primas de antigüedad,2
+code_602_12,602.12,Aguinaldo,2
+code_602_13,602.13,Indemnizaciones,2
+code_602_14,602.14,Destajo,2
+code_602_15,602.15,Despensa,2
+code_602_16,602.16,Transporte,2
+code_602_17,602.17,Servicio médico,2
+code_602_18,602.18,Ayuda en gastos funerarios,2
+code_602_19,602.19,Fondo de ahorro,2
+code_602_20,602.20,Cuotas sindicales,2
+code_602_21,602.21,PTU,2
+code_602_22,602.22,Estímulo al personal,2
+code_602_23,602.23,Previsión social,2
+code_602_24,602.24,Aportaciones para el plan de jubilación,2
+code_602_25,602.25,Otras prestaciones al personal,2
+code_602_26,602.26,Cuotas al IMSS,2
+code_602_27,602.27,Aportaciones al INFONAVIT,2
+code_602_28,602.28,Aportaciones al SAR,2
+code_602_29,602.29,Impuesto estatal sobre nóminas,2
+code_602_30,602.30,Otras aportaciones,2
+code_602_31,602.31,Asimilados a salarios,2
+code_602_32,602.32,Servicios administrativos,2
+code_602_33,602.33,Servicios administrativos partes relacionadas,2
+code_602_34,602.34,Honorarios a personas físicas residentes nacionales,2
+code_602_35,602.35,Honorarios a personas físicas residentes nacionales partes relacionadas,2
+code_602_36,602.36,Honorarios a personas físicas residentes del extranjero,2
+code_602_37,602.37,Honorarios a personas físicas residentes del extranjero partes relacionadas,2
+code_602_38,602.38,Honorarios a personas morales residentes nacionales,2
+code_602_39,602.39,Honorarios a personas morales residentes nacionales partes relacionadas,2
+code_602_40,602.40,Honorarios a personas morales residentes del extranjero,2
+code_602_41,602.41,Honorarios a personas morales residentes del extranjero partes relacionadas,2
+code_602_42,602.42,Honorarios aduanales personas físicas,2
+code_602_43,602.43,Honorarios aduanales personas morales,2
+code_602_44,602.44,Honorarios al consejo de administración,2
+code_602_45,602.45,Arrendamiento a personas físicas residentes nacionales,2
+code_602_46,602.46,Arrendamiento a personas morales residentes nacionales,2
+code_602_47,602.47,Arrendamiento a residentes del extranjero,2
+code_602_48,602.48,Combustibles y lubricantes,2
+code_602_49,602.49,Viáticos y gastos de viaje,2
+code_602_50,602.50,"Teléfono, internet",2
+code_602_51,602.51,Agua,2
+code_602_52,602.52,Energía eléctrica,2
+code_602_53,602.53,Vigilancia y seguridad,2
+code_602_54,602.54,Limpieza,2
+code_602_55,602.55,Papelería y artículos de oficina,2
+code_602_56,602.56,Mantenimiento y conservación,2
+code_602_57,602.57,Seguros y fianzas,2
+code_602_58,602.58,Otros impuestos y derechos,2
+code_602_59,602.59,Recargos fiscales,2
+code_602_60,602.60,Cuotas y suscripciones,2
+code_602_61,602.61,Propaganda y publicidad,2
+code_602_62,602.62,Capacitación al personal,2
+code_602_63,602.63,Donativos y ayudas,2
+code_602_64,602.64,Asistencia técnica,2
+code_602_65,602.65,Regalías sujetas a otros porcentajes,2
+code_602_66,602.66,Regalías sujetas al 5%,2
+code_602_67,602.67,Regalías sujetas al 10%,2
+code_602_68,602.68,Regalías sujetas al 15%,2
+code_602_69,602.69,Regalías sujetas al 25%,2
+code_602_70,602.70,Regalías sujetas al 30%,2
+code_602_71,602.71,Regalías sin retención,2
+code_602_72,602.72,Fletes y acarreos,2
+code_602_73,602.73,Gastos de importación,2
+code_602_74,602.74,Comisiones sobre ventas,2
+code_602_75,602.75,Comisiones por tarjetas de crédito,2
+code_602_76,602.76,Patentes y marcas,2
+code_602_77,602.77,Uniformes,2
+code_602_78,602.78,Prediales,2
+code_602_79,602.79,Gastos de venta de urbanización,2
+code_602_80,602.80,Gastos de venta de construcción,2
+code_602_81,602.81,Fletes del extranjero,2
+code_602_82,602.82,Recolección de bienes del sector agropecuario y/o ganadero,2
+code_602_83,602.83,Gastos no deducibles (sin requisitos fiscales),2
+code_602_84,602.84,Otros gastos de venta,2
+code_603,603,Gastos de administración,1
+code_603_01,603.01,Sueldos y salarios,2
+code_603_02,603.02,Compensaciones,2
+code_603_03,603.03,Tiempos extras,2
+code_603_04,603.04,Premios de asistencia,2
+code_603_05,603.05,Premios de puntualidad,2
+code_603_06,603.06,Vacaciones,2
+code_603_07,603.07,Prima vacacional,2
+code_603_08,603.08,Prima dominical,2
+code_603_09,603.09,Días festivos,2
+code_603_10,603.10,Gratificaciones,2
+code_603_11,603.11,Primas de antigüedad,2
+code_603_12,603.12,Aguinaldo,2
+code_603_13,603.13,Indemnizaciones,2
+code_603_14,603.14,Destajo,2
+code_603_15,603.15,Despensa,2
+code_603_16,603.16,Transporte,2
+code_603_17,603.17,Servicio médico,2
+code_603_18,603.18,Ayuda en gastos funerarios,2
+code_603_19,603.19,Fondo de ahorro,2
+code_603_20,603.20,Cuotas sindicales,2
+code_603_21,603.21,PTU,2
+code_603_22,603.22,Estímulo al personal,2
+code_603_23,603.23,Previsión social,2
+code_603_24,603.24,Aportaciones para el plan de jubilación,2
+code_603_25,603.25,Otras prestaciones al personal,2
+code_603_26,603.26,Cuotas al IMSS,2
+code_603_27,603.27,Aportaciones al INFONAVIT,2
+code_603_28,603.28,Aportaciones al SAR,2
+code_603_29,603.29,Impuesto estatal sobre nóminas,2
+code_603_30,603.30,Otras aportaciones,2
+code_603_31,603.31,Asimilados a salarios,2
+code_603_32,603.32,Servicios administrativos,2
+code_603_33,603.33,Servicios administrativos partes relacionadas,2
+code_603_34,603.34,Honorarios a personas físicas residentes nacionales,2
+code_603_35,603.35,Honorarios a personas físicas residentes nacionales partes relacionadas,2
+code_603_36,603.36,Honorarios a personas físicas residentes del extranjero,2
+code_603_37,603.37,Honorarios a personas físicas residentes del extranjero partes relacionadas,2
+code_603_38,603.38,Honorarios a personas morales residentes nacionales,2
+code_603_39,603.39,Honorarios a personas morales residentes nacionales partes relacionadas,2
+code_603_40,603.40,Honorarios a personas morales residentes del extranjero,2
+code_603_41,603.41,Honorarios a personas morales residentes del extranjero partes relacionadas,2
+code_603_42,603.42,Honorarios aduanales personas físicas,2
+code_603_43,603.43,Honorarios aduanales personas morales,2
+code_603_44,603.44,Honorarios al consejo de administración,2
+code_603_45,603.45,Arrendamiento a personas físicas residentes nacionales,2
+code_603_46,603.46,Arrendamiento a personas morales residentes nacionales,2
+code_603_47,603.47,Arrendamiento a residentes del extranjero,2
+code_603_48,603.48,Combustibles y lubricantes,2
+code_603_49,603.49,Viáticos y gastos de viaje,2
+code_603_50,603.50,"Teléfono, internet",2
+code_603_51,603.51,Agua,2
+code_603_52,603.52,Energía eléctrica,2
+code_603_53,603.53,Vigilancia y seguridad,2
+code_603_54,603.54,Limpieza,2
+code_603_55,603.55,Papelería y artículos de oficina,2
+code_603_56,603.56,Mantenimiento y conservación,2
+code_603_57,603.57,Seguros y fianzas,2
+code_603_58,603.58,Otros impuestos y derechos,2
+code_603_59,603.59,Recargos fiscales,2
+code_603_60,603.60,Cuotas y suscripciones,2
+code_603_61,603.61,Propaganda y publicidad,2
+code_603_62,603.62,Capacitación al personal,2
+code_603_63,603.63,Donativos y ayudas,2
+code_603_64,603.64,Asistencia técnica,2
+code_603_65,603.65,Regalías sujetas a otros porcentajes,2
+code_603_66,603.66,Regalías sujetas al 5%,2
+code_603_67,603.67,Regalías sujetas al 10%,2
+code_603_68,603.68,Regalías sujetas al 15%,2
+code_603_69,603.69,Regalías sujetas al 25%,2
+code_603_70,603.70,Regalías sujetas al 30%,2
+code_603_71,603.71,Regalías sin retención,2
+code_603_72,603.72,Fletes y acarreos,2
+code_603_73,603.73,Gastos de importación,2
+code_603_74,603.74,Patentes y marcas,2
+code_603_75,603.75,Uniformes,2
+code_603_76,603.76,Prediales,2
+code_603_77,603.77,Gastos de administración de urbanización,2
+code_603_78,603.78,Gastos de administración de construcción,2
+code_603_79,603.79,Fletes del extranjero,2
+code_603_80,603.80,Recolección de bienes del sector agropecuario y/o ganadero,2
+code_603_81,603.81,Gastos no deducibles (sin requisitos fiscales),2
+code_603_82,603.82,Otros gastos de administración,2
+code_604,604,Gastos de fabricación,1
+code_604_01,604.01,Sueldos y salarios,2
+code_604_02,604.02,Compensaciones,2
+code_604_03,604.03,Tiempos extras,2
+code_604_04,604.04,Premios de asistencia,2
+code_604_05,604.05,Premios de puntualidad,2
+code_604_06,604.06,Vacaciones,2
+code_604_07,604.07,Prima vacacional,2
+code_604_08,604.08,Prima dominical,2
+code_604_09,604.09,Días festivos,2
+code_604_10,604.10,Gratificaciones,2
+code_604_11,604.11,Primas de antigüedad,2
+code_604_12,604.12,Aguinaldo,2
+code_604_13,604.13,Indemnizaciones,2
+code_604_14,604.14,Destajo,2
+code_604_15,604.15,Despensa,2
+code_604_16,604.16,Transporte,2
+code_604_17,604.17,Servicio médico,2
+code_604_18,604.18,Ayuda en gastos funerarios,2
+code_604_19,604.19,Fondo de ahorro,2
+code_604_20,604.20,Cuotas sindicales,2
+code_604_21,604.21,PTU,2
+code_604_22,604.22,Estímulo al personal,2
+code_604_23,604.23,Previsión social,2
+code_604_24,604.24,Aportaciones para el plan de jubilación,2
+code_604_25,604.25,Otras prestaciones al personal,2
+code_604_26,604.26,Cuotas al IMSS,2
+code_604_27,604.27,Aportaciones al INFONAVIT,2
+code_604_28,604.28,Aportaciones al SAR,2
+code_604_29,604.29,Impuesto estatal sobre nóminas,2
+code_604_30,604.30,Otras aportaciones,2
+code_604_31,604.31,Asimilados a salarios,2
+code_604_32,604.32,Servicios administrativos,2
+code_604_33,604.33,Servicios administrativos partes relacionadas,2
+code_604_34,604.34,Honorarios a personas físicas residentes nacionales,2
+code_604_35,604.35,Honorarios a personas físicas residentes nacionales partes relacionadas,2
+code_604_36,604.36,Honorarios a personas físicas residentes del extranjero,2
+code_604_37,604.37,Honorarios a personas físicas residentes del extranjero partes relacionadas,2
+code_604_38,604.38,Honorarios a personas morales residentes nacionales,2
+code_604_39,604.39,Honorarios a personas morales residentes nacionales partes relacionadas,2
+code_604_40,604.40,Honorarios a personas morales residentes del extranjero,2
+code_604_41,604.41,Honorarios a personas morales residentes del extranjero partes relacionadas,2
+code_604_42,604.42,Honorarios aduanales personas físicas,2
+code_604_43,604.43,Honorarios aduanales personas morales,2
+code_604_44,604.44,Honorarios al consejo de administración,2
+code_604_45,604.45,Arrendamiento a personas físicas residentes nacionales,2
+code_604_46,604.46,Arrendamiento a personas morales residentes nacionales,2
+code_604_47,604.47,Arrendamiento a residentes del extranjero,2
+code_604_48,604.48,Combustibles y lubricantes,2
+code_604_49,604.49,Viáticos y gastos de viaje,2
+code_604_50,604.50,"Teléfono, internet",2
+code_604_51,604.51,Agua,2
+code_604_52,604.52,Energía eléctrica,2
+code_604_53,604.53,Vigilancia y seguridad,2
+code_604_54,604.54,Limpieza,2
+code_604_55,604.55,Papelería y artículos de oficina,2
+code_604_56,604.56,Mantenimiento y conservación,2
+code_604_57,604.57,Seguros y fianzas,2
+code_604_58,604.58,Otros impuestos y derechos,2
+code_604_59,604.59,Recargos fiscales,2
+code_604_60,604.60,Cuotas y suscripciones,2
+code_604_61,604.61,Propaganda y publicidad,2
+code_604_62,604.62,Capacitación al personal,2
+code_604_63,604.63,Donativos y ayudas,2
+code_604_64,604.64,Asistencia técnica,2
+code_604_65,604.65,Regalías sujetas a otros porcentajes,2
+code_604_66,604.66,Regalías sujetas al 5%,2
+code_604_67,604.67,Regalías sujetas al 10%,2
+code_604_68,604.68,Regalías sujetas al 15%,2
+code_604_69,604.69,Regalías sujetas al 25%,2
+code_604_70,604.70,Regalías sujetas al 30%,2
+code_604_71,604.71,Regalías sin retención,2
+code_604_72,604.72,Fletes y acarreos,2
+code_604_73,604.73,Gastos de importación,2
+code_604_74,604.74,Patentes y marcas,2
+code_604_75,604.75,Uniformes,2
+code_604_76,604.76,Prediales,2
+code_604_77,604.77,Gastos de fabricación de urbanización,2
+code_604_78,604.78,Gastos de fabricación de construcción,2
+code_604_79,604.79,Fletes del extranjero,2
+code_604_80,604.80,Recolección de bienes del sector agropecuario y/o ganadero,2
+code_604_81,604.81,Gastos no deducibles (sin requisitos fiscales),2
+code_604_82,604.82,Otros gastos de fabricación,2
+code_605,605,Mano de obra directa,1
+code_605_01,605.01,Mano de obra,2
+code_605_02,605.02,Sueldos y Salarios,2
+code_605_03,605.03,Compensaciones,2
+code_605_04,605.04,Tiempos extras,2
+code_605_05,605.05,Premios de asistencia,2
+code_605_06,605.06,Premios de puntualidad,2
+code_605_07,605.07,Vacaciones,2
+code_605_08,605.08,Prima vacacional,2
+code_605_09,605.09,Prima dominical,2
+code_605_10,605.10,Días festivos,2
+code_605_11,605.11,Gratificaciones,2
+code_605_12,605.12,Primas de antigüedad,2
+code_605_13,605.13,Aguinaldo,2
+code_605_14,605.14,Indemnizaciones,2
+code_605_15,605.15,Destajo,2
+code_605_16,605.16,Despensa,2
+code_605_17,605.17,Transporte,2
+code_605_18,605.18,Servicio médico,2
+code_605_19,605.19,Ayuda en gastos funerarios,2
+code_605_20,605.20,Fondo de ahorro,2
+code_605_21,605.21,Cuotas sindicales,2
+code_605_22,605.22,PTU,2
+code_605_23,605.23,Estímulo al personal,2
+code_605_24,605.24,Previsión social,2
+code_605_25,605.25,Aportaciones para el plan de jubilación,2
+code_605_26,605.26,Otras prestaciones al personal,2
+code_605_27,605.27,Asimilados a salarios,2
+code_605_28,605.28,Cuotas al IMSS,2
+code_605_29,605.29,Aportaciones al INFONAVIT,2
+code_605_30,605.30,Aportaciones al SAR,2
+code_605_31,605.31,Otros costos de mano de obra directa,2
+code_606,606,Facilidades administrativas fiscales,1
+code_606_01,606.01,Facilidades administrativas fiscales,2
+code_607,607,Participación de los trabajadores en las utilidades,1
+code_607_01,607.01,Participación de los trabajadores en las utilidades,2
+code_608,608,Participación en resultados de subsidiarias,1
+code_608_01,608.01,Participación en resultados de subsidiarias,2
+code_609,609,Participación en resultados de asociadas,1
+code_609_01,609.01,Participación en resultados de asociadas,2
+code_610,610,Participación de los trabajadores en las utilidades diferida,1
+code_610_01,610.01,Participación de los trabajadores en las utilidades diferida,2
+code_611,611,Impuesto Sobre la renta,1
+code_611_01,611.01,Impuesto Sobre la renta,2
+code_611_02,611.02,Impuesto Sobre la renta por remanente distribuible,2
+code_612,612,Gastos no deducibles para CUFIN,1
+code_612_01,612.01,Gastos no deducibles para CUFIN,2
+code_613,613,Depreciación contable,1
+code_613_01,613.01,Depreciación de edificios,2
+code_613_02,613.02,Depreciación de maquinaria y equipo,2
+code_613_03,613.03,"Depreciación de automóviles, autobuses, camiones de carga, tractocamiones, montacargas y remolques",2
+code_613_04,613.04,Depreciación de mobiliario y equipo de oficina,2
+code_613_05,613.05,Depreciación de equipo de cómputo,2
+code_613_06,613.06,Depreciación de equipo de comunicación,2
+code_613_07,613.07,"Depreciación de activos biológicos, vegetales y semovientes",2
+code_613_08,613.08,Depreciación de otros activos fijos,2
+code_613_09,613.09,Depreciación de ferrocarriles,2
+code_613_10,613.10,Depreciación de embarcaciones,2
+code_613_11,613.11,Depreciación de aviones,2
+code_613_12,613.12,"Depreciación de troqueles, moldes, matrices y herramental",2
+code_613_13,613.13,Depreciación de equipo de comunicaciones telefónicas,2
+code_613_14,613.14,Depreciación de equipo de comunicación satelital,2
+code_613_15,613.15,Depreciación de equipo de adaptaciones para personas con capacidades diferentes,2
+code_613_16,613.16,Depreciación de maquinaria y equipo de generación de energía de fuentes renovables o de sistemas de cogeneración de electricidad eficiente,2
+code_613_17,613.17,Depreciación de adaptaciones y mejoras,2
+code_613_18,613.18,Depreciación de otra maquinaria y equipo,2
+code_614,614,Amortización contable,1
+code_614_01,614.01,Amortización de gastos diferidos,2
+code_614_02,614.02,Amortización de gastos pre operativos,2
+code_614_03,614.03,"Amortización de regalías, asistencia técnica y otros gastos diferidos",2
+code_614_04,614.04,Amortización de activos intangibles,2
+code_614_05,614.05,Amortización de gastos de organización,2
+code_614_06,614.06,Amortización de investigación y desarrollo de mercado,2
+code_614_07,614.07,Amortización de marcas y patentes,2
+code_614_08,614.08,Amortización de crédito mercantil,2
+code_614_09,614.09,Amortización de gastos de instalación,2
+code_614_10,614.10,Amortización de otros activos diferidos,2
+code_700,700,Resultado integral de financiamiento,0
+code_701,701,Gastos financieros,1
+code_701_01,701.01,Pérdida cambiaria,2
+code_701_02,701.02,Pérdida cambiaria nacional parte relacionada,2
+code_701_03,701.03,Pérdida cambiaria extranjero parte relacionada,2
+code_701_04,701.04,Intereses a cargo bancario nacional,2
+code_701_05,701.05,Intereses a cargo bancario extranjero,2
+code_701_06,701.06,Intereses a cargo de personas físicas nacional,2
+code_701_07,701.07,Intereses a cargo de personas físicas extranjero,2
+code_701_08,701.08,Intereses a cargo de personas morales nacional,2
+code_701_09,701.09,Intereses a cargo de personas morales extranjero,2
+code_701_10,701.10,Comisiones bancarias,2
+code_701_11,701.11,Otros gastos financieros,2
+code_702,702,Productos financieros,1
+code_702_01,702.01,Utilidad cambiaria,2
+code_702_02,702.02,Utilidad cambiaria nacional parte relacionada,2
+code_702_03,702.03,Utilidad cambiaria extranjero parte relacionada,2
+code_702_04,702.04,Intereses a favor bancarios nacional,2
+code_702_05,702.05,Intereses a favor bancarios extranjero,2
+code_702_06,702.06,Intereses a favor de personas físicas nacional,2
+code_702_07,702.07,Intereses a favor de personas físicas extranjero,2
+code_702_08,702.08,Intereses a favor de personas morales nacional,2
+code_702_09,702.09,Intereses a favor de personas morales extranjero,2
+code_702_10,702.10,Otros productos financieros,2
+code_703,703,Otros gastos,1
+code_703_01,703.01,Pérdida en venta y/o baja de terrenos,2
+code_703_02,703.02,Pérdida en venta y/o baja de edificios,2
+code_703_03,703.03,Pérdida en venta y/o baja de maquinaria y equipo,2
+code_703_04,703.04,"Pérdida en venta y/o baja de automóviles, autobuses, camiones de carga, tractocamiones, montacargas y remolques",2
+code_703_05,703.05,Pérdida en venta y/o baja de mobiliario y equipo de oficina,2
+code_703_06,703.06,Pérdida en venta y/o baja de equipo de cómputo,2
+code_703_07,703.07,Pérdida en venta y/o baja de equipo de comunicación,2
+code_703_08,703.08,"Pérdida en venta y/o baja de activos biológicos, vegetales y semovientes",2
+code_703_09,703.09,Pérdida en venta y/o baja de otros activos fijos,2
+code_703_10,703.10,Pérdida en venta y/o baja de ferrocarriles,2
+code_703_11,703.11,Pérdida en venta y/o baja de embarcaciones,2
+code_703_12,703.12,Pérdida en venta y/o baja de aviones,2
+code_703_13,703.13,"Pérdida en venta y/o baja de troqueles, moldes, matrices y herramental",2
+code_703_14,703.14,Pérdida en venta y/o baja de equipo de comunicaciones telefónicas,2
+code_703_15,703.15,Pérdida en venta y/o baja de equipo de comunicación satelital,2
+code_703_16,703.16,Pérdida en venta y/o baja de equipo de adaptaciones para personas con capacidades diferentes,2
+code_703_17,703.17,Pérdida en venta y/o baja de maquinaria y equipo de generación de energía de fuentes renovables o de sistemas de cogeneración de electricidad eficiente,2
+code_703_18,703.18,Pérdida en venta y/o baja de otra maquinaria y equipo,2
+code_703_19,703.19,Pérdida por enajenación de acciones,2
+code_703_20,703.20,Pérdida por enajenación de partes sociales,2
+code_703_21,703.21,Otros gastos,2
+code_704,704,Otros productos,1
+code_704_01,704.01,Ganancia en venta y/o baja de terrenos,2
+code_704_02,704.02,Ganancia en venta y/o baja de edificios,2
+code_704_03,704.03,Ganancia en venta y/o baja de maquinaria y equipo,2
+code_704_04,704.04,"Ganancia en venta y/o baja de automóviles, autobuses, camiones de carga, tractocamiones, montacargas y remolques",2
+code_704_05,704.05,Ganancia en venta y/o baja de mobiliario y equipo de oficina,2
+code_704_06,704.06,Ganancia en venta y/o baja de equipo de cómputo,2
+code_704_07,704.07,Ganancia en venta y/o baja de equipo de comunicación,2
+code_704_08,704.08,"Ganancia en venta y/o baja de activos biológicos, vegetales y semovientes",2
+code_704_09,704.09,Ganancia en venta y/o baja de otros activos fijos,2
+code_704_10,704.10,Ganancia en venta y/o baja de ferrocarriles,2
+code_704_11,704.11,Ganancia en venta y/o baja de embarcaciones,2
+code_704_12,704.12,Ganancia en venta y/o baja de aviones,2
+code_704_13,704.13,"Ganancia en venta y/o baja de troqueles, moldes, matrices y herramental",2
+code_704_14,704.14,Ganancia en venta y/o baja de equipo de comunicaciones telefónicas,2
+code_704_15,704.15,Ganancia en venta y/o baja de equipo de comunicación satelital,2
+code_704_16,704.16,Ganancia en venta y/o baja de equipo de adaptaciones para personas con capacidades diferentes,2
+code_704_17,704.17,Ganancia en venta de maquinaria y equipo de generación de energía de fuentes renovables o de sistemas de cogeneración de electricidad eficiente,2
+code_704_18,704.18,Ganancia en venta y/o baja de otra maquinaria y equipo,2
+code_704_19,704.19,Ganancia por enajenación de acciones,2
+code_704_20,704.20,Ganancia por enajenación de partes sociales,2
+code_704_21,704.21,Ingresos por estímulos fiscales,2
+code_704_22,704.22,Ingresos por condonación de adeudo,2
+code_704_23,704.23,Otros productos,2
+code_800,800,Cuentas de orden,0
+code_801,801,UFIN del ejercicio,1
+code_801_01,801.01,UFIN,2
+code_801_02,801.02,Contra cuenta UFIN,2
+code_802,802,CUFIN del ejercicio,1
+code_802_01,802.01,CUFIN,2
+code_802_02,802.02,Contra cuenta CUFIN,2
+code_803,803,CUFIN de ejercicios anteriores,1
+code_803_01,803.01,CUFIN de ejercicios anteriores,2
+code_803_02,803.02,Contra cuenta CUFIN de ejercicios anteriores,2
+code_804,804,CUFINRE del ejercicio,1
+code_804_01,804.01,CUFINRE,2
+code_804_02,804.02,Contra cuenta CUFINRE,2
+code_805,805,CUFINRE de ejercicios anteriores,1
+code_805_01,805.01,CUFINRE de ejercicios anteriores,2
+code_805_02,805.02,Contra cuenta CUFINRE de ejercicios anteriores,2
+code_806,806,CUCA del ejercicio,1
+code_806_01,806.01,CUCA,2
+code_806_02,806.02,Contra cuenta CUCA,2
+code_807,807,CUCA de ejercicios anteriores,1
+code_807_01,807.01,CUCA de ejercicios anteriores,2
+code_807_02,807.02,Contra cuenta CUCA de ejercicios anteriores,2
+code_808,808,Ajuste anual por inflación acumulable,1
+code_808_01,808.01,Ajuste anual por inflación acumulable,2
+code_808_02,808.02,Acumulación del ajuste anual inflacionario,2
+code_809,809,Ajuste anual por inflación deducible,1
+code_809_01,809.01,Ajuste anual por inflación deducible,2
+code_809_02,809.02,Deducción del ajuste anual inflacionario,2
+code_810,810,Deducción de inversión,1
+code_810_01,810.01,Deducción de inversión,2
+code_810_02,810.02,Contra cuenta deducción de inversiones,2
+code_811,811,Utilidad o pérdida fiscal en venta y/o baja de activo fijo,1
+code_811_01,811.01,Utilidad o pérdida fiscal en venta y/o baja de activo fijo,2
+code_811_02,811.02,Contra cuenta utilidad o pérdida fiscal en venta y/o baja de activo fijo,2
+code_812,812,Utilidad o pérdida fiscal en venta acciones o partes sociales,1
+code_812_01,812.01,Utilidad o pérdida fiscal en venta acciones o partes sociales,2
+code_812_02,812.02,Contra cuenta utilidad o pérdida fiscal en venta acciones o partes sociales,2
+code_813,813,Pérdidas fiscales pendientes de amortizar actualizadas de ejercicios anteriores,1
+code_813_01,813.01,Pérdidas fiscales pendientes de amortizar actualizadas de ejercicios anteriores,2
+code_813_02,813.02,Actualización de pérdidas fiscales pendientes de amortizar de ejercicios anteriores,2
+code_814,814,Mercancías recibidas en consignación,1
+code_814_01,814.01,Mercancías recibidas en consignación,2
+code_814_02,814.02,Consignación de mercancías recibidas,2
+code_815,815,Crédito fiscal de IVA e IEPS por la importación de mercancías para empresas certificadas,1
+code_815_01,815.01,Crédito fiscal de IVA e IEPS por la importación de mercancías,2
+code_815_02,815.02,Importación de mercancías con aplicación de crédito fiscal de IVA e IEPS,2
+code_816,816,Crédito fiscal de IVA e IEPS por la importación de activo fijo para empresas certificadas,1
+code_816_01,816.01,Crédito fiscal de IVA e IEPS por la importación de activo fijo,2
+code_816_02,816.02,Importación de activo fijo con aplicación de crédito fiscal de IVA e IEPS,2
+code_899,899,Otras cuentas de orden,1
+code_899_01,899.01,Otras cuentas de orden,2
+code_899_02,899.02,Contra cuenta otras cuentas de orden,2
+code_n000,000,Código para uso exclusivo de contribuyentes del sector financiero,n
