@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- ===== FORM VIEW ===== -->
+    <record id="sat_xml_document_form" model="ir.ui.view">
+        <field name="name">sat.xml.document.form</field>
+        <field name="model">sat.xml.document</field>
+        <field name="arch" type="xml">
+            <form string="Documento XML SAT">
+                <header>
+                    <button name="action_match_invoice"
+                            string="Buscar Factura"
+                            type="object"
+                            class="btn-primary"
+                            invisible="state != 'pending'"
+                            icon="fa-search"/>
+                    <button name="action_create_invoice"
+                            string="Crear Factura"
+                            type="object"
+                            class="btn-primary"
+                            invisible="state not in ('pending', 'error')"
+                            icon="fa-plus"
+                            confirm="¿Crear factura de proveedor a partir de este XML?"/>
+                    <button name="action_ignore"
+                            string="Ignorar"
+                            type="object"
+                            class="btn-secondary"
+                            invisible="state != 'pending'"/>
+                    <button name="action_reset_pending"
+                            string="Reabrir"
+                            type="object"
+                            class="btn-secondary"
+                            invisible="state not in ('ignored', 'error')"/>
+                    <field name="state" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_invoice"
+                                type="object"
+                                class="oe_stat_button"
+                                icon="fa-file-text-o"
+                                invisible="not move_id">
+                            <field name="move_id" widget="statinfo"
+                                   string="Factura"/>
+                        </button>
+                    </div>
+                    <group>
+                        <group string="Identificación CFDI">
+                            <field name="cfdi_uuid"/>
+                            <field name="cfdi_type"/>
+                            <field name="cfdi_date"/>
+                            <field name="cfdi_stamp_date"/>
+                            <field name="is_duplicate" invisible="not is_duplicate"/>
+                        </group>
+                        <group string="Montos">
+                            <field name="cfdi_subtotal"/>
+                            <field name="cfdi_total"/>
+                            <field name="cfdi_currency"/>
+                        </group>
+                    </group>
+                    <group>
+                        <group string="Emisor">
+                            <field name="emisor_rfc"/>
+                            <field name="emisor_name"/>
+                            <field name="emisor_regimen"/>
+                        </group>
+                        <group string="Receptor">
+                            <field name="receptor_rfc"/>
+                            <field name="receptor_name"/>
+                            <field name="partner_id"/>
+                        </group>
+                    </group>
+                    <group>
+                        <group>
+                            <field name="xml_file" filename="xml_filename"/>
+                            <field name="xml_filename" invisible="1"/>
+                            <field name="download_request_id"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                        </group>
+                        <group invisible="not processing_notes">
+                            <field name="processing_notes"/>
+                        </group>
+                    </group>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <!-- ===== LIST VIEW ===== -->
+    <record id="sat_xml_document_list" model="ir.ui.view">
+        <field name="name">sat.xml.document.list</field>
+        <field name="model">sat.xml.document</field>
+        <field name="arch" type="xml">
+            <list string="Documentos XML SAT"
+                  decoration-danger="state == 'error' or is_duplicate"
+                  decoration-success="state in ('matched', 'created')"
+                  decoration-muted="state == 'ignored'"
+                  default_order="cfdi_date desc">
+                <field name="cfdi_uuid"/>
+                <field name="cfdi_type"/>
+                <field name="cfdi_date" widget="date"/>
+                <field name="emisor_rfc"/>
+                <field name="emisor_name" optional="show"/>
+                <field name="receptor_rfc" optional="hide"/>
+                <field name="cfdi_total" sum="Total"/>
+                <field name="cfdi_currency"/>
+                <field name="partner_id" optional="show"/>
+                <field name="move_id" optional="show"/>
+                <field name="is_duplicate" optional="hide"/>
+                <field name="state" widget="badge"
+                       decoration-success="state in ('matched', 'created')"
+                       decoration-danger="state == 'error'"
+                       decoration-warning="state == 'pending'"
+                       decoration-muted="state == 'ignored'"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- ===== SEARCH VIEW ===== -->
+    <record id="sat_xml_document_search" model="ir.ui.view">
+        <field name="name">sat.xml.document.search</field>
+        <field name="model">sat.xml.document</field>
+        <field name="arch" type="xml">
+            <search string="Buscar Documentos XML">
+                <field name="cfdi_uuid"/>
+                <field name="emisor_rfc"/>
+                <field name="emisor_name"/>
+                <field name="receptor_rfc"/>
+                <field name="partner_id"/>
+                <separator/>
+                <filter name="filter_pending" string="Pendientes"
+                        domain="[('state', '=', 'pending')]"/>
+                <filter name="filter_matched" string="Conciliados"
+                        domain="[('state', '=', 'matched')]"/>
+                <filter name="filter_created" string="Factura Creada"
+                        domain="[('state', '=', 'created')]"/>
+                <filter name="filter_ignored" string="Ignorados"
+                        domain="[('state', '=', 'ignored')]"/>
+                <filter name="filter_no_partner" string="Sin Contacto"
+                        domain="[('partner_id', '=', False)]"/>
+                <filter name="filter_duplicates" string="Duplicados"
+                        domain="[('is_duplicate', '=', True)]"/>
+                <separator/>
+                <filter name="filter_ingreso" string="Ingreso"
+                        domain="[('cfdi_type', '=', 'I')]"/>
+                <filter name="filter_egreso" string="Egreso"
+                        domain="[('cfdi_type', '=', 'E')]"/>
+                <filter name="filter_pago" string="Pago"
+                        domain="[('cfdi_type', '=', 'P')]"/>
+                <group name="group_by_section">
+                    <filter name="group_state" string="Estado"
+                            context="{'group_by': 'state'}"/>
+                    <filter name="group_type" string="Tipo"
+                            context="{'group_by': 'cfdi_type'}"/>
+                    <filter name="group_emisor" string="Emisor"
+                            context="{'group_by': 'emisor_rfc'}"/>
+                    <filter name="group_date" string="Fecha Emisión"
+                            context="{'group_by': 'cfdi_date:month'}"/>
+                    <filter name="group_partner" string="Contacto"
+                            context="{'group_by': 'partner_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- ===== ACTION ===== -->
+    <record id="action_sat_xml_document" model="ir.actions.act_window">
+        <field name="name">Documentos XML</field>
+        <field name="res_model">sat.xml.document</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="sat_xml_document_search"/>
+        <field name="context">{'search_default_filter_pending': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No hay documentos XML descargados
+            </p>
+            <p>
+                Los documentos aparecerán aquí cuando se complete una
+                solicitud de descarga masiva desde el SAT.
+            </p>
+        </field>
+    </record>
+</odoo>

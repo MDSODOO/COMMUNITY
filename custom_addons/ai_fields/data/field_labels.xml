@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--
+      Resuelve el warning recurrente:
+      "Two fields (x_studio_branch, x_studio_branch_office) of res.users()
+       have the same label: Sucursal."
+      (idem para res.partner).
+
+      Ambos campos fueron generados por Odoo Studio con el mismo
+      field_description='Sucursal'. Renombramos x_studio_branch_office a
+      "Sucursal (Oficina)" en AMBOS modelos.
+
+      noupdate="0" para que el cambio se reaplique en cada actualización del
+      módulo, garantizando que cualquier reescritura de Studio quede
+      sobrescrita.
+    -->
+    <data noupdate="0">
+        <function model="ir.model.fields" name="write">
+            <function model="ir.model.fields" name="search">
+                <value eval="[
+                    ('name', '=', 'x_studio_branch_office'),
+                    ('model', 'in', ['res.users', 'res.partner']),
+                ]"/>
+            </function>
+            <value eval="{'field_description': 'Sucursal (Oficina)'}"/>
+        </function>
+    </data>
+</odoo>

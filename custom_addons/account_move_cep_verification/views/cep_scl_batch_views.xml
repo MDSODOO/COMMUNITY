@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+        <record id="view_cep_scl_batch_tree" model="ir.ui.view">
+            <field name="name">cep.scl.batch - Lista</field>
+            <field name="model">cep.scl.batch</field>
+            <field name="arch" type="xml">
+                <list string="Lotes CEP-SCL"
+                      decoration-success="status == 'imported'"
+                      decoration-info="status == 'results_available'"
+                      decoration-warning="status == 'submitted'"
+                      decoration-muted="status == 'draft'">
+                    <field name="created_date"/>
+                    <field name="batch_token"/>
+                    <field name="submission_date"/>
+                    <field name="status" widget="badge"
+                           decoration-success="status == 'imported'"
+                           decoration-info="status == 'results_available'"
+                           decoration-warning="status == 'submitted'"
+                           decoration-muted="status == 'draft'"/>
+                    <field name="total_transfers"/>
+                    <field name="transfers_found"/>
+                    <field name="transfers_not_found"/>
+                </list>
+            </field>
+        </record>
+
+        <record id="view_cep_scl_batch_form" model="ir.ui.view">
+            <field name="name">cep.scl.batch - Formulario</field>
+            <field name="model">cep.scl.batch</field>
+            <field name="arch" type="xml">
+                <form string="Lote CEP-SCL">
+                    <header>
+                        <field name="status" widget="statusbar"
+                               statusbar_visible="draft,submitted,imported"/>
+                    </header>
+                    <sheet>
+                        <div class="oe_title">
+                            <h1>
+                                <field name="batch_token" placeholder="Token de Banxico…"/>
+                            </h1>
+                        </div>
+                        <group>
+                            <group string="Datos del Lote">
+                                <field name="created_date" readonly="1"/>
+                                <field name="submission_date"/>
+                                <field name="total_transfers" readonly="1"/>
+                            </group>
+                            <group string="Resultados">
+                                <field name="transfers_found"/>
+                                <field name="transfers_not_found"/>
+                            </group>
+                        </group>
+                        <group string="Movimientos en este Lote">
+                            <field name="move_ids" nolabel="1">
+                                <list>
+                                    <field name="name"/>
+                                    <field name="partner_id"/>
+                                    <field name="transfer_trace_code"/>
+                                    <field name="transfer_amount"/>
+                                    <field name="cep_verification_status" widget="badge"/>
+                                    <field name="cep_scl_batch_status" widget="badge"/>
+                                </list>
+                            </field>
+                        </group>
+                        <group string="Notas">
+                            <field name="notes" nolabel="1" widget="text"/>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <record id="view_cep_scl_batch_search" model="ir.ui.view">
+            <field name="name">cep.scl.batch - Búsqueda</field>
+            <field name="model">cep.scl.batch</field>
+            <field name="arch" type="xml">
+                <search>
+                    <field name="batch_token" string="Token Banxico"/>
+                    <filter name="submitted" string="Esperando Resultados" domain="[('status','=','submitted')]"/>
+                    <filter name="imported" string="Importados" domain="[('status','=','imported')]"/>
+                    <group>
+                        <filter name="group_status" string="Estado" context="{'group_by': 'status'}"/>
+                        <filter name="group_date" string="Fecha" context="{'group_by': 'created_date:week'}"/>
+                    </group>
+                </search>
+            </field>
+        </record>
+
+        <record id="action_cep_scl_batch" model="ir.actions.act_window">
+            <field name="name">Lotes CEP-SCL</field>
+            <field name="res_model">cep.scl.batch</field>
+            <field name="view_mode">list,form</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    No hay lotes de verificación CEP aún.
+                </p>
+                <p>Usa el botón "Verificar CEP en Banxico" en una factura SPEI para comenzar.</p>
+            </field>
+        </record>
+
+        <!-- Menú CEP/SPEI en Contabilidad -->
+        <menuitem id="menu_cep_root"
+                  name="CEP / SPEI"
+                  parent="account.menu_finance"
+                  sequence="100"/>
+        <menuitem id="menu_cep_batches"
+                  name="Lotes de Verificación"
+                  parent="menu_cep_root"
+                  action="action_cep_scl_batch"
+                  sequence="10"/>
+        <menuitem id="menu_cep_log"
+                  name="Log de Verificaciones"
+                  parent="menu_cep_root"
+                  action="action_cep_verification_log"
+                  sequence="20"/>
+    </data>
+</odoo>

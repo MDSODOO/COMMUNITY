@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+        <record id="view_cep_verification_log_tree" model="ir.ui.view">
+            <field name="name">cep.verification.log - Lista</field>
+            <field name="model">cep.verification.log</field>
+            <field name="arch" type="xml">
+                <list string="Log de Verificaciones CEP"
+                      decoration-success="status == 'found'"
+                      decoration-danger="status == 'not_found'"
+                      decoration-warning="status == 'manual_review'">
+                    <field name="verification_date"/>
+                    <field name="move_id"/>
+                    <field name="trace_code"/>
+                    <field name="operation_date"/>
+                    <field name="status" widget="badge"
+                           decoration-success="status == 'found'"
+                           decoration-danger="status == 'not_found'"
+                           decoration-warning="status == 'manual_review'"
+                           decoration-muted="status == 'pending'"/>
+                    <field name="banxico_response" optional="show"/>
+                </list>
+            </field>
+        </record>
+
+        <record id="view_cep_verification_log_form" model="ir.ui.view">
+            <field name="name">cep.verification.log - Formulario</field>
+            <field name="model">cep.verification.log</field>
+            <field name="arch" type="xml">
+                <form string="Log CEP" create="false" edit="false">
+                    <sheet>
+                        <group>
+                            <group>
+                                <field name="verification_date"/>
+                                <field name="move_id"/>
+                                <field name="trace_code"/>
+                                <field name="reference"/>
+                                <field name="operation_date"/>
+                            </group>
+                            <group>
+                                <field name="status" widget="badge"
+                                       decoration-success="status == 'found'"
+                                       decoration-danger="status == 'not_found'"
+                                       decoration-warning="status == 'manual_review'"/>
+                                <field name="notes"/>
+                            </group>
+                        </group>
+                        <separator string="Respuesta Banxico"/>
+                        <field name="banxico_response" widget="text" readonly="1"/>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <record id="view_cep_verification_log_search" model="ir.ui.view">
+            <field name="name">cep.verification.log - Búsqueda</field>
+            <field name="model">cep.verification.log</field>
+            <field name="arch" type="xml">
+                <search>
+                    <field name="trace_code" string="Clave de Rastreo"/>
+                    <field name="move_id"/>
+                    <filter name="found" string="Encontrados" domain="[('status','=','found')]"/>
+                    <filter name="not_found" string="No Encontrados" domain="[('status','=','not_found')]"/>
+                    <filter name="today" string="Hoy"
+                            domain="[('verification_date','&gt;=',datetime.datetime.combine(context_today(), datetime.time(0,0,0)))]"/>
+                    <group>
+                        <filter name="group_status" string="Estado" context="{'group_by': 'status'}"/>
+                        <filter name="group_date" string="Fecha" context="{'group_by': 'verification_date:day'}"/>
+                    </group>
+                </search>
+            </field>
+        </record>
+
+        <record id="action_cep_verification_log" model="ir.actions.act_window">
+            <field name="name">Log de Verificaciones CEP</field>
+            <field name="res_model">cep.verification.log</field>
+            <field name="view_mode">list,form</field>
+        </record>
+    </data>
+</odoo>

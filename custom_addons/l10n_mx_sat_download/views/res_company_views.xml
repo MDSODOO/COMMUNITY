@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_company_form_fiel" model="ir.ui.view">
+        <field name="name">res.company.form.fiel</field>
+        <field name="model">res.company</field>
+        <field name="inherit_id" ref="base.view_company_form"/>
+        <field name="priority">99</field>
+        <field name="arch" type="xml">
+            <xpath expr="//page[@name='general_info']" position="after">
+                <page string="FIEL (Descarga SAT)" name="sat_fiel"
+                      groups="l10n_mx_sat_download.group_sat_download_manager">
+                    <group>
+                        <group string="Archivos de la e.firma (FIEL)">
+                            <field name="l10n_mx_sat_fiel_cer"
+                                   filename="l10n_mx_sat_fiel_cer_filename"/>
+                            <field name="l10n_mx_sat_fiel_cer_filename" invisible="1"/>
+                            <field name="l10n_mx_sat_fiel_key"
+                                   filename="l10n_mx_sat_fiel_key_filename"/>
+                            <field name="l10n_mx_sat_fiel_key_filename" invisible="1"/>
+                            <field name="l10n_mx_sat_fiel_password" password="True"/>
+                        </group>
+                        <group string="Estado de la FIEL">
+                            <field name="l10n_mx_sat_fiel_valid"
+                                   widget="boolean_toggle" readonly="1"/>
+                            <field name="l10n_mx_sat_fiel_rfc"/>
+                            <field name="l10n_mx_sat_fiel_serial"/>
+                            <field name="l10n_mx_sat_fiel_not_after"/>
+                        </group>
+                    </group>
+                    <div>
+                        <button name="action_validate_fiel"
+                                string="Validar FIEL"
+                                type="object"
+                                class="btn-primary"
+                                icon="fa-check-circle"/>
+                    </div>
+                </page>
+            </xpath>
+        </field>
+    </record>
+</odoo>

@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+        <record id="view_move_form_cep_inherit" model="ir.ui.view">
+            <field name="name">account.move.form.cep.inherit</field>
+            <field name="model">account.move</field>
+            <field name="inherit_id" ref="account.view_move_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='ref']" position="after">
+                    <group string="Verificación de CEP — Banxico CEP-SCL (GRATIS)"
+                           name="spei_verification_group"
+                           invisible="move_type not in ['in_invoice', 'in_receipt', 'entry']">
+                        <group>
+                            <field name="transfer_type" widget="radio" options="{'horizontal': true}"/>
+                            <field name="transfer_trace_code"
+                                   invisible="transfer_type != 'spei'"
+                                   required="transfer_type == 'spei'"/>
+                            <field name="transfer_reference"
+                                   invisible="transfer_type != 'spei'"/>
+                            <field name="emission_bank_code"
+                                   invisible="transfer_type != 'spei'"/>
+                            <field name="receiving_bank_code"
+                                   invisible="transfer_type != 'spei'"/>
+                        </group>
+                        <group invisible="transfer_type != 'spei'">
+                            <field name="transfer_amount"/>
+                            <field name="transfer_operation_date"/>
+                            <field name="cep_verification_status"
+                                   decoration-success="cep_verification_status == 'verified_manual'"
+                                   decoration-warning="cep_verification_status == 'manual_review_needed'"
+                                   decoration-danger="cep_verification_status == 'not_found_banxico'"
+                                   decoration-muted="cep_verification_status == 'pending'"
+                                   widget="badge"/>
+                            <field name="cep_verification_date"/>
+                            <field name="cep_scl_batch_status" widget="badge"
+                                   invisible="cep_scl_batch_status == 'not_uploaded'"/>
+                            <field name="cep_scl_batch_id"
+                                   invisible="not cep_scl_batch_id"
+                                   string="Token de Lote"/>
+                        </group>
+                        <div invisible="transfer_type != 'spei'"
+                             class="d-flex gap-2 mt-2">
+                            <button name="action_open_cep_verification_wizard"
+                                    type="object"
+                                    string="Verificar CEP en Banxico"
+                                    class="btn btn-primary"
+                                    icon="fa-check-circle"
+                                    title="Abrir asistente para verificar CEP vía Banxico CEP-SCL (gratuito)"/>
+                            <button name="action_mark_manual_review"
+                                    type="object"
+                                    string="Marcar para Revisión Manual"
+                                    class="btn btn-secondary"
+                                    icon="fa-flag"
+                                    title="Marcar este CEP para revisión manual"
+                                    confirm="¿Marcar esta transferencia para revisión manual?"/>
+                        </div>
+                    </group>
+                </xpath>
+
+                <xpath expr="//sheet" position="inside">
+                    <div invisible="not cep_raw_response">
+                        <separator string="Detalle de Respuesta CEP-SCL"/>
+                        <field name="cep_raw_response" widget="text" readonly="1"/>
+                        <field name="cep_verification_log" widget="text" readonly="1"
+                               string="Log de Verificación"
+                               invisible="not cep_verification_log"/>
+                    </div>
+                </xpath>
+            </field>
+        </record>
+
+        <record id="view_move_search_cep_inherit" model="ir.ui.view">
+            <field name="name">account.move.search.cep.inherit</field>
+            <field name="model">account.move</field>
+            <field name="inherit_id" ref="account.view_account_move_filter"/>
+            <field name="arch" type="xml">
+                <xpath expr="//filter[@name='posted']" position="after">
+                    <separator/>
+                    <filter name="spei_pending"
+                            string="SPEI — Pendiente de verificar"
+                            domain="[('transfer_type','=','spei'),('cep_verification_status','=','pending')]"/>
+                    <filter name="spei_verified"
+                            string="SPEI — Verificado"
+                            domain="[('transfer_type','=','spei'),('cep_verification_status','=','verified_manual')]"/>
+                    <filter name="spei_not_found"
+                            string="SPEI — No Encontrado en Banxico"
+                            domain="[('transfer_type','=','spei'),('cep_verification_status','=','not_found_banxico')]"/>
+                    <filter name="spei_review"
+                            string="SPEI — Revisar Manualmente"
+                            domain="[('transfer_type','=','spei'),('cep_verification_status','=','manual_review_needed')]"/>
+                    <filter name="spei_waiting"
+                            string="SPEI — Esperando resultado Banxico"
+                            domain="[('cep_scl_batch_status','=','pending_result')]"/>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>

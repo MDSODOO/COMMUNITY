@@ -1,0 +1,6 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_sat_download_request_user,sat.download.request.user,model_sat_download_request,group_sat_download_user,1,1,1,0
+access_sat_download_request_manager,sat.download.request.manager,model_sat_download_request,group_sat_download_manager,1,1,1,1
+access_sat_xml_document_user,sat.xml.document.user,model_sat_xml_document,group_sat_download_user,1,1,0,0
+access_sat_xml_document_manager,sat.xml.document.manager,model_sat_xml_document,group_sat_download_manager,1,1,1,1
+access_sat_download_wizard_user,sat.download.wizard.user,model_sat_download_wizard,group_sat_download_user,1,1,1,0

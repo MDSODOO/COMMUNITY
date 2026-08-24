@@ -1,0 +1,7 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_cep_verification_log_user,cep.verification.log user,model_cep_verification_log,base.group_user,1,0,0,0
+access_cep_verification_log_accountant,cep.verification.log accountant,model_cep_verification_log,account.group_account_invoice,1,1,1,0
+access_cep_verification_log_manager,cep.verification.log manager,model_cep_verification_log,account.group_account_manager,1,1,1,1
+access_cep_scl_batch_user,cep.scl.batch user,model_cep_scl_batch,base.group_user,1,0,0,0
+access_cep_scl_batch_accountant,cep.scl.batch accountant,model_cep_scl_batch,account.group_account_invoice,1,1,1,0
+access_cep_scl_batch_manager,cep.scl.batch manager,model_cep_scl_batch,account.group_account_manager,1,1,1,1

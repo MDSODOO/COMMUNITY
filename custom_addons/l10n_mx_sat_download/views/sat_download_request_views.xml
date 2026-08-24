@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- ===== FORM VIEW ===== -->
+    <record id="sat_download_request_form" model="ir.ui.view">
+        <field name="name">sat.download.request.form</field>
+        <field name="model">sat.download.request</field>
+        <field name="arch" type="xml">
+            <form string="Solicitud de Descarga SAT">
+                <header>
+                    <button name="action_send_request"
+                            string="Solicitar Descarga"
+                            type="object"
+                            class="btn-primary"
+                            invisible="state != 'draft'"
+                            confirm="¿Enviar solicitud de descarga al SAT?"/>
+                    <button name="action_retry"
+                            string="Reintentar"
+                            type="object"
+                            class="btn-secondary"
+                            invisible="state != 'error'"/>
+                    <button name="action_view_xmls"
+                            string="Ver XMLs"
+                            type="object"
+                            class="btn-secondary"
+                            icon="fa-file-code-o"
+                            invisible="xml_count == 0"/>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="draft,requested,verifying,downloading,done"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_xmls"
+                                type="object"
+                                class="oe_stat_button"
+                                icon="fa-file-code-o"
+                                invisible="xml_count == 0">
+                            <field name="xml_count" widget="statinfo"
+                                   string="XMLs"/>
+                        </button>
+                    </div>
+                    <div class="oe_title">
+                        <h1><field name="name" readonly="1"/></h1>
+                    </div>
+                    <group>
+                        <group string="Parámetros de Solicitud">
+                            <field name="company_id"
+                                   options="{'no_create': True}"
+                                   readonly="state != 'draft'"/>
+                            <field name="date_from" readonly="state != 'draft'"/>
+                            <field name="date_to" readonly="state != 'draft'"/>
+                            <field name="download_type" readonly="state != 'draft'"/>
+                            <field name="request_type" readonly="state != 'draft'"/>
+                            <field name="voucher_type" readonly="state != 'draft'"/>
+                        </group>
+                        <group string="Respuesta del SAT">
+                            <field name="sat_request_id"/>
+                            <field name="sat_status_code"/>
+                            <field name="sat_request_status"/>
+                            <field name="sat_num_cfdis"/>
+                            <field name="verify_attempts"/>
+                        </group>
+                    </group>
+                    <group invisible="not sat_message">
+                        <field name="sat_message"/>
+                    </group>
+                    <group invisible="not error_message">
+                        <div class="alert alert-danger" role="alert">
+                            <field name="error_message"/>
+                        </div>
+                    </group>
+                    <notebook invisible="state == 'draft'">
+                        <page string="Paquetes" name="packages"
+                              invisible="not sat_package_ids_text">
+                            <field name="sat_package_ids_text"/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <!-- ===== LIST VIEW ===== -->
+    <record id="sat_download_request_list" model="ir.ui.view">
+        <field name="name">sat.download.request.list</field>
+        <field name="model">sat.download.request</field>
+        <field name="arch" type="xml">
+            <list string="Solicitudes de Descarga SAT"
+                  decoration-danger="state == 'error'"
+                  decoration-success="state == 'done'"
+                  decoration-info="state in ('requested', 'verifying', 'downloading')">
+                <field name="name"/>
+                <field name="company_id" groups="base.group_multi_company"/>
+                <field name="date_from"/>
+                <field name="date_to"/>
+                <field name="download_type"/>
+                <field name="request_type"/>
+                <field name="sat_num_cfdis"/>
+                <field name="xml_count" string="XMLs"/>
+                <field name="state" widget="badge"
+                       decoration-success="state == 'done'"
+                       decoration-danger="state == 'error'"
+                       decoration-info="state in ('requested', 'verifying', 'downloading')"
+                       decoration-warning="state == 'authenticating'"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- ===== SEARCH VIEW ===== -->
+    <record id="sat_download_request_search" model="ir.ui.view">
+        <field name="name">sat.download.request.search</field>
+        <field name="model">sat.download.request</field>
+        <field name="arch" type="xml">
+            <search string="Buscar Solicitudes SAT">
+                <field name="name"/>
+                <field name="sat_request_id"/>
+                <separator/>
+                <filter name="filter_received" string="Recibidos"
+                        domain="[('download_type', '=', 'received')]"/>
+                <filter name="filter_issued" string="Emitidos"
+                        domain="[('download_type', '=', 'issued')]"/>
+                <separator/>
+                <filter name="filter_draft" string="Borrador"
+                        domain="[('state', '=', 'draft')]"/>
+                <filter name="filter_processing" string="En Proceso"
+                        domain="[('state', 'in', ('authenticating', 'requested', 'verifying', 'downloading'))]"/>
+                <filter name="filter_done" string="Completados"
+                        domain="[('state', '=', 'done')]"/>
+                <filter name="filter_error" string="Con Error"
+                        domain="[('state', '=', 'error')]"/>
+                <group name="group_by_section">
+                    <filter name="group_state" string="Estado"
+                            context="{'group_by': 'state'}"/>
+                    <filter name="group_type" string="Tipo"
+                            context="{'group_by': 'download_type'}"/>
+                    <filter name="group_company" string="Empresa"
+                            context="{'group_by': 'company_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- ===== ACTION ===== -->
+    <record id="action_sat_download_request" model="ir.actions.act_window">
+        <field name="name">Solicitudes de Descarga</field>
+        <field name="res_model">sat.download.request</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="sat_download_request_search"/>
+        <field name="context">{}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Cree su primera solicitud de descarga masiva del SAT
+            </p>
+            <p>
+                Descargue automáticamente los XML (CFDI) emitidos y recibidos
+                directamente desde el Web Service del SAT.
+            </p>
+        </field>
+    </record>
+</odoo>

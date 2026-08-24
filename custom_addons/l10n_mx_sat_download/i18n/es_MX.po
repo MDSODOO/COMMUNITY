@@ -1,0 +1,110 @@
+# Spanish (Mexico) translation for l10n_mx_sat_download
+# Copyright (C) 2026 Medicine Depot
+# License: LGPL-3
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 19.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-06-10 00:00+0000\n"
+"PO-Revision-Date: 2026-06-10 00:00+0000\n"
+"Last-Translator: Daniel Cervera <daniel.cervera.2029@gmail.com>\n"
+"Language-Team: Spanish (Mexico) <noreply@medicinedepot.mx>\n"
+"Language: es_MX\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#. module: l10n_mx_sat_download
+msgid "Descarga Masiva SAT"
+msgstr "Descarga Masiva SAT"
+
+#. module: l10n_mx_sat_download
+msgid "Descarga Rápida SAT"
+msgstr "Descarga Rápida SAT"
+
+#. module: l10n_mx_sat_download
+msgid "Certificado FIEL (.cer)"
+msgstr "Certificado FIEL (.cer)"
+
+#. module: l10n_mx_sat_download
+msgid "Llave Privada FIEL (.key)"
+msgstr "Llave Privada FIEL (.key)"
+
+#. module: l10n_mx_sat_download
+msgid "Contraseña FIEL"
+msgstr "Contraseña FIEL"
+
+#. module: l10n_mx_sat_download
+msgid "FIEL Válida"
+msgstr "FIEL Válida"
+
+#. module: l10n_mx_sat_download
+msgid "Fecha Inicio"
+msgstr "Fecha Inicio"
+
+#. module: l10n_mx_sat_download
+msgid "Fecha Fin"
+msgstr "Fecha Fin"
+
+#. module: l10n_mx_sat_download
+msgid "Estado Solicitud SAT"
+msgstr "Estado Solicitud SAT"
+
+#. module: l10n_mx_sat_download
+msgid "ID Solicitud SAT"
+msgstr "ID Solicitud SAT"
+
+#. module: l10n_mx_sat_download
+msgid "Código Estado SAT"
+msgstr "Código Estado SAT"
+
+#. module: l10n_mx_sat_download
+msgid "Documentos XML"
+msgstr "Documentos XML"
+
+#. module: l10n_mx_sat_download
+msgid "Archivo XML"
+msgstr "Archivo XML"
+
+#. module: l10n_mx_sat_download
+msgid "Factura Vinculada"
+msgstr "Factura Vinculada"
+
+#. module: l10n_mx_sat_download
+msgid "Fecha Emisión"
+msgstr "Fecha Emisión"
+
+#. module: l10n_mx_sat_download
+msgid "Fecha Timbrado"
+msgstr "Fecha Timbrado"
+
+#. module: l10n_mx_sat_download
+msgid "Duplicado"
+msgstr "Duplicado"
+
+#. module: l10n_mx_sat_download
+msgid "Detalle del Error"
+msgstr "Detalle del Error"
+
+#. module: l10n_mx_sat_download
+msgid "XMLs Descargados"
+msgstr "XMLs Descargados"
+
+#. module: l10n_mx_sat_download
+msgid "Nueva Solicitud"
+msgstr "Nueva Solicitud"
+
+#. module: l10n_mx_sat_download
+msgid "Solo se pueden enviar solicitudes en estado Borrador."
+msgstr "Solo se pueden enviar solicitudes en estado Borrador."
+
+#. module: l10n_mx_sat_download
+msgid "Este documento no tiene UUID."
+msgstr "Este documento no tiene UUID."
+
+#. module: l10n_mx_sat_download
+msgid "Creada automáticamente desde descarga masiva SAT."
+msgstr "Creada automáticamente desde descarga masiva SAT."
+

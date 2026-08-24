@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="sat_download_wizard_form" model="ir.ui.view">
+        <field name="name">sat.download.wizard.form</field>
+        <field name="model">sat.download.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Descarga Rápida SAT">
+                <group>
+                    <group>
+                        <field name="company_id"
+                               options="{'no_create': True}"/>
+                        <field name="fiel_valid" invisible="1"/>
+                        <div colspan="2"
+                             invisible="fiel_valid"
+                             class="alert alert-warning" role="alert">
+                            <strong>Advertencia:</strong>
+                            No se ha configurado una FIEL válida para esta empresa.
+                            Configure la FIEL en Ajustes → Empresas.
+                        </div>
+                    </group>
+                    <group>
+                        <field name="download_type" widget="radio"/>
+                    </group>
+                </group>
+                <group>
+                    <group>
+                        <field name="date_range"/>
+                        <field name="date_from"
+                               invisible="date_range != 'custom'"/>
+                        <field name="date_to"
+                               invisible="date_range != 'custom'"/>
+                    </group>
+                    <group>
+                        <field name="request_type"/>
+                        <field name="voucher_type"/>
+                    </group>
+                </group>
+                <footer>
+                    <button name="action_create_request"
+                            string="Solicitar Descarga"
+                            type="object"
+                            class="btn-primary"
+                            icon="fa-download"/>
+                    <button string="Cancelar" class="btn-secondary"
+                            special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+</odoo>

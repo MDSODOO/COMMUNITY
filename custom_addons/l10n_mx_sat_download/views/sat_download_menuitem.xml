@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Menú principal bajo Contabilidad -->
+    <menuitem id="menu_sat_download_root"
+              name="Descarga SAT"
+              parent="account.menu_finance"
+              sequence="90"
+              groups="l10n_mx_sat_download.group_sat_download_user"/>
+
+    <menuitem id="menu_sat_download_requests"
+              name="Solicitudes de Descarga"
+              parent="menu_sat_download_root"
+              action="action_sat_download_request"
+              sequence="10"/>
+
+    <menuitem id="menu_sat_xml_documents"
+              name="Documentos XML"
+              parent="menu_sat_download_root"
+              action="action_sat_xml_document"
+              sequence="20"/>
+
+    <!-- Acción del wizard en el menú -->
+    <record id="action_sat_download_wizard" model="ir.actions.act_window">
+        <field name="name">Nueva Descarga Rápida</field>
+        <field name="res_model">sat.download.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+    <menuitem id="menu_sat_download_wizard"
+              name="Nueva Descarga Rápida"
+              parent="menu_sat_download_root"
+              action="action_sat_download_wizard"
+              sequence="5"/>
+</odoo>

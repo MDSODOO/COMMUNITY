@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+        <record id="view_cep_scl_batch_wizard_form" model="ir.ui.view">
+            <field name="name">cep.scl.batch.wizard - Formulario</field>
+            <field name="model">cep.scl.batch.wizard</field>
+            <field name="arch" type="xml">
+                <form string="Verificación CEP — Banxico CEP-SCL">
+                    <sheet>
+                        <field name="step" invisible="1"/>
+
+                        <!-- PASO 1: Seleccionar movimientos -->
+                        <group string="Paso 1 — Seleccionar Transferencias SPEI"
+                               invisible="step != 'select'">
+                            <div class="alert alert-info mb-3" role="alert">
+                                Selecciona las facturas/pagos SPEI a verificar.
+                                Puedes incluir múltiples transferencias en un solo lote.
+                            </div>
+                            <field name="move_ids" nolabel="1">
+                                <list>
+                                    <field name="name"/>
+                                    <field name="partner_id"/>
+                                    <field name="transfer_trace_code"/>
+                                    <field name="transfer_amount"/>
+                                    <field name="transfer_operation_date"/>
+                                    <field name="cep_verification_status" widget="badge"/>
+                                </list>
+                            </field>
+                            <div class="text-muted mt-2">
+                                Total seleccionadas: <field name="total_moves" readonly="1" class="d-inline"/>
+                            </div>
+                        </group>
+
+                        <!-- PASO 2: Descargar TXT -->
+                        <group string="Paso 2 — Descargar Archivo para Banxico"
+                               invisible="step != 'generate'">
+                            <div class="alert alert-success mb-3" role="alert">
+                                ✅ Archivo generado. Descárgalo y súbelo en el portal de Banxico CEP-SCL.
+                            </div>
+                            <group>
+                                <field name="txt_file" widget="binary" filename="txt_filename"
+                                       string="Archivo TXT"/>
+                                <field name="txt_filename" invisible="1"/>
+                            </group>
+                            <field name="instructions" nolabel="1" widget="html" readonly="1"/>
+                        </group>
+
+                        <!-- PASO 3: Token de Banxico -->
+                        <group string="Paso 3 — Registrar Token y Esperar Email"
+                               invisible="step != 'submit'">
+                            <div class="alert alert-warning mb-3" role="alert">
+                                ⏳ Banxico enviará un email con el ZIP de CEPs encontrados.
+                                Guarda el token aquí para trazabilidad.
+                            </div>
+                            <group>
+                                <field name="banxico_token"
+                                       placeholder="Ej: CEP-SCL-20240101-XXXXX"/>
+                                <field name="user_email" string="Tu email"/>
+                                <field name="batch_id" readonly="1"
+                                       invisible="not batch_id"/>
+                            </group>
+                        </group>
+
+                        <!-- PASO 4: Subir ZIP e importar -->
+                        <group string="Paso 4 — Importar Resultados (ZIP de Banxico)"
+                               invisible="step != 'import'">
+                            <div class="alert alert-info mb-3" role="alert"
+                                 invisible="process_summary">
+                                Sube el archivo ZIP descargado de Banxico.
+                                El módulo cruzará los CEPs encontrados con tus transferencias
+                                y adjuntará los PDF/XML en cada factura.
+                            </div>
+                            <group invisible="process_summary">
+                                <field name="zip_file" widget="binary" filename="zip_filename"
+                                       string="ZIP de Resultados"/>
+                                <field name="zip_filename" invisible="1"/>
+                            </group>
+                            <div class="alert alert-success" role="alert"
+                                 invisible="not process_summary">
+                                ✅ Procesamiento completado
+                            </div>
+                            <field name="process_summary" widget="text" readonly="1" nolabel="1"
+                                   invisible="not process_summary"/>
+                        </group>
+                    </sheet>
+
+                    <footer>
+                        <!-- Paso 1 → 2 -->
+                        <button name="action_generate_txt" type="object"
+                                string="Generar Archivo TXT →"
+                                class="btn-primary"
+                                invisible="step != 'select'"/>
+
+                        <!-- Paso 2 → 3 -->
+                        <button name="action_save_token" type="object"
+                                string="He subido el archivo — Guardar Token →"
+                                class="btn-primary"
+                                invisible="step != 'generate'"/>
+                        <button name="action_go_back" type="object"
+                                string="← Atrás"
+                                class="btn-secondary"
+                                invisible="step != 'generate'"/>
+
+                        <!-- Paso 3 → 4 -->
+                        <button name="action_advance_to_import" type="object"
+                                string="Tengo el ZIP — Avanzar al Paso 4 →"
+                                class="btn-primary"
+                                invisible="step != 'submit'"/>
+                        <button name="action_go_back" type="object"
+                                string="← Atrás"
+                                class="btn-secondary"
+                                invisible="step != 'submit'"/>
+
+                        <!-- Paso 4 -->
+                        <button name="action_process_zip" type="object"
+                                string="Procesar ZIP →"
+                                class="btn-primary"
+                                invisible="step != 'import'"/>
+                        <button name="action_view_batch" type="object"
+                                string="Ver Lote"
+                                class="btn-secondary"
+                                invisible="not batch_id"/>
+
+                        <button string="Cerrar" class="btn-secondary" special="cancel"/>
+                    </footer>
+                </form>
+            </field>
+        </record>
+    </data>
+</odoo>
