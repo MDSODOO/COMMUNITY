@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ============================================================ -->
+    <!--  WIZARD: Vista principal del formulario de importación        -->
+    <!-- ============================================================ -->
+
+    <record id="view_import_quifa_cost_form" model="ir.ui.view">
+        <field name="name">supplier.cost.import.wizard.form</field>
+        <field name="model">supplier.cost.import.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Importar Costos de Proveedores">
+                <!-- HEADER: Botones de acción -->
+                <header>
+                    <button name="action_preview" string="Vista Previa" type="object"
+                            class="btn-primary" invisible="not file"/>
+                    <button name="action_import" string="Importar" type="object"
+                            class="btn-success" invisible="not preview_lines or mode != 'update'"/>
+                </header>
+
+                <!-- SHEET: Contenido principal -->
+                <sheet>
+                    <!-- KPI STRIP: Estadísticas -->
+                    <div class="md-kpi-strip md-kpi-strip-3" invisible="not preview_lines">
+                        <div class="md-kpi">
+                            <div class="md-kpi-label">Productos actualizables</div>
+                            <div class="md-kpi-value text-success font-weight-bold">
+                                <field name="products_to_update" nolabel="1"/>
+                            </div>
+                        </div>
+                        <div class="md-kpi">
+                            <div class="md-kpi-label">No encontrados</div>
+                            <div class="md-kpi-value text-warning font-weight-bold">
+                                <field name="products_not_found" nolabel="1"/>
+                            </div>
+                        </div>
+                        <div class="md-kpi">
+                            <div class="md-kpi-label">Con error</div>
+                            <div class="md-kpi-value text-danger font-weight-bold">
+                                <field name="error_lines" nolabel="1"/>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- GRUPO 1: Carga de archivo -->
+                    <group string="1. Cargar Archivo" name="file_group">
+                        <group>
+                            <field name="file" filename="filename"/>
+                            <field name="filename" invisible="1"/>
+                        </group>
+                    </group>
+
+                    <!-- GRUPO 2: Configuración de columnas -->
+                    <group string="2. Configurar Columnas (flexible)" name="column_config">
+                        <group>
+                            <field name="header_row"/>
+                        </group>
+                        <group>
+                            <field name="col_barcode" placeholder="A"/>
+                            <field name="col_cost" placeholder="H"/>
+                            <field name="col_name" placeholder="C"/>
+                        </group>
+                    </group>
+
+                    <!-- GRUPO 3: Modo de operación -->
+                    <group string="3. Modo de Operación" name="mode_group">
+                        <field name="mode"/>
+                    </group>
+
+                    <!-- GRUPO 4: Resultado -->
+                    <group invisible="not result_message">
+                        <field name="result_message" widget="text" readonly="1" nolabel="1"
+                               style="white-space: pre-wrap; font-family: monospace; background: #f8f9fa; padding: 1rem;"/>
+                    </group>
+
+                    <!-- TABLA: Líneas de preview -->
+                    <div invisible="not preview_lines" class="mt-3 mb-3">
+                        <h4>Detalles de la Importación</h4>
+                        <field name="preview_lines" nolabel="1">
+                            <list decoration-success="status == 'ok'" 
+                                  decoration-warning="status == 'not_found'" 
+                                  decoration-danger="status in ('error', 'invalid_cost', 'no_barcode')">
+                                <field name="row_number" width="60"/>
+                                <field name="barcode" width="120"/>
+                                <field name="product_name" width="300"/>
+                                <field name="product_id" invisible="1"/>
+                                <field name="old_cost" readonly="1" optional="hide"/>
+                                <field name="new_cost" readonly="1"/>
+                                <field name="cost_change" readonly="1" optional="hide"/>
+                                <field name="status" widget="badge" decoration-success="status == 'ok'"/>
+                                <field name="error_message" optional="hide"/>
+                            </list>
+                        </field>
+                    </div>
+                </sheet>
+
+                <!-- FOOTER: Botones finales -->
+                <footer>
+                    <button string="Cerrar" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <!-- ============================================================ -->
+    <!--  ACTION: Acción para abrir el wizard                         -->
+    <!-- ============================================================ -->
+
+    <record id="action_import_quifa_cost" model="ir.actions.act_window">
+        <field name="name">Importar Costos de Quifamesa</field>
+        <field name="res_model">supplier.cost.import.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+</odoo>

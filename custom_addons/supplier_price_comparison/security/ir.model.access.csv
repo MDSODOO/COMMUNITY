@@ -1,0 +1,8 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_price_comparison_product,price.comparison.product,model_price_comparison_product,base.group_user,1,1,1,1
+access_price_comparison_line,price.comparison.line,model_price_comparison_line,base.group_user,1,1,1,1
+access_import_base_catalog,import.base.catalog,model_import_base_catalog,base.group_user,1,1,1,1
+access_import_supplier_catalog,import.supplier.catalog,model_import_supplier_catalog,base.group_user,1,1,1,1
+access_consolidate_supplier_prices_wizard,consolidate.supplier.prices.wizard,model_consolidate_supplier_prices_wizard,base.group_user,1,1,1,1
+access_price_comparison_history_read,price.comparison.history read,model_price_comparison_history,base.group_user,1,0,0,0
+access_price_comparison_history_analyst,price.comparison.history analyst,model_price_comparison_history,group_price_comparison_analyst,1,1,1,1

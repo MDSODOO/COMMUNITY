@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="group_product_sale_price_import_manager" model="res.groups">
+        <field name="name">Importar Precios de Venta / Sale Price Import</field>
+        <field name="comment">Permite descargar plantilla, previsualizar y aplicar cambios de precio de venta desde Excel. Allows template download, preview, and sale price updates from Excel.</field>
+    </record>
+
+    <record id="sales_team.group_sale_manager" model="res.groups">
+        <field name="implied_ids" eval="[(4, ref('product_price_import_ogum.group_product_sale_price_import_manager'))]"/>
+    </record>
+
+</odoo>

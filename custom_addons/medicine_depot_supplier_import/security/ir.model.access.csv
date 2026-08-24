@@ -1,0 +1,5 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_supplier_cost_import_wizard,supplier.cost.import.wizard admin,model_supplier_cost_import_wizard,group_supplier_cost_import_admin,1,1,1,1
+access_supplier_cost_import_wizard_line,supplier.cost.import.wizard.line admin,model_supplier_cost_import_wizard_line,group_supplier_cost_import_admin,1,1,1,1
+access_supplier_cost_import_log,supplier.cost.import.log admin,model_supplier_cost_import_log,group_supplier_cost_import_admin,1,1,1,1
+access_supplier_cost_import_log_line,supplier.cost.import.log.line admin,model_supplier_cost_import_log_line,group_supplier_cost_import_admin,1,1,1,1

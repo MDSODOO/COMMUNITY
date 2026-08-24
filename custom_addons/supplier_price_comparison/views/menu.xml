@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Root principal del módulo reestructurado -->
+    <menuitem id="menu_price_comparison_root"
+              name="Consolidador de Precios"
+              sequence="90"/>
+
+    <menuitem id="menu_price_comparison_import"
+              name="Consolidación"
+              parent="menu_price_comparison_root"
+              sequence="10"/>
+
+    <menuitem id="menu_consolidate_supplier_prices"
+              name="Consolidar Precios (Excel)"
+              action="action_consolidate_supplier_prices"
+              parent="menu_price_comparison_import"
+              sequence="10"/>
+
+    <!-- Legacy: se mantienen inactivos para enfoque exclusivo en consolidación -->
+    <record id="menu_price_comparison_queries" model="ir.ui.menu">
+        <field name="name">Consultas (Legacy)</field>
+        <field name="parent_id" ref="menu_price_comparison_root"/>
+        <field name="sequence">90</field>
+        <field name="active" eval="False"/>
+        <field name="action" eval="False"/>
+    </record>
+
+    <record id="menu_price_comparison_pivot" model="ir.ui.menu">
+        <field name="name">Tabla Dinámica de Precios (Legacy)</field>
+        <field name="parent_id" ref="menu_price_comparison_queries"/>
+        <field name="sequence">10</field>
+        <field name="active" eval="False"/>
+        <field name="action" eval="False"/>
+    </record>
+
+    <record id="menu_price_comparison_products" model="ir.ui.menu">
+        <field name="name">Productos Base (Legacy)</field>
+        <field name="parent_id" ref="menu_price_comparison_queries"/>
+        <field name="sequence">20</field>
+        <field name="active" eval="False"/>
+        <field name="action" eval="False"/>
+    </record>
+
+    <record id="menu_import_base_catalog" model="ir.ui.menu">
+        <field name="name">Cargar Catálogo Base (Legacy)</field>
+        <field name="parent_id" ref="menu_price_comparison_import"/>
+        <field name="sequence">90</field>
+        <field name="active" eval="False"/>
+        <field name="action" eval="False"/>
+    </record>
+
+    <record id="menu_import_supplier_catalog" model="ir.ui.menu">
+        <field name="name">Cargar Catálogo Proveedor (Legacy)</field>
+        <field name="parent_id" ref="menu_price_comparison_import"/>
+        <field name="sequence">91</field>
+        <field name="active" eval="False"/>
+        <field name="action" eval="False"/>
+    </record>
+
+    <record id="menu_price_comparison_history" model="ir.ui.menu">
+        <field name="name">Historial de Precios (Legacy)</field>
+        <field name="parent_id" ref="menu_price_comparison_queries"/>
+        <field name="sequence">30</field>
+        <field name="active" eval="False"/>
+        <field name="action" eval="False"/>
+    </record>
+
+</odoo>

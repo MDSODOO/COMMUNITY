@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Step 26: Grupo restringido para ver costos y diferencias de precio -->
+    <record id="group_price_comparison_analyst" model="res.groups">
+        <field name="name">Comparador: Analista de Precios</field>
+        <field name="comment">
+            Permite visualizar el costo base de Quifamesa, diferencias de precio y
+            márgenes estratégicos. Restringido a directivos y área de compras.
+        </field>
+        <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
+    </record>
+</odoo>

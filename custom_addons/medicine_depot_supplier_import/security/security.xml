@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Grupo de seguridad: Importador de Costos (Admin only) -->
+    <record id="group_supplier_cost_import_admin" model="res.groups">
+        <field name="name">Importar Costos de Proveedores (Admin)</field>
+        <field name="comment">Acceso exclusivo para administradores. Permite importar y actualizar catálogos de costos de proveedores desde archivos Excel.</field>
+        <field name="implied_ids" eval="[(4, ref('base.group_system'))]"/>
+    </record>
+
+</odoo>

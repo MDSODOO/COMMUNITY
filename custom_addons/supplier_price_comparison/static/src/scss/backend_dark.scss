@@ -1,0 +1,78 @@
+// ════════════════════════════════════════════════════════════════════════
+// backend_dark.scss — Tokens de dark mode para supplier_price_comparison
+// ────────────────────────────────────────────────────────────────────────
+// Registrado en web.assets_web_dark: Odoo 19 inyecta este bundle
+// ÚNICAMENTE cuando el dark mode está activo (preferencia de usuario).
+// No se necesitan selectores .o_dark_mode ni [data-bs-theme]: este
+// archivo solo se carga en modo oscuro (mismo patrón que
+// medicine_depot_portal/backend_dark.scss).
+//
+// Antes este override vivía gateado por .o_dark_mode dentro de
+// price_comparison.scss (bundle web.assets_backend) — esa clase nunca se
+// añade al DOM real de Odoo 19, así que las reglas nunca se aplicaban:
+// las tarjetas KPI/glass quedaban como "islas blancas" flotando sobre el
+// resto del backend ya oscuro. Ver
+// docs/audits/2026-07-01_backend_dark_mode_audit.md.
+// ════════════════════════════════════════════════════════════════════════
+
+.md-pc-kpi-strip {
+    .md-pc-kpi-card {
+        background: rgba(33, 37, 41, 0.75);
+        border-color: rgba(255, 255, 255, 0.1);
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+
+        &:hover {
+            box-shadow: 0 4px 18px rgba(0, 0, 0, 0.5);
+        }
+
+        .kpi-label {
+            color: var(--bs-secondary-color, #94a3b8);
+        }
+
+        &.kpi-supplier .kpi-value {
+            color: #2dd4bf;
+        }
+    }
+}
+
+.md-pc-glass {
+    background: rgba(30, 41, 59, 0.88);
+    border-color: rgba(255, 255, 255, 0.1);
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
+}
+
+.md-pc-consolidator-shell {
+    background:
+        radial-gradient(circle at 15% 20%, rgba(255, 188, 66, 0.08), transparent 45%),
+        radial-gradient(circle at 80% 10%, rgba(24, 119, 242, 0.08), transparent 42%),
+        linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+    border-color: var(--bs-border-color, rgba(255, 255, 255, 0.1));
+}
+
+.md-pc-consolidator-hero {
+    background: rgba(30, 41, 59, 0.82);
+    border-color: var(--bs-border-color, rgba(255, 255, 255, 0.1));
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.3);
+
+    .hero-kicker {
+        color: var(--bs-secondary-color, #94a3b8);
+    }
+
+    h2 {
+        color: var(--bs-heading-color, #fff);
+    }
+
+    p {
+        color: var(--bs-body-color, #cbd5e1);
+    }
+}
+
+.md-pc-consolidator-card {
+    background: rgba(30, 41, 59, 0.92);
+    border-color: var(--bs-border-color, rgba(255, 255, 255, 0.1));
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+
+    .card-title {
+        color: var(--bs-secondary-color, #94a3b8);
+    }
+}

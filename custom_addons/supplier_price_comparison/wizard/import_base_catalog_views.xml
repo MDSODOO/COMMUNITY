@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Step 14: wizard catálogo base con layout bento 2-columnas -->
+    <record id="view_import_base_catalog_form" model="ir.ui.view">
+        <field name="name">import.base.catalog.form</field>
+        <field name="model">import.base.catalog</field>
+        <field name="arch" type="xml">
+            <form string="Cargar Catálogo Base Quifamesa">
+                <sheet>
+                    <div class="md-pc-bento-wizard">
+                        <div class="md-pc-bento-cell">
+                            <div class="cell-title">Archivo Excel</div>
+                            <group>
+                                <field name="file" filename="filename"/>
+                                <field name="filename" invisible="1"/>
+                                <field name="mode"/>
+                            </group>
+                        </div>
+                        <div class="md-pc-bento-cell">
+                            <div class="cell-title">Mapeo de Columnas</div>
+                            <group>
+                                <field name="header_row"/>
+                                <field name="col_barcode" placeholder="A"/>
+                                <field name="col_name" placeholder="C"/>
+                                <field name="col_brand" placeholder="D"/>
+                                <field name="col_cost" placeholder="H"/>
+                            </group>
+                        </div>
+                    </div>
+
+                    <group invisible="not result_message">
+                        <field name="result_message" widget="text" readonly="1"
+                               class="font-monospace bg-light p-2"/>
+                    </group>
+                </sheet>
+
+                <footer>
+                    <button name="action_import" string="Importar"
+                            type="object" class="btn-primary"/>
+                    <button string="Cerrar" class="btn-secondary"
+                            special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_import_base_catalog" model="ir.actions.act_window">
+        <field name="name">Importar Catálogo Base</field>
+        <field name="res_model">import.base.catalog</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+</odoo>

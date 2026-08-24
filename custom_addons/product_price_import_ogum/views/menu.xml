@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <menuitem id="menu_product_sale_price_import"
+              name="Importar Precios de Venta"
+              parent="sale.menu_sale_config"
+              action="action_product_sale_price_import_wizard"
+              groups="group_product_sale_price_import_manager"
+              sequence="88"/>
+
+    <menuitem id="menu_product_sale_price_import_log"
+              name="Historial de Importación de Precios"
+              parent="sale.menu_sale_config"
+              action="action_product_sale_price_import_log"
+              groups="group_product_sale_price_import_manager"
+              sequence="89"/>
+
+</odoo>

@@ -1,0 +1,213 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_product_sale_price_import_wizard_form" model="ir.ui.view">
+        <field name="name">product.sale.price.import.wizard.form</field>
+        <field name="model">product.sale.price.import.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Importar Precios de Venta / Import Sale Prices">
+                <header>
+                    <button name="action_download_template"
+                            string="Descargar Plantilla"
+                            type="object"
+                            class="btn-secondary"/>
+                    <button name="action_preview"
+                            string="Vista Previa"
+                            type="object"
+                            class="btn-primary"
+                            invisible="not file"/>
+                    <button name="action_apply"
+                            string="Aplicar Precios"
+                            type="object"
+                            class="btn-success"
+                            invisible="not preview_line_ids or valid_lines == 0"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1>Plantilla de precios de venta</h1>
+                    </div>
+
+                    <group string="1. Archivo / File">
+                        <group>
+                            <field name="file" filename="filename"/>
+                            <field name="filename" invisible="1"/>
+                        </group>
+                        <group>
+                            <field name="apply_mode"/>
+                            <field name="pricelist_id"
+                                   invisible="apply_mode != 'pricelist'"
+                                   required="apply_mode == 'pricelist'"/>
+                        </group>
+                    </group>
+
+                    <group string="2. Columnas / Columns">
+                        <group>
+                            <field name="header_row"/>
+                            <field name="col_sku"/>
+                        </group>
+                        <group>
+                            <field name="col_barcode"/>
+                            <field name="col_new_price"/>
+                        </group>
+                    </group>
+
+                    <div class="md-kpi-strip md-kpi-strip-4" invisible="not preview_line_ids">
+                        <div class="md-kpi">
+                            <div class="md-kpi-label">Filas / Rows</div>
+                            <div class="md-kpi-value">
+                                <field name="total_lines" nolabel="1"/>
+                            </div>
+                        </div>
+                        <div class="md-kpi">
+                            <div class="md-kpi-label">Válidas / Valid</div>
+                            <div class="md-kpi-value text-success">
+                                <field name="valid_lines" nolabel="1"/>
+                            </div>
+                        </div>
+                        <div class="md-kpi">
+                            <div class="md-kpi-label">Omitidas / Skipped</div>
+                            <div class="md-kpi-value text-warning">
+                                <field name="skipped_lines" nolabel="1"/>
+                            </div>
+                        </div>
+                        <div class="md-kpi">
+                            <div class="md-kpi-label">Con error / With Error</div>
+                            <div class="md-kpi-value text-danger">
+                                <field name="error_lines" nolabel="1"/>
+                            </div>
+                        </div>
+                    </div>
+
+                    <group invisible="not result_message">
+                        <field name="result_message"
+                               nolabel="1"
+                               readonly="1"
+                               widget="text"
+                               style="white-space: pre-wrap; font-family: monospace;"/>
+                    </group>
+
+                    <group string="3. Vista previa / Preview" invisible="not preview_line_ids">
+                        <field name="preview_line_ids" nolabel="1">
+                            <list decoration-success="status == 'ok'"
+                                  decoration-warning="status == 'duplicate'"
+                                  decoration-danger="status in ('missing_key', 'invalid_price', 'not_found', 'error')"
+                                  create="0"
+                                  edit="0"
+                                  delete="0">
+                                <field name="row_number" width="60"/>
+                                <field name="sku" width="120"/>
+                                <field name="barcode" width="140"/>
+                                <field name="product_tmpl_id" width="240"/>
+                                <field name="old_price"/>
+                                <field name="new_price"/>
+                                <field name="status" widget="badge"
+                                       decoration-success="status == 'ok'"
+                                       decoration-warning="status == 'duplicate'"
+                                       decoration-danger="status in ('missing_key', 'invalid_price', 'not_found', 'error')"/>
+                                <field name="error_message"/>
+                            </list>
+                        </field>
+                    </group>
+                </sheet>
+                <footer>
+                    <button string="Cerrar" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_product_sale_price_import_wizard" model="ir.actions.act_window">
+        <field name="name">Importar Precios de Venta</field>
+        <field name="res_model">product.sale.price.import.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+    <record id="view_product_sale_price_import_log_list" model="ir.ui.view">
+        <field name="name">product.sale.price.import.log.list</field>
+        <field name="model">product.sale.price.import.log</field>
+        <field name="arch" type="xml">
+            <list string="Historial de Importación de Precios"
+                  decoration-success="error_count == 0"
+                  decoration-warning="error_count &gt; 0">
+                <field name="date"/>
+                <field name="user_id"/>
+                <field name="apply_mode"/>
+                <field name="pricelist_id" optional="hide"/>
+                <field name="original_filename"/>
+                <field name="total_rows"/>
+                <field name="updated_count"/>
+                <field name="skipped_count"/>
+                <field name="error_count"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_product_sale_price_import_log_form" model="ir.ui.view">
+        <field name="name">product.sale.price.import.log.form</field>
+        <field name="model">product.sale.price.import.log</field>
+        <field name="arch" type="xml">
+            <form string="Log de Importación / Import Log">
+                <sheet>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" readonly="1"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="date"/>
+                            <field name="user_id"/>
+                            <field name="apply_mode"/>
+                            <field name="pricelist_id" invisible="apply_mode != 'pricelist'"/>
+                        </group>
+                        <group>
+                            <field name="original_filename"/>
+                            <field name="original_file" filename="original_filename"/>
+                            <field name="total_rows"/>
+                        </group>
+                    </group>
+                    <group string="Resumen / Summary">
+                        <group>
+                            <field name="updated_count"/>
+                            <field name="skipped_count"/>
+                            <field name="error_count"/>
+                        </group>
+                        <field name="summary" nolabel="1" readonly="1"
+                               style="white-space: pre-wrap; font-family: monospace;"/>
+                    </group>
+                    <notebook>
+                        <page string="Detalle / Details">
+                            <field name="line_ids" nolabel="1">
+                                <list create="0" edit="0" delete="0"
+                                      decoration-success="status == 'updated'"
+                                      decoration-warning="status == 'skipped'"
+                                      decoration-danger="status == 'error'">
+                                    <field name="row_number"/>
+                                    <field name="sku"/>
+                                    <field name="barcode"/>
+                                    <field name="product_tmpl_id"/>
+                                    <field name="old_price"/>
+                                    <field name="new_price"/>
+                                    <field name="status" widget="badge"
+                                           decoration-success="status == 'updated'"
+                                           decoration-warning="status == 'skipped'"
+                                           decoration-danger="status == 'error'"/>
+                                    <field name="error_message"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_product_sale_price_import_log" model="ir.actions.act_window">
+        <field name="name">Historial de Importación de Precios</field>
+        <field name="res_model">product.sale.price.import.log</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+</odoo>

@@ -1,0 +1,295 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ============================================================ -->
+    <!--  PRODUCTO BASE                                                -->
+    <!-- ============================================================ -->
+
+    <record id="view_price_comparison_product_tree" model="ir.ui.view">
+        <field name="name">price.comparison.product.tree</field>
+        <field name="model">price.comparison.product</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="barcode"/>
+                <field name="name"/>
+                <field name="brand"/>
+                <!-- Step 26: costo visible solo para analistas -->
+                <field name="quifa_cost" widget="monetary"
+                       options="{'currency_id': False}"
+                       groups="supplier_price_comparison.group_price_comparison_analyst"/>
+                <field name="supplier_count"/>
+                <field name="best_price" widget="monetary" options="{'currency_id': False}"/>
+                <!-- Step 16: avatar del mejor proveedor -->
+                <field name="best_supplier_id" widget="many2one_avatar"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_price_comparison_product_form" model="ir.ui.view">
+        <field name="name">price.comparison.product.form</field>
+        <field name="model">price.comparison.product</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <!-- Step 10: smart button con estilo píldora -->
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_price_lines" type="object"
+                                class="oe_stat_button md-pc-stat-btn" icon="fa-tags">
+                            <field name="supplier_count" widget="statinfo"
+                                   string="Ofertas"/>
+                        </button>
+                    </div>
+
+                    <!-- Step 9: Bento KPI strip -->
+                    <div class="md-pc-kpi-strip">
+                        <div class="md-pc-kpi-card kpi-cost"
+                             groups="supplier_price_comparison.group_price_comparison_analyst">
+                            <div class="kpi-label">Costo Quifamesa</div>
+                            <div class="kpi-value">
+                                <field name="quifa_cost" nolabel="1" readonly="1"/>
+                            </div>
+                        </div>
+                        <div class="md-pc-kpi-card kpi-best">
+                            <div class="kpi-label">Mejor Precio</div>
+                            <div class="kpi-value">
+                                <field name="best_price" nolabel="1" readonly="1"/>
+                            </div>
+                        </div>
+                        <div class="md-pc-kpi-card kpi-supplier">
+                            <div class="kpi-label">Proveedor Ganador</div>
+                            <div class="kpi-value">
+                                <field name="best_supplier_id" nolabel="1" readonly="1"/>
+                            </div>
+                        </div>
+                    </div>
+
+                    <group>
+                        <group>
+                            <field name="barcode"/>
+                            <field name="name"/>
+                            <field name="brand"/>
+                        </group>
+                    </group>
+
+                    <notebook>
+                        <page string="Precios por Proveedor" name="prices">
+                            <field name="line_ids">
+                                <list editable="bottom">
+                                    <!-- Step 16: avatar del proveedor -->
+                                    <field name="supplier_id" widget="many2one_avatar"/>
+                                    <field name="price"/>
+                                    <!-- Step 26: diferencias visibles solo para analistas -->
+                                    <field name="price_diff"
+                                           groups="supplier_price_comparison.group_price_comparison_analyst"/>
+                                    <field name="price_diff_pct"
+                                           groups="supplier_price_comparison.group_price_comparison_analyst"/>
+                                    <!-- Step 12: is_best de solo lectura, sin toggle manual -->
+                                    <field name="is_best" readonly="1"/>
+                                    <field name="supplier_qty_on_hand" string="A la mano"/>
+                                    <field name="lead_time" optional="hide"/>
+                                    <field name="catalog_name" optional="hide"/>
+                                    <field name="import_date" optional="hide"/>
+                                </list>
+                            </field>
+                        </page>
+                        <!-- Step 27: historial de cambios de precio -->
+                        <page string="Historial de Precios" name="history"
+                              groups="supplier_price_comparison.group_price_comparison_analyst">
+                            <field name="line_ids" readonly="1">
+                                <list>
+                                    <field name="supplier_id"/>
+                                    <field name="price"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_price_comparison_product_search" model="ir.ui.view">
+        <field name="name">price.comparison.product.search</field>
+        <field name="model">price.comparison.product</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="barcode"/>
+                <field name="name"/>
+                <field name="brand"/>
+                <filter name="has_suppliers" string="Con precios"
+                        domain="[('supplier_count', '&gt;', 0)]"/>
+                <filter name="no_suppliers" string="Sin precios"
+                        domain="[('supplier_count', '=', 0)]"/>
+                <separator/>
+                <filter name="group_brand" string="Marca"
+                        context="{'group_by': 'brand'}"/>
+                <filter name="group_best_supplier" string="Mejor Proveedor"
+                        context="{'group_by': 'best_supplier_id'}"/>
+            </search>
+        </field>
+    </record>
+
+    <!-- ============================================================ -->
+    <!--  LÍNEAS DE PRECIO (tabla dinámica)                           -->
+    <!-- ============================================================ -->
+
+    <record id="view_price_comparison_line_tree" model="ir.ui.view">
+        <field name="name">price.comparison.line.tree</field>
+        <field name="model">price.comparison.line</field>
+        <field name="arch" type="xml">
+            <!-- Step 11: decoración condicional por niveles de desviación -->
+            <list decoration-success="is_best == True"
+                  decoration-warning="not is_best and price_diff_pct &gt;= 0 and price_diff_pct &lt; 15"
+                  decoration-danger="price_diff_pct &gt;= 15">
+                <field name="barcode"/>
+                <field name="product_name"/>
+                <field name="brand" optional="hide"/>
+                <!-- Step 26: costos visibles solo para analistas -->
+                <field name="quifa_cost" optional="show"
+                       groups="supplier_price_comparison.group_price_comparison_analyst"/>
+                <!-- Step 16: avatar del proveedor -->
+                <field name="supplier_id" widget="many2one_avatar"/>
+                <field name="price"/>
+                <field name="price_diff" optional="show"
+                       groups="supplier_price_comparison.group_price_comparison_analyst"/>
+                <field name="price_diff_pct" optional="show"
+                       groups="supplier_price_comparison.group_price_comparison_analyst"/>
+                <field name="savings_vs_quifa" optional="hide"
+                       groups="supplier_price_comparison.group_price_comparison_analyst"/>
+                <!-- Step 12: is_best readonly, sin boolean_toggle -->
+                <field name="is_best" readonly="1"/>
+                <field name="supplier_qty_on_hand" string="A la mano" optional="show"/>
+                <field name="lead_time" optional="hide"/>
+                <field name="catalog_name" optional="hide"/>
+                <!-- Step 15: alerta de antigüedad -->
+                <field name="catalog_is_stale" column_invisible="1"/>
+                <field name="import_date"
+                       decoration-warning="catalog_is_stale == True"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_price_comparison_line_pivot" model="ir.ui.view">
+        <field name="name">price.comparison.line.pivot</field>
+        <field name="model">price.comparison.line</field>
+        <field name="arch" type="xml">
+            <pivot string="Comparador de Precios">
+                <!-- Step 1: usar campos Many2one en lugar de texto plano -->
+                <field name="product_id" type="row"/>
+                <field name="supplier_id" type="col"/>
+                <field name="price" type="measure"/>
+                <!-- Step 8: ahorro vs quifamesa como medida adicional -->
+                <field name="savings_vs_quifa" type="measure"/>
+                <field name="supplier_qty_on_hand" type="measure"/>
+                <field name="lead_time" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <record id="view_price_comparison_line_search" model="ir.ui.view">
+        <field name="name">price.comparison.line.search</field>
+        <field name="model">price.comparison.line</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="barcode"/>
+                <field name="product_name"/>
+                <field name="brand"/>
+                <field name="supplier_id"/>
+                <field name="catalog_name"/>
+                <filter name="best_only" string="Solo mejor precio"
+                        domain="[('is_best', '=', True)]"/>
+                <!-- Step 7: filtro para desviación crítica >= 15% -->
+                <filter name="high_deviation" string="Desviación ≥ 15%"
+                        domain="[('price_diff_pct', '&gt;=', 15)]"/>
+                <!-- Step 15: filtro para catálogos desactualizados -->
+                <filter name="stale_catalogs" string="Catálogo desactualizado"
+                        domain="[('catalog_is_stale', '=', True)]"/>
+                <separator/>
+                <!-- Step 5: agrupación por producto para la acción -->
+                <filter name="group_product" string="Producto"
+                        context="{'group_by': 'product_id'}"/>
+                <filter name="group_supplier" string="Proveedor"
+                        context="{'group_by': 'supplier_id'}"/>
+                <filter name="group_brand" string="Marca"
+                        context="{'group_by': 'brand'}"/>
+                <filter name="group_catalog" string="Catálogo"
+                        context="{'group_by': 'catalog_name'}"/>
+                <filter name="group_date" string="Fecha Importación"
+                        context="{'group_by': 'import_date'}"/>
+            </search>
+        </field>
+    </record>
+
+    <!-- ============================================================ -->
+    <!--  HISTORIAL DE PRECIOS (Step 27)                              -->
+    <!-- ============================================================ -->
+
+    <record id="view_price_comparison_history_tree" model="ir.ui.view">
+        <field name="name">price.comparison.history.tree</field>
+        <field name="model">price.comparison.history</field>
+        <field name="arch" type="xml">
+            <list decoration-success="price_change &lt; 0"
+                  decoration-danger="price_change &gt; 0">
+                <field name="date"/>
+                <field name="product_id"/>
+                <field name="supplier_id"/>
+                <field name="old_price"/>
+                <field name="new_price"/>
+                <field name="price_change"/>
+                <field name="user_id"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_price_comparison_history_search" model="ir.ui.view">
+        <field name="name">price.comparison.history.search</field>
+        <field name="model">price.comparison.history</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="product_id"/>
+                <field name="supplier_id"/>
+                <field name="user_id"/>
+                <filter name="price_up" string="Aumentos"
+                        domain="[('price_change', '&gt;', 0)]"/>
+                <filter name="price_down" string="Reducciones"
+                        domain="[('price_change', '&lt;', 0)]"/>
+                <separator/>
+                <filter name="group_product" string="Producto"
+                        context="{'group_by': 'product_id'}"/>
+                <filter name="group_supplier" string="Proveedor"
+                        context="{'group_by': 'supplier_id'}"/>
+                <filter name="group_date" string="Fecha"
+                        context="{'group_by': 'date:month'}"/>
+            </search>
+        </field>
+    </record>
+
+    <!-- ============================================================ -->
+    <!--  ACTIONS                                                      -->
+    <!-- ============================================================ -->
+
+    <record id="action_price_comparison_product" model="ir.actions.act_window">
+        <field name="name">Productos Base</field>
+        <field name="res_model">price.comparison.product</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_price_comparison_product_search"/>
+    </record>
+
+    <record id="action_price_comparison_line" model="ir.actions.act_window">
+        <field name="name">Comparador de Precios</field>
+        <field name="res_model">price.comparison.line</field>
+        <field name="view_mode">pivot,list</field>
+        <!-- Step 5: agrupar por producto por defecto -->
+        <field name="context">{'search_default_group_product': 1}</field>
+        <field name="search_view_id" ref="view_price_comparison_line_search"/>
+    </record>
+
+    <!-- Step 27: acción para historial -->
+    <record id="action_price_comparison_history" model="ir.actions.act_window">
+        <field name="name">Historial de Precios</field>
+        <field name="res_model">price.comparison.history</field>
+        <field name="view_mode">list</field>
+        <field name="search_view_id" ref="view_price_comparison_history_search"/>
+    </record>
+
+</odoo>

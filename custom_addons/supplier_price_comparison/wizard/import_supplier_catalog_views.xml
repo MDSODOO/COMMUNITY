@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Steps 13 & 14: wizard glassmorphic con bento 2-columnas -->
+    <record id="view_import_supplier_catalog_form" model="ir.ui.view">
+        <field name="name">import.supplier.catalog.form</field>
+        <field name="model">import.supplier.catalog</field>
+        <field name="arch" type="xml">
+            <form string="Cargar Catálogo de Proveedor">
+                <sheet>
+                    <!-- Sección 1: origen del catálogo (bento izquierdo) -->
+                    <div class="md-pc-bento-wizard">
+                        <div class="md-pc-bento-cell">
+                            <div class="cell-title">Proveedor y Catálogo</div>
+                            <group>
+                                <field name="supplier_id"/>
+                                <field name="catalog_label"
+                                       placeholder="Ej: A la mano BF, Elite HS"/>
+                                <field name="mode"/>
+                            </group>
+                        </div>
+                        <div class="md-pc-bento-cell">
+                            <div class="cell-title">Archivo Excel</div>
+                            <group>
+                                <field name="file" filename="filename"/>
+                                <field name="filename" invisible="1"/>
+                            </group>
+                        </div>
+                    </div>
+
+                    <!-- Sección 2: configuración técnica de columnas -->
+                    <div class="md-pc-glass">
+                        <div class="cell-title fw-bold mb-2">Mapeo de Columnas</div>
+                        <div class="md-pc-bento-wizard">
+                            <div>
+                                <group>
+                                    <field name="header_row"/>
+                                    <field name="col_barcode"
+                                           placeholder="Letra o nombre de columna"/>
+                                    <field name="col_price"
+                                           placeholder="Letra o nombre de columna"/>
+                                    <field name="col_name"
+                                           placeholder="Opcional"/>
+                                </group>
+                            </div>
+                            <div>
+                                <group>
+                                    <field name="col_qty"
+                                           placeholder="Columna A la mano (opcional)"/>
+                                    <field name="col_lead_time"
+                                           placeholder="Días de entrega (opcional)"/>
+                                    <field name="strip_barcode_zeros"/>
+                                    <field name="create_missing"/>
+                                </group>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Resultado -->
+                    <group invisible="not result_message">
+                        <field name="result_message" widget="text" readonly="1"
+                               class="font-monospace bg-light p-2"/>
+                    </group>
+                </sheet>
+
+                <footer>
+                    <button name="action_import" string="Importar"
+                            type="object" class="btn-primary"/>
+                    <button string="Cerrar" class="btn-secondary"
+                            special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_import_supplier_catalog" model="ir.actions.act_window">
+        <field name="name">Importar Catálogo Proveedor</field>
+        <field name="res_model">import.supplier.catalog</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+</odoo>

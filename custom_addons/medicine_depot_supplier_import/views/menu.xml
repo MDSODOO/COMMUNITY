@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Menú principal bajo Compras -->
+    <menuitem id="menu_supplier_cost_import_root" name="Importador de Costos"
+              parent="purchase.menu_purchase_root"
+              groups="group_supplier_cost_import_admin"
+              sequence="99"/>
+
+    <!-- Acción: Importar Costos -->
+    <menuitem id="menu_supplier_cost_import_action" name="Importar Costos de Quifamesa"
+              parent="menu_supplier_cost_import_root"
+              action="action_import_quifa_cost"
+              groups="group_supplier_cost_import_admin"
+              sequence="10"/>
+
+</odoo>

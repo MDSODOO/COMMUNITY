@@ -1,0 +1,74 @@
+# Spanish (Mexico) translation for supplier_price_comparison
+# Copyright (C) 2026 Medicine Depot
+# License: LGPL-3
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 19.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-06-10 00:00+0000\n"
+"PO-Revision-Date: 2026-06-10 00:00+0000\n"
+"Last-Translator: Daniel Cervera <daniel.cervera.2029@gmail.com>\n"
+"Language-Team: Spanish (Mexico) <noreply@medicinedepot.mx>\n"
+"Language: es_MX\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#. module: supplier_price_comparison
+msgid "Consolidar Precios (Excel)"
+msgstr "Consolidar Precios (Excel)"
+
+#. module: supplier_price_comparison
+msgid "Cargar Catálogo de Proveedor"
+msgstr "Cargar Catálogo de Proveedor"
+
+#. module: supplier_price_comparison
+msgid "Cargar Catálogo Base Quifamesa"
+msgstr "Cargar Catálogo Base Quifamesa"
+
+#. module: supplier_price_comparison
+msgid "Consolidar Ahora"
+msgstr "Consolidar Ahora"
+
+#. module: supplier_price_comparison
+msgid "Archivo Consolidado"
+msgstr "Archivo Consolidado"
+
+#. module: supplier_price_comparison
+msgid "Mejor Proveedor"
+msgstr "Mejor Proveedor"
+
+#. module: supplier_price_comparison
+msgid "Precios Proveedores"
+msgstr "Precios Proveedores"
+
+#. module: supplier_price_comparison
+msgid "Modo de Importación"
+msgstr "Modo de Importación"
+
+#. module: supplier_price_comparison
+msgid "Costo Quifamesa"
+msgstr "Costo Quifamesa"
+
+#. module: supplier_price_comparison
+msgid "Marca"
+msgstr "Marca"
+
+#. module: supplier_price_comparison
+msgid "Importar"
+msgstr "Importar"
+
+#. module: supplier_price_comparison
+msgid "Cerrar"
+msgstr "Cerrar"
+
+#. module: supplier_price_comparison
+msgid "Resultados"
+msgstr "Resultados"
+
+#. module: supplier_price_comparison
+msgid "Reporte"
+msgstr "Reporte"
+

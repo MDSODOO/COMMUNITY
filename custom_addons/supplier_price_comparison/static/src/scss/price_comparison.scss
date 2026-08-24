@@ -1,0 +1,188 @@
+// ── Comparador de Precios — Bento / Glassmorphic ─────────────────────────────
+
+// ── KPI strip en formulario de producto (Step 9) ─────────────────────────────
+.md-pc-kpi-strip {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+
+    .md-pc-kpi-card {
+        flex: 1;
+        min-width: 130px;
+        background: rgba(255, 255, 255, 0.75);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        border: 1px solid rgba(220, 225, 235, 0.7);
+        border-radius: 14px;
+        padding: 1rem 1.1rem;
+        text-align: center;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+        transition: box-shadow 0.2s ease;
+
+        &:hover {
+            box-shadow: 0 4px 18px rgba(0, 0, 0, 0.1);
+        }
+
+        .kpi-label {
+            font-size: 0.72rem;
+            text-transform: uppercase;
+            font-weight: 600;
+            color: #8493a6;
+            letter-spacing: 0.06em;
+            margin-bottom: 0.35rem;
+        }
+
+        .kpi-value {
+            font-size: 1.45rem;
+            font-weight: 700;
+            line-height: 1.1;
+            color: var(--bs-body-color);
+
+            .o_field_widget { display: inline; }
+        }
+
+        &.kpi-cost    .kpi-value { color: #16A6D9; }
+        &.kpi-best    .kpi-value { color: #198754; }
+        &.kpi-supplier .kpi-value { color: #0f766e; font-size: 1rem; }
+        &.kpi-diff    .kpi-value { color: #fd7e14; }
+    }
+}
+
+// ── Wizard glassmorphic (Step 13) ─────────────────────────────────────────────
+.md-pc-glass {
+    background: rgba(248, 250, 252, 0.88);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    border: 1px solid rgba(210, 215, 225, 0.65);
+    border-radius: 12px;
+    padding: 1.25rem 1.5rem;
+    margin-bottom: 1rem;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+}
+
+// ── Bento 2-columnas para wizards (Step 14) ───────────────────────────────────
+.md-pc-bento-wizard {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-bottom: 1rem;
+
+    @media (max-width: 768px) {
+        grid-template-columns: 1fr;
+    }
+
+    .md-pc-bento-cell {
+        background: var(--bs-card-bg);
+        border: 1px solid var(--bs-border-color);
+        border-radius: 10px;
+        padding: 1rem 1.1rem;
+
+        .cell-title {
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: var(--bs-secondary-color);
+            letter-spacing: 0.05em;
+            margin-bottom: 0.6rem;
+            padding-bottom: 0.4rem;
+            border-bottom: 1px solid var(--bs-border-color);
+        }
+    }
+}
+
+// ── Smart button con estilo píldora (Step 10 / 23) ────────────────────────────
+// Sin !important: la cadena .o_web_client .o_form_view .oe_stat_button supera
+// la especificidad nativa de Odoo 19. Color de marca (#16A6D9) en lugar del
+// azul Bootstrap genérico.
+.o_web_client .o_form_view .oe_stat_button.md-pc-stat-btn {
+    border-radius: 20px;
+    padding: 4px 14px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    background: var(--md-primary-soft, rgba(22, 166, 217, 0.08));
+    border-color: rgba(22, 166, 217, 0.25);
+    color: var(--md-primary, #16A6D9);
+
+    &:hover {
+        background: rgba(22, 166, 217, 0.15);
+    }
+
+    .o_stat_value { font-weight: 700; }
+}
+
+// ── Consolidador principal (UX/UI) ───────────────────────────────────────────
+.md-pc-consolidator-shell {
+    background:
+        radial-gradient(circle at 15% 20%, rgba(255, 188, 66, 0.12), transparent 45%),
+        radial-gradient(circle at 80% 10%, rgba(24, 119, 242, 0.10), transparent 42%),
+        linear-gradient(180deg, #f7fafc 0%, #eef2f8 100%);
+    border: 1px solid #d7deeb;
+    border-radius: 16px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+}
+
+.md-pc-consolidator-hero {
+    background: rgba(255, 255, 255, 0.82);
+    border: 1px solid rgba(194, 206, 223, 0.7);
+    border-radius: 14px;
+    padding: 1rem 1rem 0.9rem 1rem;
+    margin-bottom: 0.9rem;
+    box-shadow: 0 6px 18px rgba(19, 42, 79, 0.08);
+
+    .hero-kicker {
+        font: 700 0.68rem/1 "Sora", "Nunito Sans", "Segoe UI", sans-serif;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: #5c6f8f;
+        margin-bottom: 0.35rem;
+    }
+
+    h2 {
+        margin: 0 0 0.35rem 0;
+        font: 700 1.2rem/1.2 "Sora", "Nunito Sans", "Segoe UI", sans-serif;
+        color: #16233b;
+    }
+
+    p {
+        margin: 0;
+        color: #3f516f;
+        font-size: 0.9rem;
+    }
+}
+
+.md-pc-consolidator-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.8rem;
+
+    @media (max-width: 900px) {
+        grid-template-columns: 1fr;
+    }
+}
+
+.md-pc-consolidator-card {
+    background: rgba(255, 255, 255, 0.92);
+    border: 1px solid #d8e2f0;
+    border-radius: 12px;
+    padding: 0.85rem 0.9rem 0.65rem 0.9rem;
+    box-shadow: 0 2px 10px rgba(25, 53, 92, 0.07);
+
+    .card-title {
+        font: 700 0.74rem/1 "Sora", "Nunito Sans", "Segoe UI", sans-serif;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: #496284;
+        margin-bottom: 0.55rem;
+    }
+}
+
+// El override de dark mode vive en backend_dark.scss (bundle
+// web.assets_web_dark, que Odoo 19 solo carga con el tema oscuro activo).
+// Un gate local con .o_dark_mode nunca coincide con el DOM real — ver
+// docs/audits/2026-07-01_backend_dark_mode_audit.md.
+//
+// Sin @media (prefers-color-scheme: dark): el dark mode se aplica solo vía
+// ese bundle. La media query forzaba glassmorphism oscuro según el SO aunque
+// Odoo estuviera en modo claro → KPIs y tarjetas ilegibles.
