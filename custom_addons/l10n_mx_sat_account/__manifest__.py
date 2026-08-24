@@ -31,6 +31,7 @@ Balanza y Pólizas quedan fuera de este módulo).
         "views/account_account_views.xml",
         "views/l10n_mx_sat_account_group_code_views.xml",
         "views/l10n_mx_sat_catalogo_wizard_views.xml",
+        "views/l10n_mx_sat_balanza_wizard_views.xml",
     ],
     "installable": True,
 }
