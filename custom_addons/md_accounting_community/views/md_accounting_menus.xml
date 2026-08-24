@@ -8,13 +8,21 @@
                   sequence="45"
                   groups="account.group_account_invoice,account.group_account_manager"/>
 
+        <!-- Tab "Contabilidad": agrupa Transacciones / Activos y pasivos /
+             Bloqueando, igual que en Enterprise (confirmado por captura de
+             pantalla del ambiente Enterprise real, 2026-08-24). -->
+        <menuitem id="menu_md_accounting_tab"
+                  name="Contabilidad"
+                  parent="menu_md_accounting_root"
+                  sequence="10"/>
+
         <!-- Transacciones -->
         <menuitem id="menu_md_accounting_transactions"
                   name="Transacciones"
-                  parent="menu_md_accounting_root"
+                  parent="menu_md_accounting_tab"
                   sequence="10"/>
         <menuitem id="menu_md_accounting_journal_entries"
-                  name="Asientos"
+                  name="Asientos contables"
                   parent="menu_md_accounting_transactions"
                   action="account.action_move_journal_line"
                   sequence="10"/>
@@ -29,13 +37,19 @@
                   action="analytic.account_analytic_line_action_entries"
                   sequence="30"/>
 
-        <!-- Activos y Pasivos -->
+        <!-- Activos y pasivos
+             NOTA: "Préstamos" no está aquí a propósito; no existe ninguna
+             cuenta de préstamos en el catálogo de ninguna de las 6 compañías
+             y el modelo de account_asset_management exige cuentas contables
+             reales (activo, depreciación, gasto, diario) por compañía para
+             crear un perfil. Ver plan de adaptación: requiere decisión del
+             usuario sobre qué cuentas usar antes de construirlo. -->
         <menuitem id="menu_md_accounting_assets_liabilities"
-                  name="Activos y Pasivos"
-                  parent="menu_md_accounting_root"
+                  name="Activos y pasivos"
+                  parent="menu_md_accounting_tab"
                   sequence="20"/>
         <menuitem id="menu_md_accounting_fixed_assets"
-                  name="Activos fijos"
+                  name="Activos"
                   parent="menu_md_accounting_assets_liabilities"
                   action="account_asset_management.account_asset_action"
                   sequence="10"/>
@@ -45,18 +59,18 @@
                   action="fleet.fleet_vehicle_action"
                   sequence="20"/>
 
-        <!-- Bloqueo -->
+        <!-- Bloqueando -->
         <menuitem id="menu_md_accounting_lock"
-                  name="Bloqueo"
-                  parent="menu_md_accounting_root"
+                  name="Bloqueando"
+                  parent="menu_md_accounting_tab"
                   sequence="30"/>
         <menuitem id="menu_md_accounting_bank_reconciliation"
-                  name="Conciliación bancaria"
+                  name="Conciliar"
                   parent="menu_md_accounting_lock"
                   action="account_reconcile_oca.action_bank_statement_line_reconcile_all"
                   sequence="10"/>
         <menuitem id="menu_md_accounting_tax_returns"
-                  name="Declaraciones fiscales (IVA)"
+                  name="Declaración fiscal"
                   parent="menu_md_accounting_lock"
                   action="account_tax_balance.action_open_tax_balances"
                   sequence="20"/>
