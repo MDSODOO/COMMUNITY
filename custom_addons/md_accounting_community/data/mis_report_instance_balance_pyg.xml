@@ -1,12 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <data noupdate="0">
-        <!-- company_id se deja vacío a propósito: mis_builder usa
-             self.env.company por defecto, así cada sucursal ve su propio
-             balance sin necesidad de una instancia por compañía. -->
+        <!-- company_id se deja explicitamente en False: el default de
+             mis.report.instance (self.env.company) se evalua UNA sola vez
+             al crear el registro via XML, quedando fijo en la compania que
+             estuviera activa durante la instalacion (MDS MERIDA en este
+             caso) en vez de seguir la compania activa de quien lo consulta.
+             Sin este eval=False explicito, with_company()/allowed_company_ids
+             no tienen ningun efecto sobre el reporte. -->
         <record id="mis_report_instance_balance_pyg" model="mis.report.instance">
             <field name="name">Balance General y P&amp;G — Año actual</field>
             <field name="report_id" ref="mis_report_balance_pyg_mx"/>
+            <field name="company_id" eval="False"/>
         </record>
         <record id="mis_report_instance_balance_pyg_period" model="mis.report.instance.period">
             <field name="report_instance_id" ref="mis_report_instance_balance_pyg"/>
