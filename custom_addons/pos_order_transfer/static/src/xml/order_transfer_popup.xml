@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+
+    <!--
+        OrderTransferPopup template.
+        Usa el componente Dialog de @web/core para mantener consistencia visual
+        con los demás popups del POS. Los empleados se renderizan como botones
+        grandes tipo lista para facilitar el toque en pantallas táctiles.
+    -->
+    <t t-name="pos_order_transfer.OrderTransferPopup">
+        <Dialog title="'Ceder Pedido'" size="'md'">
+            <div class="order-transfer-popup px-2 py-1">
+                <p class="text-muted mb-3 fs-6">
+                    Selecciona el empleado al que deseas ceder el pedido actual:
+                </p>
+
+                <div class="d-flex flex-column gap-2">
+                    <t t-foreach="props.employees" t-as="employee" t-key="employee.id">
+                        <button class="btn btn-lg btn-light text-start d-flex align-items-center
+                                       border py-3 px-3"
+                                t-on-click="() => this.selectEmployee(employee)">
+                            <i class="fa fa-user-circle fa-lg me-3 text-primary"/>
+                            <span class="fw-bold" t-esc="employee.name"/>
+                        </button>
+                    </t>
+                </div>
+
+                <t t-if="!props.employees.length">
+                    <div class="text-center text-muted py-4">
+                        <i class="fa fa-info-circle me-1"/>
+                        No hay otros empleados disponibles.
+                    </div>
+                </t>
+            </div>
+
+            <t t-set-slot="footer">
+                <button class="btn btn-secondary" t-on-click="cancel">
+                    Cancelar
+                </button>
+            </t>
+        </Dialog>
+    </t>
+
+</templates>

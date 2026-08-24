@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+
+    <!--
+        Herencia de template OWL (QWeb) para el Actionpad.
+
+        Metodología:
+          - t-inherit       → nombre completo de la template padre
+          - t-inherit-mode  → "extension" para añadir/modificar sin reemplazar
+
+        El XPath apunta al contenedor principal del Actionpad y usa
+        position="prepend" para insertar el botón ANTES de los botones
+        existentes (Customer / Pay). Esto mantiene "Ceder Pedido" visible
+        sin alterar el orden de los controles originales.
+
+        El atributo t-if="canTransferOrder" viene del getter computado
+        inyectado por el patch en actionpad_patch.js. Solo se renderiza
+        si module_pos_hr está habilitado en la configuración del POS.
+    -->
+    <t t-inherit="point_of_sale.ActionpadWidget" t-inherit-mode="extension">
+        <xpath expr="//div[hasclass('actionpad')]" position="prepend">
+
+            <button t-if="canTransferOrder"
+                    class="button btn btn-lg lh-lg w-100 rounded-0 fw-bolder
+                           text-truncate d-flex align-items-center
+                           justify-content-center btn-transfer-order"
+                    t-on-click="transferOrder">
+                <i class="fa fa-exchange me-2"/>
+                <span>Ceder Pedido</span>
+            </button>
+
+        </xpath>
+    </t>
+
+</templates>

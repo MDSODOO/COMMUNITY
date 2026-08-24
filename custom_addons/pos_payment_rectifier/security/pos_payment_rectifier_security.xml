@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- Grupo: solo Gerentes de PoS que también sean Gerentes de Contabilidad
+             pueden rectificar el método de pago de una orden cerrada. -->
+        <record model="res.groups" id="group_pos_rectification_manager">
+            <field name="name">PoS Payment Rectifier / Manager</field>
+            <field name="comment">Puede rectificar el método de pago de órdenes PoS cerradas y ver el log de auditoría de rectificaciones.</field>
+            <field name="implied_ids" eval="[
+                (4, ref('point_of_sale.group_pos_manager')),
+                (4, ref('account.group_account_manager')),
+            ]"/>
+        </record>
+    </data>
+</odoo>

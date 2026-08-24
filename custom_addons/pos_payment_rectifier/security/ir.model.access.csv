@@ -1,0 +1,3 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_pos_payment_rectification_log_manager,pos.payment.rectification.log - Manager,model_pos_payment_rectification_log,pos_payment_rectifier.group_pos_rectification_manager,1,0,0,0
+access_pos_payment_rectifier_wizard_manager,pos.payment.rectifier.wizard - Manager,model_pos_payment_rectifier_wizard,pos_payment_rectifier.group_pos_rectification_manager,1,1,1,1

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="view_pos_pos_form_rectifier" model="ir.ui.view">
+            <field name="name">pos.order.form.rectifier</field>
+            <field name="model">pos.order</field>
+            <field name="inherit_id" ref="point_of_sale.view_pos_pos_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//header" position="inside">
+                    <button name="action_open_payment_rectifier_wizard"
+                            type="object"
+                            string="Rectificar Método de Pago"
+                            groups="pos_payment_rectifier.group_pos_rectification_manager"
+                            invisible="state not in ('done', 'invoiced', 'paid')"/>
+                </xpath>
+                <xpath expr="//div[hasclass('oe_button_box')]" position="inside">
+                    <button name="action_view_rectification_logs"
+                            type="object"
+                            class="oe_stat_button"
+                            icon="fa-exchange"
+                            groups="pos_payment_rectifier.group_pos_rectification_manager"
+                            invisible="rectification_count == 0">
+                        <field name="rectification_count" widget="statinfo" string="Rectificaciones"/>
+                    </button>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>

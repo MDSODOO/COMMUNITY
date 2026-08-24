@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ═══════════════════════════════════════════════════════════════════
+         HISTORIAL DE MOVIMIENTOS  (Inventario > Reportes > Historial de movimiento)
+         ─────────────────────────────────────────────────────────────────
+         Herencia de la vista list nativa `stock.view_move_line_tree`
+         (acción `stock.stock_move_line_action`). El core no se toca: solo
+         estandarizamos el encabezado conforme al diseño de la empresa.
+
+         Regla de negocio inquebrantable: la columna de cantidades físicas
+         de inventario DEBE llamarse "A la mano". NUNCA "Disponible".
+    ═══════════════════════════════════════════════════════════════════════ -->
+    <record id="view_move_line_tree_md_alamano" model="ir.ui.view">
+        <field name="name">stock.move.line.tree.md.alamano</field>
+        <field name="model">stock.move.line</field>
+        <field name="inherit_id" ref="stock.view_move_line_tree"/>
+        <field name="arch" type="xml">
+            <!-- Cantidad física a la mano -->
+            <xpath expr="//field[@name='quantity']" position="attributes">
+                <attribute name="string">A la mano</attribute>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>
