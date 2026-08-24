@@ -1,127 +1,74 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <odoo>
     <data>
-        <!-- Menú raíz: app "Contabilidad Community", separado de Accounting/Invoicing
-             nativos para no interferir con esos menús mientras se valida el mapeo OCA. -->
-        <menuitem id="menu_md_accounting_root"
-                  name="Contabilidad Community"
-                  sequence="45"
-                  groups="account.group_account_invoice,account.group_account_manager"/>
+        <!-- Integra directamente dentro de Facturación (account.menu_finance),
+             en vez de una app separada: se confirmó que casi todos los items
+             de Enterprise ya existen ahí de forma nativa (los trae cada
+             módulo OCA por su cuenta). Solo se agrega lo que realmente
+             falta, y se reordena lo que ya existe para igualar la
+             agrupación visual de Enterprise (Contabilidad > Transacciones /
+             Activos y pasivos / Bloqueando; Revisión; Reportes). -->
 
-        <!-- Tab "Contabilidad": agrupa Transacciones / Activos y pasivos /
-             Bloqueando, igual que en Enterprise (confirmado por captura de
-             pantalla del ambiente Enterprise real, 2026-08-24). -->
-        <menuitem id="menu_md_accounting_tab"
-                  name="Contabilidad"
-                  parent="menu_md_accounting_root"
-                  sequence="10"/>
-
-        <!-- Transacciones -->
-        <menuitem id="menu_md_accounting_transactions"
-                  name="Transacciones"
-                  parent="menu_md_accounting_tab"
-                  sequence="10"/>
-        <menuitem id="menu_md_accounting_journal_entries"
-                  name="Asientos contables"
-                  parent="menu_md_accounting_transactions"
-                  action="account.action_move_journal_line"
-                  sequence="10"/>
-        <menuitem id="menu_md_accounting_transfers"
+        <!-- Transacciones (account.account_transactions_menu): ya tiene
+             Asientos contables y Apuntes analíticos nativos; falta
+             Transferencias. -->
+        <menuitem id="menu_md_transfers"
                   name="Transferencias"
-                  parent="menu_md_accounting_transactions"
+                  parent="account.account_transactions_menu"
                   action="account.action_account_payments_transfer"
-                  sequence="20"/>
-        <menuitem id="menu_md_accounting_analytic_items"
-                  name="Apuntes analíticos"
-                  parent="menu_md_accounting_transactions"
-                  action="analytic.account_analytic_line_action_entries"
-                  sequence="30"/>
+                  sequence="15"/>
 
-        <!-- Activos y pasivos
-             NOTA: "Préstamos" no está aquí a propósito; no existe ninguna
-             cuenta de préstamos en el catálogo de ninguna de las 6 compañías
-             y el modelo de account_asset_management exige cuentas contables
-             reales (activo, depreciación, gasto, diario) por compañía para
-             crear un perfil. Ver plan de adaptación: requiere decisión del
-             usuario sobre qué cuentas usar antes de construirlo. -->
-        <menuitem id="menu_md_accounting_assets_liabilities"
-                  name="Activos y pasivos"
-                  parent="menu_md_accounting_tab"
-                  sequence="20"/>
-        <menuitem id="menu_md_accounting_fixed_assets"
-                  name="Activos"
-                  parent="menu_md_accounting_assets_liabilities"
-                  action="account_asset_management.account_asset_action"
-                  sequence="10"/>
-        <menuitem id="menu_md_accounting_fleet"
+        <!-- Activos y pasivos: se reutiliza el tab "Activos" que
+             account_asset_management ya crea (menu_finance_assets), pero se
+             reubica como subsección de "Contabilidad" en vez de tab propio,
+             y se renombra para igualar Enterprise. Se le agrega Flotilla.
+             "Préstamos" sigue sin agregarse: no existe ninguna cuenta de
+             préstamos en el catálogo de ninguna de las 6 compañías y el
+             modelo exige cuentas reales por compañía para crear un perfil
+             (ver docs/plans/PLAN_ADAPTACION_CONTABILIDAD_COMMUNITY.md). -->
+        <record id="account_asset_management.menu_finance_assets" model="ir.ui.menu" context="{'lang': 'es_MX'}">
+            <field name="name">Activos y pasivos</field>
+            <field name="parent_id" ref="account.menu_finance_entries"/>
+            <field name="sequence">10</field>
+        </record>
+        <record id="account_asset_management.menu_finance_assets" model="ir.ui.menu" context="{'lang': 'en_US'}">
+            <field name="name">Assets and liabilities</field>
+        </record>
+        <menuitem id="menu_md_fleet"
                   name="Flotilla"
-                  parent="menu_md_accounting_assets_liabilities"
+                  parent="account_asset_management.menu_finance_assets"
                   action="fleet.fleet_vehicle_action"
                   sequence="20"/>
 
-        <!-- Bloqueando -->
-        <menuitem id="menu_md_accounting_lock"
-                  name="Bloqueando"
-                  parent="menu_md_accounting_tab"
-                  sequence="30"/>
-        <menuitem id="menu_md_accounting_bank_reconciliation"
-                  name="Conciliar"
-                  parent="menu_md_accounting_lock"
-                  action="account_reconcile_oca.action_bank_statement_line_reconcile_all"
-                  sequence="10"/>
-        <menuitem id="menu_md_accounting_tax_returns"
+        <!-- Bloqueando (account.account_closing_menu): ya tiene "Proteger
+             asientos" nativo. Se reubica ahí "Conciliar" (account_reconcile_oca
+             lo deja como hermano de Transacciones/Bloqueando en vez de
+             dentro de Bloqueando) y se agregan Declaración fiscal y Fechas
+             de bloqueo, que no existían en ningún lado. -->
+        <record id="account_reconcile_oca.account_account_reconcile_menu" model="ir.ui.menu">
+            <field name="parent_id" ref="account.account_closing_menu"/>
+            <field name="sequence">10</field>
+        </record>
+        <menuitem id="menu_md_tax_returns"
                   name="Declaración fiscal"
-                  parent="menu_md_accounting_lock"
+                  parent="account.account_closing_menu"
                   action="account_tax_balance.action_open_tax_balances"
                   sequence="20"/>
-        <menuitem id="menu_md_accounting_lock_dates"
+        <menuitem id="menu_md_lock_dates"
                   name="Fechas de bloqueo"
-                  parent="menu_md_accounting_lock"
+                  parent="account.account_closing_menu"
                   action="account_journal_lock_date.update_journal_lock_dates_wizard_action"
                   sequence="30"/>
 
-        <!-- Revisión y Reportes
-             NOTA: DIOT y Contabilidad Electrónica XML (SAT) no aparecen aquí
-             a propósito: ningún módulo instalado los provee todavía. Ver
-             plan de adaptación. -->
-        <menuitem id="menu_md_accounting_review_reports"
-                  name="Revisión y Reportes"
-                  parent="menu_md_accounting_root"
-                  sequence="40"/>
-        <menuitem id="menu_md_accounting_balance_pyg"
+        <!-- Reportes (account.menu_finance_reports): ya tiene nativos Libro
+             Mayor/Diario, Balanza, Partidas Abiertas, Antigüedad, VAT e
+             Informes MIS genéricos. Se agrega acceso directo al reporte de
+             Balance General y P&amp;G creado en este módulo (sin esto, solo
+             se llegaría a él navegando la lista genérica de MIS Reports). -->
+        <menuitem id="menu_md_balance_pyg"
                   name="Balance General y P&amp;G"
-                  parent="menu_md_accounting_review_reports"
+                  parent="account.menu_finance_reports"
                   action="action_md_accounting_balance_pyg"
-                  sequence="5"/>
-        <menuitem id="menu_md_accounting_trial_balance"
-                  name="Balanza de Comprobación"
-                  parent="menu_md_accounting_review_reports"
-                  action="account_financial_report.action_trial_balance_wizard"
-                  sequence="10"/>
-        <menuitem id="menu_md_accounting_general_ledger"
-                  name="Libro Mayor"
-                  parent="menu_md_accounting_review_reports"
-                  action="account_financial_report.action_general_ledger_wizard"
-                  sequence="20"/>
-        <menuitem id="menu_md_accounting_journal_ledger"
-                  name="Libro Diario"
-                  parent="menu_md_accounting_review_reports"
-                  action="account_financial_report.action_journal_ledger_wizard"
-                  sequence="30"/>
-        <menuitem id="menu_md_accounting_open_items"
-                  name="Partidas Abiertas"
-                  parent="menu_md_accounting_review_reports"
-                  action="account_financial_report.action_open_items_wizard"
-                  sequence="40"/>
-        <menuitem id="menu_md_accounting_aged_partner_balance"
-                  name="Antigüedad de Saldos"
-                  parent="menu_md_accounting_review_reports"
-                  action="account_financial_report.action_aged_partner_balance_wizard"
-                  sequence="50"/>
-        <menuitem id="menu_md_accounting_vat_report"
-                  name="Informe de Impuestos (VAT)"
-                  parent="menu_md_accounting_review_reports"
-                  action="account_financial_report.action_vat_report_wizard"
-                  sequence="60"/>
+                  sequence="8"/>
     </data>
 </odoo>
