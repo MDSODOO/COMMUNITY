@@ -162,7 +162,7 @@ El traslado a Mérida (11-jun) y el resto de sucursales quedan descartados como 
 
 **Fase 1 — Corrección contable inmediata (responsable: Inventario/Compras Cancún, plazo: esta semana)**
 
-1. Generar un ajuste de inventario en `CUN/Existencias` para el lote `RRD234`, de 68 a 18 unidades (−50), citando esta auditoría y el picking `CUN/IN/01421` como justificación.
+1. ~~Generar un ajuste de inventario en `CUN/Existencias` para el lote `RRD234`, de 68 a 18 unidades (−50), citando esta auditoría y el picking `CUN/IN/01421` como justificación.~~ **✅ Ejecutado el 27-ago-2026, 4:05 p.m.**, con autorización explícita del usuario. Ajuste vía `Inventario físico`: `CUN/Existencias` → `Virtual Locations/Inventory adjustment`, lote `RRD234`, −50.00 unidades. Saldo verificado tras el ajuste: **18.00 unidades**.
 2. Confirmar con **GENOBEVA ZÁRATE** (compradora de ambas órdenes) si recuerda haber capturado `P07869` por duplicado — esto ayuda a fechar el error y a descartar que sea un problema del sistema en lugar de captura manual.
 3. Verificar con Cuentas por Pagar que **no exista ninguna factura ni pago programado** contra `P07869` (ya se confirmó `Facturado = 0.00` en las 26 líneas, pero debe cerrarse formalmente el ciclo compra-pago).
 4. Cancelar o marcar `P07869` como duplicado de `P07872` en el sistema, dejando trazabilidad de la corrección (no eliminar el registro).
