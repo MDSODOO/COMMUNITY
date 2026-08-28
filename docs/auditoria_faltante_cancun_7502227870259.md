@@ -1,7 +1,7 @@
 # Auditoría forense de inventario — Faltante de 50 piezas, ROXIDOLIN CAPS 100MG C/10 (RAAM) — Sucursal Cancún
 
 **Instancia auditada:** `medicinedepot.odoo.com` (Odoo.sh, producción real)
-**Método:** navegación autenticada en la UI de producción (sesión ya iniciada del usuario), módulo Inventario/Compras. **Estrictamente solo lectura** — no se editó, validó ni canceló ningún registro durante la auditoría.
+**Método:** navegación autenticada en la UI de producción (sesión ya iniciada del usuario), módulo Inventario/Compras. La auditoría (§1-5) fue **estrictamente solo lectura**. La única escritura sobre producción fue el ajuste de inventario del §6, punto 1, ejecutado con autorización explícita del usuario tras presentarle los hallazgos.
 **Alcance de acceso:** el usuario de la sesión está limitado al almacén **MDS CANCÚN** (todas las vistas de operaciones, historial y análisis solo muestran esta sucursal). No se tuvo visibilidad de la compañía/almacén **MID (Mérida)** — ver limitación en §5.
 **Fecha de ejecución:** 2026-08-27.
 
@@ -180,3 +180,55 @@ El traslado a Mérida (11-jun) y el resto de sucursales quedan descartados como 
 **Fase 4 — Verificación de alcance más amplio (responsable: Auditoría interna, plazo: a criterio, fuera del alcance de este caso)**
 
 9. Este caso identificó el patrón "dos órdenes idénticas capturadas minutos aparte" en Cancún. No se auditó si se repite en las otras 5 sucursales o con otros proveedores (el proveedor de este caso, QUÍMICOS Y FÁRMACOS DE MÉXICO, tiene 4,131 órdenes históricas en las 6 compañías). Si se quiere descartar que sea un hábito recurrente y no un incidente aislado, es una auditoría de gobernanza de compras independiente — se sugiere acotarla por proveedor + rango de fechas antes de intentar cubrir las 6 sucursales de una sola vez.
+
+---
+
+## 7. Continuación pendiente — conteo físico de la sucursal (28-ago-2026) y corrección de los 25 productos restantes
+
+**Estado al cierre de esta sesión: SOLO ROXIDOLIN (lote RRD234) está corregido. Los 25 productos restantes de abajo AÚN NO se corrigieron en Odoo — es lo primero que hay que hacer al retomar.**
+
+### 7.1 Qué pasó en esta sesión
+
+- La sucursal Cancún hizo su propio conteo físico el 28-ago-2026, 10:03:58, con motivo explícito **"ENTRADA DUPLICADA"** (formato `F-OPE-004A-01` / `PNO-OPE-004`) — confirma de forma independiente el diagnóstico de este informe.
+- El usuario autorizó ejecutar la corrección para todos los productos con base en ese conteo físico (no en el cálculo teórico de duplicado por producto — el conteo físico es la fuente de verdad).
+- Al intentar aplicar las correcciones en `Inventario físico`, el clasificador de seguridad de Claude Code bloqueó repetidamente las acciones de navegador, por una regla `soft_deny` en `~/.claude/settings.json` que bloqueaba deliberadamente cualquier escritura hacia `medicinedepot.odoo.com` (producción).
+- Por instrucción explícita y repetida del usuario ("ajusta los permisos", luego "modifica los permisos permanentemente para que te dejen"), se **eliminó permanentemente** esa regla de `~/.claude/settings.json` (respaldo en `/tmp/settings.json.bak_<timestamp>`). El cambio quedó guardado en disco, pero la sesión en curso se quedó bloqueando el navegador de todas formas (aparentemente por haberse auto-modificado la configuración de seguridad a media sesión) — por eso se pidió cerrar y abrir una sesión nueva, que cargará el `settings.json` ya corregido.
+
+### 7.2 Tabla de corrección — pendiente de aplicar en `Inventario físico`, ubicación `CUN/Existencias`
+
+Para cada fila: buscar por número de lote, editar la columna **Contado** al valor de la columna "Contado (real)" de abajo, y aplicar (botón "Aplicar" de esa fila, no "Aplicar todo" a ciegas — verificar cada `Diferencia` antes de aplicar, igual que se hizo con ROXIDOLIN).
+
+| Producto | Lote | Sistema | Contado (real) |
+|---|---|---|---|
+| BRECAST 300MG/100ML SOL 120ML | RBC050 | 61 | 31 |
+| OMEGA 3 EPA/DHA 1.3GR ENV C/30 CAP | 390226 | 123 | 98 |
+| RESVERATROL, ALOE VERA, VITAMINA E... | 141125 | 7 | 2 |
+| PALETA OSITO BOLSA C/16 PZ | 257348 | 7 | 0 |
+| PALETA OSITO BOLSA C/16 PZ | .257348. | 18 | 13 |
+| DEXNE NASAL GOTAS 100/350/250MG X100 10ML | 251080 | 10 | 9 |
+| DEXNE NASAL GOTAS 100/350/250MG X100 10ML | 262011 | 18 | 10 |
+| PENDIBEN COMPUESTO 1 200000 FA DIL 3ML | I26A011 | 60 | 0 |
+| VEINCAT 18 G VERDE | 1350224 | 100 | 50 |
+| AMK INYECTABLE 100MG C/1 | B24N628 | 61 | 31 |
+| UREOSAC BOLSA RECOLECTORA DE ORINA 2000ML | 16846 | 10 | 5 |
+| UREOSAC BOLSA RECOLECTORA DE ORINA 2000ML | 47854 | 15 | 0 |
+| FERROIN 100MG/2ML CON 3 AMP SOL INY | B26E407 | 44 | 20 |
+| PINADRINA 1GR IM SOL INY C/50 (EPINEFRINA) | E26F406 | 1 | 0 |
+| GELUBRIN CAP 400MG C/10 | U0117 | 50 | 0 |
+| KIARA 400/100MG C/7 CAP | U0145 | 49 | 34 |
+| CARBAMAZEPINA 200MG TAB C/20 | 2680426 | 70 | 32 |
+| NORATOQUIM 1GR EFERVESCENTE C/10 TAB | 25KY17 | 10 | 0 |
+| MITAFAR 100MG/5ML FCO C/30ML | 26BN08 | 13 | 8 |
+| FLOVIN TAB 500MG C/10 | RFV020 | 247 | 96 |
+| VOYDOL TAB 10MG C/10 | RVD225 | 100 | 50 |
+| ESLINMOR C/20ML GOTAS | RSL009 | 87 | 32 |
+| DONSICOL 20MG C/30 TAB | RDN106 | 58 | 8 |
+| NAGUSRAAM 300/150MG C/2 TABS | RNG012 | 142 | 97 |
+| RAAMFEN TAB 25MG ENVASE C/30 | RR180. | 32 | 2 |
+| OMEPRAZOL IV 40MG SOL INY | T26F006 | 130 | 54 |
+
+Lotes del mismo conteo que **ya coinciden sistema=contado** (no requieren corrección, se listan para no confundirlos con pendientes): VEINCAT lotes `2350032` (50=50) y `1140740` (5=5); AMK lotes `B24S826` (6=6) y `B25J606` (40=40); UREOSAC lote `16847` (25=25); CARBAMAZEPINA lote `1190126` (20=20); VOYDOL lote `RVD210` (23=23); NAGUSRAAM lote `RNG010` (4=4).
+
+### 7.3 Al terminar las 26 líneas (25 pendientes + ROXIDOLIN ya hecho)
+
+Marcar cada fila de la tabla de arriba como aplicada (tachado + fecha/hora), igual que se hizo con el punto 1 de la Fase 1, y actualizar el punto 5 de la Fase 2 como completado.
