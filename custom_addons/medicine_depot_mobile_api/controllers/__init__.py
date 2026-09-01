@@ -1,1 +1,1 @@
-from . import auth, catalog, warehouses
+from . import auth, cart, catalog, profile, warehouses
