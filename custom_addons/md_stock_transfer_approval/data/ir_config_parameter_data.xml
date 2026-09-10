@@ -1,0 +1,19 @@
+<odoo noupdate="1">
+    <!-- Placeholder: rellenar con la URL real del webhook 16_/17_/18_ de
+         md_n8n una vez desplegado (ver ~/Documents/work/pmo-trazabilidad/).
+         Vacío = _dispatch_n8n_event no hace nada (no bloquea el flujo). -->
+    <record id="param_n8n_webhook_url" model="ir.config_parameter">
+        <field name="key">md_stock_transfer_approval.n8n_webhook_url</field>
+        <field name="value"></field>
+    </record>
+    <record id="param_escalation_amount" model="ir.config_parameter">
+        <field name="key">md_stock_transfer_approval.escalation_amount</field>
+        <field name="value">5000.0</field>
+    </record>
+    <!-- Placeholder: dato de negocio real (correo de escalación), pendiente
+         de confirmar con el usuario antes de activarlo en producción. -->
+    <record id="param_escalation_email" model="ir.config_parameter">
+        <field name="key">md_stock_transfer_approval.escalation_email</field>
+        <field name="value"></field>
+    </record>
+</odoo>

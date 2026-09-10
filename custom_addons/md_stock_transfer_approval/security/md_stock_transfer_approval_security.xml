@@ -1,0 +1,10 @@
+<odoo>
+    <record id="group_transfer_approver" model="res.groups">
+        <field name="name">Encargados de Almacén - Aprobación de Traslados</field>
+        <field name="category_id" ref="base.module_category_inventory_inventory"/>
+        <field name="comment">
+            Puede aprobar o rechazar transferencias internas entre
+            sucursales que ya tienen evidencia fotográfica adjunta.
+        </field>
+    </record>
+</odoo>

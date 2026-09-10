@@ -1,0 +1,47 @@
+<odoo>
+    <record id="view_picking_form_transfer_approval" model="ir.ui.view">
+        <field name="name">stock.picking.form.transfer.approval</field>
+        <field name="model">stock.picking</field>
+        <field name="inherit_id" ref="stock.view_picking_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header" position="inside">
+                <field name="x_requires_approval" invisible="1"/>
+                <field name="x_approval_state" widget="statusbar"
+                       invisible="not x_requires_approval"
+                       statusbar_visible="evidence_pending,to_approve,approved"/>
+                <button name="action_request_approval" type="object"
+                        string="Solicitar aprobación" class="btn-primary"
+                        invisible="not x_requires_approval or x_approval_state != 'evidence_pending'"/>
+                <button name="action_approve_transfer" type="object"
+                        string="Aprobar" class="btn-primary"
+                        groups="md_stock_transfer_approval.group_transfer_approver"
+                        invisible="x_approval_state != 'to_approve'"/>
+                <button name="action_reject_transfer" type="object"
+                        string="Rechazar"
+                        groups="md_stock_transfer_approval.group_transfer_approver"
+                        invisible="x_approval_state != 'to_approve'"/>
+            </xpath>
+            <xpath expr="//notebook" position="inside">
+                <page string="Aprobación y evidencia" invisible="not x_requires_approval"
+                      name="transfer_approval">
+                    <group>
+                        <group string="Candado 1: Estado físico del producto">
+                            <field name="x_evidence_product_ids" widget="many2many_binary"
+                                   readonly="x_approval_state not in ('evidence_pending',)"/>
+                        </group>
+                        <group string="Candado 2: Empaque final sellado">
+                            <field name="x_evidence_package_ids" widget="many2many_binary"
+                                   readonly="x_approval_state not in ('evidence_pending',)"/>
+                        </group>
+                    </group>
+                    <group invisible="x_approval_state not in ('approved', 'rejected')">
+                        <field name="x_approval_user_id" readonly="1"/>
+                        <field name="x_approval_date" readonly="1"/>
+                        <field name="x_rejection_reason"
+                               readonly="x_approval_state != 'to_approve'"/>
+                    </group>
+                </page>
+            </xpath>
+        </field>
+    </record>
+</odoo>
