@@ -1,0 +1,5 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_mds_helpdesk_team_user,mds.helpdesk.team.user,model_mds_helpdesk_team,group_mds_helpdesk_user,1,0,0,0
+access_mds_helpdesk_team_manager,mds.helpdesk.team.manager,model_mds_helpdesk_team,group_mds_helpdesk_manager,1,1,1,1
+access_mds_helpdesk_ticket_user,mds.helpdesk.ticket.user,model_mds_helpdesk_ticket,group_mds_helpdesk_user,1,1,1,0
+access_mds_helpdesk_ticket_manager,mds.helpdesk.ticket.manager,model_mds_helpdesk_ticket,group_mds_helpdesk_manager,1,1,1,1

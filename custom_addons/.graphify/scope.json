@@ -1,0 +1,14 @@
+{
+  "requested_mode": "all",
+  "resolved_mode": "all",
+  "source": "cli",
+  "root": ".",
+  "candidate_count": null,
+  "included_count": 498,
+  "excluded_untracked_count": 0,
+  "excluded_ignored_count": 0,
+  "excluded_sensitive_count": 4,
+  "missing_committed_count": 0,
+  "warnings": [],
+  "recommendation": null
+}

@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="view_md_telegram_channel_list" model="ir.ui.view">
+        <field name="name">md.telegram.channel.list</field>
+        <field name="model">md.telegram.channel</field>
+        <field name="arch" type="xml">
+            <list string="Canales de Telegram">
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="code"/>
+                <field name="chat_id"/>
+                <field name="description" optional="show"/>
+                <field name="notify_on_sale" optional="show" widget="boolean_toggle"/>
+                <field name="notify_on_stock_alert" optional="show" widget="boolean_toggle"/>
+                <field name="notify_on_lot_expiry" optional="show" widget="boolean_toggle"/>
+                <field name="message_count" string="Mensajes"/>
+                <field name="active" widget="boolean_toggle"/>
+                <button name="action_test_message" type="object" string="Probar texto"
+                        icon="fa-paper-plane" title="Enviar mensaje de prueba"/>
+                <button name="action_test_photo" type="object" string="Probar foto"
+                        icon="fa-image" title="Enviar foto de prueba con botones"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_md_telegram_channel_form" model="ir.ui.view">
+        <field name="name">md.telegram.channel.form</field>
+        <field name="model">md.telegram.channel</field>
+        <field name="arch" type="xml">
+            <form string="Canal de Telegram">
+                <header>
+                    <button name="action_test_message" type="object" string="Enviar prueba texto"
+                            class="btn-primary" icon="fa-paper-plane"/>
+                    <button name="action_test_photo" type="object" string="Probar foto + botones"
+                            class="btn-secondary" icon="fa-image"/>
+                    <button name="action_discover_chats" type="object" string="Detectar chats"
+                            icon="fa-search"
+                            help="Lee getUpdates y lista los chats donde el bot ya fue activado"/>
+                    <button name="action_webhook_info" type="object" string="Info Webhook"
+                            icon="fa-info-circle"
+                            help="Muestra el estado del webhook registrado en Telegram"/>
+                </header>
+                <sheet>
+                    <widget name="web_ribbon" title="Archivado" bg_color="text-bg-danger"
+                            invisible="active"/>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_messages" type="object" class="oe_stat_button"
+                                icon="fa-paper-plane">
+                            <field name="message_count" widget="statinfo" string="Mensajes"/>
+                        </button>
+                    </div>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1><field name="name" placeholder="Alertas de Compras"/></h1>
+                    </div>
+                    <group>
+                        <group string="Grupo de destino">
+                            <field name="chat_id" placeholder="-1001234567890"/>
+                            <field name="is_group" invisible="1"/>
+                            <field name="message_thread_id" placeholder="Opcional: sólo grupos con Temas"/>
+                        </group>
+                        <group string="Técnico">
+                            <field name="code" placeholder="compras"/>
+                            <field name="sequence"/>
+                            <field name="active" invisible="1"/>
+                        </group>
+                    </group>
+                    <group string="Alertas activas en este canal">
+                        <group>
+                            <field name="notify_on_sale"
+                                   help="Recibe alertas de órdenes de venta confirmadas"/>
+                            <field name="notify_on_stock_alert"
+                                   help="Recibe el digest diario de productos bajo mínimo"/>
+                        </group>
+                        <group>
+                            <field name="notify_on_lot_expiry"
+                                   help="Recibe alertas de lotes próximos a caducar"/>
+                        </group>
+                    </group>
+                    <group string="Notas">
+                        <field name="description" nolabel="1" placeholder="Para qué se usa este canal"/>
+                    </group>
+                    <div class="alert alert-warning" role="alert"
+                         invisible="not chat_id or is_group">
+                        Este <b>Chat ID</b> es positivo, así que apunta a un <b>chat privado</b>,
+                        no a un grupo. Los grupos siempre empiezan con guion
+                        (<code>-100…</code>). Revísalo con <b>Detectar chats</b>.
+                    </div>
+                    <div class="alert alert-info" role="alert">
+                        Para obtener el <b>Chat ID</b> del grupo: añade el bot como miembro,
+                        escribe allí <code>/start@tu_bot</code> (con la @, si no el bot no ve
+                        el mensaje) y pulsa <b>Detectar chats</b>.
+                        <br/>
+                        El bot <b>no necesita ser administrador</b> para escribir. Sí lo
+                        necesita si el grupo tiene restringido el envío de mensajes.
+                        <br/>
+                        Usa <b>Probar foto + botones</b> para verificar que la integración
+                        multimedia está funcionando correctamente.
+                    </div>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_md_telegram_channel_search" model="ir.ui.view">
+        <field name="name">md.telegram.channel.search</field>
+        <field name="model">md.telegram.channel</field>
+        <field name="arch" type="xml">
+            <search string="Canales">
+                <field name="name"/>
+                <field name="code"/>
+                <field name="chat_id"/>
+                <filter name="filter_active" string="Activos" domain="[('active','=',True)]"/>
+                <filter name="filter_inactive" string="Archivados" domain="[('active','=',False)]"/>
+                <filter name="filter_sale" string="Con alertas de ventas"
+                        domain="[('notify_on_sale','=',True)]"/>
+                <filter name="filter_stock" string="Con alertas de stock"
+                        domain="[('notify_on_stock_alert','=',True)]"/>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_md_telegram_channel" model="ir.actions.act_window">
+        <field name="name">Canales de Telegram</field>
+        <field name="res_model">md.telegram.channel</field>
+        <field name="view_mode">list,form</field>
+        <field name="context">{'active_test': False}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Crea tu primer canal de Telegram</p>
+            <p>
+                Un canal es un destino: un grupo, un canal o un chat privado.
+                Usa el código <b>default</b> para el destino general,
+                <b>compras</b> para alertas de compras,
+                <b>ventas</b> para alertas de ventas y
+                <b>inventario</b> para alertas de stock.
+            </p>
+        </field>
+    </record>
+</odoo>

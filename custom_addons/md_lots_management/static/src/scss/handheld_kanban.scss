@@ -1,0 +1,169 @@
+// ════════════════════════════════════════════════════════════════════════
+// handheld_kanban.scss — Reskin bento del Kanban "Consulta Handheld"
+// ────────────────────────────────────────────────────────────────────────
+// Consume las CSS custom properties --md-* definidas por
+// medicine_depot_portal/backend_tokens.scss (dependencia de este modulo,
+// cargada antes en el mismo bundle web.assets_backend). No hardcodear
+// hex/px aqui — todo via var(--md-*), igual que backend_bento.scss.
+//
+// Nota de diseño: a diferencia de las tarjetas glass del portal de
+// clientes (que usan blur fuerte), aqui se prioriza CONTRASTE SOLIDO y
+// legibilidad a distancia (equipos CT58 en bodega, luz variable, guantes)
+// sobre el efecto vidrio — mismo criterio de restraint que ya aplica
+// backend_bento.scss a .o_kanban_view .o_kanban_record (sin backdrop-filter
+// en tarjetas de datos, solo en paneles flotantes como o_control_panel).
+// ════════════════════════════════════════════════════════════════════════
+
+// --md-expiry no existe en backend_tokens.scss (solo en el bundle de POS).
+// Se declara aqui tambien (mismo valor que en md_pharma_regulatory) porque
+// este modulo no depende de aquel -- self-contained, sin asumir orden de
+// carga entre modulos sin relacion de dependencia.
+.o_web_client {
+    --md-expiry:     #875A7B;
+    --md-expiry-rgb: 135, 90, 123;
+}
+
+.o_web_client .o_md_handheld_kanban {
+
+    .o_kanban_record {
+        // Acento de marca a la izquierda + fondo con tinte sutil: distingue
+        // esta vista Bento del resto de kanbans genéricos del backend sin
+        // sacrificar legibilidad (fondo casi sólido, no vidrio).
+        border-left: 3px solid var(--md-primary);
+        background: linear-gradient(165deg, rgba(22, 166, 217, 0.05), rgba(151, 215, 0, 0.03) 60%, var(--md-card-bg));
+        border-radius: var(--md-radius-lg);
+    }
+
+    .o_md_handheld_card {
+        display: flex;
+        flex-direction: column;
+        // position:relative: ancla el anillo "Prox. Vencer" (md-short-expiry-ring,
+        // position:absolute) a esta tarjeta especifica en vez de a .o_kanban_record.
+        position: relative;
+    }
+
+    .o_md_handheld_product {
+        font-size: var(--md-text-lg);
+        font-weight: var(--md-weight-heading);
+        color: var(--md-color-text-dark);
+        line-height: 1.25;
+    }
+
+    .o_md_handheld_price_label {
+        font-size: var(--md-text-xs);
+        color: var(--md-muted);
+        font-weight: var(--md-weight-label);
+    }
+    .o_md_handheld_price_value {
+        font-size: var(--md-text-xl);
+        font-weight: var(--md-weight-kpi);
+        color: var(--md-action);
+        font-variant-numeric: tabular-nums;
+    }
+    .o_md_handheld_price_tax {
+        font-size: var(--md-text-xl);
+        font-weight: var(--md-weight-kpi);
+        color: var(--md-warning);
+        font-variant-numeric: tabular-nums;
+    }
+
+    .o_md_handheld_meta {
+        font-size: var(--md-text-sm);
+        color: var(--md-color-text-secondary);
+    }
+
+    // Color de "Vence: X" segun urgencia (md_expiry_color, mismos umbrales
+    // que bi_pos_stock/lot_expiry_utils.js). Texto solido en negrita en vez
+    // de badge/chip -- consistente con el criterio de alto contraste ya
+    // documentado para esta card (legible a distancia, sin soft-tint).
+    .o_md_handheld_expiry {
+        font-weight: var(--md-weight-heading);
+
+        &.o_md_handheld_expiry--danger  { color: var(--md-danger); }
+        &.o_md_handheld_expiry--warning { color: var(--md-warning); }
+        &.o_md_handheld_expiry--success { color: var(--md-success); }
+        &.o_md_handheld_expiry--secondary { color: var(--md-muted); font-weight: var(--md-weight-label); }
+    }
+
+    // Contenedor del codigo de barras: caja clara con borde definido para
+    // que el blanco del PNG generado por reportlab tenga contraste propio
+    // en vez de flotar directo sobre el fondo con tinte de la tarjeta.
+    .o_md_handheld_barcode {
+        background: var(--md-paper);
+        border: 1px solid var(--md-border);
+        border-radius: var(--md-radius-md);
+        padding: var(--md-space-2) var(--md-space-3);
+    }
+
+    // Badge "A la mano": alto contraste solido (no soft-tint) a proposito —
+    // debe leerse de un vistazo desde el CT58 en condiciones de luz de
+    // bodega, prioridad distinta a los badges suaves del portal de clientes.
+    .o_md_handheld_badge {
+        display: inline-block;
+        padding: 0.3rem 0.9rem;
+        border-radius: var(--md-radius-pill);
+        font-size: var(--md-text-md);
+        font-weight: var(--md-weight-heading);
+        color: #fff;
+    }
+    .o_md_handheld_badge--ok {
+        background: var(--md-action);
+    }
+    .o_md_handheld_badge--low {
+        background: var(--md-danger);
+    }
+
+    // Anillo "Prox. Vencer" (<=180 dias): mismo patron que
+    // .short-expiry-ring/-pill en bi_pos_stock/pos_product_card.scss y en
+    // md_pharma_regulatory/product_kanban_pos_style.scss. border-radius
+    // ajustado a var(--md-radius-lg) para calzar con el radio real de esta
+    // card (var(--md-radius-lg), no el 8px fijo de Inventario > Productos).
+    .md-short-expiry-ring {
+        position: absolute;
+        inset: 0;
+        border: 2px solid var(--md-expiry);
+        border-radius: var(--md-radius-lg);
+        pointer-events: none;
+        z-index: 5;
+        box-shadow:
+            0 0 0 3px rgba(var(--md-expiry-rgb), 0.15),
+            inset 0 0 0 1px rgba(var(--md-expiry-rgb), 0.08);
+    }
+
+    .md-short-expiry-pill {
+        position: absolute;
+        bottom: 6px;
+        right: 6px;
+        font-size: 0.65rem;
+        font-weight: 700;
+        line-height: 1;
+        padding: 3px 7px;
+        border-radius: 3px;
+        background: var(--md-expiry);
+        color: #fff;
+        letter-spacing: 0.3px;
+        white-space: nowrap;
+        pointer-events: none;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.18);
+    }
+}
+
+// ── Fix de contraste en modo oscuro ────────────────────────────────────────
+// --md-color-text-dark/--md-color-text-secondary deberian redefinirse a
+// tonos claros via medicine_depot_portal/backend_dark.scss (bundle
+// web.assets_web_dark, cargado SOLO en dark mode) -- pero en esta vista ese
+// bundle condicional no estaba tomando efecto (verificado en vivo: la
+// variable seguia en #073A4C, el valor de modo claro, incluso con
+// .o_md_dark_mode activo en <html>). Se fuerza el color aqui directo,
+// anclado a la clase real .o_md_dark_mode (confirmada en el DOM), en vez de
+// depender del bundle condicional -- consistente con el objetivo de esta
+// card ("contraste solido, legible a distancia en bodega") que quedaba
+// roto en oscuro: texto casi invisible sobre el fondo oscuro de la card.
+.o_md_dark_mode .o_web_client .o_md_handheld_kanban {
+    .o_md_handheld_product {
+        color: #e8eaf0;
+    }
+    .o_md_handheld_meta {
+        color: #b0b8cc;
+    }
+}

@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--
+        Hereda la vista formulario del proyecto para inyectar:
+        1. Smart Button con conteo de tickets (button_box).
+        2. Campo helpdesk_team_id en la pestaña Settings > extra_settings.
+    -->
+    <record id="view_project_form_inherit_mds_helpdesk" model="ir.ui.view">
+        <field name="name">project.project.form.inherit.mds.helpdesk</field>
+        <field name="model">project.project</field>
+        <field name="inherit_id" ref="project.edit_project"/>
+        <field name="arch" type="xml">
+            <!-- Smart Button: Tickets MDS -->
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button name="action_view_tickets"
+                        type="object"
+                        class="oe_stat_button"
+                        icon="fa-life-ring">
+                    <field name="ticket_count" widget="statinfo" string="Tickets MDS"/>
+                </button>
+            </xpath>
+
+            <!-- Campo Equipo de Soporte en pestaña Settings > extra_settings -->
+            <xpath expr="//group[@name='extra_settings']" position="inside">
+                <field name="helpdesk_team_id"
+                       string="Equipo de Soporte MDS"
+                       placeholder="Seleccionar equipo de soporte..."/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

@@ -1,0 +1,304 @@
+// control_center.scss — Panel bento-glass del Control Center (systray)
+// ────────────────────────────────────────────────────────────────────────
+// Este panel se renderiza vía usePopover() (Dropdown -> DropdownPopover),
+// es decir vive en .o_popover, portado a document.body con position:fixed
+// -- la misma combinación que reprodujo el bug de compositing de Chromium
+// (backdrop-filter pinta blanco sólido) en el menú de Acción de Contactos
+// (docs/audits/2026-07-01_backend_dark_mode_audit.md). PROBADO EN VIVO
+// 2026-08-06 en claro y oscuro (capturas en e2e_tests/screenshots/
+// cc_open_light.png / cc_open_dark.png): el bug NO se reproduce aquí, el
+// blur se compone correctamente en ambos temas. Se mantiene backdrop-filter.
+// Si en el futuro reaparece (otro popover, otra versión de Chromium), el
+// fallback ya validado es el de backend_bento.scss (.dropdown-menu): fondo
+// casi opaco sin blur.
+//
+// Receta de vidrio (2026-08-06): se adopta la misma receta ya auditada y en
+// producción de md_command_palette/launcher.scss (.o_md_command_palette /
+// .o_md_launcher_app_tile) -- panel con sombra multicapa + highlight inset
+// + animación de entrada, tiles como chips de vidrio translúcido que se
+// vuelven casi opacos y se elevan al hover, en vez de un relleno de color
+// plano. Mismo $ink-950 (#071316, casi idéntico a --mds-ink-dark #071C22)
+// para el fallback sólido de modo oscuro.
+$mds_cc_ink_950: #071316;
+
+.o_mds_control_center_menu.o_popover {
+    padding: 0;
+    border: 1px solid rgba(255, 255, 255, 0.85);
+    border-radius: 22px;
+    overflow: hidden;
+    background: rgba(255, 255, 255, 0.97); // fallback solido
+    box-shadow:
+        0 0 0 1px rgba(7, 58, 76, 0.06),
+        0 28px 80px rgba(7, 58, 76, 0.28),
+        0 10px 28px rgba(7, 58, 76, 0.10),
+        inset 0 1px 0 rgba(255, 255, 255, 0.95);
+    animation: o_mds_cc_in 140ms ease-out;
+
+    @supports (backdrop-filter: blur(1px)) {
+        background: rgba(255, 255, 255, 0.88);
+        backdrop-filter: blur(18px) saturate(1.4);
+        -webkit-backdrop-filter: blur(18px) saturate(1.4);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        animation-duration: 0.01ms;
+    }
+}
+
+@keyframes o_mds_cc_in {
+    from { opacity: 0; transform: translateY(-6px) scale(0.98); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+html.o_md_dark_mode,
+html[data-bs-theme="dark"] {
+    .o_mds_control_center_menu.o_popover {
+        background: rgba($mds_cc_ink_950, 0.94); // fallback solido
+        border-color: rgba(255, 255, 255, 0.10);
+        box-shadow:
+            0 0 0 1px rgba(255, 255, 255, 0.06),
+            0 28px 80px rgba(0, 0, 0, 0.55),
+            inset 0 1px 0 rgba(255, 255, 255, 0.06);
+
+        @supports (backdrop-filter: blur(1px)) {
+            background: rgba($mds_cc_ink_950, 0.80);
+            backdrop-filter: blur(18px) saturate(1.4);
+            -webkit-backdrop-filter: blur(18px) saturate(1.4);
+        }
+    }
+}
+
+.o_mds_control_center {
+    // 7 tiles (Mensajes, Actividades, Copiloto IA, Precios, Empresa, Modo
+    // Oscuro, Ajustes). 3 columnas dejaban ~70px de contenido por tile --
+    // insuficiente para labels largos ("ACTIVIDADES", "COPILOTO IA",
+    // "MODO OSCURO" en mayusculas/letter-spacing), se veian cortados
+    // (2026-08-06, capturas cc_full_light.png). 2 columnas: mas ancho por
+    // tile (el panel crece en alto, no en ancho -- las columnas con
+    // labels largos son las que necesitaban ese espacio de mas).
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    padding: 14px;
+    width: 240px;
+}
+
+// Chip de vidrio (misma receta que .o_md_launcher_app_tile): translucido
+// en reposo, casi opaco + elevacion + sombra de color al hover -- no un
+// relleno de color plano.
+.o_mds_cc_tile {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 14px;
+    min-height: 76px;
+    border-radius: 16px;
+    cursor: pointer;
+    outline: none;
+    background: rgba(255, 255, 255, 0.50);
+    border: 1px solid rgba(22, 166, 217, 0.16);
+    transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease, transform 0.18s ease;
+
+    &:hover, &:focus-visible {
+        background: rgba(255, 255, 255, 0.92);
+        border-color: rgba(22, 166, 217, 0.45);
+        transform: translateY(-3px);
+        box-shadow: 0 14px 28px rgba(22, 166, 217, 0.18);
+    }
+
+    &.o_mds_cc_tile_active {
+        background: rgba(151, 215, 0, 0.18);
+        border-color: rgba(151, 215, 0, 0.35);
+
+        &:hover, &:focus-visible {
+            background: rgba(151, 215, 0, 0.26);
+            box-shadow: 0 14px 28px rgba(151, 215, 0, 0.20);
+        }
+    }
+}
+
+.o_mds_cc_icon {
+    font-size: 18px;
+    color: var(--mds-blue);
+}
+
+.o_mds_cc_tile_active .o_mds_cc_icon {
+    color: #5c8a00;
+}
+
+// El SVG del tile "Copiloto IA" no tiene tamaño intrinseco -- sin esto se
+// veria enorme (default del navegador). Regla duplicada intencionalmente
+// (tambien vive en local_ai_connector/image_quote_drop_dialog.scss): no
+// depender de que ese modulo especifico este instalado para que este
+// tile se vea bien.
+.o_mds_bot_icon {
+    width: 1.15em;
+    height: 1.15em;
+}
+
+.o_mds_cc_label {
+    // 9.5px/0.02em en vez de 11px/0.04em: a 11px los labels largos
+    // ("ACTIVIDADES", "COPILOTO IA", "MODO OSCURO") partian a 2 lineas
+    // dentro de los ~73px de ancho util del tile (2026-08-06, capturas
+    // current_cc.png) -- se reduce lo suficiente para que quepan en una
+    // sola linea junto al icono, sin achicar el icono ni el tile.
+    font-family: "Inter", system-ui, -apple-system, sans-serif;
+    font-size: 9.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    line-height: 1.2;
+    white-space: nowrap;
+    color: var(--mds-dark-teal);
+}
+
+.o_mds_cc_badge {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    background: var(--mds-blue);
+    color: #fff;
+    font-size: 10px;
+    font-weight: 700;
+}
+
+.o_mds_cc_switch {
+    align-self: flex-end;
+    width: 32px;
+    height: 18px;
+    border-radius: 999px;
+    background: rgba(7, 58, 76, 0.18);
+    position: relative;
+    transition: background-color 0.18s ease;
+
+    &::after {
+        content: "";
+        position: absolute;
+        top: 2px;
+        left: 2px;
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        background: #fff;
+        transition: transform 0.18s ease;
+    }
+
+    &.o_mds_cc_switch_on {
+        background: var(--mds-lime);
+
+        &::after {
+            transform: translateX(14px);
+        }
+    }
+}
+
+html.o_md_dark_mode,
+html[data-bs-theme="dark"] {
+    .o_mds_cc_label {
+        color: #e8eaf0;
+    }
+
+    // Mismo patron que .o_md_launcher_app_tile en modo oscuro: casi
+    // invisible en reposo, brillo de marca + glow al hover, en vez de
+    // solo aclarar el mismo tinte plano.
+    .o_mds_cc_tile {
+        background: rgba(255, 255, 255, 0.04);
+        border-color: rgba(255, 255, 255, 0.08);
+
+        &:hover, &:focus-visible {
+            background: rgba(22, 166, 217, 0.22);
+            border-color: rgba(22, 166, 217, 0.45);
+            box-shadow:
+                0 12px 28px rgba(0, 0, 0, 0.45),
+                0 0 16px rgba(22, 166, 217, 0.25);
+        }
+
+        &.o_mds_cc_tile_active {
+            background: rgba(151, 215, 0, 0.16);
+            border-color: rgba(151, 215, 0, 0.35);
+
+            &:hover, &:focus-visible {
+                background: rgba(151, 215, 0, 0.24);
+                box-shadow:
+                    0 12px 28px rgba(0, 0, 0, 0.45),
+                    0 0 16px rgba(151, 215, 0, 0.25);
+            }
+        }
+    }
+
+    .o_mds_cc_switch {
+        background: rgba(255, 255, 255, 0.14);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .o_mds_cc_tile,
+    .o_mds_cc_switch,
+    .o_mds_cc_switch::after {
+        transition-duration: 0.01ms !important;
+    }
+}
+
+// ── Contador sobre el botón del Control Center ──────────────────────────
+//
+// El panel oculta el trigger nativo de purchase_invoice_parser en la barra
+// (navbar_style.scss). Sin esta burbuja, el número de actualizaciones de
+// precio sin leer solo sería visible DESPUÉS de abrir el panel — que es lo
+// contrario de para qué sirve un contador de notificaciones.
+.o_mds_control_center_toggle {
+    position: relative;
+}
+
+// Selector deliberadamente largo, no por gusto: la regla tipográfica de
+// marca del navbar es `body .o_main_navbar span:not(.pip_dropdown *)`, cuya
+// especificidad real es (0,2,2) — el :not() SUMA la especificidad de su
+// argumento. `.o_mds_cc_toggle_badge` sola es (0,1,0) y pierde aunque las
+// dos declaren !important (!important solo desempata entre reglas de IGUAL
+// peso; la especificidad se compara primero). Medido en vivo: el badge
+// renderizaba a 11px en lugar de 9px. Con (0,3,2) gana sin ambigüedad y sin
+// depender del orden de carga de los bundles.
+body .o_main_navbar .o_mds_control_center_toggle .o_mds_cc_toggle_badge {
+    position: absolute;
+    top: 2px;
+    right: 0;
+    min-width: 15px;
+    height: 15px;
+    padding: 0 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    // background-COLOR con !important, no el shorthand `background`.
+    // navbar_style.scss aplica `background-color: transparent !important` a
+    // todo `body .o_main_navbar span`, y una longhand !important gana SIEMPRE
+    // a una shorthand sin !important, por mas especifico que sea el selector.
+    // Medido en vivo: la regla si aplicaba (aparecia en cssRules con
+    // rgb(231,76,60)) pero el backgroundColor computado era rgba(0,0,0,0) --
+    // el badge se veia azul porque se transparentaba y dejaba pasar el
+    // degradado del propio navbar.
+    background-color: #e74c3c !important;
+    color: #fff !important;
+    // La regla de tipografía de marca del navbar (navbar_style.scss) alcanza
+    // a todo `body .o_main_navbar span` con especificidad (0,1,2) — mayor que
+    // esta clase sola. Sin !important el contador hereda 11px + uppercase +
+    // letter-spacing y se desborda del círculo.
+    font-size: 9px !important;
+    font-weight: 700 !important;
+    letter-spacing: 0 !important;
+    text-transform: none !important;
+    line-height: 1 !important;
+    font-variant-numeric: tabular-nums;
+    // Separa la burbuja del icono aunque se solapen.
+    box-shadow: 0 0 0 1.5px var(--mds-dark-teal, #073a4c);
+    pointer-events: none;
+}

@@ -1,0 +1,1 @@
+{"nodes":[{"id":"lab_inventory_report_init","label":"__init__.py","file_type":"code","source_file":"lab_inventory_report/__init__.py","source_location":"L1"}],"edges":[{"source":"lab_inventory_report_init","target":"","relation":"imports_from","confidence":"EXTRACTED","source_file":"lab_inventory_report/__init__.py","source_location":"L2","weight":1}]}

@@ -1,0 +1,28 @@
+from odoo import models
+
+
+class PurchaseOrder(models.Model):
+    _inherit = 'purchase.order'
+
+    def button_confirm(self):
+        # Snapshot de precios actuales en supplierinfo ANTES de confirmar,
+        # por PO, para detectar divergencias respecto al precio de factura.
+        snapshots = {}
+        for po in self:
+            partner_id = po.partner_id.id
+            tmpl_ids = po.order_line.mapped('product_id.product_tmpl_id').ids
+            if partner_id and tmpl_ids:
+                infos = self.env['product.supplierinfo'].search([
+                    ('partner_id', '=', partner_id),
+                    ('product_tmpl_id', 'in', tmpl_ids),
+                ])
+                snapshots[po.id] = {si.product_tmpl_id.id: si.price for si in infos}
+
+        result = super().button_confirm()
+
+        # Generar notificaciones solo para OCs que quedaron confirmadas.
+        wizard = self.env['purchase.invoice.import.wizard']
+        for po in self.filtered(lambda p: p.state == 'purchase'):
+            wizard._notify_price_changes(po, po.company_id, snapshots.get(po.id, {}))
+
+        return result

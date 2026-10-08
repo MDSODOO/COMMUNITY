@@ -189,21 +189,77 @@ patch(PosStore.prototype, {
         return base - ordered;
     },
 
-    async addLineToOrder(vals, order, configure = true, options = {}) {
-        const res = await super.addLineToOrder(vals, order, configure, options);
-        const config = this.config;
-        if (!config.pos_display_stock) return res;
+    selectOrderLine(order, line) {
+        super.selectOrderLine(order, line);
+        if (this.numberBuffer) {
+            this.numberBuffer.reset();
+            if (this.numberBuffer.state) {
+                this.numberBuffer.state.toStartOver = true;
+            }
+        }
+    },
 
-        // BUG FIX: vals.product_id is undefined in the standard flow because
-        // addLineToCurrentOrder passes { product_tmpl_id } not { product_id }.
-        // The resolved product.product variant is available on the returned line.
-        const product = res?.product_id;
+    async addLineToOrder(vals, order, opts = {}, configure = true) {
+        const res = await super.addLineToOrder(vals, order, opts, configure);
+
+        // Native Quantity Overwrite: prime numberBuffer so next numpad input overwrites cleanly
+        if (this.numberBuffer) {
+            this.numberBuffer.reset();
+            if (this.numberBuffer.state) {
+                this.numberBuffer.state.toStartOver = true;
+            }
+        }
+
+        const config = this.config;
+        if (!config.pos_display_stock || !res) return res;
+
+        // Resolved product.product variant is available on the returned line.
+        const product = res.product_id;
         if (!product?.is_storable) return res;
 
         const allowOrder = config.pos_allow_order;
         const denyThreshold = Number(config.pos_deny_order) || 0;
-        const remainingQty = this.getBranchStockForProduct(product.id);
 
+        // ── 1. Lot-level A la mano validation ────────────────────────────────
+        const lotName = res.pack_lot_ids?.[0]?.lot_name;
+        if (lotName && product.tracking && product.tracking !== "none") {
+            const lotKey = `${product.id}_${lotName}`;
+            const lotAvailable = this.allLotDetails?.[lotKey]?.qty !== undefined
+                ? Number(this.allLotDetails[lotKey].qty)
+                : Infinity;
+
+            if (lotAvailable !== Infinity) {
+                const otherLinesLotQty = (res.order_id?.lines || []).reduce((sum, l) => {
+                    if (l === res) return sum;
+                    const lLot = l.pack_lot_ids?.[0]?.lot_name;
+                    return (l.product_id?.id === product.id && lLot === lotName)
+                        ? sum + (l.qty || 0)
+                        : sum;
+                }, 0);
+
+                const totalLotQty = otherLinesLotQty + (res.qty || 0);
+                if (!allowOrder && totalLotQty > lotAvailable) {
+                    const allowedForLot = Math.max(0, lotAvailable - otherLinesLotQty);
+                    if (allowedForLot <= 0) {
+                        res.order_id.removeOrderline(res);
+                    } else {
+                        res.setQuantity(allowedForLot);
+                    }
+
+                    this.dialog.add(AlertDialog, {
+                        title: _t("Límite de A la mano por lote excedido"),
+                        body: _t(
+                            "%(product)s (Lote: %(lot)s): no hay suficiente inventario A la mano en esta sucursal (disponible: %(stock)s unidades).",
+                            { product: product.display_name, lot: lotName, stock: lotAvailable }
+                        ),
+                    });
+                    return res;
+                }
+            }
+        }
+
+        // ── 2. Branch-level total stock validation ────────────────────────────
+        const remainingQty = this.getBranchStockForProduct(product.id);
         let shouldBlock = false;
         if (!allowOrder && remainingQty < 0) {
             shouldBlock = true;
@@ -213,10 +269,6 @@ patch(PosStore.prototype, {
 
         if (shouldBlock) {
             const branchStock = Number(this.branchStock?.[String(product.id)] ?? 0);
-
-            // BUG FIX: When addLineToOrder merges with an existing line, `res` is the
-            // merged line. Calling removeOrderline(res) would delete ALL units, not just
-            // the newly added one. Instead, clamp the line to the available stock.
             const otherLinesQty = (res.order_id?.lines || []).reduce((sum, l) => {
                 if (l === res) return sum;
                 return l.product_id?.id === product.id ? sum + (l.qty || 0) : sum;

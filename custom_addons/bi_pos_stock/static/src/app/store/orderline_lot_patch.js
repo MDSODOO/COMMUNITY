@@ -1,20 +1,23 @@
 /** @odoo-module */
 /**
- * PosOrderline patch — prevent merging lines with different lots.
+ * PosOrderline patch — enable merging lines with the SAME lot while preventing
+ * merging lines with DIFFERENT lots.
  *
- * Standard POS behavior merges any two lines for the same product into one
- * (incrementing qty). This is wrong when a cashier picks a *different* lot:
- * the new lot gets silently swallowed by the existing line, making it
- * impossible to sell the same product from two distinct lots in one order.
+ * Problem in standard Odoo 19:
+ * Standard PosOrderline.prototype.canBeMergedWith includes `!this.isLotTracked()`,
+ * which explicitly refuses to merge any lot-tracked product lines. When a cashier
+ * scans or adds the same product with the same lot multiple times, Odoo 19 creates
+ * multiple duplicate lines for the same lot in the cart instead of incrementing
+ * the existing line quantity.
  *
- * Fix: override `can_be_merged_with` so that two lines with different
- * lot assignments are always treated as separate lines.
+ * Furthermore, a previous attempt patched `can_be_merged_with` (snake_case), which
+ * is a legacy method name not used in Odoo 19 (Odoo 19 uses camelCase `canBeMergedWith`).
  *
- * Rules:
- *  - Both lines have NO lot  → merge normally (unchanged behavior)
- *  - Both lines have the SAME lot → merge normally
- *  - One has a lot and the other doesn't → new line (different lots)
- *  - Both have DIFFERENT lots → new line
+ * Rules implemented:
+ *  - Both lines have the SAME lot  → merge into one line (increment qty)
+ *  - Both lines have DIFFERENT lots → keep as separate lines (do not merge)
+ *  - One has a lot and the other doesn't → keep as separate lines
+ *  - Non-lot-tracked products      → delegate to standard super.canBeMergedWith()
  */
 
 import { patch } from "@web/core/utils/patch";
@@ -31,20 +34,53 @@ function getLineLotName(line) {
 }
 
 patch(PosOrderline.prototype, {
-    can_be_merged_with(orderline) {
-        // Let the base class do its standard checks first (same product,
-        // same price, no note, etc.). If it already blocks, respect that.
-        const baseResult = super.can_be_merged_with(orderline);
-        if (!baseResult) return false;
+    canBeMergedWith(orderline) {
+        if (this.isLotTracked() || orderline.isLotTracked()) {
+            const thisLot = getLineLotName(this);
+            const otherLot = getLineLotName(orderline);
 
-        const thisLot = getLineLotName(this);
-        const otherLot = getLineLotName(orderline);
+            // If neither has a lot yet or lots differ, do not merge
+            if (!thisLot || !otherLot || thisLot !== otherLot) {
+                return false;
+            }
 
-        // Different lot assignment → always create a new line
-        if (thisLot !== otherLot) {
-            return false;
+            // Both lines have the exact same lot: verify standard non-lot merge criteria
+            const ProductPrice = this.models["decimal.precision"].find(
+                (dp) => dp.name === "Product Price"
+            );
+            const price = ProductPrice.round(this.price_unit || 0);
+            const product = orderline.getProduct();
+            const order_line_price = product.getPrice(
+                orderline.order_id.pricelist_id,
+                this.getQuantity(),
+                0,
+                false,
+                product
+            );
+
+            const isSameCustomerNote =
+                (Boolean(orderline.getCustomerNote()) === false &&
+                    Boolean(this.getCustomerNote()) === false) ||
+                orderline.getCustomerNote() === this.getCustomerNote();
+
+            return (
+                orderline.getNote() === this.getNote() &&
+                this.getProduct().id === orderline.getProduct().id &&
+                this.isPosGroupable() &&
+                this.getDiscount() === orderline.getDiscount() &&
+                this.price_type === orderline.price_type &&
+                this.currency.isZero(
+                    this.currency.round(price) -
+                        this.currency.round(order_line_price) -
+                        orderline.getPriceExtra()
+                ) &&
+                this.full_product_name === orderline.full_product_name &&
+                isSameCustomerNote &&
+                !this.refunded_orderline_id &&
+                !orderline.isPartOfCombo()
+            );
         }
 
-        return true;
+        return super.canBeMergedWith(orderline);
     },
 });

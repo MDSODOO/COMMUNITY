@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="view_md_telegram_message_list" model="ir.ui.view">
+        <field name="name">md.telegram.message.list</field>
+        <field name="model">md.telegram.message</field>
+        <field name="arch" type="xml">
+            <list string="Cola de Telegram" create="false"
+                  decoration-danger="state == 'failed'"
+                  decoration-muted="state in ('sent', 'cancelled')"
+                  decoration-warning="state == 'pending' and attempts &gt; 0">
+                <field name="create_date" string="Creado"/>
+                <field name="channel_id"/>
+                <field name="body" string="Mensaje"/>
+                <field name="state" widget="badge"
+                       decoration-success="state == 'sent'"
+                       decoration-danger="state == 'failed'"
+                       decoration-warning="state == 'pending'"/>
+                <field name="attempts" string="Int."/>
+                <field name="next_attempt" optional="hide"/>
+                <field name="sent_date" optional="show"/>
+                <field name="error_message" optional="hide"/>
+                <button name="action_retry" type="object" string="Reintentar"
+                        icon="fa-refresh" invisible="state not in ('failed', 'cancelled')"/>
+                <button name="action_cancel" type="object" string="Cancelar"
+                        icon="fa-times" invisible="state not in ('pending', 'failed')"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_md_telegram_message_form" model="ir.ui.view">
+        <field name="name">md.telegram.message.form</field>
+        <field name="model">md.telegram.message</field>
+        <field name="arch" type="xml">
+            <form string="Mensaje de Telegram" create="false">
+                <header>
+                    <button name="action_send_now" type="object" string="Enviar ahora"
+                            class="btn-primary" invisible="state == 'sent'"/>
+                    <button name="action_retry" type="object" string="Reintentar"
+                            invisible="state not in ('failed', 'cancelled')"/>
+                    <button name="action_cancel" type="object" string="Cancelar"
+                            invisible="state not in ('pending', 'failed')"/>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="pending,sending,sent"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group string="Destino">
+                            <field name="channel_id"/>
+                            <field name="chat_id"/>
+                            <field name="message_thread_id"/>
+                            <field name="parse_mode"/>
+                        </group>
+                        <group string="Estado">
+                            <field name="attempts"/>
+                            <field name="next_attempt" invisible="state != 'pending'"/>
+                            <field name="sent_date" invisible="state != 'sent'"/>
+                            <field name="telegram_message_id" invisible="state != 'sent'"/>
+                            <field name="res_model"/>
+                            <field name="res_id"/>
+                        </group>
+                    </group>
+                    <group string="Mensaje">
+                        <field name="body" nolabel="1"/>
+                    </group>
+                    <group string="Último error" invisible="not error_message">
+                        <field name="error_message" nolabel="1"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_md_telegram_message_search" model="ir.ui.view">
+        <field name="name">md.telegram.message.search</field>
+        <field name="model">md.telegram.message</field>
+        <field name="arch" type="xml">
+            <search string="Mensajes">
+                <field name="body"/>
+                <field name="channel_id"/>
+                <field name="chat_id"/>
+                <filter name="filter_pending" string="Pendientes" domain="[('state','=','pending')]"/>
+                <filter name="filter_failed" string="Fallidos" domain="[('state','=','failed')]"/>
+                <filter name="filter_sent" string="Enviados" domain="[('state','=','sent')]"/>
+                <separator/>
+                <filter name="filter_today" string="Hoy"
+                        domain="[('create_date','&gt;=', datetime.datetime.combine(context_today(), datetime.time(0,0,0)))]"/>
+                <!-- Odoo 19: <group> en vistas search no admite expand/string;
+                     el encabezado "Agrupar por" lo pone la propia UI. -->
+                <group>
+                    <filter name="group_state" string="Estado" domain="[]" context="{'group_by': 'state'}"/>
+                    <filter name="group_channel" string="Canal" domain="[]" context="{'group_by': 'channel_id'}"/>
+                    <filter name="group_date" string="Fecha" domain="[]" context="{'group_by': 'create_date:day'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_md_telegram_message" model="ir.actions.act_window">
+        <field name="name">Cola de mensajes</field>
+        <field name="res_model">md.telegram.message</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">La cola está vacía</p>
+            <p>Aquí aparece cada alerta enviada a Telegram, con su estado y sus reintentos.</p>
+        </field>
+    </record>
+</odoo>

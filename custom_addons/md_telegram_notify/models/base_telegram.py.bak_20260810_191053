@@ -1,0 +1,26 @@
+from odoo import models
+
+
+class Base(models.AbstractModel):
+    """Atajo disponible en TODOS los modelos.
+
+    Permite `record.telegram_notify("...")` desde cualquier sitio: un override
+    de Python, una accion de servidor o una accion automatizada, sin tener que
+    conocer el modelo de la cola.
+    """
+
+    _inherit = "base"
+
+    def telegram_notify(self, body, channel_code=None, parse_mode="HTML", thread_id=None):
+        """Encola una alerta de Telegram asociada a este registro.
+
+        No hace red: solo encola. Devuelve el/los md.telegram.message creados.
+        """
+        record = self[:1] if self else None
+        return self.env["md.telegram.message"].enqueue(
+            body=body,
+            channel_code=channel_code,
+            record=record,
+            parse_mode=parse_mode,
+            thread_id=thread_id,
+        )

@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+
+    <t t-name="local_ai_connector.SystrayIcon">
+        <div class="o_ai_inventory_query_toggle d-flex align-items-center justify-content-center px-2"
+             t-on-click="openDialog" role="button" title="Copiloto de inventario (IA local)">
+            <!-- FA4 (el set bundled en este Odoo) no tiene "message-bot" (FA6):
+                 SVG propio inline, mismo concepto (burbuja de chat y cara de
+                 robot), sin depender de un paquete de iconos nuevo. -->
+            <svg class="o_mds_bot_icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+                <circle cx="12" cy="3" r="1.3" fill="currentColor"/>
+                <rect x="11.3" y="4.1" width="1.4" height="2" fill="currentColor"/>
+                <path fill="currentColor" fill-rule="evenodd" clip-rule="evenodd" d="M4 9.2C4 6.9 5.9 5 8.2 5h7.6C18.1 5 20 6.9 20 9.2v5.1c0 2.3-1.9 4.2-4.2 4.2H9.9l-3.6 2.9c-.7.6-1.7.1-1.7-.8v-2.4c-.4-.1-.6-.4-.6-.9V9.2zm5.1 3.3a1.15 1.15 0 1 0 0-2.3 1.15 1.15 0 0 0 0 2.3zm5.8 0a1.15 1.15 0 1 0 0-2.3 1.15 1.15 0 0 0 0 2.3z"/>
+            </svg>
+        </div>
+    </t>
+
+    <t t-name="local_ai_connector.AiInventoryQueryDialog">
+        <Dialog size="'md'" title="'Copiloto de inventario (IA local)'">
+
+            <p class="text-muted small">
+                Pregunta sobre cantidades <strong>A la mano</strong> de un producto, en lenguaje
+                natural. La respuesta la calcula Odoo con datos reales; el modelo de IA solo
+                identifica a que producto te refieres.
+            </p>
+
+            <div class="d-flex gap-2 mb-3">
+                <input type="text"
+                       class="form-control"
+                       placeholder="ej. cuanto paracetamol hay a la mano?"
+                       t-model="state.question"
+                       t-on-keydown="onKeydown"
+                       t-att-disabled="state.loading"/>
+                <button class="btn btn-primary"
+                        t-on-click="ask"
+                        t-att-disabled="state.loading || !state.question.trim()">
+                    <i t-if="state.loading" class="fa fa-spinner fa-spin"/>
+                    <t t-else="">Preguntar</t>
+                </button>
+            </div>
+
+            <div t-if="state.result" t-attf-class="alert {{resultClass}}" role="alert"
+                 style="white-space: pre-line;">
+                <t t-esc="state.result.message"/>
+            </div>
+
+            <t t-set-slot="footer">
+                <button class="btn btn-secondary" t-on-click="props.close">Cerrar</button>
+            </t>
+
+        </Dialog>
+    </t>
+
+</templates>

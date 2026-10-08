@@ -1,0 +1,97 @@
+// ════════════════════════════════════════════════════════════════════════
+// production_lot_kanban.scss — Kanban del menú "Lotes" (Números de serie/lote)
+// ────────────────────────────────────────────────────────────────────────
+// Redisena stock.view_production_lot_kanban (nativa) con el mismo lenguaje
+// visual ya aplicado en Inventario > Productos (md_pharma_regulatory) y en
+// "Consulta Handheld" (handheld_kanban.scss) de este mismo modulo: badge
+// "A la mano", color de vencimiento y anillo "Prox. Vencer". Clases propias
+// (o_md_lot_*, no o_md_handheld_*) porque es una vista distinta con reglas
+// distintas (CRUD normal, no el flujo restringido de escaner).
+//
+// Consume las CSS custom properties --md-* de medicine_depot_portal/
+// backend_tokens.scss (dependencia de este modulo).
+// ════════════════════════════════════════════════════════════════════════
+
+// --md-expiry no existe en backend_tokens.scss. Ya se declara tambien en
+// handheld_kanban.scss (mismo modulo) -- redeclarar aqui el mismo valor es
+// inofensivo (idéntico) y mantiene este archivo autocontenido si algun día
+// se separa en otro módulo.
+.o_web_client {
+    --md-expiry:     #875A7B;
+    --md-expiry-rgb: 135, 90, 123;
+}
+
+.o_web_client .o_md_lot_kanban {
+
+    .o_kanban_record {
+        border-left: 3px solid var(--md-primary);
+        border-radius: var(--md-radius-md);
+    }
+
+    .o_md_lot_card {
+        position: relative;
+    }
+
+    // Badge "A la mano" -- mismo patron ok/low que Consulta Handheld
+    // (o_md_handheld_badge), clases propias para no acoplar ambas vistas.
+    .o_md_lot_badge {
+        display: inline-block;
+        padding: 0.2rem 0.6rem;
+        border-radius: var(--md-radius-pill);
+        font-size: var(--md-text-xs);
+        font-weight: var(--md-weight-heading);
+        color: #fff;
+        white-space: nowrap;
+        flex-shrink: 0;
+    }
+    .o_md_lot_badge--ok {
+        background: var(--md-action);
+    }
+    .o_md_lot_badge--low {
+        background: var(--md-danger);
+    }
+
+    // Color de "Vence: X" segun urgencia (md_expiry_color) -- mismos
+    // umbrales que bi_pos_stock/lot_expiry_utils.js y que el badge
+    // homónimo en handheld_kanban.scss.
+    .o_md_lot_expiry {
+        font-size: var(--md-text-sm);
+        font-weight: var(--md-weight-heading);
+
+        &.o_md_lot_expiry--danger  { color: var(--md-danger); }
+        &.o_md_lot_expiry--warning { color: var(--md-warning); }
+        &.o_md_lot_expiry--success { color: var(--md-success); }
+        &.o_md_lot_expiry--secondary { color: var(--md-muted); font-weight: var(--md-weight-label); }
+    }
+
+    // Anillo "Prox. Vencer" (<=180 dias) -- mismo patron que
+    // pos_product_card.scss / product_kanban_pos_style.scss / handheld_kanban.scss.
+    .md-short-expiry-ring {
+        position: absolute;
+        inset: 0;
+        border: 2px solid var(--md-expiry);
+        border-radius: var(--md-radius-md);
+        pointer-events: none;
+        z-index: 5;
+        box-shadow:
+            0 0 0 3px rgba(var(--md-expiry-rgb), 0.15),
+            inset 0 0 0 1px rgba(var(--md-expiry-rgb), 0.08);
+    }
+
+    .md-short-expiry-pill {
+        position: absolute;
+        bottom: 4px;
+        right: 4px;
+        font-size: 0.6rem;
+        font-weight: 700;
+        line-height: 1;
+        padding: 2px 5px;
+        border-radius: 3px;
+        background: var(--md-expiry);
+        color: #fff;
+        letter-spacing: 0.3px;
+        white-space: nowrap;
+        pointer-events: none;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.18);
+    }
+}

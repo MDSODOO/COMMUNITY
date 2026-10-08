@@ -1,0 +1,1994 @@
+{
+  "bi_pos_stock/__init__.py": {
+    "mtime": 1780510270203.612,
+    "hash": "b1ceeb76781df12bff6fc2b4332ba861"
+  },
+  "bi_pos_stock/__manifest__.py": {
+    "mtime": 1784667714826.9922,
+    "hash": "5fd86856c5041b10c531b4d0a9087a42"
+  },
+  "bi_pos_stock/controllers/__init__.py": {
+    "mtime": 1778620057039.3865,
+    "hash": "4ca70782947bb9105d574470d9424b75"
+  },
+  "bi_pos_stock/controllers/main.py": {
+    "mtime": 1778620057039.47,
+    "hash": "817230784f159cf42dbee3e4bd164f4d"
+  },
+  "bi_pos_stock/hooks.py": {
+    "mtime": 1780510270203.8545,
+    "hash": "09a5cdf24604a213a0261fd8697fd86b"
+  },
+  "bi_pos_stock/models/__init__.py": {
+    "mtime": 1780510270203.959,
+    "hash": "4e84640b920b50474310663790e30acf"
+  },
+  "bi_pos_stock/models/bi_ecommerce_notifications.py": {
+    "mtime": 1778102038679.3513,
+    "hash": "4051742f442161c21bde77e97b3a6ef8"
+  },
+  "bi_pos_stock/models/bi_pos_lots.py": {
+    "mtime": 1784516448212.615,
+    "hash": "78921fca19bcd5076ff2208235f304ab"
+  },
+  "bi_pos_stock/models/bi_pos_session.py": {
+    "mtime": 1784667714803.9922,
+    "hash": "66c668fa1583f7cce8642a44ba813dcc"
+  },
+  "bi_pos_stock/models/bi_pos_stock.py": {
+    "mtime": 1780510270204.2495,
+    "hash": "61202d2f74d3e6800c2808e191fd275d"
+  },
+  "bi_pos_stock/models/bi_supplier_snapshot.py": {
+    "mtime": 1780365103532.277,
+    "hash": "ce16d0c02f8a0701bc2d3d8a8b772eed"
+  },
+  "bi_pos_stock/models/pos_z_report.py": {
+    "mtime": 1780513510433.5667,
+    "hash": "27e1542d95db0abe62750be07d190613"
+  },
+  "bi_pos_stock/static/src/app/components/closing_popup/closing_popup.js": {
+    "mtime": 1780513510433.8196,
+    "hash": "9ee82a94a5fbd7b83d7fdc99c43ec46e"
+  },
+  "bi_pos_stock/static/src/app/components/ecommerce_order_popup/ecommerce_order_popup.js": {
+    "mtime": 1778102038750.9275,
+    "hash": "5e9126dadc524fe6bbcc36f0095877a7"
+  },
+  "bi_pos_stock/static/src/app/components/lot_detail_popup/lot_detail_popup.js": {
+    "mtime": 1784238971677.0803,
+    "hash": "3be7919d6e391016a32de07d9e356c2a"
+  },
+  "bi_pos_stock/static/src/app/components/lot_selection_popup/lot_selection_popup.js": {
+    "mtime": 1784516412951.7766,
+    "hash": "c103bc62bd43f17bf18aab36e07db17b"
+  },
+  "bi_pos_stock/static/src/app/components/select_lot_popup_patch/select_lot_popup_patch.js": {
+    "mtime": 1778102038749.0076,
+    "hash": "ea6e9d6b359f76b33cf6b7c27bef8edc"
+  },
+  "bi_pos_stock/static/src/app/generic_components/order_widget/order_widget.js": {
+    "mtime": 1783445114592.0986,
+    "hash": "ad41cc7e7affe59d22cc5211540fbe88"
+  },
+  "bi_pos_stock/static/src/app/generic_components/product_card/product_card.js": {
+    "mtime": 1784238974999.065,
+    "hash": "46c39c8372f7f4838a75be0d332ce1a3"
+  },
+  "bi_pos_stock/static/src/app/navbar/navbar.js": {
+    "mtime": 1783092988787.5083,
+    "hash": "babf1b5fca187b878fb2210ead138366"
+  },
+  "bi_pos_stock/static/src/app/network/pos_ping_silence.js": {
+    "mtime": 1779320590073.3613,
+    "hash": "d8cb82e0f42ce2891033b03048b9f736"
+  },
+  "bi_pos_stock/static/src/app/screens/ecommerce_orders_screen/ecommerce_orders_screen.js": {
+    "mtime": 1778567512916.0227,
+    "hash": "1516a63bb78d8d3e3ef247d5dc51ee5a"
+  },
+  "bi_pos_stock/static/src/app/screens/product_screen/order_summary/order_summary.js": {
+    "mtime": 1780510270204.9617,
+    "hash": "ea6b5f64dbe7a9b5884c80123c5cdad9"
+  },
+  "bi_pos_stock/static/src/app/screens/product_screen/product_list/product_list.js": {
+    "mtime": 1784238978308.0496,
+    "hash": "91f598ca43bfaf64557393ea88b1bad1"
+  },
+  "bi_pos_stock/static/src/app/screens/replenishment_screen/replenishment_line/replenishment_line.js": {
+    "mtime": 1780365103533.2124,
+    "hash": "6aefd495de824da82a0adef876787fcc"
+  },
+  "bi_pos_stock/static/src/app/screens/replenishment_screen/replenishment_screen.js": {
+    "mtime": 1784667714819.9922,
+    "hash": "83b7f3b6541af0f8eb957c44580fe97e"
+  },
+  "bi_pos_stock/static/src/app/self_order/bi_warning_popup.js": {
+    "mtime": 1778102038741.309,
+    "hash": "ccc926f05eddb1bbf6fce2d815518fc8"
+  },
+  "bi_pos_stock/static/src/app/self_order/self_order_product.js": {
+    "mtime": 1778102038740.344,
+    "hash": "fbde54be8c92ab99ba17e2bd6c8bc680"
+  },
+  "bi_pos_stock/static/src/app/service_worker_bypass.js": {
+    "mtime": 1778620057039.9377,
+    "hash": "bc1714f61694a2813d2c2aa0d01da975"
+  },
+  "bi_pos_stock/static/src/app/store/lot_cascade_patch.js": {
+    "mtime": 1784238979965.042,
+    "hash": "659b2605e2211d927a73dc65b7122ca3"
+  },
+  "bi_pos_stock/static/src/app/store/lot_label_patch.js": {
+    "mtime": 1783445090139.6716,
+    "hash": "c9a2f749213379ae80468fd266ab666f"
+  },
+  "bi_pos_stock/static/src/app/store/models.js": {
+    "mtime": 1784667714811.9922,
+    "hash": "3c85ad11d976c438da197d4dce4daa72"
+  },
+  "bi_pos_stock/static/src/app/store/order_persistence_patch.js": {
+    "mtime": 1778102038751.8242,
+    "hash": "e09a9aaf83249c759439d15955d3d750"
+  },
+  "bi_pos_stock/static/src/app/store/orderline_discount_patch.js": {
+    "mtime": 1783378665268.8186,
+    "hash": "72e4de2d91a197afe3973f6550d06b73"
+  },
+  "bi_pos_stock/static/src/app/store/orderline_lot_patch.js": {
+    "mtime": 1778102038752.0276,
+    "hash": "70f3c81c556f012c8b53abd88e56ac9e"
+  },
+  "bi_pos_stock/static/src/app/theme/pos_theme_mode.js": {
+    "mtime": 1781584472472.5366,
+    "hash": "24eda6fd534f6538d73e015560a2a915"
+  },
+  "bi_pos_stock/static/src/app/utils/lot_expiry_utils.js": {
+    "mtime": 1783445074865.9956,
+    "hash": "cfb5b0e8a180a31b05077485ee0e4047"
+  },
+  "bi_pos_stock/static/src/app/utils/lot_stock_utils.js": {
+    "mtime": 1784238984911.0193,
+    "hash": "446d037354444ffc86f2e5258c36852f"
+  },
+  "bi_pos_stock/tests/__init__.py": {
+    "mtime": 1779320590074.1294,
+    "hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "bi_pos_stock/tests/test_bi_pos_stock.py": {
+    "mtime": 1779320590074.3728,
+    "hash": "4f474ee2b53dc4c4295313a401094e2c"
+  },
+  "custom_invoice_format/__init__.py": {
+    "mtime": 1782774129810.2036,
+    "hash": "3ef6a75fea8dd211c57d08249fe917ce"
+  },
+  "custom_invoice_format/__manifest__.py": {
+    "mtime": 1783629483286.9773,
+    "hash": "8f3cbf47a9d17c15cdc7be1e3a90b988"
+  },
+  "custom_invoice_format/migrations/19.0.1.1.0/post-migrate.py": {
+    "mtime": 1778754295253.775,
+    "hash": "af7bc1ee5dcb673c07de1c4509b92b87"
+  },
+  "custom_invoice_format/migrations/19.0.1.10.0/post-migrate.py": {
+    "mtime": 1779695572181.7148,
+    "hash": "6ce29fef5e50442c3ea972659fee1baa"
+  },
+  "custom_invoice_format/migrations/19.0.1.12.0/post-migrate.py": {
+    "mtime": 1782774129810.5825,
+    "hash": "b9f9d64f3b6ba3b540f0bbd055fd2541"
+  },
+  "custom_invoice_format/migrations/19.0.1.19.0/post-migrate.py": {
+    "mtime": 1783098479456.439,
+    "hash": "fe8a9c93b3a59495fc820473b641da57"
+  },
+  "custom_invoice_format/migrations/19.0.1.8.0/post-migrate.py": {
+    "mtime": 1778754295253.9832,
+    "hash": "2724598f771f4a5282530b9d3f1e96ea"
+  },
+  "custom_invoice_format/migrations/19.0.1.9.0/post-migrate.py": {
+    "mtime": 1778754295254.1746,
+    "hash": "ff13aeee31339798f5da0d42bb92d4c7"
+  },
+  "custom_invoice_format/models/__init__.py": {
+    "mtime": 1778567512917.9932,
+    "hash": "770f9f9ec949c904695dc30f1977cfcd"
+  },
+  "custom_invoice_format/models/account_move.py": {
+    "mtime": 1782774129863.6968,
+    "hash": "a21eebbccd728a1ef82871ef0695ce60"
+  },
+  "custom_invoice_format/tests/__init__.py": {
+    "mtime": 1781584472473.8103,
+    "hash": "1331a1441bec218ea716fd468cf6995c"
+  },
+  "custom_invoice_format/tests/test_custom_invoice_format.py": {
+    "mtime": 1781584472473.9421,
+    "hash": "e4d9dbcbf7230d2efb8a96490c620ef3"
+  },
+  "custom_shop_qty_selector/__init__.py": {
+    "mtime": 1778568484047.452,
+    "hash": "1782d06429abaa97497f898de841497f"
+  },
+  "custom_shop_qty_selector/__manifest__.py": {
+    "mtime": 1784672083286.8994,
+    "hash": "4878f472690ed84160e4b06f678eea44"
+  },
+  "custom_shop_qty_selector/controllers/__init__.py": {
+    "mtime": 1778102038770.4983,
+    "hash": "00c96d57631cbc25b711085016091386"
+  },
+  "custom_shop_qty_selector/controllers/main.py": {
+    "mtime": 1784219203644.8914,
+    "hash": "4e3bd37db8f8fc522275e89947acfc84"
+  },
+  "custom_shop_qty_selector/hooks.py": {
+    "mtime": 1778619998028.5781,
+    "hash": "eed59179a47d10f0262ccf25a7c60ffa"
+  },
+  "custom_shop_qty_selector/migrations/19.0.2.10.0/post-migrate.py": {
+    "mtime": 1778761630441.025,
+    "hash": "a6053f0d3c2e05c0c5267f2d5399541a"
+  },
+  "custom_shop_qty_selector/migrations/19.0.2.11.0/post-migrate.py": {
+    "mtime": 1778761630441.0913,
+    "hash": "2f7fc39e7414b1c5514137c65c977ee4"
+  },
+  "custom_shop_qty_selector/migrations/19.0.2.12.0/pre-migrate.py": {
+    "mtime": 1778619998028.8552,
+    "hash": "d4ea79cc0e015ba302c0c3b35f4cceaf"
+  },
+  "custom_shop_qty_selector/migrations/19.0.2.9.0/post-migrate.py": {
+    "mtime": 1778619998029.123,
+    "hash": "66a4e426684308baf8f7a22dcd1ac9c3"
+  },
+  "custom_shop_qty_selector/models/__init__.py": {
+    "mtime": 1779695572182.3442,
+    "hash": "cd14383fbb3d67d16b7aa0c1a9325193"
+  },
+  "custom_shop_qty_selector/models/product_template.py": {
+    "mtime": 1784662833186.0125,
+    "hash": "67b7508c3975f17f4b45e1805b655649"
+  },
+  "custom_shop_qty_selector/models/website.py": {
+    "mtime": 1783007641742.2488,
+    "hash": "541e11c98cecc3c31ca1d4a987ee942c"
+  },
+  "custom_shop_qty_selector/static/src/js/shop_filters_patch.js": {
+    "mtime": 1783064844064.9873,
+    "hash": "fcbc72eeaf7d933689d2272d6c8801cb"
+  },
+  "custom_shop_qty_selector/static/src/js/shop_qty_selector.js": {
+    "mtime": 1784237467855.048,
+    "hash": "44714aea6751d26f9166ddd052dabb60"
+  },
+  "custom_shop_qty_selector/tests/__init__.py": {
+    "mtime": 1779986405373.0215,
+    "hash": "8fee73c71b9ea1fe76eb5e9a0d442710"
+  },
+  "custom_shop_qty_selector/tests/test_shop_public_access.py": {
+    "mtime": 1778107121186.8757,
+    "hash": "88e11ff162701f9f277a57f7f2ff7a22"
+  },
+  "custom_shop_qty_selector/tests/test_stock_qty.py": {
+    "mtime": 1780948472749.1,
+    "hash": "5a79399cd8e458ecea35e3dc6236e091"
+  },
+  "lab_inventory_report/__init__.py": {
+    "mtime": 1780365103536.6177,
+    "hash": "fd2bac61a2a02a153427c669a4e0027d"
+  },
+  "lab_inventory_report/__manifest__.py": {
+    "mtime": 1784667604033.5132,
+    "hash": "1a6c24155701124c440c78d5ed188d5c"
+  },
+  "lab_inventory_report/models/__init__.py": {
+    "mtime": 1780365103536.8386,
+    "hash": "063c2c70213dd0231c512ee7b67bd3e5"
+  },
+  "lab_inventory_report/models/report_lab_inventory.py": {
+    "mtime": 1784667703709.0444,
+    "hash": "5dcc647a2c6d0058a7a05c53b9af9c77"
+  },
+  "lab_inventory_report/tests/__init__.py": {
+    "mtime": 1781584472477.19,
+    "hash": "331c6d714ab86adf0da932c8e23c72e9"
+  },
+  "lab_inventory_report/tests/test_lab_inventory_report.py": {
+    "mtime": 1784667603298.5166,
+    "hash": "f20e19f58a4821f5a8f38aa549701080"
+  },
+  "lot_selection/__init__.py": {
+    "mtime": 1779626469872.6196,
+    "hash": "079c34560a3186bb31a7094c91065a5e"
+  },
+  "lot_selection/__manifest__.py": {
+    "mtime": 1781584472477.7373,
+    "hash": "101aabc068141743053b83afda9efef2"
+  },
+  "lot_selection/migrations/19.0.0.9/post-migrate.py": {
+    "mtime": 1779626469872.765,
+    "hash": "73043c2de2cffe942eecfcec669136a9"
+  },
+  "lot_selection/models/__init__.py": {
+    "mtime": 1779626469872.9258,
+    "hash": "84b57bfb2ac79909e80eb4bd656f6d71"
+  },
+  "lot_selection/models/purchase_order.py": {
+    "mtime": 1779626469872.9912,
+    "hash": "da1a9c80c53e2fa91208ffbd1217a719"
+  },
+  "lot_selection/models/purchase_order_line.py": {
+    "mtime": 1779626469873.051,
+    "hash": "41ae4f43b927ca24cf55cd583b95a414"
+  },
+  "lot_selection/models/sale_order.py": {
+    "mtime": 1779626469873.112,
+    "hash": "f06dc1715d4b4e0a4156f970430b39bb"
+  },
+  "lot_selection/models/sale_order_line.py": {
+    "mtime": 1779626469873.1895,
+    "hash": "e285789e49691739c92a034b24e1ff65"
+  },
+  "lot_selection/models/stock_move.py": {
+    "mtime": 1779626469873.2483,
+    "hash": "36b4cfe1fec05e905e41c14c3a5ca7b9"
+  },
+  "lot_selection/models/stock_picking.py": {
+    "mtime": 1779986405413.4275,
+    "hash": "750acda46946b03833a9aa8c0cc2bb81"
+  },
+  "lot_selection/tests/__init__.py": {
+    "mtime": 1781584472478.1245,
+    "hash": "c398f7c5249be7d1c6efe5da7276c5bb"
+  },
+  "lot_selection/tests/test_lot_selection.py": {
+    "mtime": 1781584472478.2703,
+    "hash": "d0df701aacc05ad7e0349d9ae519750f"
+  },
+  "md_bento_theme/__manifest__.py": {
+    "mtime": 1783064844067.2998,
+    "hash": "090c1a2fba7c6d7337896999a45b6d84"
+  },
+  "md_bento_theme/static/src/js/md_bento_interactions.js": {
+    "mtime": 1784583252808.4258,
+    "hash": "2258c86a72486d7d31964d8697d88643"
+  },
+  "md_cart_barcode_scanner/__init__.py": {
+    "mtime": 1784568262207.3474,
+    "hash": "7b20b1b6ff2c20e8e20fd09067071aa8"
+  },
+  "md_cart_barcode_scanner/__manifest__.py": {
+    "mtime": 1784568719118.201,
+    "hash": "032f8689d23ba31bb74011cdc8e519fd"
+  },
+  "md_cart_barcode_scanner/controllers/__init__.py": {
+    "mtime": 1784531936851.2158,
+    "hash": "00c96d57631cbc25b711085016091386"
+  },
+  "md_cart_barcode_scanner/controllers/main.py": {
+    "mtime": 1784568266799.326,
+    "hash": "7468e6845fe6729d872025b3b0525bef"
+  },
+  "md_cart_barcode_scanner/models/__init__.py": {
+    "mtime": 1784568263771.34,
+    "hash": "112dfda7eec379090324c438e06698ae"
+  },
+  "md_cart_barcode_scanner/models/sale_order_line.py": {
+    "mtime": 1784568265281.333,
+    "hash": "068440c24ea6c4b223ee1f0b454f80fc"
+  },
+  "md_cart_barcode_scanner/static/lib/html5-qrcode/html5-qrcode.min.js": {
+    "mtime": 1784536694043.6274,
+    "hash": "d88d3200cb547c9e86ee972975561dcd"
+  },
+  "md_cart_barcode_scanner/static/src/js/cart_barcode_scanner.js": {
+    "mtime": 1784571851672.4841,
+    "hash": "b548a5843bb75c7b3b37fbd53ddb9197"
+  },
+  "md_cfdi_stamping/__init__.py": {
+    "mtime": 1783628893034.4106,
+    "hash": "d8667765644bcd946e7f25d2c314ad49"
+  },
+  "md_cfdi_stamping/__manifest__.py": {
+    "mtime": 1783630741454.363,
+    "hash": "7d8e0a21012b65b44d3e88785395c4db"
+  },
+  "md_cfdi_stamping/models/__init__.py": {
+    "mtime": 1783630728314.646,
+    "hash": "6b09b5df5fefdca7e46221e487cc1302"
+  },
+  "md_cfdi_stamping/models/account_move.py": {
+    "mtime": 1783630704711.0442,
+    "hash": "4d397992a2b3c9ec9634d87d53712db1"
+  },
+  "md_cfdi_stamping/models/cfdi_catalogos.py": {
+    "mtime": 1783628765907.3193,
+    "hash": "7e11612ef1b9029a0656b328655acef4"
+  },
+  "md_cfdi_stamping/models/pos_session.py": {
+    "mtime": 1783630721032.432,
+    "hash": "9aa392191061196a7a10a7629790a5eb"
+  },
+  "md_cfdi_stamping/models/product_template.py": {
+    "mtime": 1783628787516.0295,
+    "hash": "0765cf7b70e3f8c0fb19a9cf57d4f37e"
+  },
+  "md_cfdi_stamping/models/res_company.py": {
+    "mtime": 1783630687081.6448,
+    "hash": "8ea6825ce01df09fec5626969b6aacc6"
+  },
+  "md_cfdi_stamping/models/res_partner.py": {
+    "mtime": 1783628782388.4497,
+    "hash": "a23605453b0839e5e4de4d9ef7d327ca"
+  },
+  "md_command_palette/__init__.py": {
+    "mtime": 1784511217000,
+    "hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "md_command_palette/__manifest__.py": {
+    "mtime": 1784608677173.5972,
+    "hash": "bae1ff6d2b1eedc8b1aba8ad2674f075"
+  },
+  "md_command_palette/static/src/js/launcher.js": {
+    "mtime": 1784655229852.1086,
+    "hash": "d179ae0a112f3b39ed8de76d91603217"
+  },
+  "md_dark_mode/__init__.py": {
+    "mtime": 1783720609915.5806,
+    "hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "md_dark_mode/__manifest__.py": {
+    "mtime": 1784658653308.08,
+    "hash": "8c6bd0c74a655629c57ab5b8a97e20d7"
+  },
+  "md_dark_mode/static/src/js/dark_mode_toggle.js": {
+    "mtime": 1783720607194.5918,
+    "hash": "553db462465f9f7159548ba85bf679bf"
+  },
+  "md_home_menu/__init__.py": {
+    "mtime": 1783965111121.7666,
+    "hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "md_home_menu/__manifest__.py": {
+    "mtime": 1784608678634.5903,
+    "hash": "da671e77b8f4441bc9d54dd34bdc09b2"
+  },
+  "md_legacy_pos_history/__init__.py": {
+    "mtime": 1783622746982.3313,
+    "hash": "d8667765644bcd946e7f25d2c314ad49"
+  },
+  "md_legacy_pos_history/__manifest__.py": {
+    "mtime": 1783645987224.1902,
+    "hash": "fafd2877a189f22088d3aa425f1f5fd9"
+  },
+  "md_legacy_pos_history/models/__init__.py": {
+    "mtime": 1783645955920.3027,
+    "hash": "f31bd9fb4a95f1d4b1933c2dfa660874"
+  },
+  "md_legacy_pos_history/models/legacy_pos_order.py": {
+    "mtime": 1783622751746.3113,
+    "hash": "ac8c62ffa15d81b096c4342e9a17c27f"
+  },
+  "md_legacy_pos_history/models/pos_order_unified.py": {
+    "mtime": 1783646097078.7976,
+    "hash": "2489b6337b287f6f752a16fa86692ae4"
+  },
+  "md_lots_management/__init__.py": {
+    "mtime": 1780753328958.3904,
+    "hash": "a9ad194c9f75b4512003933e8d9cbb63"
+  },
+  "md_lots_management/__manifest__.py": {
+    "mtime": 1784615960420.6602,
+    "hash": "8aa98882880f270ccd2e1f23a0f792d1"
+  },
+  "md_lots_management/models/__init__.py": {
+    "mtime": 1783467929649.9932,
+    "hash": "01a6919e65524ceabebe3ac4bf29dddf"
+  },
+  "md_lots_management/models/lot_assign_company_wizard.py": {
+    "mtime": 1781209641400.8728,
+    "hash": "f297d54db58757913990b5b77d2da3d2"
+  },
+  "md_lots_management/models/production_lot.py": {
+    "mtime": 1784651879073.3086,
+    "hash": "04d9f3b30c685cd14d3507425eff49f9"
+  },
+  "md_lots_management/models/res_users.py": {
+    "mtime": 1783468255836.062,
+    "hash": "806fa162e27b6cefd756ade33dc4478f"
+  },
+  "md_lots_management/models/stock_move_line.py": {
+    "mtime": 1781129892208.7527,
+    "hash": "883d192d3afa106afa18700da4fc135a"
+  },
+  "md_lots_management/models/stock_picking.py": {
+    "mtime": 1781370950131.6946,
+    "hash": "6b12d4a3db1209b169f00be1bb96454b"
+  },
+  "md_lots_management/scripts/audit_merge_global_lots.py": {
+    "mtime": 1781367574170.063,
+    "hash": "23c5d6c13403040f1a5e1a4134fd7666"
+  },
+  "md_lots_management/static/src/js/handheld_kanban_view.js": {
+    "mtime": 1783468575875.5168,
+    "hash": "003f2560c2eb24f00cabda9db63e2cb5"
+  },
+  "md_lots_management/tests/__init__.py": {
+    "mtime": 1780753328959.856,
+    "hash": "d524b514f41064ef715e95b1255e7287"
+  },
+  "md_lots_management/tests/test_lots_migration.py": {
+    "mtime": 1781129892209,
+    "hash": "13dd215c9c7a29d9bf0c50810a41174e"
+  },
+  "md_lots_management/wizards/__init__.py": {
+    "mtime": 1780753328961.1726,
+    "hash": "31c8f1fea22f7acff3c9f05665aa9acd"
+  },
+  "md_lots_management/wizards/lot_a_la_mano_wizard.py": {
+    "mtime": 1780753328961.349,
+    "hash": "4f251021ca910b57cf7ccfac608b9e97"
+  },
+  "md_mail_client/__init__.py": {
+    "mtime": 1783723482868.461,
+    "hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "md_mail_client/__manifest__.py": {
+    "mtime": 1783723475578.4907,
+    "hash": "ba32fe72957668f9418fabc62129c042"
+  },
+  "md_mail_client/static/src/js/mail_client.js": {
+    "mtime": 1784218756729.9717,
+    "hash": "75b40fe15fd231831e6a1caf1d189c48"
+  },
+  "md_pharma_regulatory/__init__.py": {
+    "mtime": 1783648225777.8875,
+    "hash": "d8667765644bcd946e7f25d2c314ad49"
+  },
+  "md_pharma_regulatory/__manifest__.py": {
+    "mtime": 1784657521449.4763,
+    "hash": "9104fc8158e891b50632af1928dc60c4"
+  },
+  "md_pharma_regulatory/models/__init__.py": {
+    "mtime": 1784045833816.485,
+    "hash": "3348d491c7e504893193aac9f7482710"
+  },
+  "md_pharma_regulatory/models/abbreviation.py": {
+    "mtime": 1784046170033.981,
+    "hash": "152290d65723a2669b90ad5ab46b4faf"
+  },
+  "md_pharma_regulatory/models/active_substance.py": {
+    "mtime": 1783711919351.2732,
+    "hash": "be2d343cd14eebeb036d02a129738f2d"
+  },
+  "md_pharma_regulatory/models/product_template.py": {
+    "mtime": 1784646735376.0774,
+    "hash": "5127a55faa26f2f56db5e177e247df72"
+  },
+  "md_pharma_regulatory/models/regulatory_review.py": {
+    "mtime": 1783711256750.102,
+    "hash": "44215e040ff4ce913032d2a56a7dbf8a"
+  },
+  "md_pharma_regulatory/static/src/kanban_lot_detail/kanban_lot_detail_popup.js": {
+    "mtime": 1784646738219.0757,
+    "hash": "e3291e3b916db9ac360be5065c65e877"
+  },
+  "md_pharma_regulatory/static/src/kanban_lot_detail/md_lot_detail_button.js": {
+    "mtime": 1784646738565.0757,
+    "hash": "07b7e4fc58b46b335c70c30002faca0f"
+  },
+  "md_pharma_regulatory/static/src/kanban_lot_detail/md_lot_expiry_utils.js": {
+    "mtime": 1784646738910.0754,
+    "hash": "a28f758d4a27f2019dfedbb8354ed677"
+  },
+  "md_pos_product_labels/__init__.py": {
+    "mtime": 1784050255139.103,
+    "hash": "d8667765644bcd946e7f25d2c314ad49"
+  },
+  "md_pos_product_labels/__manifest__.py": {
+    "mtime": 1784050257178.0938,
+    "hash": "89516b5b5d6cb4a1b0a74de41ff10652"
+  },
+  "md_pos_product_labels/models/__init__.py": {
+    "mtime": 1784050256197.0984,
+    "hash": "3c07f15d17bc046e6fb1a922dcf082e9"
+  },
+  "md_pos_product_labels/models/active_substance.py": {
+    "mtime": 1784050255895.0996,
+    "hash": "c955476d2c3ab75da531fc9d86f9a1d7"
+  },
+  "md_pos_product_labels/models/pos_session.py": {
+    "mtime": 1784050255592.101,
+    "hash": "d187bd16b591d782e04b957bc80caba5"
+  },
+  "md_pos_product_labels/models/product_line.py": {
+    "mtime": 1784050256801.0955,
+    "hash": "49b8e8dc40f096151fb39db285823cf4"
+  },
+  "md_pos_product_labels/models/product_product.py": {
+    "mtime": 1784050256500.097,
+    "hash": "af902c1c7ffa3b8b97f16baa13a39760"
+  },
+  "md_pos_product_labels/static/src/components/regulatory_detail_popup/regulatory_detail_popup.js": {
+    "mtime": 1784050260354.0796,
+    "hash": "31b63ba71c6c606d1fed0716b15f9eca"
+  },
+  "md_pos_product_labels/static/src/js/color_utils.js": {
+    "mtime": 1784050258465.0881,
+    "hash": "8902284a0cfd18fa062c11aa2c73b036"
+  },
+  "md_pos_product_labels/static/src/js/product_card.js": {
+    "mtime": 1784050258162.0894,
+    "hash": "628585f34f0d149d794d137f9f8e7c8d"
+  },
+  "md_pos_product_labels/static/src/js/product_template_search_patch.js": {
+    "mtime": 1784050257858.0908,
+    "hash": "b66771e096870f6023c596f276724d31"
+  },
+  "md_product_lines/__init__.py": {
+    "mtime": 1783621538215.5942,
+    "hash": "d8667765644bcd946e7f25d2c314ad49"
+  },
+  "md_product_lines/__manifest__.py": {
+    "mtime": 1783720020078.1384,
+    "hash": "c31878e6b234dd0a61b5b57fc322f1d3"
+  },
+  "md_product_lines/models/__init__.py": {
+    "mtime": 1783621541401.5813,
+    "hash": "a35123b866c418f7b47a38d1e50d439e"
+  },
+  "md_product_lines/models/product_line.py": {
+    "mtime": 1783720215123.251,
+    "hash": "bba1410d992f63ce0db378b3d270d6f0"
+  },
+  "md_product_lines/models/product_template.py": {
+    "mtime": 1783621544589.568,
+    "hash": "13aff22514854b888e7c4c80d5c5a9cb"
+  },
+  "md_security_roles/__init__.py": {
+    "mtime": 1783550579519.854,
+    "hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "md_security_roles/__manifest__.py": {
+    "mtime": 1783550578025.8599,
+    "hash": "cbed664698f1603ff15555edc8dbb47d"
+  },
+  "medicine_depot_portal/__init__.py": {
+    "mtime": 1779747382104.2002,
+    "hash": "7b20b1b6ff2c20e8e20fd09067071aa8"
+  },
+  "medicine_depot_portal/__manifest__.py": {
+    "mtime": 1783007641835.991,
+    "hash": "7d5bb28d68d3c2160179f86956bf088c"
+  },
+  "medicine_depot_portal/controllers/__init__.py": {
+    "mtime": 1779747382104.908,
+    "hash": "903a160e7fd50c53704b069d232d2256"
+  },
+  "medicine_depot_portal/controllers/portal.py": {
+    "mtime": 1781129886883.721,
+    "hash": "30a92fb6cfab644f37716b6fcb31a7f0"
+  },
+  "medicine_depot_portal/controllers/public.py": {
+    "mtime": 1781129886883.942,
+    "hash": "9ea57108600765ba17e28f8a691f9cb8"
+  },
+  "medicine_depot_portal/controllers/utils.py": {
+    "mtime": 1781129886884.252,
+    "hash": "a34f379d0d6ad71cb516a369aab6f8e2"
+  },
+  "medicine_depot_portal/models/__init__.py": {
+    "mtime": 1779986405374.6526,
+    "hash": "a9ef0e1ea2ae99edbf962182c36a8d74"
+  },
+  "medicine_depot_portal/models/pharmacovigilance.py": {
+    "mtime": 1780365786787.1785,
+    "hash": "9ca4cd93f8083db630b1510ac2dcdbaf"
+  },
+  "medicine_depot_portal/models/website.py": {
+    "mtime": 1779986405595.4773,
+    "hash": "79aeb63a53ef1c95231aa4be20a312cb"
+  },
+  "medicine_depot_portal/static/src/js/afiliacion.js": {
+    "mtime": 1781129886886.3765,
+    "hash": "0a58a2c41fcd6cf964ad8dabf8af62f4"
+  },
+  "medicine_depot_portal/static/src/js/login_glass_island.js": {
+    "mtime": 1781129886886.5703,
+    "hash": "59c0a639a95449921f53a874106c0ae2"
+  },
+  "medicine_depot_portal/static/src/js/md_toast_promoter.js": {
+    "mtime": 1779986405656.4856,
+    "hash": "af21c86e2f71a1f84b099536d96c9847"
+  },
+  "medicine_depot_portal/static/src/js/md_wizard_base.js": {
+    "mtime": 1779986405375.8032,
+    "hash": "3327f73d1d181e83f1c7b780ab7a0bd9"
+  },
+  "medicine_depot_portal/static/src/js/pharmacovigilance.js": {
+    "mtime": 1781129886886.8357,
+    "hash": "aaeff6b45fc0a19b54767769d2d80b96"
+  },
+  "medicine_depot_portal/static/src/js/portal_bento.js": {
+    "mtime": 1778567512921.826,
+    "hash": "4f611c3d846fd8799a2815e8b1dcd31e"
+  },
+  "medicine_depot_portal/static/src/js/portal_home_counters_patch.js": {
+    "mtime": 1779986405291.211,
+    "hash": "c3b1a80ed57e332947655e045bc57212"
+  },
+  "medicine_depot_portal/static/src/js/public_animations.js": {
+    "mtime": 1781795219599.505,
+    "hash": "645517b38bd80669721816b8ee082965"
+  },
+  "medicine_depot_portal/static/src/js/public_branches_geo.js": {
+    "mtime": 1784237478144.9998,
+    "hash": "bcf2f7a37c22f76cbbde1b459bac5675"
+  },
+  "medicine_depot_portal/static/src/js/public_navbar.js": {
+    "mtime": 1781795219599.9265,
+    "hash": "29691d048eab7cc9068c8a06cdccf36b"
+  },
+  "medicine_depot_portal/static/src/js/public_surface_bridge.js": {
+    "mtime": 1783064736499.0195,
+    "hash": "179483b48f6f9d1ef690c893de1afb82"
+  },
+  "medicine_depot_portal/static/src/js/shop_drawer.js": {
+    "mtime": 1779986405728.816,
+    "hash": "14ff50d811486aad311b53ae1575bd2b"
+  },
+  "medicine_depot_portal/static/src/js/shop_ux.js": {
+    "mtime": 1781584472479.1672,
+    "hash": "22817c7d339955fe82d4e596395470eb"
+  },
+  "medicine_depot_portal/static/src/js/snippets/s_md_gmap.js": {
+    "mtime": 1781795219600.341,
+    "hash": "06940c7c84e71953c799a27a34c21a92"
+  },
+  "medicine_depot_portal/static/src/js/tours/md_afiliacion_tour.js": {
+    "mtime": 1781584472479.4216,
+    "hash": "7c6feebb28aa07ed6685aabb5747cc59"
+  },
+  "medicine_depot_portal/static/src/js/tours/md_portal_dashboard_tour.js": {
+    "mtime": 1781584472479.581,
+    "hash": "13b7f9ca5913619ac2ce026f9be44dce"
+  },
+  "medicine_depot_portal/static/src/js/tours/md_shop_ala_mano_tour.js": {
+    "mtime": 1781584472479.6953,
+    "hash": "98e83530b539446c13fc0af5155c54ba"
+  },
+  "medicine_depot_portal/tests/__init__.py": {
+    "mtime": 1780075613258.2861,
+    "hash": "321a40e3a673a336181dc92c44ade663"
+  },
+  "medicine_depot_portal/tests/test_afiliacion_template.py": {
+    "mtime": 1779986405170.9468,
+    "hash": "28a460d2288e04a39e4aee3031744694"
+  },
+  "medicine_depot_portal/tests/test_bento_dashboard_redirect.py": {
+    "mtime": 1780075613279.818,
+    "hash": "ad2d04d75ec79e11eb06009056c52cee"
+  },
+  "medicine_depot_portal/tests/test_pharmacovigilance_template.py": {
+    "mtime": 1779747382109.642,
+    "hash": "fdb25be87d24cfc2624b571c687c5938"
+  },
+  "medicine_depot_portal/tests/test_phase1_templates.py": {
+    "mtime": 1780365115668.0215,
+    "hash": "3c9b463b28553879ee1b4652867652e1"
+  },
+  "medicine_depot_portal/tests/test_portal_flows.py": {
+    "mtime": 1781129886889.5056,
+    "hash": "7e87bcdce20810b11a15fad24164bbf6"
+  },
+  "medicine_depot_scrap_batch/__init__.py": {
+    "mtime": 1781584472480.911,
+    "hash": "5ca7472a36e2d0d5fd829eb1bfd0ead7"
+  },
+  "medicine_depot_scrap_batch/__manifest__.py": {
+    "mtime": 1783630293199.3083,
+    "hash": "ee69bdf282f503ac457ece21ea4c9158"
+  },
+  "medicine_depot_scrap_batch/hooks.py": {
+    "mtime": 1779626320873.6003,
+    "hash": "fd582c390b7d67a507d84f1b841775ca"
+  },
+  "medicine_depot_scrap_batch/models/__init__.py": {
+    "mtime": 1779748730099.097,
+    "hash": "464c24f1714b0af727d7361552506ce6"
+  },
+  "medicine_depot_scrap_batch/models/scrap_history_legacy.py": {
+    "mtime": 1779985278320.0872,
+    "hash": "1231920e7b9892ddc4fd0df16732c8e0"
+  },
+  "medicine_depot_scrap_batch/models/scrap_summary_2025.py": {
+    "mtime": 1781129886891.183,
+    "hash": "03239263c5e9e352175b276918a5a8bd"
+  },
+  "medicine_depot_scrap_batch/models/stock_scrap_batch.py": {
+    "mtime": 1781584472481.4492,
+    "hash": "ecec8cc9f49b3d34fd7633cb85ac418c"
+  },
+  "medicine_depot_scrap_batch/report/__init__.py": {
+    "mtime": 1781584472481.6384,
+    "hash": "0feb9b4ab04eb3d151e5f3e5806ab96a"
+  },
+  "medicine_depot_scrap_batch/report/scrap_batch_report.py": {
+    "mtime": 1781584472482.0237,
+    "hash": "c5ca962a94bdbcf0b2f028153c2ac814"
+  },
+  "medicine_depot_scrap_batch/tests/__init__.py": {
+    "mtime": 1779626320874.1775,
+    "hash": "02c719e12bd76dd5f070745390de924b"
+  },
+  "medicine_depot_scrap_batch/tests/test_stock_scrap_batch.py": {
+    "mtime": 1779985278310.3367,
+    "hash": "1eba3bc6597271f8218ddc9d82d1de1f"
+  },
+  "medicine_depot_website/__init__.py": {
+    "mtime": 1779986405136.6711,
+    "hash": "31396942dbd93685f2f90bf5442c6542"
+  },
+  "medicine_depot_website/__manifest__.py": {
+    "mtime": 1781810592514.39,
+    "hash": "d2caf595548958c0c75d7e117e57d66b"
+  },
+  "medicine_depot_website/controllers/__init__.py": {
+    "mtime": 1779986405136.9036,
+    "hash": "eaeb7f5bf87d7432c9a286d1db2546a4"
+  },
+  "medicine_depot_website/controllers/api.py": {
+    "mtime": 1783064844068.5168,
+    "hash": "69b4700d56870eb65a78b1149d256985"
+  },
+  "medicine_depot_website/models/__init__.py": {
+    "mtime": 1781584472483.9026,
+    "hash": "58ab63ba7a040ac9faf2fb3152c3c6cf"
+  },
+  "medicine_depot_website/models/product_template.py": {
+    "mtime": 1783007641838.9626,
+    "hash": "f9fdfa3e21e0eeb03b2060335390a453"
+  },
+  "medicine_depot_website/models/res_config_settings.py": {
+    "mtime": 1779986405379.736,
+    "hash": "0cffca73f116562157730acad6926bb6"
+  },
+  "medicine_depot_website/static/src/js/medicd.js": {
+    "mtime": 1779986405182.403,
+    "hash": "4c19453087c95c16bdff5f7d374a4236"
+  },
+  "medicine_depot_website/static/src/js/snippets/s_md_hero.js": {
+    "mtime": 1779986405213.3735,
+    "hash": "22eb3dbb4920755f80b80e8d6d66f425"
+  },
+  "medicine_depot_website/static/src/js/snippets/s_md_sucursales.js": {
+    "mtime": 1780365115668.6948,
+    "hash": "47252b24a66545a042c8828b090cfb3b"
+  },
+  "medicine_depot_website/tests/__init__.py": {
+    "mtime": 1779986405139.072,
+    "hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "medicine_depot_website/tests/test_medicine_depot_website.py": {
+    "mtime": 1779986405380.4097,
+    "hash": "f0b99ffc3f85ceb8dab15b5a4a121401"
+  },
+  "pharma_reports/__init__.py": {
+    "mtime": 1781584472484.9766,
+    "hash": "fd2bac61a2a02a153427c669a4e0027d"
+  },
+  "pharma_reports/__manifest__.py": {
+    "mtime": 1784667127911.7822,
+    "hash": "a9bad579b9ebafe6128544a2761e8235"
+  },
+  "pharma_reports/migrations/19.0.1.0.1/__init__.py": {
+    "mtime": 1781129892213.322,
+    "hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "pharma_reports/migrations/19.0.1.0.1/post_migrate.py": {
+    "mtime": 1781129892213.7476,
+    "hash": "e5d2a5f78f7a94f659f50802213efa3d"
+  },
+  "pharma_reports/migrations/19.0.1.0.3/__init__.py": {
+    "mtime": 1781129892213.8496,
+    "hash": "68b329da9893e34099c7d8ad5cb9c940"
+  },
+  "pharma_reports/migrations/19.0.1.0.3/post-migrate.py": {
+    "mtime": 1781129892213.975,
+    "hash": "e9ccb2393a55d2f166652b4006acf0e0"
+  },
+  "pharma_reports/models/__init__.py": {
+    "mtime": 1783064853150.143,
+    "hash": "6fb9ab227f1117f5b2f6383263de5c8d"
+  },
+  "pharma_reports/models/physical_inventory_report.py": {
+    "mtime": 1784667127176.786,
+    "hash": "208eec9416571055b5080d1ed9d4c02a"
+  },
+  "pharma_reports/tests/__init__.py": {
+    "mtime": 1781584472485.77,
+    "hash": "bbf3852cddb8faef6e93eaad058cb677"
+  },
+  "pharma_reports/tests/test_pharma_reports.py": {
+    "mtime": 1783064853151.3582,
+    "hash": "950c11d90f9259aaab767b507f5838cd"
+  },
+  "portal_picking_visibility/__init__.py": {
+    "mtime": 1778102038828.3423,
+    "hash": "bfc1489fa5f8c75789ff623144fd300a"
+  },
+  "portal_picking_visibility/__manifest__.py": {
+    "mtime": 1780948472762.44,
+    "hash": "49d85ef817e6b2d58853971d6d4eea62"
+  },
+  "portal_picking_visibility/controllers/__init__.py": {
+    "mtime": 1778102038830.4343,
+    "hash": "f1290810f73898b554aee12ccbac6168"
+  },
+  "portal_picking_visibility/controllers/portal.py": {
+    "mtime": 1779986405413.905,
+    "hash": "e15a8f9f3f54f0507fc4f0d6f32bc439"
+  },
+  "portal_picking_visibility/models/__init__.py": {
+    "mtime": 1778102038828.8806,
+    "hash": "9700cfb7de33b86f150593005d957111"
+  },
+  "portal_picking_visibility/models/sale_order.py": {
+    "mtime": 1780365115668.977,
+    "hash": "20d2f3b86bd5512a7321e5e358ea4573"
+  },
+  "portal_picking_visibility/models/stock_picking.py": {
+    "mtime": 1779986405414.0657,
+    "hash": "06586f0bdff2e54c94f5d5c8d2299c63"
+  },
+  "portal_picking_visibility/tests/__init__.py": {
+    "mtime": 1779986405381.988,
+    "hash": "d6217767f5c2aededc49e5fd40898389"
+  },
+  "portal_picking_visibility/tests/test_portal_picking.py": {
+    "mtime": 1779986405382.1611,
+    "hash": "3af81e32f297e53097b203fbfb68ffe5"
+  },
+  "purchase_invoice_parser/__init__.py": {
+    "mtime": 1778102038000,
+    "hash": "d8667765644bcd946e7f25d2c314ad49"
+  },
+  "purchase_invoice_parser/__manifest__.py": {
+    "mtime": 1784667607256.498,
+    "hash": "6f56300780340f3f60bf275a6bfe7c59"
+  },
+  "purchase_invoice_parser/models/__init__.py": {
+    "mtime": 1781651288000,
+    "hash": "00658e29d18de3c4200314be7d473d99"
+  },
+  "purchase_invoice_parser/models/price_change_report_wizard.py": {
+    "mtime": 1784667605796.505,
+    "hash": "19e882a55278295b036fda066814f0df"
+  },
+  "purchase_invoice_parser/models/price_notification.py": {
+    "mtime": 1784667604329.512,
+    "hash": "929ed9987ab767ee1856bca983ee6f04"
+  },
+  "purchase_invoice_parser/models/price_notification_report_wizard.py": {
+    "mtime": 1784667605065.5083,
+    "hash": "97464684b7210852813385fd78b187f5"
+  },
+  "purchase_invoice_parser/models/provider_profile.py": {
+    "mtime": 1781584472000,
+    "hash": "e7427eb6a28227eca3c68a9c2571b753"
+  },
+  "purchase_invoice_parser/models/purchase_invoice_import_wizard.py": {
+    "mtime": 1784661386856.025,
+    "hash": "eae6d885069ec180b6a3cc910cee4754"
+  },
+  "purchase_invoice_parser/models/purchase_order.py": {
+    "mtime": 1784661386423.0269,
+    "hash": "bfea86739454e9d4a551ddbbd7579cdb"
+  },
+  "purchase_invoice_parser/services/__init__.py": {
+    "mtime": 1778102038000,
+    "hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "purchase_invoice_parser/services/addenda_parsers.py": {
+    "mtime": 1779226172000,
+    "hash": "53893f03a21ece8917dedf0aa10aa5e3"
+  },
+  "purchase_invoice_parser/services/cfdi_parser.py": {
+    "mtime": 1779695572000,
+    "hash": "a50cb1c9557d63a4cb164d87de453344"
+  },
+  "purchase_invoice_parser/services/known_rfcs.py": {
+    "mtime": 1779695572000,
+    "hash": "5b739312d3f3c722ba97c117563cfee8"
+  },
+  "purchase_invoice_parser/services/lot_stock_resolver.py": {
+    "mtime": 1781584472000,
+    "hash": "93e12cab224839922aeb437b9e8a665a"
+  },
+  "purchase_invoice_parser/services/lot_utils.py": {
+    "mtime": 1779226172000,
+    "hash": "2289cfeab750dcd71cb2ed0a56d3c822"
+  },
+  "purchase_invoice_parser/services/pdf_lot_parser.py": {
+    "mtime": 1779226172000,
+    "hash": "ea56d355384b8f74276f308f22adccc5"
+  },
+  "purchase_invoice_parser/services/pdf_lot_provider.py": {
+    "mtime": 1783064853000,
+    "hash": "b24fbcb9c2c711fbd3fc9534e7aa8425"
+  },
+  "purchase_invoice_parser/services/product_matcher.py": {
+    "mtime": 1779226172000,
+    "hash": "5d36fc9624ae128efce09dcf66b10540"
+  },
+  "purchase_invoice_parser/services/purchase_order_builder.py": {
+    "mtime": 1783094895000,
+    "hash": "0cb7204d300a0b23002f516c5727b9be"
+  },
+  "purchase_invoice_parser/services/supplier_matcher.py": {
+    "mtime": 1779226172000,
+    "hash": "8fca4f15792c7d86be8d3622099ce016"
+  },
+  "purchase_invoice_parser/services/tax_resolver.py": {
+    "mtime": 1782774115000,
+    "hash": "9ba6b5f52e8d862b075fd160dc35825b"
+  },
+  "purchase_invoice_parser/services/zip_extractor.py": {
+    "mtime": 1778107121000,
+    "hash": "d3f6eba3595951a514c06f1223d69087"
+  },
+  "purchase_invoice_parser/static/src/js/cfdi_upload_widget.js": {
+    "mtime": 1783064853000,
+    "hash": "84ef7ba57f8443022bc56de8564ff133"
+  },
+  "purchase_invoice_parser/static/src/js/price_notification_menu.js": {
+    "mtime": 1781651288000,
+    "hash": "6e67f8f8cb012f47a17244e93dc492aa"
+  },
+  "purchase_invoice_parser/static/src/js/tours/purchase_parser_tour.js": {
+    "mtime": 1781651288000,
+    "hash": "2ff47f29874203de3e7a50a2d4bd72bc"
+  },
+  "purchase_invoice_parser/tests/__init__.py": {
+    "mtime": 1778107121000,
+    "hash": "25d00f03746eea4e3eec9545f35bf08f"
+  },
+  "purchase_invoice_parser/tests/test_invoice_parser.py": {
+    "mtime": 1783093520000,
+    "hash": "a1694c8821fcc3f81955242ab40b33fe"
+  },
+  "purchase_invoice_parser/tests/test_purchase_invoice_import_wizard.py": {
+    "mtime": 1783093484000,
+    "hash": "6b201ca9349ad9b73493e409667a6580"
+  },
+  "purchase_lot_selection/__init__.py": {
+    "mtime": 1779695572186.9678,
+    "hash": "003658b6815b8860ab3e97ca031aafc9"
+  },
+  "purchase_lot_selection/__manifest__.py": {
+    "mtime": 1779695572187.1077,
+    "hash": "aafbcbf108c684182b229ce3104d26d5"
+  },
+  "purchase_order_report/__init__.py": {
+    "mtime": 1779695572187.2627,
+    "hash": "f97875f89cc59a0637bb3072b30e377e"
+  },
+  "purchase_order_report/__manifest__.py": {
+    "mtime": 1779695572187.407,
+    "hash": "16cb4557ab39019a85678d08cee74c2b"
+  },
+  "purchase_vendor_ref/__init__.py": {
+    "mtime": 1778102038837.5576,
+    "hash": "d8667765644bcd946e7f25d2c314ad49"
+  },
+  "purchase_vendor_ref/__manifest__.py": {
+    "mtime": 1778757123507.6316,
+    "hash": "c8c77a909cb3f6b2ffa91aa38d2ddf15"
+  },
+  "purchase_vendor_ref/models/__init__.py": {
+    "mtime": 1778102038837.8696,
+    "hash": "e9245d3b14b8c0a51909ee580efa8347"
+  },
+  "purchase_vendor_ref/models/purchase_order.py": {
+    "mtime": 1778102038838.0637,
+    "hash": "cf745fdfd962d0e969c0a136a9191cb4"
+  },
+  "purchase_vendor_ref/tests/__init__.py": {
+    "mtime": 1781584472491.44,
+    "hash": "41f917ac9dc9e73592687eddd72fd73d"
+  },
+  "purchase_vendor_ref/tests/test_purchase_vendor_ref.py": {
+    "mtime": 1781584472491.5576,
+    "hash": "42921957e409566773809ff3771fc666"
+  },
+  "sale_account_custom/__init__.py": {
+    "mtime": 1778102038825.9824,
+    "hash": "7c17aeeb99eb3c57d8357f5433a0b2a0"
+  },
+  "sale_account_custom/__manifest__.py": {
+    "mtime": 1783630437304.1873,
+    "hash": "6148e5dfa61d3885ed0815db6895a936"
+  },
+  "sale_account_custom/migrations/19.0.0.2/post-migrate.py": {
+    "mtime": 1778761630442.1968,
+    "hash": "a6c669452daf9424f2a5860ab50368c5"
+  },
+  "sale_account_custom/migrations/19.0.0.3/post-migrate.py": {
+    "mtime": 1778761630442.2542,
+    "hash": "b2439f3b232ed6af81ceb4150f70db72"
+  },
+  "sale_account_custom/migrations/19.0.0.4/post-migrate.py": {
+    "mtime": 1778616568000,
+    "hash": "1cf0a720a08ea5fd8411fa868d4ad304"
+  },
+  "sale_account_custom/migrations/19.0.0.6/post-migrate.py": {
+    "mtime": 1778757123508.2817,
+    "hash": "1f9446f09ad08b8561a79ba76563faf4"
+  },
+  "sale_account_custom/migrations/19.0.0.7/pre-migrate.py": {
+    "mtime": 1779695572187.629,
+    "hash": "66d97484e2479626840a1808e5086c37"
+  },
+  "sale_account_custom/migrations/19.0.0.9/post-migrate.py": {
+    "mtime": 1781129892214.6667,
+    "hash": "75d7d9c572f86572df1b846ead0518fd"
+  },
+  "sale_account_custom/models/__init__.py": {
+    "mtime": 1781129886895.8757,
+    "hash": "b10bfce92c40f143c1885a9298c7da8a"
+  },
+  "sale_account_custom/models/account_fiscal_position.py": {
+    "mtime": 1781129892214.757,
+    "hash": "85ac3ff6d803ec3d7835756efba5f8f2"
+  },
+  "sale_account_custom/models/account_move.py": {
+    "mtime": 1783630396803.3906,
+    "hash": "e8cc011750450f2e824446d5d448120a"
+  },
+  "sale_account_custom/models/ir_actions_server.py": {
+    "mtime": 1778616568000,
+    "hash": "7ea3c58a6fd6ebf4d82d97e659023950"
+  },
+  "sale_account_custom/models/sale_order.py": {
+    "mtime": 1783630425675.8223,
+    "hash": "f6a72c80fec180e849daba02b2b7988b"
+  },
+  "sale_account_custom/tests/__init__.py": {
+    "mtime": 1781129892214.8499,
+    "hash": "df4697b9472e60508b091c83df7f595e"
+  },
+  "sale_account_custom/tests/test_fiscal_position_border_zone.py": {
+    "mtime": 1781129892214.9546,
+    "hash": "059145d9945086bf0dd8c222d9421468"
+  },
+  "sale_lab_report/__init__.py": {
+    "mtime": 1783064844069.1538,
+    "hash": "df4697b9472e60508b091c83df7f595e"
+  },
+  "sale_lab_report/__manifest__.py": {
+    "mtime": 1783626171086.1409,
+    "hash": "f599e89e04b52a2caa9a9ea978b6dd81"
+  },
+  "sale_lot_report/__init__.py": {
+    "mtime": 1779695572187.9287,
+    "hash": "9c641bb914a3485a067605981acacdc3"
+  },
+  "sale_lot_report/__manifest__.py": {
+    "mtime": 1779695572188.0107,
+    "hash": "5111e87d26a042f72322449c1fa759ad"
+  },
+  "sale_lot_selection/__init__.py": {
+    "mtime": 1779695572188.098,
+    "hash": "56aa25c846109e7b9fec2b31a1a8ecab"
+  },
+  "sale_lot_selection/__manifest__.py": {
+    "mtime": 1779695572188.1917,
+    "hash": "412680070edb6a1768fd54916a6fe08c"
+  },
+  "bi_pos_stock/CHANGELOG.md": {
+    "mtime": 1783447118953.8914,
+    "hash": "6d1cdbd4db2bef0f6b76d87248c8015e"
+  },
+  "bi_pos_stock/CLAUDE.md": {
+    "mtime": 1779293820749.5725,
+    "hash": "8fd8cbe81a32e7e7677db183754e82e0"
+  },
+  "bi_pos_stock/README.md": {
+    "mtime": 1778567512913.6155,
+    "hash": "ab3c4710e85d3d7aebd038c874a27034"
+  },
+  "bi_pos_stock/README.txt": {
+    "mtime": 1778102038753.5803,
+    "hash": "7813a4d6897264806cd0cbc1cbc2b4d2"
+  },
+  "bi_pos_stock/static/description/index.html": {
+    "mtime": 1778102038682.5747,
+    "hash": "795ea6273eb5f4cc69bd1880274c7358"
+  },
+  "bi_pos_stock/static/src/audio/PLACE_YOUR_AUDIO_HERE.md": {
+    "mtime": 1778102038753.3286,
+    "hash": "0bcc4173d3d23efbd6077502aeaa5c3e"
+  },
+  "custom_invoice_format/CHANGELOG.md": {
+    "mtime": 1783098570618.9514,
+    "hash": "b6afff1111347869f87e4709cd96e5f5"
+  },
+  "custom_invoice_format/CLAUDE.md": {
+    "mtime": 1779345014400.1682,
+    "hash": "9e05dd26f900d15497c1f21ab50f279c"
+  },
+  "custom_invoice_format/README.md": {
+    "mtime": 1782774129850.5083,
+    "hash": "d546debe9619a0487d59518a2a131d6b"
+  },
+  "custom_shop_qty_selector/CHANGELOG.md": {
+    "mtime": 1783064844064.5918,
+    "hash": "cd249caed8b26551bee671a4b9c5ff71"
+  },
+  "custom_shop_qty_selector/README.md": {
+    "mtime": 1781584472474.2175,
+    "hash": "287e11ebefaae1d4f56f29134ea9beb2"
+  },
+  "lab_inventory_report/README.md": {
+    "mtime": 1781584472476.7383,
+    "hash": "d3bdad6abbe0d36baa2bbe0c5209a4bd"
+  },
+  "lot_selection/README.md": {
+    "mtime": 1781584472477.4993,
+    "hash": "58ff6fe0c5b601d0701b88c4bcf67c01"
+  },
+  "md_bento_theme/CHANGELOG.md": {
+    "mtime": 1783064844067.1736,
+    "hash": "71e684715f4dd7bdfefbbe241109546f"
+  },
+  "md_bento_theme/README.md": {
+    "mtime": 1781584472478.434,
+    "hash": "9659738305319eae7f441ee8b7f706c7"
+  },
+  "md_lots_management/CHANGELOG.md": {
+    "mtime": 1783468597234.4539,
+    "hash": "de3b20f4070cce7cd4bf485aebff9b52"
+  },
+  "md_lots_management/ODOO19_COMPATIBILITY_AUDIT.md": {
+    "mtime": 1780759115800.9592,
+    "hash": "d22ffa81288c0cd110bba8617967c3c1"
+  },
+  "md_lots_management/README.md": {
+    "mtime": 1780759115801.2588,
+    "hash": "34b312c06898919d7042be1848ad3f00"
+  },
+  "medicine_depot_portal/AFILIACION_WORKFLOW_AUDIT.md": {
+    "mtime": 1779747382103.7166,
+    "hash": "b524ec6c60ddbd1e868e76700f5d9202"
+  },
+  "medicine_depot_portal/CHANGELOG.md": {
+    "mtime": 1783064844068.235,
+    "hash": "2c7da74763a36fe443b2a32f841da72b"
+  },
+  "medicine_depot_portal/README.md": {
+    "mtime": 1781584472478.868,
+    "hash": "18ece2f3791c3cb25d4e32dfa3cfe073"
+  },
+  "medicine_depot_scrap_batch/CHANGELOG.md": {
+    "mtime": 1783064853148.5032,
+    "hash": "9a525b09bce7d2e54ee0f3a81bac5ead"
+  },
+  "medicine_depot_scrap_batch/README.md": {
+    "mtime": 1781584472480.6782,
+    "hash": "b5bf2bccbc21587c61b1f7d3fcc7945b"
+  },
+  "medicine_depot_website/CHANGELOG 2.md": {
+    "mtime": 1782942761000,
+    "hash": "084fb5ad1e7c412d4d3834320e68349d"
+  },
+  "medicine_depot_website/CHANGELOG.md": {
+    "mtime": 1783064844068.3818,
+    "hash": "bc630ab292032ac098c9d0a4819dcb96"
+  },
+  "medicine_depot_website/README.md": {
+    "mtime": 1781584472483.396,
+    "hash": "4a4861ef2cf4cb2440cdbb81373f369f"
+  },
+  "pharma_reports/CHANGELOG.md": {
+    "mtime": 1783064844068.6226,
+    "hash": "aff0b68e0151e4804d780a7793f3b201"
+  },
+  "pharma_reports/CLAUDE.md": {
+    "mtime": 1779661462393.0618,
+    "hash": "bb04524822d7f391f57376eff2a97bfa"
+  },
+  "pharma_reports/README.md": {
+    "mtime": 1781810592514.8333,
+    "hash": "3ce68e73ed11eb442764d9533d606678"
+  },
+  "portal_picking_visibility/README.md": {
+    "mtime": 1781584472486.1072,
+    "hash": "c5597c2122c3335dc34620f55f552006"
+  },
+  "purchase_invoice_parser/CHANGELOG 2.md": {
+    "mtime": 1783007655000,
+    "hash": "8f87e914e05547349939c96752f9ddea"
+  },
+  "purchase_invoice_parser/CHANGELOG.md": {
+    "mtime": 1783094946000,
+    "hash": "263877720dcd99a653ccf1e581e24698"
+  },
+  "purchase_invoice_parser/CLAUDE.md": {
+    "mtime": 1782579529000,
+    "hash": "d7d2182da04d39ec23803e55b214308a"
+  },
+  "purchase_invoice_parser/INVOICE_PARSER_IMPROVEMENT_PLAN.md": {
+    "mtime": 1779226172000,
+    "hash": "b1c902bc8814867b3147dd7c79ebab1f"
+  },
+  "purchase_invoice_parser/README.md": {
+    "mtime": 1778761630000,
+    "hash": "474b0101de808304a08012a6ef029739"
+  },
+  "purchase_invoice_parser/docs/audits/audit_purchase_invoice_parser.md": {
+    "mtime": 1783064853000,
+    "hash": "d228d96aaf2b3de5f69599f6490a397a"
+  },
+  "purchase_lot_selection/README.md": {
+    "mtime": 1781584472490.1187,
+    "hash": "05e87514abf0d2b2f93e4ea89d8ececb"
+  },
+  "purchase_order_report/README.md": {
+    "mtime": 1781584472490.2676,
+    "hash": "41193c30aa4c8c8782ea8f9ee54e72d4"
+  },
+  "purchase_vendor_ref/README.md": {
+    "mtime": 1781584472491.2275,
+    "hash": "30185e4f6ed01871236bf933c8f820d2"
+  },
+  "sale_account_custom/README.md": {
+    "mtime": 1781584472491.6719,
+    "hash": "820611a61e5a35c0e66ec53cb6c793c9"
+  },
+  "sale_lab_report/CHANGELOG.md": {
+    "mtime": 1783064844068.9304,
+    "hash": "238a9bfd9b1f9c41e3ee8ef09a3ea9d3"
+  },
+  "sale_lab_report/README.md": {
+    "mtime": 1783064844069.0312,
+    "hash": "43422f5c655570d09efac8c3f9ee2d76"
+  },
+  "sale_lot_report/CHANGELOG.md": {
+    "mtime": 1782845525532.7732,
+    "hash": "21653a62173621739be6d7821516318b"
+  },
+  "sale_lot_report/README.md": {
+    "mtime": 1781584472492.8882,
+    "hash": "bf9cf434754b7066aa04b32f61aa7dbc"
+  },
+  "sale_lot_selection/README.md": {
+    "mtime": 1781584472493.0002,
+    "hash": "18eadac18206ae8f93bc7ffdc99d24ff"
+  },
+  "bi_pos_stock/static/description/10_pos_stock.png": {
+    "mtime": 1778102038709.033,
+    "hash": "ee1bc87aa7a12d77e2c58e8c84ed6da7"
+  },
+  "bi_pos_stock/static/description/11_pos_stock.png": {
+    "mtime": 1778102038704.606,
+    "hash": "18a670c5423dec3076ee43af878882bf"
+  },
+  "bi_pos_stock/static/description/12_pos_stock.png": {
+    "mtime": 1778102038691.7993,
+    "hash": "dfcb50400cb29cb1659544a558dc7d43"
+  },
+  "bi_pos_stock/static/description/13_pos_stock.png": {
+    "mtime": 1778102038712.4473,
+    "hash": "e04b9813b97157def9dfd61142576755"
+  },
+  "bi_pos_stock/static/description/14_pos_stock.png": {
+    "mtime": 1778102038709.3845,
+    "hash": "7f4d8ae4bfa7c32e29a952a07d2295e9"
+  },
+  "bi_pos_stock/static/description/15_pos_stock.png": {
+    "mtime": 1778102038703.8005,
+    "hash": "90e55a68e44569189ba28aacdc8ab626"
+  },
+  "bi_pos_stock/static/description/16_pos_stock.png": {
+    "mtime": 1778102038691.275,
+    "hash": "29a3bb5780959792588bc10229358a00"
+  },
+  "bi_pos_stock/static/description/17_pos_stock.png": {
+    "mtime": 1778102038712.9546,
+    "hash": "4a7802a7511981dc6a0dbc3c81743fb8"
+  },
+  "bi_pos_stock/static/description/18_pos_stock.png": {
+    "mtime": 1778102038682.2412,
+    "hash": "fcb1272e1bc827e2427bd0370a8ad217"
+  },
+  "bi_pos_stock/static/description/19_pos_stock.png": {
+    "mtime": 1778102038715.159,
+    "hash": "5084894455f1372d7257ad088a028ee8"
+  },
+  "bi_pos_stock/static/description/1_pos_stock.png": {
+    "mtime": 1778102038711.8591,
+    "hash": "11f65f12649a05d493f7c021fdcc66f1"
+  },
+  "bi_pos_stock/static/description/20_pos_stock.png": {
+    "mtime": 1778102038713.8916,
+    "hash": "133d49ed6354a174e886ca59b44c4ce4"
+  },
+  "bi_pos_stock/static/description/21_pos_stock.png": {
+    "mtime": 1778102038683.0408,
+    "hash": "b2471ebcc6c09f1d46ef932e5b7a4049"
+  },
+  "bi_pos_stock/static/description/22_pos_stock.png": {
+    "mtime": 1778102038681.5444,
+    "hash": "acc7c0fa1861c5b460763799616ec4bd"
+  },
+  "bi_pos_stock/static/description/23_pos_stock.png": {
+    "mtime": 1778102038738.8274,
+    "hash": "32fb116f33286573aa914878abf1b94a"
+  },
+  "bi_pos_stock/static/description/2_pos_stock.png": {
+    "mtime": 1778102038710.6135,
+    "hash": "16a10d45d2166d9e3dc6ab6e61649d5b"
+  },
+  "bi_pos_stock/static/description/3_pos_stock.png": {
+    "mtime": 1778102038707.898,
+    "hash": "713dc874c60747be6ff05fe6b4f05627"
+  },
+  "bi_pos_stock/static/description/4_pos_stock.png": {
+    "mtime": 1778102038690.5718,
+    "hash": "c9e5f653677ecb5be9a1896d6f561f1b"
+  },
+  "bi_pos_stock/static/description/5_pos_stock.png": {
+    "mtime": 1778102038711.2974,
+    "hash": "cc288d1fe2b3afb0089e11b1d7afb12f"
+  },
+  "bi_pos_stock/static/description/6_pos_stock.png": {
+    "mtime": 1778102038709.8684,
+    "hash": "c5b524c4cefc3bb48ea14240abac2546"
+  },
+  "bi_pos_stock/static/description/7_pos_stock.png": {
+    "mtime": 1778102038708.4885,
+    "hash": "f582f1bd8dcaaf1165f7cc7d170bb583"
+  },
+  "bi_pos_stock/static/description/8_pos_stock.png": {
+    "mtime": 1778102038737.276,
+    "hash": "6be4ee8280bce32f35b09425742dcc01"
+  },
+  "bi_pos_stock/static/description/9_pos_stock.png": {
+    "mtime": 1778102038681.079,
+    "hash": "7dd458045da30c5a30d0d535d35f993a"
+  },
+  "bi_pos_stock/static/description/Banner.gif": {
+    "mtime": 1778102038713.383,
+    "hash": "36a26447c159448828bd6cb492b68aed"
+  },
+  "bi_pos_stock/static/description/assets/1.png": {
+    "mtime": 1778102038735.9463,
+    "hash": "018130fcdfff83e14d171b467da7f536"
+  },
+  "bi_pos_stock/static/description/assets/2.svg": {
+    "mtime": 1778102038731.2507,
+    "hash": "cbc2733e50eea00eecfffd308ba26d83"
+  },
+  "bi_pos_stock/static/description/assets/3.svg": {
+    "mtime": 1778102038730.086,
+    "hash": "faeaee79e1eb5cc73a8ff1e03bb441a3"
+  },
+  "bi_pos_stock/static/description/assets/BI_services.gif": {
+    "mtime": 1778102038733.9807,
+    "hash": "c911e2b675abe23096b10b3441bf2a2e"
+  },
+  "bi_pos_stock/static/description/assets/Functional_QR.svg": {
+    "mtime": 1778102038736.5703,
+    "hash": "54f038fab1861ffc730c6114d7edd817"
+  },
+  "bi_pos_stock/static/description/assets/Header_Banner.png": {
+    "mtime": 1778102038730.6438,
+    "hash": "b35a424504ed5600741db5dc97e62d29"
+  },
+  "bi_pos_stock/static/description/assets/Support_QR.svg": {
+    "mtime": 1778102038717.503,
+    "hash": "4a5cb9e36fa9d240b7c4e3234e58395c"
+  },
+  "bi_pos_stock/static/description/assets/app_header.gif": {
+    "mtime": 1778102038728.2886,
+    "hash": "4239b4e9e93d84a25e6c8ae601df370b"
+  },
+  "bi_pos_stock/static/description/assets/best_partner.png": {
+    "mtime": 1778102038728.9534,
+    "hash": "d4d1c67845b1cde84e03e7ef09bd9e83"
+  },
+  "bi_pos_stock/static/description/assets/bi_header_logo.png": {
+    "mtime": 1778102038729.4915,
+    "hash": "0dbcdfda9273ffe8663f3f255b599aea"
+  },
+  "bi_pos_stock/static/description/assets/call.png": {
+    "mtime": 1778102038734.8633,
+    "hash": "98f7af51bb2046d1bffb9ffe6681cb0d"
+  },
+  "bi_pos_stock/static/description/assets/in_flag.gif": {
+    "mtime": 1778102038735.4436,
+    "hash": "9b6b101d2b9ce1fd3452404c071160e5"
+  },
+  "bi_pos_stock/static/description/assets/mail.png": {
+    "mtime": 1778102038716.914,
+    "hash": "66a4ed96c9449fa95acbc4355c1874d9"
+  },
+  "bi_pos_stock/static/description/assets/main_background.jpg": {
+    "mtime": 1778102038732.523,
+    "hash": "13d38821bb0cc2ee39c089052cefc0a3"
+  },
+  "bi_pos_stock/static/description/assets/ml_flag.gif": {
+    "mtime": 1778102038734.6296,
+    "hash": "659d93054dc57ba237435be7bf53d39a"
+  },
+  "bi_pos_stock/static/description/assets/support_image.gif": {
+    "mtime": 1778102038716.5298,
+    "hash": "0ccdd5c4ba6359df67f961b1f0a0e10e"
+  },
+  "bi_pos_stock/static/description/assets/web_icon.png": {
+    "mtime": 1778102038717.7092,
+    "hash": "476537e371219a955a6ae7f0c4897b3f"
+  },
+  "bi_pos_stock/static/description/assets/workflow.gif": {
+    "mtime": 1778102038718.9265,
+    "hash": "ad9cf98ef68ebc381ea8eb50df691558"
+  },
+  "bi_pos_stock/static/description/assets/yoyo.png": {
+    "mtime": 1778102038728.6567,
+    "hash": "b14f2efb51a0b99bb7091ca5429628d0"
+  },
+  "bi_pos_stock/static/description/bi_logo.png": {
+    "mtime": 1778102038737.899,
+    "hash": "d0f1d96a50b3b979b7a4a1b3d18d5049"
+  },
+  "bi_pos_stock/static/description/demanded/bi_customer_overdue_statement.gif": {
+    "mtime": 1778102038689.065,
+    "hash": "bf72eb2faa8cad690be83671f63b37d7"
+  },
+  "bi_pos_stock/static/description/demanded/bi_generic_import.gif": {
+    "mtime": 1778102038687.15,
+    "hash": "57d3c39535e5324419232c0b85702eb0"
+  },
+  "bi_pos_stock/static/description/demanded/bi_inter_company_transfer.gif": {
+    "mtime": 1778102038684.914,
+    "hash": "dfcea6f8f5630d96d0edc521b13fc9e4"
+  },
+  "bi_pos_stock/static/description/demanded/bi_loyalty_generic.gif": {
+    "mtime": 1778102038686.5713,
+    "hash": "45d5bf45d757cddd6f2c43f99940ba4c"
+  },
+  "bi_pos_stock/static/description/demanded/branch.gif": {
+    "mtime": 1778102038683.5278,
+    "hash": "6dd876a9155edce93bf423cbd77774ac"
+  },
+  "bi_pos_stock/static/description/demanded/car_repair_industry.gif": {
+    "mtime": 1778102038685.7976,
+    "hash": "0aabea99e466f35e1b0be390b32759a8"
+  },
+  "bi_pos_stock/static/description/demanded/generic_excel_reports.gif": {
+    "mtime": 1778102038689.9963,
+    "hash": "cdc7fce5164cc156838865ec99f1359b"
+  },
+  "bi_pos_stock/static/description/demanded/margin.gif": {
+    "mtime": 1778102038685.3298,
+    "hash": "ed5840eda9ec8ad2e765da74f2c778e5"
+  },
+  "bi_pos_stock/static/description/demanded/odoo_website_wallet.gif": {
+    "mtime": 1778102038687.7798,
+    "hash": "0c7f2d8105e728f4251d4717aff5e7ab"
+  },
+  "bi_pos_stock/static/description/demanded/pos_orders_all.gif": {
+    "mtime": 1778102038688.4316,
+    "hash": "6b5c408ca7d5bcb9346c85afe9257bd2"
+  },
+  "bi_pos_stock/static/description/demanded/product_bundle_all.gif": {
+    "mtime": 1778102038689.4077,
+    "hash": "365e2aa1e47808e3dd0bf9fc55b586c3"
+  },
+  "bi_pos_stock/static/description/demanded/sales_commission_generic.gif": {
+    "mtime": 1778102038684.128,
+    "hash": "c0dc79598b24fd43b2f1eb953dabf95e"
+  },
+  "bi_pos_stock/static/description/features/color.png": {
+    "mtime": 1778102038702.3884,
+    "hash": "30e24bebe4298f2910c6050acc55ba90"
+  },
+  "bi_pos_stock/static/description/features/low_stock.png": {
+    "mtime": 1778102038702.6895,
+    "hash": "35af3ada4bb5366b917b8ed9ca0087d9"
+  },
+  "bi_pos_stock/static/description/features/pos_101.png": {
+    "mtime": 1778102038702.9998,
+    "hash": "be2cb0df217734206bf63c9553b77d24"
+  },
+  "bi_pos_stock/static/description/features/pos_11.png": {
+    "mtime": 1778102038701.0198,
+    "hash": "5b3d50657b38a406aaff8be4aa9447e2"
+  },
+  "bi_pos_stock/static/description/features/pos_33.png": {
+    "mtime": 1778102038703.3088,
+    "hash": "247b039eea25871fc143ca280f06bef9"
+  },
+  "bi_pos_stock/static/description/features/pos_55.png": {
+    "mtime": 1778102038702.1003,
+    "hash": "90748de6acc9917113c9c38d2c1409b9"
+  },
+  "bi_pos_stock/static/description/features/pos_88.png": {
+    "mtime": 1778102038701.2646,
+    "hash": "e75a0e101eb9bdb093a422eeb64be296"
+  },
+  "bi_pos_stock/static/description/features/pos_99.png": {
+    "mtime": 1778102038701.5676,
+    "hash": "4a0578553d9b3b0751aef56464608c46"
+  },
+  "bi_pos_stock/static/description/features/stock_position.png": {
+    "mtime": 1778102038700.7014,
+    "hash": "193259ec041d2211826b9e531ffc74e0"
+  },
+  "bi_pos_stock/static/description/features/total.png": {
+    "mtime": 1778102038701.8574,
+    "hash": "2dbb4ccda729e2e9524a281b432812f0"
+  },
+  "bi_pos_stock/static/description/icon.png": {
+    "mtime": 1778102038681.8665,
+    "hash": "dd0386f11796c0a2581dbc7f7b424d34"
+  },
+  "bi_pos_stock/static/description/language/Arabic.gif": {
+    "mtime": 1778102038707.176,
+    "hash": "f2e910206bf00687a857f9b750af8ecc"
+  },
+  "bi_pos_stock/static/description/language/Dutch.gif": {
+    "mtime": 1778102038706.004,
+    "hash": "e9d28dd51dcc4ca6f760b25d286fc470"
+  },
+  "bi_pos_stock/static/description/language/English.gif": {
+    "mtime": 1778102038706.4097,
+    "hash": "ad7126d93cabee3d52e816e8cca3d625"
+  },
+  "bi_pos_stock/static/description/language/French.gif": {
+    "mtime": 1778102038706.7576,
+    "hash": "7aac13ace8b57d8ab884ac07569e6865"
+  },
+  "bi_pos_stock/static/description/language/Spanish.gif": {
+    "mtime": 1778102038705.3809,
+    "hash": "5f0cde8db36812557ab05270400fff5e"
+  },
+  "bi_pos_stock/static/description/related/bi_pos_credit_payment_offline.gif": {
+    "mtime": 1778102038694.989,
+    "hash": "3370c61e7f77a34ca735eab5f0ecb702"
+  },
+  "bi_pos_stock/static/description/related/bi_pos_custom_discount.gif": {
+    "mtime": 1778102038698.2825,
+    "hash": "79abb67ab14b2d66edcc84a9cba7c9c0"
+  },
+  "bi_pos_stock/static/description/related/bi_pos_customer_pricelist.gif": {
+    "mtime": 1778102038697.6587,
+    "hash": "5d3af78481b7fce9d57cc91dec7ce093"
+  },
+  "bi_pos_stock/static/description/related/bi_pos_discount.gif": {
+    "mtime": 1778102038699.113,
+    "hash": "c0bf73fdcab5225b06e399c5a27fb678"
+  },
+  "bi_pos_stock/static/description/related/bi_pos_items_count.gif": {
+    "mtime": 1778102038693.5352,
+    "hash": "04cca594d3f81ce4a793df34dfbd5afb"
+  },
+  "bi_pos_stock/static/description/related/bi_pos_margin.gif": {
+    "mtime": 1778102038698.7876,
+    "hash": "21b1a1434bed3c2ff7a0c31e916d1fbb"
+  },
+  "bi_pos_stock/static/description/related/bi_pos_multi_currency.gif": {
+    "mtime": 1778102038696.6743,
+    "hash": "d761658e9f621e04357e89095f7dfef5"
+  },
+  "bi_pos_stock/static/description/related/bi_pos_multi_shop.gif": {
+    "mtime": 1778102038699.999,
+    "hash": "74fb1fba10ba4f7f1249aee4e8685b5c"
+  },
+  "bi_pos_stock/static/description/related/bi_pos_product_template.gif": {
+    "mtime": 1778102038695.8147,
+    "hash": "14a00188e2ca9f19ed1068ca05856546"
+  },
+  "bi_pos_stock/static/description/related/bi_pos_reorder.gif": {
+    "mtime": 1778102038692.1943,
+    "hash": "0f6885e9d7e7b2cf45875256c46d367c"
+  },
+  "bi_pos_stock/static/description/related/bi_pos_reprint_reorder.gif": {
+    "mtime": 1778102038696.1765,
+    "hash": "29b6bf01df0b811d1aad97971e1b3dbe"
+  },
+  "bi_pos_stock/static/description/related/pos_invoice_auto_check.gif": {
+    "mtime": 1778102038695.4578,
+    "hash": "64b8e76e48b05205be9ec44547a49d60"
+  },
+  "bi_pos_stock/static/description/related/pos_orders_reprint.gif": {
+    "mtime": 1778102038697.3767,
+    "hash": "3d91b17f4f6cd0fd1ec1ee0e32229897"
+  },
+  "md_bento_theme/static/img/banner_mundial_2026.jpg": {
+    "mtime": 1783007641814.1519,
+    "hash": "727a4a7e7f48e49158ba6e36f1679216"
+  },
+  "md_bento_theme/static/img/banner_mundial_2026_lg.jpg": {
+    "mtime": 1783007641830.1252,
+    "hash": "a761fc9a8286df3f67ba99a68ab4906e"
+  },
+  "md_bento_theme/static/img/banner_mundial_2026_sm.jpg": {
+    "mtime": 1783007641831.834,
+    "hash": "24b43f42382f6166873fe108b92c6b84"
+  },
+  "md_bento_theme/static/src/img/partners/ambiderm.svg": {
+    "mtime": 1781129892205.7778,
+    "hash": "481987a04c28547d606b57a6bb523ea8"
+  },
+  "md_bento_theme/static/src/img/partners/amsa.png": {
+    "mtime": 1781129892205.9043,
+    "hash": "78e73803824f909a1b70d6836b8acf83"
+  },
+  "md_bento_theme/static/src/img/partners/biomep.png": {
+    "mtime": 1780948472750.3655,
+    "hash": "1bebecbeb3b657abc0bdb599ff5088cd"
+  },
+  "md_bento_theme/static/src/img/partners/bruluagsa.png": {
+    "mtime": 1781129892206.0405,
+    "hash": "6a8acfa746eff39d620d094f32129257"
+  },
+  "md_bento_theme/static/src/img/partners/bruluart.svg": {
+    "mtime": 1781129892206.1892,
+    "hash": "5ddd62dd3f1a23f1743f2c416effe915"
+  },
+  "md_bento_theme/static/src/img/partners/chinoin.png": {
+    "mtime": 1780948472750.6548,
+    "hash": "8f63c7e601a483d8acb49192eba4914d"
+  },
+  "md_bento_theme/static/src/img/partners/degasa.png": {
+    "mtime": 1781129892206.3186,
+    "hash": "6d0a10dd383388cd4690e998b35c20d0"
+  },
+  "md_bento_theme/static/src/img/partners/dgh.svg": {
+    "mtime": 1781129892206.4072,
+    "hash": "01803dbd68d753664210ad1cd4c545ac"
+  },
+  "md_bento_theme/static/src/img/partners/galia.svg": {
+    "mtime": 1781129892206.494,
+    "hash": "f64dfebe27cc9995b3a74b4a3169cdea"
+  },
+  "md_bento_theme/static/src/img/partners/jaloma.png": {
+    "mtime": 1781129892206.6082,
+    "hash": "1b6da3d41f0a2c101b8d0af02516df2d"
+  },
+  "md_bento_theme/static/src/img/partners/kendrick.png": {
+    "mtime": 1780948472751.099,
+    "hash": "ee7be8b7f9ba66f4472deb352ff52d08"
+  },
+  "md_bento_theme/static/src/img/partners/liomont.svg": {
+    "mtime": 1781129041688.7969,
+    "hash": "eb5a28e739f93f1175efa612b50f3c26"
+  },
+  "md_bento_theme/static/src/img/partners/maver.png": {
+    "mtime": 1781129892206.734,
+    "hash": "b9c77682111067cee29d8698c87dd757"
+  },
+  "md_bento_theme/static/src/img/partners/medix.svg": {
+    "mtime": 1781129041688.9114,
+    "hash": "66b1215ca5959317bf57998b586712ce"
+  },
+  "md_bento_theme/static/src/img/partners/pisa.png": {
+    "mtime": 1780948472752.1196,
+    "hash": "8212a30176053246b6735b1f11e6fa53"
+  },
+  "md_bento_theme/static/src/img/partners/quimpharma.png": {
+    "mtime": 1780948472752.2466,
+    "hash": "08305a10faee2e4c2b5c80f731300c88"
+  },
+  "md_bento_theme/static/src/img/partners/sanfer.svg": {
+    "mtime": 1781129041689.0176,
+    "hash": "34b11d7f118c213e4d280ee909acb25a"
+  },
+  "md_bento_theme/static/src/img/partners/senosiain.png": {
+    "mtime": 1780948472752.759,
+    "hash": "a5a501aa538bd9f3bcd78e0160917a48"
+  },
+  "md_bento_theme/static/src/img/partners/serral.png": {
+    "mtime": 1781129892206.8713,
+    "hash": "247852a498b9b48464ab6f8b529e9161"
+  },
+  "md_bento_theme/static/src/img/partners/silanes.png": {
+    "mtime": 1780948472756.0693,
+    "hash": "80dd12b4b91e0db7a2297d2b197ccc6f"
+  },
+  "medicine_depot_portal/static/img/snippets/s_md_audit_grid.svg": {
+    "mtime": 1779747382106.3582,
+    "hash": "85169ea3e1f2bd081a9fbc736b847efb"
+  },
+  "medicine_depot_portal/static/img/snippets/s_md_blog_grid.svg": {
+    "mtime": 1779747382106.4536,
+    "hash": "85169ea3e1f2bd081a9fbc736b847efb"
+  },
+  "medicine_depot_portal/static/img/snippets/s_md_branches.svg": {
+    "mtime": 1779747382106.5413,
+    "hash": "85169ea3e1f2bd081a9fbc736b847efb"
+  },
+  "medicine_depot_portal/static/img/snippets/s_md_hero_bento.svg": {
+    "mtime": 1779747382106.7368,
+    "hash": "3cad2d16a9c8c15cea47f2686ec33a7d"
+  },
+  "medicine_depot_portal/static/img/snippets/s_md_service_grid.svg": {
+    "mtime": 1779747382106.807,
+    "hash": "85169ea3e1f2bd081a9fbc736b847efb"
+  },
+  "medicine_depot_portal/static/img/snippets/s_md_two_col.svg": {
+    "mtime": 1779747382106.8938,
+    "hash": "85169ea3e1f2bd081a9fbc736b847efb"
+  },
+  "medicine_depot_portal/static/img/snippets/s_md_wizard_hero.svg": {
+    "mtime": 1779986405375.2102,
+    "hash": "6f8c651daf16054d1d57f44bf3139bcb"
+  },
+  "medicine_depot_portal/static/src/img/brand_logo_light.svg": {
+    "mtime": 1779986405253.8313,
+    "hash": "724d709ea3425d33032865d890223ec6"
+  },
+  "medicine_depot_portal/static/src/img/brand_logo_primary.svg": {
+    "mtime": 1779986405253.9978,
+    "hash": "4d7cae0a530a44103cee16d826a06904"
+  },
+  "medicine_depot_portal/static/src/img/logos/_placeholder.svg": {
+    "mtime": 1779986405517.291,
+    "hash": "93190417ed6b6f54a3235176c61087ce"
+  },
+  "medicine_depot_portal/static/src/img/logos/abbott.svg": {
+    "mtime": 1779986405517.4832,
+    "hash": "da7f2ed9c15972caaaca3be8f1525579"
+  },
+  "medicine_depot_portal/static/src/img/logos/ambiderm.svg": {
+    "mtime": 1781129892209.5562,
+    "hash": "481987a04c28547d606b57a6bb523ea8"
+  },
+  "medicine_depot_portal/static/src/img/logos/amsa.png": {
+    "mtime": 1781129892209.6846,
+    "hash": "78e73803824f909a1b70d6836b8acf83"
+  },
+  "medicine_depot_portal/static/src/img/logos/bayer.svg": {
+    "mtime": 1779986405517.644,
+    "hash": "0dba4c99870e07a634b06adfe03c5fb8"
+  },
+  "medicine_depot_portal/static/src/img/logos/biomep.png": {
+    "mtime": 1781129892209.8982,
+    "hash": "1bebecbeb3b657abc0bdb599ff5088cd"
+  },
+  "medicine_depot_portal/static/src/img/logos/bruluagsa.png": {
+    "mtime": 1781129892210.0615,
+    "hash": "6a8acfa746eff39d620d094f32129257"
+  },
+  "medicine_depot_portal/static/src/img/logos/bruluart.svg": {
+    "mtime": 1781129892210.1882,
+    "hash": "5ddd62dd3f1a23f1743f2c416effe915"
+  },
+  "medicine_depot_portal/static/src/img/logos/degasa.png": {
+    "mtime": 1781129892210.309,
+    "hash": "6d0a10dd383388cd4690e998b35c20d0"
+  },
+  "medicine_depot_portal/static/src/img/logos/dgh.svg": {
+    "mtime": 1781129892210.4116,
+    "hash": "01803dbd68d753664210ad1cd4c545ac"
+  },
+  "medicine_depot_portal/static/src/img/logos/galia.svg": {
+    "mtime": 1781129892210.5295,
+    "hash": "f64dfebe27cc9995b3a74b4a3169cdea"
+  },
+  "medicine_depot_portal/static/src/img/logos/jaloma.png": {
+    "mtime": 1781129892210.6584,
+    "hash": "1b6da3d41f0a2c101b8d0af02516df2d"
+  },
+  "medicine_depot_portal/static/src/img/logos/kendrick.png": {
+    "mtime": 1781129892210.8252,
+    "hash": "ee7be8b7f9ba66f4472deb352ff52d08"
+  },
+  "medicine_depot_portal/static/src/img/logos/liomont.svg": {
+    "mtime": 1781129892210.9814,
+    "hash": "eb5a28e739f93f1175efa612b50f3c26"
+  },
+  "medicine_depot_portal/static/src/img/logos/maver.png": {
+    "mtime": 1781129892211.1316,
+    "hash": "b9c77682111067cee29d8698c87dd757"
+  },
+  "medicine_depot_portal/static/src/img/logos/novartis.svg": {
+    "mtime": 1779986405517.8262,
+    "hash": "80d55d968a8ede034439c6ec3ff162b8"
+  },
+  "medicine_depot_portal/static/src/img/logos/pfizer.svg": {
+    "mtime": 1779986405517.9514,
+    "hash": "d36735e7b57dc931c76649838139c16e"
+  },
+  "medicine_depot_portal/static/src/img/logos/pisa.png": {
+    "mtime": 1781129892211.3618,
+    "hash": "8212a30176053246b6735b1f11e6fa53"
+  },
+  "medicine_depot_portal/static/src/img/logos/quimpharma.png": {
+    "mtime": 1781129892211.4817,
+    "hash": "08305a10faee2e4c2b5c80f731300c88"
+  },
+  "medicine_depot_portal/static/src/img/logos/roche.svg": {
+    "mtime": 1779986405518.1375,
+    "hash": "baf91213a1dde80076572cd874d084ea"
+  },
+  "medicine_depot_portal/static/src/img/logos/sanofi.svg": {
+    "mtime": 1779986405518.373,
+    "hash": "417579f1aeba124ef019d545af69576e"
+  },
+  "medicine_depot_portal/static/src/img/logos/senosiain.png": {
+    "mtime": 1781129892211.617,
+    "hash": "a5a501aa538bd9f3bcd78e0160917a48"
+  },
+  "medicine_depot_portal/static/src/img/logos/serral.png": {
+    "mtime": 1781129892211.7546,
+    "hash": "247852a498b9b48464ab6f8b529e9161"
+  },
+  "medicine_depot_website/static/src/img/hot_sale_2026.png": {
+    "mtime": 1779986405181.6565,
+    "hash": "e09e7d34b1cc67b81ae0551d90f34e6e"
+  },
+  "medicine_depot_website/static/src/img/hot_sale_2026_mobile.png": {
+    "mtime": 1779986405182.0896,
+    "hash": "457f2300fb709389b1cfb3cd33095e1b"
+  },
+  "medicine_depot_website/static/src/img/partners/adn-pharma.svg": {
+    "mtime": 1779986405612.2026,
+    "hash": "4efc89b9f9dc5939ed818a1fa7a91650"
+  },
+  "medicine_depot_website/static/src/img/partners/apotex.svg": {
+    "mtime": 1779986405612.3577,
+    "hash": "c0120255267d80dd99bb9522e1ad0ace"
+  },
+  "medicine_depot_website/static/src/img/partners/bayer.svg": {
+    "mtime": 1779986405612.4775,
+    "hash": "477c5e6c77cac4c1a9aa36f3dd72e744"
+  },
+  "medicine_depot_website/static/src/img/partners/biomep.svg": {
+    "mtime": 1779986405612.5967,
+    "hash": "774ac5079ecc0a14ed93a2c21332fe65"
+  },
+  "medicine_depot_website/static/src/img/partners/collins.svg": {
+    "mtime": 1779986405612.7617,
+    "hash": "44450d7d27e3fbeedd4a532a250940b3"
+  },
+  "medicine_depot_website/static/src/img/partners/dkt.svg": {
+    "mtime": 1779986405612.874,
+    "hash": "cf37034e0fc84c6a8c93432c6cc2123b"
+  },
+  "medicine_depot_website/static/src/img/partners/genoma.svg": {
+    "mtime": 1779986405612.9988,
+    "hash": "2546a6d0fcfc6f45dbce0fb891889cac"
+  },
+  "medicine_depot_website/static/src/img/partners/jayor.svg": {
+    "mtime": 1779986405613.115,
+    "hash": "17404198bfb6d1b9e599bf4ecbee02f2"
+  },
+  "medicine_depot_website/static/src/img/partners/loeffler.svg": {
+    "mtime": 1779986405613.2803,
+    "hash": "fe4689df1828a607c8cc0120e85e43e1"
+  },
+  "medicine_depot_website/static/src/img/partners/pharmagen.svg": {
+    "mtime": 1779986405613.3945,
+    "hash": "cd0917a6bdaf1bd46450391971ec4508"
+  },
+  "medicine_depot_website/static/src/img/partners/quimpharma.svg": {
+    "mtime": 1779986405613.5176,
+    "hash": "84021ffefdc491c901887698f321c430"
+  },
+  "medicine_depot_website/static/src/img/partners/ultra.svg": {
+    "mtime": 1779986405613.6401,
+    "hash": "837c827acea735fab93e04a8ef5d6466"
+  },
+  "medicine_depot_website/static/src/img/promo_futbol_2026.png": {
+    "mtime": 1781795219604.8792,
+    "hash": "72a9ea92103715110eef4b1ee10d3e03"
+  },
+  "medicine_depot_website/static/src/img/promo_futbol_2026_mobile.png": {
+    "mtime": 1781795219605.863,
+    "hash": "6a6e4373f34f337dde1260c5aeb8b767"
+  }
+}

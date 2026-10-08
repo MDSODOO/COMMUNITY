@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <record id="ir_cron_auto_checkout_abandoned_sessions" model="ir.cron">
+        <field name="name">Asistencias: cerrar check-in abandonados por timeout de sesion / Attendance: close check-ins abandoned by session timeout</field>
+        <field name="model_id" ref="hr.model_hr_employee"/>
+        <field name="state">code</field>
+        <field name="code">model._cron_auto_checkout_abandoned_sessions()</field>
+        <field name="interval_number">30</field>
+        <field name="interval_type">minutes</field>
+        <field name="active">True</field>
+    </record>
+
+</odoo>

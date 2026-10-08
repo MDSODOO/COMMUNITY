@@ -3,7 +3,7 @@
 
 {
     'name': 'POS Stock in Odoo — Multi-Branch Edition',
-    'version': '19.0.6.35',  # fix urgente: OwlError "ctx.Set is not a constructor" rompía el carrito completo
+    'version': '19.0.6.36',  # fix: native quantity overwrite & lot stock validation integrity
     "category": "Point of Sale",
     "depends": ['base', 'sale_management', 'stock', 'point_of_sale', 'mail'],
     "external_dependencies": {

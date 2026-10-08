@@ -1,0 +1,36 @@
+<odoo>
+    <!-- Inherits aditivos sobre las vistas core de hr_attendance: no se
+         elimina ni reemplaza ningún campo existente, solo se agregan
+         columnas/campos nuevos junto a los de modo/IP/navegador ya
+         presentes (in_browser / out_browser). -->
+
+    <record id="view_hr_attendance_form_biometric" model="ir.ui.view">
+        <field name="name">hr.attendance.form.biometric</field>
+        <field name="model">hr.attendance</field>
+        <field name="inherit_id" ref="hr_attendance.hr_attendance_view_form"/>
+        <field name="arch" type="xml">
+            <field name="in_browser" position="after">
+                <field name="in_biometric_verified" invisible="in_mode != 'biometric'"/>
+                <field name="in_location_source" invisible="in_mode != 'biometric'"/>
+            </field>
+            <field name="out_browser" position="after">
+                <field name="out_biometric_verified" invisible="out_mode != 'biometric'"/>
+                <field name="out_location_source" invisible="out_mode != 'biometric'"/>
+            </field>
+        </field>
+    </record>
+
+    <record id="view_hr_attendance_tree_biometric" model="ir.ui.view">
+        <field name="name">hr.attendance.list.biometric</field>
+        <field name="model">hr.attendance</field>
+        <field name="inherit_id" ref="hr_attendance.view_attendance_tree"/>
+        <field name="arch" type="xml">
+            <field name="out_location" position="after">
+                <field name="in_biometric_verified" string="Huella (Entrada)" optional="hidden"/>
+                <field name="in_location_source" string="Ubicación validada (Entrada)" optional="hidden"/>
+                <field name="out_biometric_verified" string="Huella (Salida)" optional="hidden"/>
+                <field name="out_location_source" string="Ubicación validada (Salida)" optional="hidden"/>
+            </field>
+        </field>
+    </record>
+</odoo>

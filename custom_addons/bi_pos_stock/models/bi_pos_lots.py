@@ -2,9 +2,61 @@
 # Part of BrowseInfo. See LICENSE file for full copyright and licensing details.
 
 import logging
-from odoo import models, api
+from odoo import models, api, _
+from odoo.exceptions import ValidationError
 
 _logger = logging.getLogger(__name__)
+
+
+class PosOrder(models.Model):
+    """Integridad y validación de inventario 'A la mano' por lote al sincronizar órdenes POS."""
+    _inherit = 'pos.order'
+
+    @api.model
+    def sync_from_ui(self, orders):
+        """Validar integridad de lotes e inventario 'A la mano' durante la sincronización del POS."""
+        for order_data in orders:
+            session_id = order_data.get('session_id')
+            pos_session = self.env['pos.session'].browse(session_id) if session_id else False
+            pos_config = pos_session.config_id if pos_session else False
+
+            if pos_config and pos_config.pos_display_stock and not pos_config.pos_allow_order:
+                src_loc = pos_config.picking_type_id.default_location_src_id
+                internal_loc_ids = src_loc.child_internal_location_ids.ids if src_loc else []
+
+                # Acumular cantidades vendidas por (product_id, lot_name)
+                lot_quantities = {}
+                for line_cmd in order_data.get('lines', []):
+                    if len(line_cmd) >= 3 and isinstance(line_cmd[2], dict):
+                        line_vals = line_cmd[2]
+                        product_id = line_vals.get('product_id')
+                        qty = line_vals.get('qty', 0.0)
+                        pack_lots = line_vals.get('pack_lot_ids', [])
+
+                        for pl_cmd in pack_lots:
+                            if len(pl_cmd) >= 3 and isinstance(pl_cmd[2], dict):
+                                lot_name = pl_cmd[2].get('lot_name')
+                                if lot_name and product_id and qty > 0:
+                                    key = (product_id, lot_name)
+                                    lot_quantities[key] = lot_quantities.get(key, 0.0) + qty
+
+                # Validar contra inventario físico 'A la mano'
+                for (pid, lname), total_sold in lot_quantities.items():
+                    quants = self.env['stock.quant'].sudo().search([
+                        ('product_id', '=', pid),
+                        ('location_id', 'in', internal_loc_ids),
+                        ('lot_id.name', '=', lname),
+                        ('quantity', '>', 0),
+                    ])
+                    a_la_mano = sum(quants.mapped('quantity'))
+                    if total_sold > a_la_mano:
+                        product = self.env['product.product'].browse(pid)
+                        raise ValidationError(_(
+                            "Violación de inventario A la mano en el ticket %s: "
+                            "El producto %s con lote %s tiene %s unidades A la mano, pero se intenta vender %s."
+                        ) % (order_data.get('name', 'N/D'), product.display_name, lname, a_la_mano, total_sold))
+
+        return super().sync_from_ui(orders)
 
 
 class PosOrderLine(models.Model):

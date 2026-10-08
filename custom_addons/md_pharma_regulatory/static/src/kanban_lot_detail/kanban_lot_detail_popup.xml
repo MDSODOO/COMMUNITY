@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <!--
+        MdKanbanLotDetailPopup — réplica de bi_pos_stock.LotDetailPopup (rama
+        de lotes/FEFO) para el Kanban de Inventario. Se omite la rama
+        "Detalle regulatorio" del popup del POS: ese caso ya tiene su propio
+        equivalente en Inventario (botón COFEPRIS -> action_open_cofepris_detail),
+        y este popup solo se abre para productos con tracking lot/serial.
+    -->
+    <t t-name="md_pharma_regulatory.MdKanbanLotDetailPopup">
+        <Dialog size="'lg'" contentClass="'lot-detail-popup'">
+
+            <!-- ── Header ── -->
+            <t t-set-slot="header">
+                <h5 class="modal-title d-flex align-items-center gap-2">
+                    <span class="badge md-lot-fefo-badge">
+                        <i class="fa fa-barcode me-1"/>FEFO
+                    </span>
+                    Lotes a la mano
+                    <span class="fst-italic fw-normal text-muted fs-6"
+                          t-esc="productName"/>
+                </h5>
+            </t>
+
+            <!-- ── Body ── -->
+
+            <!-- Loading -->
+            <div t-if="loading" class="text-center py-4 text-muted">
+                <i class="fa fa-spinner fa-spin fa-2x mb-3"/>
+                <p>Consultando lotes…</p>
+            </div>
+
+            <!-- Empty -->
+            <div t-elif="lots.length === 0" class="text-center py-4 text-muted">
+                <i class="fa fa-inbox fa-2x mb-3"/>
+                <p>No hay lotes a la mano para este producto.</p>
+            </div>
+
+            <!-- FEFO table -->
+            <div t-else="" class="px-1">
+
+                <!-- FEFO legend -->
+                <div class="d-flex gap-2 flex-wrap mb-3" style="font-size:0.78rem;">
+                    <span class="badge bg-danger">Vencido / ≤ 30 días</span>
+                    <span class="badge bg-warning text-dark">31 – 90 días</span>
+                    <span class="badge bg-success">&gt; 90 días</span>
+                    <span class="badge bg-secondary">Sin fecha</span>
+                    <span class="ms-auto badge bg-warning text-dark">
+                        <i class="fa fa-star me-1"/>1° = Vender primero
+                    </span>
+                </div>
+
+                <div style="max-height:400px; overflow-y:auto;">
+                    <table class="table table-hover table-sm align-middle"
+                           style="font-size:0.875rem;">
+                        <thead style="background:linear-gradient(135deg,#073A4C 0%,#0B5E7A 100%); color:#fff; position:sticky; top:0; z-index:1;">
+                            <tr>
+                                <th style="padding:8px 10px; width:5%;">#</th>
+                                <th style="padding:8px 10px; width:30%;">
+                                    Lote / N° Serie
+                                </th>
+                                <th class="text-center" style="padding:8px 10px; width:15%;">
+                                    A la mano
+                                </th>
+                                <t t-if="hasExpiry">
+                                    <th class="text-center" style="padding:8px 10px; width:25%;">
+                                        Vencimiento
+                                    </th>
+                                    <th class="text-center" style="padding:8px 10px; width:25%;">
+                                        Días Restantes
+                                    </th>
+                                </t>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <t t-foreach="lots" t-as="lot" t-key="lot.lot_id">
+
+                                <!-- Highlight the first row as the FEFO candidate -->
+                                <tr t-att-class="lot_index === 0 ? 'md-fefo-first-row' : ''">
+
+                                    <!-- Position -->
+                                    <td class="text-muted" style="padding:7px 10px;">
+                                        <t t-if="lot_index === 0">
+                                            <span class="badge bg-warning text-dark">
+                                                <i class="fa fa-star me-1"/>1°
+                                            </span>
+                                        </t>
+                                        <t t-else="">
+                                            <t t-esc="lot_index + 1"/>
+                                        </t>
+                                    </td>
+
+                                    <!-- Lot name -->
+                                    <td style="padding:7px 10px; font-weight:500;">
+                                        <i class="fa fa-cube me-1 text-muted"/>
+                                        <t t-esc="lot.lot_name"/>
+                                    </td>
+
+                                    <!-- Qty available -->
+                                    <td class="text-center" style="padding:7px 10px;">
+                                        <span class="badge bg-secondary fs-6">
+                                            <t t-esc="Math.round(lot.qty)"/>
+                                        </span>
+                                    </td>
+
+                                    <t t-if="hasExpiry">
+                                        <!-- Expiry date -->
+                                        <td class="text-center" style="padding:7px 10px;">
+                                            <t t-if="lot.expiration_date">
+                                                <span t-att-class="'text-' + getColorClass(lot.expiration_date)"
+                                                      style="font-weight:500;">
+                                                    <t t-esc="formatDate(lot.expiration_date)"/>
+                                                </span>
+                                            </t>
+                                            <t t-else="">
+                                                <span class="text-muted">Sin fecha</span>
+                                            </t>
+                                        </td>
+
+                                        <!-- Days remaining -->
+                                        <td class="text-center" style="padding:7px 10px;">
+                                            <t t-if="lot.expiration_date">
+                                                <t t-set="_days"
+                                                   t-value="getDaysLeft(lot.expiration_date)"/>
+                                                <span t-att-class="'badge bg-' + getColorClass(lot.expiration_date)"
+                                                      style="font-size:0.85rem; min-width:70px;">
+                                                    <t t-if="_days &lt; 0">
+                                                        <i class="fa fa-exclamation-triangle me-1"/>
+                                                        VENCIDO (<t t-esc="Math.abs(_days)"/>d)
+                                                    </t>
+                                                    <t t-elif="_days === 0">HOY</t>
+                                                    <t t-else="">
+                                                        <t t-esc="_days"/>
+                                                        <t t-if="_days === 1"> día</t>
+                                                        <t t-else=""> días</t>
+                                                    </t>
+                                                </span>
+                                            </t>
+                                            <t t-else="">
+                                                <span class="badge bg-secondary">—</span>
+                                            </t>
+                                        </td>
+                                    </t>
+
+                                </tr>
+                            </t>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- ── Footer ── -->
+            <t t-set-slot="footer">
+                <button class="btn btn-secondary" t-on-click="props.close">
+                    Cerrar
+                </button>
+            </t>
+
+        </Dialog>
+    </t>
+</templates>

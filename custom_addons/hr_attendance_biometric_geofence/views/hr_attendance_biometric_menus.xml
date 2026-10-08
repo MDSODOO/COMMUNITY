@@ -1,0 +1,26 @@
+<odoo>
+    <record id="action_hr_attendance_biometric_checkin" model="ir.actions.client">
+        <field name="name">Marcar Asistencia (Huella)</field>
+        <field name="tag">hr_attendance_biometric_geofence.checkin_action</field>
+    </record>
+
+    <menuitem id="menu_hr_attendance_biometric_checkin"
+              name="Marcar Asistencia (Huella)"
+              parent="hr_attendance.menu_hr_attendance_root"
+              action="action_hr_attendance_biometric_checkin"
+              sequence="5"/>
+
+    <menuitem id="menu_hr_attendance_geofence_config"
+              name="Geocercas"
+              parent="hr_attendance.menu_hr_attendance_configuration"
+              action="action_hr_attendance_geofence"
+              groups="hr_attendance.group_hr_attendance_manager"
+              sequence="30"/>
+
+    <menuitem id="menu_hr_attendance_biometric_credential_config"
+              name="Credenciales biométricas"
+              parent="hr_attendance.menu_hr_attendance_configuration"
+              action="action_hr_attendance_biometric_credential"
+              groups="hr_attendance.group_hr_attendance_manager"
+              sequence="31"/>
+</odoo>

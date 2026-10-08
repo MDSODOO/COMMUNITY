@@ -1,0 +1,14 @@
+{
+  "venvPath": ".",
+  "venv": ".venv",
+  "exclude": [
+    ".venv",
+    "**/__pycache__",
+    "oca_addons",
+    "build",
+    "dist"
+  ],
+  "reportMissingImports": "warning",
+  "reportMissingModuleSource": "none",
+  "typeCheckingMode": "basic"
+}

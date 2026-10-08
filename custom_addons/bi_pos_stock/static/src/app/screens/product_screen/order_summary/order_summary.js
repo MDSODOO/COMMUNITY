@@ -39,10 +39,46 @@ function _stockLimitError(pos, line, newQty) {
     if (newQty <= 0) return null;  // decreasing / removal never blocked by stock
 
     const product = line.product_id;
-    const branchStock = Number(pos.branchStock?.[String(product.id)] ?? 0);
 
-    // Total quantity for this product across all OTHER lines in the order.
-    const otherLinesQty = (line.order_id.lines || []).reduce((sum, l) => {
+    // ── 1. Verificación a nivel de Lote 'A la mano' ───────────────────────────
+    const lotName = line.pack_lot_ids?.[0]?.lot_name || null;
+    if (lotName && product.tracking && product.tracking !== "none") {
+        const lotKey = `${product.id}_${lotName}`;
+        const lotAvailable = pos.allLotDetails?.[lotKey]?.qty !== undefined
+            ? Number(pos.allLotDetails[lotKey].qty)
+            : Infinity;
+
+        if (lotAvailable !== Infinity) {
+            const otherLinesLotQty = (line.order_id?.lines || []).reduce((sum, l) => {
+                if (l === line) return sum;
+                const otherLot = l.pack_lot_ids?.[0]?.lot_name || null;
+                return (l.product_id?.id === product.id && otherLot === lotName)
+                    ? sum + (l.qty || 0)
+                    : sum;
+            }, 0);
+
+            const totalLotWouldBe = otherLinesLotQty + newQty;
+            if (totalLotWouldBe > lotAvailable) {
+                const allowedLot = Math.max(0, lotAvailable - otherLinesLotQty);
+                return {
+                    title: _t("Límite de A la mano por lote excedido"),
+                    body: allowedLot > 0
+                        ? _t(
+                            "%(product)s (Lote: %(lot)s): hay %(stock)s unidades A la mano de este lote. Puedes agregar como máximo %(allowed)s a esta línea.",
+                            { product: product.display_name, lot: lotName, stock: lotAvailable, allowed: allowedLot }
+                          )
+                        : _t(
+                            "%(product)s (Lote: %(lot)s): no queda inventario A la mano para este lote (%(stock)s unidades en total).",
+                            { product: product.display_name, lot: lotName, stock: lotAvailable }
+                          ),
+                };
+            }
+        }
+    }
+
+    // ── 2. Verificación global por sucursal ────────────────────────────────────
+    const branchStock = Number(pos.branchStock?.[String(product.id)] ?? 0);
+    const otherLinesQty = (line.order_id?.lines || []).reduce((sum, l) => {
         if (l === line) return sum;
         return l.product_id?.id === product.id ? sum + (l.qty || 0) : sum;
     }, 0);
@@ -76,10 +112,22 @@ function _stockLimitError(pos, line, newQty) {
 patch(OrderSummary.prototype, {
 
     /**
+     * Al hacer click en una línea del pedido, asegurar que siempre quede seleccionada
+     * y preparar el NumberBuffer para que la siguiente pulsación del teclado numérico
+     * SOBREESCRIBA la cantidad de forma limpia y directa (Native Quantity Overwrite).
+     */
+    clickLine(ev, orderline) {
+        ev.stopPropagation();
+        this.pos.selectOrderLine(this.currentOrder, orderline);
+        this.numberBuffer.reset();
+        if (this.numberBuffer.state) {
+            this.numberBuffer.state.toStartOver = true;
+        }
+    },
+
+    /**
      * Path A — Numpad input.
      * _setValue is called for every digit/backspace/Enter from the numpad.
-     * The number_buffer service accumulates keystrokes; we receive the final
-     * numeric string here as `val` (e.g. "12" or "0.5").
      */
     _setValue(val) {
         if (
@@ -96,6 +144,9 @@ patch(OrderSummary.prototype, {
                 if (error) {
                     this.dialog.add(AlertDialog, error);
                     this.numberBuffer.reset();
+                    if (this.numberBuffer.state) {
+                        this.numberBuffer.state.toStartOver = true;
+                    }
                     return;
                 }
             }
@@ -105,8 +156,6 @@ patch(OrderSummary.prototype, {
 
     /**
      * Path B — +/- quantity buttons in the order line row.
-     * updateQuantityNumber(newQuantity) is called with the already-computed
-     * new total quantity (current ± 1).
      */
     async updateQuantityNumber(newQuantity) {
         if (newQuantity !== null && newQuantity > 0) {

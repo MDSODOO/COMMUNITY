@@ -1,0 +1,1 @@
+{"nodes":[{"id":"pharma_reports_init","label":"__init__.py","file_type":"code","source_file":"pharma_reports/__init__.py","source_location":"L1"}],"edges":[{"source":"pharma_reports_init","target":"","relation":"imports_from","confidence":"EXTRACTED","source_file":"pharma_reports/__init__.py","source_location":"L2","weight":1}]}

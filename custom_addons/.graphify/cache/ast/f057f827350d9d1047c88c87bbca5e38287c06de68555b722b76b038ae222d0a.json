@@ -1,0 +1,1 @@
+{"nodes":[{"id":"wizards_init","label":"__init__.py","file_type":"code","source_file":"md_lots_management/wizards/__init__.py","source_location":"L1"}],"edges":[{"source":"wizards_init","target":"","relation":"imports_from","confidence":"EXTRACTED","source_file":"md_lots_management/wizards/__init__.py","source_location":"L1","weight":1}]}

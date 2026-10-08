@@ -1,0 +1,657 @@
+// ════════════════════════════════════════════════════════════════════════
+// launcher.scss — MdLauncher (fusión Command Palette + Home Menu grid)
+// ────────────────────────────────────────────────────────────────────────
+// A diferencia del command_palette.scss original, este archivo NO duplica
+// los tokens de marca en variables Sass locales: medicine_depot_portal ya
+// inyecta backend_tokens.scss + backend_bento.scss en el MISMO bundle
+// (web.assets_backend) que este módulo, definiendo las custom properties
+// --md-* sobre .o_web_client. Como MdLauncher se monta como main_component
+// dentro del árbol de .o_web_client, esas variables llegan por herencia
+// normal de CSS aunque este archivo se compile en un módulo distinto — no
+// hay boundary de bundle que salvar aquí (ese sí existe entre
+// assets_backend y assets_frontend/website, que es el caso que
+// justificaba la duplicación original; no aplica entre dos módulos que
+// cargan ambos en assets_backend).
+//
+// Requiere que 'medicine_depot_portal' esté en los `depends` del
+// __manifest__.py de este módulo, para que Odoo garantice el orden de
+// carga (tokens antes que este archivo) — ver manifest propuesto.
+//
+// Auditoría de fidelidad al sistema real (contra backend_tokens.scss,
+// backend_bento.scss y backend_dark.scss, leídos en el servidor antes de
+// escribir este archivo):
+//   1. Sin darken()/lighten(): esas funciones de color de dart-sass están
+//      deprecadas y el borrador original las usaba dos veces sobre
+//      #97D700. Se reemplazan por los hex equivalentes, precalculados una
+//      sola vez con HLS real (no a ojo) — ver constantes $mdl-action-dark-*.
+//   2. Glass: backend_bento.scss usa SIEMPRE fallback opaco
+//      (rgba(255,255,255,0.97)) + blur moderado (10px control panel /
+//      12px statusbar) SOLO dentro de @supports(backdrop-filter). El
+//      borrador original tenía blur(22px) saturate(1.45) sin fallback y
+//      un "highlight diagonal" en gradiente — verificado que esa receta
+//      ("Liquid Glass"/.bento-glass-card) SOLO existe en
+//      medicine_depot_portal/medicine_depot_website/md_bento_theme
+//      (frontend), nunca en backend_bento.scss/backend_dark.scss. Se
+//      sustituye por la receta real de vidrio del backend (flat, sin
+//      gradiente decorativo), con blur bajado a 12px/saturate 1.2 (mismo
+//      rango que .o_form_statusbar) y su fallback opaco correspondiente.
+//   3. Este componente NO es un .o_popover/Dropdown portado vía
+//      .o-overlay-container: se monta como main_component plano dentro del
+//      árbol de .o_web_client (mismo mecanismo que
+//      DialogContainer/NotificationContainer), así que el bug de
+//      compositing de Chromium documentado en backend_bento.scss
+//      (backdrop-filter + position:fixed + portal, reproducido en el menú
+//      de Acción de Contactos) no aplica aquí — confirmado leyendo
+//      launcher.js/xml (no hay Portal ni overlay service involucrados) y
+//      con el historial de la auditoría previa (dark mode con blur ya
+//      capturado funcionando correctamente en producción,
+//      menu_ux_07_palette_dark.png). Se mantiene backdrop-filter con el
+//      patrón @supports de todas formas, por consistencia con el resto
+//      del sistema y como red de seguridad en navegadores sin soporte.
+//   4. Texto en mayúsculas: letter-spacing 0. backend_bento.scss tiene UNA
+//      excepción puntual (.o_horizontal_separator/.o_group_label,
+//      0.06em) pero es minoritaria: el resto del proyecto (portal_bento.scss
+//      .md_fav_chip-adjacent labels, afiliacion.scss, cart_barcode_scanner.scss,
+//      etc.) usa letter-spacing:0 de forma consistente — se sigue esa
+//      convención dominante.
+//   5. Hover de tiles: se usa la magnitud real de
+//      .o_kanban_view .o_kanban_record (translateY(-2px) +
+//      box-shadow 0 12px 28px rgba(22,166,217,0.14)), no la versión más
+//      agresiva (-5px/scale) que pertenece al portal de clientes.
+//   6. Chip "A la mano": proporción real de .md_fav_chip (portal_bento.scss)
+//      — font-weight 700, font-size 0.75rem (== var(--md-text-sm)),
+//      padding 0.15rem 0.5rem, radio píldora, fondo con tinte suave del
+//      color semántico, sin mayúsculas ni borde.
+//
+// Excepción puntual: --md-ink-950 (navy casi negro para el overlay del
+// backdrop) no existe en backend_tokens.scss (el token --md-ink más
+// oscuro definido ahí es --md-primary-dark, #073A4C, insuficientemente
+// oscuro para un overlay de modal). Se mantiene como constante Sass local
+// en vez de forzar un token nuevo en un módulo ajeno sin aprobación.
+$mdl-ink-950: #071316;
+
+// Equivalentes hex precalculados de darken(#97D700, 15%) / darken(#97D700, 20%)
+// (HLS real: H 77.86° S 100% L 42.16% → L-15pp y L-20pp), para no depender
+// de las funciones de color legacy de dart-sass (deprecadas).
+$mdl-action-dark-1: #618B00; // ~darken(#97D700, 15%) — heading "Productos"
+$mdl-action-dark-2: #4F7100; // ~darken(#97D700, 20%) — texto del chip
+
+.o_md_command_palette_backdrop {
+    position: fixed;
+    inset: 0;
+    background:
+        radial-gradient(46rem 30rem at 12% -10%, rgba(22, 166, 217, 0.20), transparent 60%),
+        radial-gradient(40rem 28rem at 92% 106%, rgba(151, 215, 0, 0.16), transparent 62%),
+        rgba($mdl-ink-950, 0.46);
+    z-index: 1100; // por encima de dialogs estándar de Odoo (1050)
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding-top: 12vh;
+
+    @supports (backdrop-filter: blur(1px)) {
+        backdrop-filter: blur(6px);
+        -webkit-backdrop-filter: blur(6px);
+    }
+}
+
+// ── Vidrio real del backend: fallback opaco siempre presente, blur/saturate
+// moderado SOLO dentro de @supports — misma receta que .o_control_panel /
+// .o_form_statusbar en backend_bento.scss. Sin gradiente "highlight"
+// diagonal (esa receta es de medicine_depot_portal/website, no de este
+// bundle). ──
+.o_md_command_palette {
+    width: 92vw;
+    max-width: 780px;
+    max-height: 72vh;
+    background: rgba(255, 255, 255, 0.97); // fallback sólido
+    border: 1px solid rgba(255, 255, 255, 0.85);
+    border-radius: 24px;
+    box-shadow:
+        0 0 0 1px rgba(7, 58, 76, 0.06),
+        0 32px 96px rgba(7, 58, 76, 0.32),
+        0 12px 32px rgba(7, 58, 76, 0.12),
+        inset 0 1px 0 rgba(255, 255, 255, 0.95);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    animation: o_md_command_palette_in 140ms ease-out;
+    color: var(--md-color-text-primary);
+
+    @supports (backdrop-filter: blur(1px)) {
+        background: rgba(255, 255, 255, 0.90);
+        backdrop-filter: blur(16px) saturate(1.25);
+        -webkit-backdrop-filter: blur(16px) saturate(1.25);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        animation-duration: 0.01ms;
+    }
+}
+
+@keyframes o_md_command_palette_in {
+    from { opacity: 0; transform: translateY(-8px) scale(0.98); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.o_md_command_palette_input_wrap {
+    display: flex;
+    align-items: center;
+    gap: var(--md-space-2);
+    padding: var(--md-space-4) var(--md-space-4);
+    border-bottom: 1px solid var(--md-border);
+
+    .o_md_command_palette_icon { opacity: 0.55; color: var(--md-primary-dark); }
+
+    .o_md_command_palette_input {
+        flex: 1 1 auto;
+        border: none;
+        outline: none;
+        font-size: var(--md-text-xl);
+        background: transparent;
+        color: var(--md-color-text-primary);
+        font-family: var(--md-font-body);
+
+        &::placeholder { color: var(--md-muted); }
+    }
+
+    .o_md_command_palette_hint {
+        font-family: var(--md-font-mono);
+        font-size: var(--md-text-xs);
+        opacity: 0.6;
+        border: 1px solid currentColor;
+        border-radius: var(--md-radius-sm);
+        padding: 1px 5px;
+    }
+}
+
+.o_md_command_palette_results {
+    overflow-y: auto;
+    padding: var(--md-space-3);
+    display: flex;
+    flex-direction: column;
+    gap: var(--md-space-2);
+}
+
+// ── Tiles bento: cada categoría de resultado es su propia tarjeta de
+// vidrio con tinte de marca (azul = menús/sugerencias, lima = productos),
+// consistente con el resto de superficies de marca del backend. ──
+.o_md_command_palette_group {
+    border-radius: var(--md-radius-lg);
+    border: 1px solid transparent;
+    padding: var(--md-space-1);
+    background: rgba(255, 255, 255, 0.5);
+}
+
+.o_md_command_palette_group--menu,
+.o_md_command_palette_group--suggested {
+    background: linear-gradient(165deg, rgba(22, 166, 217, 0.14), rgba(22, 166, 217, 0.04) 55%, rgba(255, 255, 255, 0.3));
+    border-color: rgba(22, 166, 217, 0.22);
+}
+
+.o_md_command_palette_group--quickaction {
+    background: linear-gradient(165deg, rgba(243, 156, 18, 0.16), rgba(243, 156, 18, 0.04) 55%, rgba(255, 255, 255, 0.3));
+    border-color: rgba(243, 156, 18, 0.25);
+}
+
+.o_md_command_palette_group--product {
+    background: linear-gradient(165deg, rgba(151, 215, 0, 0.16), rgba(151, 215, 0, 0.04) 55%, rgba(255, 255, 255, 0.3));
+    border-color: rgba(151, 215, 0, 0.25);
+}
+
+.o_md_command_palette_group_label {
+    display: flex;
+    align-items: center;
+    gap: var(--md-space-1);
+    font-size: var(--md-text-xs);
+    font-weight: var(--md-weight-heading);
+    text-transform: uppercase;
+    letter-spacing: 0; // convención dominante del proyecto para uppercase (ver nota superior)
+    padding: var(--md-space-2) var(--md-space-3) 0.3rem;
+    font-family: var(--md-font-heading);
+
+    .o_md_command_palette_group--menu &,
+    .o_md_command_palette_group--suggested & { color: var(--md-primary); }
+    .o_md_command_palette_group--quickaction & { color: #d35400; }
+    .o_md_command_palette_group--product & { color: $mdl-action-dark-1; }
+}
+
+.o_md_command_palette_group_count {
+    font-family: var(--md-font-mono);
+    font-weight: 600;
+    opacity: 0.55;
+    letter-spacing: normal;
+    text-transform: none;
+}
+
+// ── Avatar uniforme (28px): ícono real de la app para menús, foto
+// real del producto para productos — en vez de un glifo genérico
+// repetido en cada fila. ──
+.o_md_command_palette_avatar {
+    flex: 0 0 auto;
+    width: 28px;
+    height: 28px;
+    border-radius: var(--md-radius-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    background: rgba(255, 255, 255, 0.7);
+    border: 1px solid var(--md-border);
+    box-shadow: var(--md-shadow-1);
+
+    img { width: 100%; height: 100%; object-fit: contain; }
+    i { opacity: 0.55; font-size: 0.85rem; }
+
+    &--product img { object-fit: cover; }
+    &--action {
+        background: rgba(243, 156, 18, 0.15) !important;
+        border-color: rgba(243, 156, 18, 0.40) !important;
+        color: #d35400 !important;
+
+        i {
+            opacity: 1 !important;
+            font-size: 0.95rem !important;
+            color: #d35400 !important;
+            display: inline-block !important;
+            line-height: 1 !important;
+        }
+    }
+    &--report {
+        background: rgba(0, 184, 148, 0.12) !important;
+        border-color: rgba(0, 184, 148, 0.35) !important;
+        color: #00b894 !important;
+
+        i {
+            opacity: 1 !important;
+            font-size: 0.95rem !important;
+            color: #00b894 !important;
+            display: inline-block !important;
+            line-height: 1 !important;
+        }
+    }
+}
+
+/* ════════════════════════════════════════════════════════════════════════
+   GRUPO: REPORTES PERSONALIZADOS / CUSTOM REPORTS (Teal/Emerald Theme)
+   ════════════════════════════════════════════════════════════════════════ */
+.o_md_command_palette_group--customreport {
+    .o_md_command_palette_group_label {
+        color: #00b894 !important;
+
+        i {
+            color: #00b894 !important;
+        }
+    }
+
+    .o_md_command_palette_group_count {
+        background: rgba(0, 184, 148, 0.15) !important;
+        color: #00b894 !important;
+        border: 1px solid rgba(0, 184, 148, 0.3) !important;
+    }
+
+    .o_md_command_palette_item.active,
+    .o_md_command_palette_item:hover {
+        background: linear-gradient(135deg, rgba(0, 184, 148, 0.08) 0%, rgba(9, 132, 227, 0.04) 100%) !important;
+        border-color: rgba(0, 184, 148, 0.40) !important;
+        box-shadow: 0 4px 12px rgba(0, 184, 148, 0.15) !important;
+    }
+}
+
+.o_md_command_palette_chip--excel {
+    background: rgba(0, 184, 148, 0.15) !important;
+    color: #00897b !important;
+    border: 1px solid rgba(0, 184, 148, 0.35) !important;
+    font-weight: 700 !important;
+}
+
+.o_md_command_palette_chip--pdf {
+    background: rgba(225, 112, 85, 0.15) !important;
+    color: #d63031 !important;
+    border: 1px solid rgba(225, 112, 85, 0.35) !important;
+    font-weight: 700 !important;
+}
+
+.o_md_command_palette_group--menu .o_md_command_palette_item.active .o_md_command_palette_avatar,
+.o_md_command_palette_group--menu .o_md_command_palette_item:hover .o_md_command_palette_avatar {
+    border-color: rgba(22, 166, 217, 0.4);
+}
+.o_md_command_palette_group--product .o_md_command_palette_item.active .o_md_command_palette_avatar,
+.o_md_command_palette_group--product .o_md_command_palette_item:hover .o_md_command_palette_avatar {
+    border-color: rgba(151, 215, 0, 0.45);
+}
+
+.o_md_command_palette_item {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: var(--md-space-2);
+    padding: 0.4rem var(--md-space-2);
+    border-radius: var(--md-radius-md);
+    cursor: pointer;
+
+    &::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0.35rem;
+        bottom: 0.35rem;
+        width: 3px;
+        border-radius: 2px;
+        background: transparent;
+    }
+
+    .o_md_command_palette_group--menu & {
+        &.active, &:hover, &:focus-visible { background: rgba(22, 166, 217, 0.14); }
+        &.active::before { background: var(--md-primary); }
+    }
+    .o_md_command_palette_group--quickaction & {
+        &.active, &:hover, &:focus-visible { background: rgba(243, 156, 18, 0.18); }
+        &.active::before { background: #d35400; }
+    }
+    .o_md_command_palette_group--product & {
+        &.active, &:hover, &:focus-visible { background: rgba(151, 215, 0, 0.20); }
+        &.active::before { background: var(--md-action); }
+    }
+}
+
+// ── Chip "A la mano" & "Acción Rápida" — firma visual del componente ──
+.o_md_command_palette_chip {
+    margin-left: auto;
+    display: inline-flex;
+    align-items: baseline;
+    gap: 0.3rem;
+    font-size: var(--md-text-sm); // 0.75rem — igual que .md_fav_chip
+    font-weight: 700;             // igual que .md_fav_chip
+    color: $mdl-action-dark-2;
+    background: rgba(151, 215, 0, 0.12); // tinte suave
+    border-radius: var(--md-radius-pill);
+    padding: 0.15rem 0.5rem;
+    white-space: nowrap;
+
+    &--action {
+        color: #d35400;
+        background: rgba(243, 156, 18, 0.15);
+    }
+}
+
+// ── Botones de acceso rápido dentro de una fila de producto (COFEPRIS,
+//    detalle de lotes, Ajustar A la mano — ver PRODUCT_ROW_ACTIONS_CATEGORY
+//    en launcher.js) — mismo idioma visual compacto que .md-card-top-actions
+//    del Kanban de Inventario (md_pharma_regulatory/product_kanban_pos_style.scss),
+//    pero en miniatura para caber en una fila de la paleta. ::before del
+//    item pinta el borde izquierdo del propio row; no interfiere.
+.o_md_command_palette_product_actions {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.2rem;
+    margin-left: var(--md-space-2);
+}
+
+.o_md_command_palette_product_action_btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    padding: 0;
+    border: 1px solid var(--md-border);
+    border-radius: 50%;
+    background: var(--md-surface);
+    color: $mdl-action-dark-2;
+    cursor: pointer;
+    transition: background 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+
+    i { font-size: 0.7rem; }
+
+    // Mismos 3 colores por acción que ya usa la card del Kanban de
+    // Inventario (.md-cofepris-btn / .md-adjust-qty-btn / .md-lot-detail-btn
+    // en md_pharma_regulatory/static/src/scss/product_kanban_pos_style.scss)
+    // -- no se inventa paleta nueva, se replica la ya asignada por acción.
+    &--cofepris {
+        background: rgba(44, 140, 153, 0.14);
+        border-color: rgba(44, 140, 153, 0.35);
+        color: #2c8c99;
+        &:hover, &:focus-visible {
+            background: #2c8c99;
+            border-color: #2c8c99;
+            color: #fff;
+            box-shadow: 0 4px 12px rgba(44, 140, 153, 0.35);
+        }
+    }
+    &--adjust {
+        background: rgba(22, 166, 217, 0.14);
+        border-color: rgba(22, 166, 217, 0.35);
+        color: #16a6d9;
+        &:hover, &:focus-visible {
+            background: #16a6d9;
+            border-color: #16a6d9;
+            color: #fff;
+            box-shadow: 0 4px 12px rgba(22, 166, 217, 0.35);
+        }
+    }
+    &--lot {
+        background: rgba(135, 90, 123, 0.14);
+        border-color: rgba(135, 90, 123, 0.35);
+        color: #875a7b;
+        &:hover, &:focus-visible {
+            background: #875a7b;
+            border-color: #875a7b;
+            color: #fff;
+            box-shadow: 0 4px 12px rgba(135, 90, 123, 0.35);
+        }
+    }
+}
+
+// ── Dialogs abiertos DESDE el Command Palette (los 3 botones de arriba)
+//    deben quedar por ENCIMA del propio Command Palette (z-index: 1100,
+//    ver comentario del autor mas abajo) para poder cerrarlos primero y
+//    seguir buscando -- normalmente el Command Palette va POR ENCIMA de
+//    los dialogs nativos (1055) a proposito, pero ese caso asume que el
+//    dialog ya estaba abierto ANTES de abrir la paleta; aqui es al revés
+//    (el dialog se abre CON la paleta ya abierta), asi que aplica la
+//    excepcion solo mientras el backdrop de la paleta sigue en el DOM.
+body:has(.o_md_command_palette_backdrop) .modal-backdrop,
+body:has(.o_md_command_palette_backdrop) .modal {
+    z-index: 1200;
+}
+
+// ── Grid de "Acciones Sugeridas" ──
+$mdl-app-tile-size: 112px;
+$mdl-app-icon-size: 56px;
+
+.o_md_launcher_suggested_grid {
+    display: grid;
+    grid-template-columns: repeat(6, minmax(100px, 1fr));
+    gap: 12px;
+    padding: var(--md-space-3) var(--md-space-2) var(--md-space-4);
+
+    @media (max-width: 720px) {
+        grid-template-columns: repeat(4, minmax(80px, 1fr));
+        gap: 8px;
+    }
+    @media (max-width: 480px) {
+        grid-template-columns: repeat(3, minmax(70px, 1fr));
+        gap: 6px;
+    }
+}
+
+.o_md_launcher_app_tile {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 8px;
+    padding: 10px 4px 8px 4px;
+    border-radius: var(--md-radius-lg);
+    background: rgba(255, 255, 255, 0.50);
+    border: 1px solid rgba(22, 166, 217, 0.16);
+    text-align: center;
+    cursor: pointer;
+    outline: none;
+    transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease, transform 0.18s ease;
+
+    &.active, &:hover, &:focus-visible {
+        background: rgba(255, 255, 255, 0.92);
+        border-color: rgba(22, 166, 217, 0.45);
+        transform: translateY(-3px);
+        box-shadow: 0 14px 28px rgba(22, 166, 217, 0.18);
+    }
+}
+
+.o_md_launcher_app_icon {
+    width: $mdl-app-icon-size;
+    height: $mdl-app-icon-size;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(7, 58, 76, 0.08);
+    background: #FFFFFF;
+    border: 1px solid var(--md-border);
+    padding: 7px;
+
+    img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.06));
+    }
+}
+
+.o_md_launcher_app_label {
+    font-family: var(--md-font-heading);
+    font-size: 0.64rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+    width: 100%;
+    max-width: $mdl-app-tile-size;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: var(--md-primary-dark);
+    word-break: normal;
+}
+
+.o_md_launcher_quick_badge {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    opacity: 0.8;
+    pointer-events: none;
+
+    kbd {
+        font-family: var(--md-font-mono);
+        font-size: 9px;
+        font-weight: 700;
+        padding: 1px 4px;
+        background: rgba(7, 58, 76, 0.09);
+        border-radius: 4px;
+        color: var(--md-primary-dark);
+    }
+}
+
+.o_md_command_palette_empty {
+    padding: 2rem 1.25rem;
+    opacity: 0.6;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--md-space-2);
+    font-size: var(--md-text-md);
+
+    .o_md_command_palette_empty_icon { font-size: 1.3rem; opacity: 0.5; }
+}
+
+.o_md_command_palette_footer {
+    display: flex;
+    gap: var(--md-space-4);
+    padding: 0.6rem var(--md-space-4);
+    border-top: 1px solid var(--md-border);
+    font-size: var(--md-text-xs);
+    color: var(--md-muted);
+
+    kbd {
+        font-family: var(--md-font-mono);
+        background: rgba(7, 58, 76, 0.06);
+        border-radius: var(--md-radius-sm);
+        padding: 1px 5px;
+    }
+}
+
+// ── Modo oscuro — convención real de este módulo y de todo el árbol
+// md_* (md_dark_mode, md_home_menu, md_mail_client): clase .o_md_dark_mode
+// en <html>, alternada por JS (localStorage), NO data-color-scheme (eso es
+// solo frontend). Es un sistema DISTINTO e independiente del dark theme
+// nativo de Odoo (--md-* redefinidas en backend_dark.scss, bundle
+// web.assets_web_dark) — por eso aquí no basta con heredar var(--md-*):
+// ese bundle nativo puede no estar activo aunque .o_md_dark_mode sí lo
+// esté (son dos toggles distintos), así que los overrides quedan
+// explícitos como en el command_palette.scss ya desplegado. ──
+.o_md_dark_mode {
+    .o_md_command_palette_backdrop {
+        background:
+            radial-gradient(46rem 30rem at 12% -10%, rgba(22, 166, 217, 0.18), transparent 60%),
+            radial-gradient(40rem 28rem at 92% 106%, rgba(151, 215, 0, 0.14), transparent 62%),
+            rgba(#000, 0.66);
+    }
+
+    .o_md_command_palette {
+        background: rgba($mdl-ink-950, 0.94); // fallback sólido
+
+        @supports (backdrop-filter: blur(1px)) {
+            background: rgba($mdl-ink-950, 0.82);
+        }
+
+        border-color: rgba(255, 255, 255, 0.10);
+        box-shadow:
+            0 28px 80px rgba(#000, 0.5),
+            inset 0 1px 0 rgba(255, 255, 255, 0.06);
+        color: #e8e8ec;
+    }
+
+    .o_md_command_palette_input_wrap,
+    .o_md_command_palette_footer {
+        border-color: rgba(255, 255, 255, 0.08);
+    }
+
+    .o_md_command_palette_input { color: #e8e8ec; }
+    .o_md_command_palette_input_wrap .o_md_command_palette_icon { color: #e8e8ec; }
+
+    .o_md_command_palette_group { background: rgba(255, 255, 255, 0.03); }
+    .o_md_command_palette_group--menu,
+    .o_md_command_palette_group--suggested { background: linear-gradient(165deg, rgba(22, 166, 217, 0.16), rgba(22, 166, 217, 0.03) 60%); }
+    .o_md_command_palette_group--product { background: linear-gradient(165deg, rgba(151, 215, 0, 0.14), rgba(151, 215, 0, 0.03) 60%); }
+
+    .o_md_command_palette_footer { color: rgba(#fff, 0.55); }
+    .o_md_command_palette_footer kbd { background: rgba(255, 255, 255, 0.08); }
+
+    .o_md_launcher_app_tile {
+        background: rgba(255, 255, 255, 0.04);
+        border-color: rgba(255, 255, 255, 0.08);
+
+        &.active, &:hover, &:focus-visible {
+            background: rgba(22, 166, 217, 0.22);
+            border-color: rgba(22, 166, 217, 0.45);
+            box-shadow: 0 12px 28px rgba(0, 0, 0, 0.45), 0 0 16px rgba(22, 166, 217, 0.25);
+        }
+    }
+
+    .o_md_launcher_app_icon {
+        background: rgba(26, 31, 46, 0.85);
+        border-color: rgba(255, 255, 255, 0.12);
+
+        img {
+            filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.40));
+        }
+    }
+
+    .o_md_launcher_app_label {
+        color: #F1F5F9;
+    }
+}

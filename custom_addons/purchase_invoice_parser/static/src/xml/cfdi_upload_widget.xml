@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="purchase_invoice_parser.CfdiUploadField">
+
+        <!-- Read-only: solo muestra el nombre del archivo / displays filename only -->
+        <div t-if="props.readonly"
+             class="pip_upload_zone pip_upload_zone--readonly d-flex align-items-center gap-2">
+            <t t-if="hasFile">
+                <i t-att-class="props.icon + ' text-success'" aria-hidden="true"/>
+                <span class="text-truncate small fw-semibold" t-esc="fileName"/>
+            </t>
+            <t t-else="">
+                <i class="fa fa-minus-circle text-muted" aria-hidden="true"/>
+                <span class="text-muted fst-italic small">Sin archivo / No file</span>
+            </t>
+        </div>
+
+        <!-- Editable: zona drag &amp; drop / drag and drop upload zone -->
+        <div t-else=""
+             class="pip_upload_zone"
+             t-att-class="{
+                 'pip_upload_zone--dragover': state.isDragOver,
+                 'pip_upload_zone--filled':   hasFile
+             }"
+             t-on-dragenter="onDragEnter"
+             t-on-dragleave="onDragLeave"
+             t-on-dragover="onDragOver"
+             t-on-drop="onDrop"
+             t-on-click="onZoneClick">
+
+            <input t-ref="fileInput"
+                   type="file"
+                   class="d-none"
+                   t-att-accept="props.accept"
+                   t-on-change="onFileChange"/>
+
+            <!-- Estado vacío / Idle state -->
+            <div t-if="!hasFile" class="pip_upload_zone__idle">
+                <i t-att-class="props.icon + ' pip_upload_zone__icon'" aria-hidden="true"/>
+                <p class="pip_upload_zone__label fw-semibold mb-1">
+                    <t t-esc="props.label"/>
+                </p>
+                <p class="pip_upload_zone__hint text-muted small mb-0">
+                    Arrastra aquí o
+                    <span class="pip_upload_zone__cta">haz clic para seleccionar</span>
+                    <br/>
+                    <em>Drag here or click to browse</em>
+                </p>
+                <span t-if="props.accept" class="pip_upload_zone__types">
+                    <t t-esc="props.accept"/>
+                </span>
+            </div>
+
+            <!-- Estado con archivo / File loaded state -->
+            <div t-else="" class="pip_upload_zone__file d-flex align-items-center gap-2 w-100">
+                <i t-att-class="props.icon + ' pip_upload_zone__file-icon text-success fa-lg'"
+                   aria-hidden="true"/>
+                <span class="text-truncate pip_upload_zone__file-name flex-grow-1 fw-semibold small"
+                      t-esc="fileName"/>
+                <button type="button"
+                        class="btn btn-sm btn-outline-danger pip_upload_zone__clear"
+                        title="Eliminar archivo / Remove file"
+                        t-on-click.stop="clearFile">
+                    <i class="fa fa-times" aria-hidden="true"/>
+                </button>
+            </div>
+
+        </div>
+    </t>
+
+</templates>

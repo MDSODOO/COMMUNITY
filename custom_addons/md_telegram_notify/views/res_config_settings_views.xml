@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="view_res_config_settings_form_md_telegram" model="ir.ui.view">
+        <field name="name">res.config.settings.form.inherit.md.telegram</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="base_setup.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//form" position="inside">
+                <app data-string="Telegram" string="Telegram" name="md_telegram"
+                     logo="/base/static/description/settings.png">
+                    <block title="Credenciales del Bot" name="md_telegram_credentials">
+                        <setting id="md_telegram_token_setting" string="Bot Token"
+                                 help="Token que devuelve @BotFather. Se guarda en parámetros del sistema, sólo legible por Administración.">
+                            <field name="md_telegram_bot_token" password="True"
+                                   placeholder="123456789:AAH..."/>
+                            <div class="mt8">
+                                <button name="action_md_telegram_discover_chats" type="object"
+                                        string="Detectar chats" class="btn-link" icon="fa-search"/>
+                                <button name="action_md_telegram_test" type="object"
+                                        string="Enviar prueba" class="btn-link" icon="fa-paper-plane"/>
+                            </div>
+                        </setting>
+                        <setting id="md_telegram_channels_setting" string="Canales de destino"
+                                 help="Grupos, canales o chats a los que Odoo puede enviar alertas.">
+                            <button name="action_md_telegram_open_channels" type="object"
+                                    string="Configurar canales" class="btn-link" icon="fa-arrow-right"/>
+                        </setting>
+                    </block>
+                    <block title="Alertas" name="md_telegram_alerts">
+                        <setting id="md_telegram_po_setting" string="Órdenes de compra de alto valor"
+                                 help="Notifica al canal con código 'compras' cuando se confirma una orden que iguale o supere el umbral. Dejar en 0 desactiva la alerta.">
+                            <div class="content-group">
+                                <div class="mt16">
+                                    <label for="md_telegram_po_threshold" string="Umbral"
+                                           class="o_light_label"/>
+                                    <!-- fields.Float en lugar de Monetary: Odoo 19 no permite
+                                         Monetary en res.config.settings con config_parameter. -->
+                                    <field name="md_telegram_po_threshold"
+                                           class="oe_inline" widget="float"/>
+                                    <!-- Mostramos el simbolo de moneda como texto de solo lectura -->
+                                    <field name="company_currency_id" class="oe_inline" readonly="1"/>
+                                </div>
+                            </div>
+                        </setting>
+                    </block>
+                </app>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="action_md_telegram_settings" model="ir.actions.act_window">
+        <field name="name">Ajustes de Telegram</field>
+        <field name="res_model">res.config.settings</field>
+        <field name="view_mode">form</field>
+        <!-- Odoo 19 elimino target='inline' de ir.actions.act_window; la accion
+             de ajustes del core tampoco lo usa ya. -->
+        <field name="context">{'module': 'md_telegram', 'bin_size': False}</field>
+    </record>
+</odoo>

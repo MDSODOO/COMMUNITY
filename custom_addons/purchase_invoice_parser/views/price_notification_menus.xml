@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Menú padre: Análisis dentro de Compras -->
+    <menuitem id="menu_purchase_analysis"
+              name="Análisis"
+              parent="purchase.menu_purchase_root"
+              sequence="60"/>
+
+    <!-- Submenu: Notificaciones de Precio -->
+    <menuitem id="menu_price_notifications_list"
+              name="Notificaciones de Precio"
+              parent="menu_purchase_analysis"
+              action="action_purchase_price_notifications"
+              sequence="10"/>
+
+    <!-- Submenu: Reporte de Cambios de Precio (wizard con filtros Línea/Sucursal/Estado) -->
+    <menuitem id="menu_price_notification_report_wizard"
+              name="Reporte de Cambios de Precio"
+              parent="menu_purchase_analysis"
+              action="action_price_notification_report_wizard"
+              sequence="15"/>
+
+    <!-- Submenu: Costos por Sucursal (wizard con filtros Línea/Sucursal) -->
+    <menuitem id="menu_cost_by_branch_wizard"
+              name="Costos por Sucursal"
+              parent="menu_purchase_analysis"
+              action="action_cost_by_branch_wizard"
+              sequence="20"/>
+
+</odoo>

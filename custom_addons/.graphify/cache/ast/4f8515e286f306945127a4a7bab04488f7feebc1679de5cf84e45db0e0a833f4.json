@@ -1,0 +1,1 @@
+{"nodes":[{"id":"md_pharma_regulatory_init","label":"__init__.py","file_type":"code","source_file":"md_pharma_regulatory/__init__.py","source_location":"L1"}],"edges":[{"source":"md_pharma_regulatory_init","target":"","relation":"imports_from","confidence":"EXTRACTED","source_file":"md_pharma_regulatory/__init__.py","source_location":"L1","weight":1}]}

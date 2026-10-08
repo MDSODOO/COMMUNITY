@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- Todo cuelga de Ajustes > Técnico: es configuración de administrador,
+         no una app que deba ocupar sitio en el menú principal. -->
+    <menuitem id="menu_md_telegram_root"
+              name="Telegram"
+              parent="base.menu_administration"
+              sequence="90"
+              groups="base.group_system"/>
+
+    <menuitem id="menu_md_telegram_settings"
+              name="Ajustes"
+              parent="menu_md_telegram_root"
+              action="action_md_telegram_settings"
+              sequence="10"
+              groups="base.group_system"/>
+
+    <menuitem id="menu_md_telegram_channel"
+              name="Canales"
+              parent="menu_md_telegram_root"
+              action="action_md_telegram_channel"
+              sequence="20"
+              groups="base.group_system"/>
+
+    <menuitem id="menu_md_telegram_message"
+              name="Cola de mensajes"
+              parent="menu_md_telegram_root"
+              action="action_md_telegram_message"
+              sequence="30"
+              groups="base.group_system"/>
+</odoo>
